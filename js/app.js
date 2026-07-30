@@ -3408,8 +3408,9 @@ function runBetDoctorAudit() {
   const bookieInfo = typeof getBookieAffiliateInfo === 'function' ? getBookieAffiliateInfo(bookieVal) : { name: 'SportyBet' };
   const bookieName = bookieInfo.name || 'Bookmaker';
 
-  // Call Live Backend API Server (Port 5000)
-  fetch('http://localhost:5000/api/v1/doctor/audit', {
+  // Call Live Backend API Server
+  const apiBase = window.API_BASE_URL || 'http://localhost:5000/api/v1';
+  fetch(`${apiBase}/doctor/audit`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ bookingCode: codeVal, sourceBookie: bookieVal })

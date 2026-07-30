@@ -1,13 +1,17 @@
 import app from './app';
 import { config } from './config/env';
 
-const server = app.listen(config.port, () => {
+const host = '0.0.0.0';
+const port = config.port;
+
+const server = app.listen(port, host, () => {
   console.log(`
   🚀 =================================================== 🚀
      BETMINES BACKEND SERVICE IS LIVE & LISTENING
-     - Server Port: ${config.port}
+     - Server Host: ${host}
+     - Server Port: ${port}
      - Environment: ${config.nodeEnv}
-     - API Base URL: http://localhost:${config.port}/api/v1
+     - API Base URL: http://${host}:${port}/api/v1
      - 50-Bookmaker Converter Endpoint: /api/v1/converter/convert
      - AI Bet Doctor Endpoint: /api/v1/doctor/audit
   🚀 =================================================== 🚀

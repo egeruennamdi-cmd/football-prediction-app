@@ -3247,6 +3247,10 @@ window.openLiveScannerHub = openLiveScannerHub;
    FRONTEND AUTHENTICATION SYSTEM & LIVE BACKEND API CONNECTION
    ========================================================================== */
 
+window.API_BASE_URL = (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1')
+  ? 'http://localhost:5000/api/v1'
+  : 'https://football-prediction-app-production.up.railway.app/api/v1';
+
 window.authModalState = {
   mode: 'login',
   user: JSON.parse(localStorage.getItem('betmines_user') || 'null'),
@@ -3324,7 +3328,8 @@ function handleAuthSubmit(event) {
     submitBtn.innerText = isRegister ? "Creating Account..." : "Logging In...";
   }
 
-  const endpoint = isRegister ? 'http://localhost:5000/api/v1/auth/register' : 'http://localhost:5000/api/v1/auth/login';
+  const baseUrl = window.API_BASE_URL || 'http://localhost:5000/api/v1';
+  const endpoint = isRegister ? `${baseUrl}/auth/register` : `${baseUrl}/auth/login`;
   const payload = isRegister ? { email, password, fullName } : { email, password };
 
   fetch(endpoint, {
