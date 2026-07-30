@@ -1,0 +1,8 @@
+[providers]
+providers = ["node"]
+
+[build]
+cmds = ["npm install", "npm install --prefix backend", "npm run build --prefix backend"]
+
+[start]
+cmd = "node backend/dist/server.js"
