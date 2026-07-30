@@ -1,0 +1,83 @@
+// BetMines Prisma PostgreSQL Database Schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Role {
+  USER
+  PRO
+  VIP
+  ADMIN
+}
+
+enum MarketCategory {
+  MATCH_RESULT_1X2
+  OVER_UNDER_GOALS
+  BOTH_TEAMS_SCORE
+  DOUBLE_CHANCE
+  DRAW_NO_BET
+  CORNER_MATCH_BET
+  CARDS_MATCH_BET
+}
+
+model User {
+  id            String          @id @default(uuid())
+  email         String          @unique
+  passwordHash  String
+  fullName      String?
+  role          Role            @default(USER)
+  coinsBalance  Int             @default(50)
+  referralCode  String          @unique @default(uuid())
+  conversions   ConversionLog[]
+  auditedSlips  AuditedSlip[]
+  createdAt     DateTime        @default(now())
+  updatedAt     DateTime        @updatedAt
+}
+
+model ConversionLog {
+  id               String   @id @default(uuid())
+  sourceBookie     String
+  targetBookie     String
+  sourceCode       String
+  targetCode       String
+  totalOdds        Float
+  affiliateTagUsed String
+  userId           String?
+  user             User?    @relation(fields: [userId], references: [id])
+  createdAt        DateTime @default(now())
+}
+
+model AuditedSlip {
+  id                   String   @id @default(uuid())
+  sourceCode           String
+  sourceBookie         String
+  healthScore          Float
+  rawProbability       Float
+  optimizedProbability Float
+  trapMatchesDetected  Int      @default(0)
+  userId               String?
+  user                 User?    @relation(fields: [userId], references: [id])
+  createdAt            DateTime @default(now())
+}
+
+model ArbitrageOpportunity {
+  id             String   @id @default(uuid())
+  matchName      String
+  league         String
+  market         String
+  netRoiPercent  Float
+  leg1Bookie     String
+  leg1Selection  String
+  leg1Odds       Float
+  leg2Bookie     String
+  leg2Selection  String
+  leg2Odds       Float
+  isActive       Boolean  @default(true)
+  createdAt      DateTime @default(now())
+}

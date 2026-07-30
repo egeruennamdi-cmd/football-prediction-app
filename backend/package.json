@@ -1,0 +1,49 @@
+{
+  "name": "betmines-backend-service",
+  "version": "1.0.0",
+  "description": "Production-ready Node.js/TypeScript backend API service for BetMines, including Option C 50-Bookmaker Converter Engine, AI Bet Doctor, and Arbitrage Finder.",
+  "main": "dist/server.js",
+  "scripts": {
+    "dev": "ts-node-dev --respawn --transpile-only src/server.ts",
+    "build": "tsc",
+    "start": "node dist/server.js",
+    "prisma:generate": "prisma generate",
+    "prisma:migrate": "prisma migrate dev",
+    "prisma:studio": "prisma studio"
+  },
+  "keywords": [
+    "betmines",
+    "converter",
+    "sports-betting",
+    "predictions",
+    "arbitrage",
+    "express",
+    "typescript",
+    "prisma"
+  ],
+  "author": "BetMines Engineering Team",
+  "license": "MIT",
+  "dependencies": {
+    "@prisma/client": "^5.19.1",
+    "axios": "^1.7.7",
+    "cors": "^2.8.5",
+    "dotenv": "^16.4.5",
+    "express": "^4.21.0",
+    "helmet": "^7.1.0",
+    "jsonwebtoken": "^9.0.3",
+    "morgan": "^1.10.0",
+    "ws": "^8.18.0",
+    "zod": "^3.23.8"
+  },
+  "devDependencies": {
+    "@types/cors": "^2.8.17",
+    "@types/express": "^4.17.21",
+    "@types/jsonwebtoken": "^9.0.10",
+    "@types/morgan": "^1.9.9",
+    "@types/node": "^22.5.4",
+    "@types/ws": "^8.5.12",
+    "prisma": "^5.19.1",
+    "ts-node-dev": "^2.0.0",
+    "typescript": "^5.6.2"
+  }
+}
