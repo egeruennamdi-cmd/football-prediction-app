@@ -6,7 +6,7 @@
   "scripts": {
     "dev": "vite",
     "build:frontend": "vite build",
-    "build": "npm install --prefix backend && npm run build --prefix backend",
+    "build": "cd backend && npm install && npx prisma generate && npm run build",
     "start": "node backend/dist/server.js",
     "preview": "vite preview"
   },
