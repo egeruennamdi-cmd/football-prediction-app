@@ -14,5 +14,8 @@
   },
   "devDependencies": {
     "vite": "^6.0.0"
+  },
+  "dependencies": {
+    "@cloudflare/vite-plugin": "^1.50.0"
   }
 }
