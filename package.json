@@ -2,6 +2,7 @@
   "name": "football-prediction-app",
   "version": "1.0.0",
   "description": "Next-Gen AI Football Predictions & Analytics Website",
+  "type": "module",
   "main": "index.html",
   "scripts": {
     "dev": "vite",
@@ -12,6 +13,7 @@
     "preview": "vite preview"
   },
   "devDependencies": {
+    "@cloudflare/vite-plugin": "^1.0.0",
     "vite": "^6.0.0"
   }
 }
