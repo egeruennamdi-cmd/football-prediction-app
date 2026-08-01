@@ -3223,6 +3223,39 @@ window.switchScannerMode = switchScannerMode;
 window.switchStoreTab = switchStoreTab;
 window.switchSupportTab = switchSupportTab;
 window.switchTool = switchTool;
+
+function triggerHeroScoutPrompt() {
+  const heroInput = document.getElementById("hero-scout-input");
+  if (!heroInput || !heroInput.value.trim()) return;
+
+  const text = heroInput.value.trim();
+  heroInput.value = "";
+
+  if (typeof openGeneralScout === 'function') openGeneralScout();
+
+  setTimeout(() => {
+    const scoutInput = document.getElementById("scout-chat-input");
+    if (scoutInput) {
+      scoutInput.value = text;
+      if (typeof sendScoutMessage === 'function') sendScoutMessage();
+    }
+  }, 350);
+}
+
+function quickPromptScout(promptText) {
+  if (typeof openGeneralScout === 'function') openGeneralScout();
+
+  setTimeout(() => {
+    const scoutInput = document.getElementById("scout-chat-input");
+    if (scoutInput) {
+      scoutInput.value = promptText;
+      if (typeof sendScoutMessage === 'function') sendScoutMessage();
+    }
+  }, 350);
+}
+
+window.triggerHeroScoutPrompt = triggerHeroScoutPrompt;
+window.quickPromptScout = quickPromptScout;
 window.switchTopTipsToolMarket = switchTopTipsToolMarket;
 window.toggleCheckboxCard = toggleCheckboxCard;
 window.toggleFAQCollapse = toggleFAQCollapse;
