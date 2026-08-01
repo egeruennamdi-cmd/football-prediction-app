@@ -3256,6 +3256,34 @@ function quickPromptScout(promptText) {
 
 window.triggerHeroScoutPrompt = triggerHeroScoutPrompt;
 window.quickPromptScout = quickPromptScout;
+window.smoothScrollToPremium = smoothScrollToPremium;
+
+function showAppNotification(msg, type = 'info') {
+  if (window.showAppNotificationImpl && typeof window.showAppNotificationImpl === 'function') {
+    return window.showAppNotificationImpl(msg, type);
+  }
+  let toast = document.getElementById('global-app-toast');
+  if (!toast) {
+    toast = document.createElement('div');
+    toast.id = 'global-app-toast';
+    toast.style.cssText = 'position:fixed;bottom:24px;right:24px;background:rgba(15,23,42,0.95);color:#fff;border:1px solid #3b82f6;padding:12px 20px;border-radius:10px;font-family:sans-serif;font-size:0.9rem;font-weight:600;box-shadow:0 10px 25px rgba(0,0,0,0.5);z-index:99999;transition:all 0.3s ease;transform:translateY(100px);opacity:0;';
+    document.body.appendChild(toast);
+  }
+  toast.textContent = msg;
+  toast.style.transform = 'translateY(0)';
+  toast.style.opacity = '1';
+  setTimeout(() => {
+    toast.style.transform = 'translateY(100px)';
+    toast.style.opacity = '0';
+  }, 3500);
+}
+
+function showToast(msg, type = 'info') {
+  showAppNotification(msg, type);
+}
+
+window.showAppNotification = showAppNotification;
+window.showToast = showToast;
 window.switchTopTipsToolMarket = switchTopTipsToolMarket;
 window.toggleCheckboxCard = toggleCheckboxCard;
 window.toggleFAQCollapse = toggleFAQCollapse;

@@ -2128,6 +2128,8 @@ function triggerHeroScoutPrompt() {
 
 window.quickPromptScout = quickPromptScout;
 window.triggerHeroScoutPrompt = triggerHeroScoutPrompt;
+window.selectBetMinesDate = selectBetMinesDate;
+window.showAppNotificationImpl = showAppNotification;
 
 // Add CSS keyframe animation for the Pro activation notification
 const style = document.createElement("style");
