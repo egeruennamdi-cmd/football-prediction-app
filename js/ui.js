@@ -796,40 +796,53 @@ function renderDailyBets() {
   if (!container) return;
   container.innerHTML = "";
 
-  DAILY_TIPS.forEach(tip => {
+  const tips = (typeof DAILY_TIPS !== 'undefined' ? DAILY_TIPS : window.DAILY_TIPS) || [
+    { type: "Double of the Day", matches: ["Bayern Munich vs Dortmund", "Liverpool vs Chelsea"], odd: "2.68", text: "Combined win odds on Bayern (1.45) & Liverpool Win (1.85) representing high value counter-press metrics." },
+    { type: "Risk of the Day", matches: ["Arsenal vs Man City"], odd: "3.40", text: "Arsenal Win + Both Teams To Score (BTTS). Arsenal's central block favors them, but City is likely to score late." },
+    { type: "Value of the Day", matches: ["Juventus vs PSG"], odd: "3.20", text: "Draw (X) pick. Juventus deep block is highly resilient, PSG transition lacks wide crossing options." }
+  ];
+
+  tips.forEach(tip => {
     const card = document.createElement("div");
     card.className = "glass-card";
-    card.style.padding = "20px";
-    card.style.display = "flex";
-    card.style.flexDirection = "column";
-    card.style.gap = "12px";
-    card.style.border = "1px solid rgba(255, 255, 255, 0.08)";
+    card.style.cssText = "padding: 20px; display: flex; flex-direction: column; gap: 12px; border: 1px solid rgba(255, 255, 255, 0.08); background: rgba(15, 23, 42, 0.6); border-radius: var(--radius-lg); backdrop-filter: blur(10px); transition: transform 0.2s ease, box-shadow 0.2s ease;";
 
     card.innerHTML = `
       <div style="display: flex; justify-content: space-between; align-items: center;">
-        <span style="background: rgba(26,104,219,0.12); color: var(--primary); padding: 4px 10px; border-radius: var(--radius-sm); font-size: 0.75rem; font-weight: 700; text-transform: uppercase;">
+        <span style="background: rgba(37,99,235,0.15); color: #60a5fa; border: 1px solid rgba(37,99,235,0.3); padding: 4px 10px; border-radius: var(--radius-sm); font-size: 0.75rem; font-weight: 700; text-transform: uppercase;">
           ${tip.type}
         </span>
-        <span style="font-family: var(--font-display); font-weight: 800; color: var(--secondary); font-size: 1.1rem;">
+        <span style="font-family: var(--font-display); font-weight: 800; color: #10b981; font-size: 1.15rem;">
           @${tip.odd}
         </span>
       </div>
       <div>
-        <div style="font-size: 0.8rem; color: var(--text-muted); margin-bottom: 4px;">Picks Selection</div>
-        <div style="font-weight: 700; font-size: 0.9rem; color: var(--text-primary);">
+        <div style="font-size: 0.78rem; color: var(--text-muted); margin-bottom: 4px; font-weight: 600;">Picks Selection</div>
+        <div style="font-weight: 700; font-size: 0.95rem; color: #ffffff;">
           ${tip.matches.join(" & ")}
         </div>
       </div>
-      <p style="font-size: 0.8rem; color: var(--text-secondary); line-height: 1.4; flex-grow: 1;">
+      <p style="font-size: 0.82rem; color: rgba(255,255,255,0.75); line-height: 1.45; flex-grow: 1; margin: 0;">
         ${tip.text}
       </p>
-      <button class="btn btn-secondary" style="font-size: 0.75rem; padding: 6px 12px; width: 100%;" onclick="copyDailyTipOdds('${tip.odd}')">
-        Copy Selection Odds
+      <button class="btn btn-secondary" style="font-size: 0.8rem; padding: 8px 14px; width: 100%; border-radius: var(--radius-md); font-weight: 700; background: rgba(255,255,255,0.06); color: #ffffff; border: 1px solid rgba(255,255,255,0.12); cursor: pointer;" onclick="copyDailyTipOdds('${tip.odd}')">
+        📋 Copy Selection Odds (@${tip.odd})
       </button>
     `;
     container.appendChild(card);
   });
 }
+
+function copyDailyTipOdds(odd) {
+  if (navigator.clipboard && navigator.clipboard.writeText) {
+    navigator.clipboard.writeText(odd);
+  }
+  if (typeof showAppNotification === 'function') {
+    showAppNotification(`📋 Selection Odds (@${odd}) copied to clipboard!`);
+  }
+}
+window.copyDailyTipOdds = copyDailyTipOdds;
+window.renderDailyBets = renderDailyBets;
 
 // Render Hot Trends Ticker
 function renderTrends() {
