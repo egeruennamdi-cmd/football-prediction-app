@@ -1471,7 +1471,20 @@ function renderSidebarTopLeagues() {
 
   const query = (document.getElementById("sidebar-topleagues-search-input")?.value || "").toLowerCase().trim();
 
-  TOP_LEAGUES_DATA.forEach((league, index) => {
+  const leaguesData = (typeof TOP_LEAGUES_DATA !== 'undefined' ? TOP_LEAGUES_DATA : window.TOP_LEAGUES_DATA) || [
+    { name: "Premier League", emoji: "🏴󠁧󠁢󠁥󠁮󠁧󠁿", country: "England" },
+    { name: "La Liga", emoji: "🇪🇸", country: "Spain" },
+    { name: "Bundesliga", emoji: "🇩🇪", country: "Germany" },
+    { name: "Serie A", emoji: "🇮🇹", country: "Italy" },
+    { name: "Ligue 1", emoji: "🇫🇷", country: "France" },
+    { name: "Eredivisie", emoji: "🇳🇱", country: "Netherlands" },
+    { name: "Primeira Liga", emoji: "🇵🇹", country: "Portugal" },
+    { name: "Süper Lig", emoji: "🇹🇷", country: "Turkey" },
+    { name: "Champions League", emoji: "🇪🇺", country: "Europe" },
+    { name: "Europa League", emoji: "🇪🇺", country: "Europe" }
+  ];
+
+  leaguesData.forEach((league, index) => {
     // Filter by search query if present
     const matchesLeague = league.name.toLowerCase().includes(query) || league.country.toLowerCase().includes(query);
 
