@@ -7,6 +7,7 @@ import converterRouter from './modules/converter/converter.routes';
 import doctorRouter from './modules/doctor/doctor.routes';
 import arbitrageRouter from './modules/arbitrage/arbitrage.routes';
 import authRouter from './modules/auth/auth.routes';
+import liveDataRouter from './modules/liveData/liveData.routes';
 
 const app: Express = express();
 
@@ -22,14 +23,17 @@ const apiIndexHandler = (req: Request, res: Response) => {
     status: 'online',
     name: 'BetMines Enterprise API Gateway',
     version: 'v1.0.0',
-    description: 'Option C 50-Bookmaker Converter Engine, AI Bet Doctor & Arbitrage API',
+    description: 'Option C 50-Bookmaker Converter Engine, AI Bet Doctor & API-Football Live Gateway',
     endpoints: {
       healthCheck: 'GET /api/v1/health',
       authRegister: 'POST /api/v1/auth/register',
       authLogin: 'POST /api/v1/auth/login',
       converterEngine: 'POST /api/v1/converter/convert',
       doctorAudit: 'POST /api/v1/doctor/audit',
-      arbitrageScanner: 'GET /api/v1/arbitrage/scan'
+      arbitrageScanner: 'GET /api/v1/arbitrage/scan',
+      liveStatus: 'GET /api/v1/live/status',
+      liveFixtures: 'GET /api/v1/live/fixtures',
+      liveStandings: 'GET /api/v1/live/standings'
     },
     timestamp: new Date().toISOString()
   });
@@ -53,6 +57,7 @@ app.use('/api/v1/auth', authRouter);
 app.use('/api/v1/converter', converterRouter);
 app.use('/api/v1/doctor', doctorRouter);
 app.use('/api/v1/arbitrage', arbitrageRouter);
+app.use('/api/v1/live', liveDataRouter);
 
 // Global Error Handler
 app.use((err: Error, req: Request, res: Response, next: NextFunction) => {
