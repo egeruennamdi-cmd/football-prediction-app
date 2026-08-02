@@ -1451,78 +1451,41 @@ function filterMatches(filterType, btn) {
   }
 }
 
+// Route sidebar and menu tool buttons to target suite pane
 function triggerToolRoute(toolId, scannerMode) {
-  if (typeof window.navigateToPage === 'function') {
-    window.navigateToPage(toolId);
-    if (scannerMode && typeof switchScannerMode === 'function') {
-      const scannerSection = document.getElementById("live-scanner-section");
-      if (scannerSection) {
-        const modeBtn = Array.from(scannerSection.querySelectorAll(".tabs-container .tab-btn")).find(b => {
-          const attr = b.getAttribute("onclick");
-          return attr && attr.includes(scannerMode);
-        });
-        if (modeBtn) switchScannerMode(scannerMode, modeBtn);
-      }
+  // Ensure view-generator page view is active
+  const genView = document.getElementById("view-generator");
+  if (genView && !genView.classList.contains("active")) {
+    const allViews = document.querySelectorAll(".page-view");
+    allViews.forEach(v => v.classList.remove("active"));
+    genView.classList.add("active");
+  }
+
+  // Handle live scanner section routing
+  if (toolId === 'scanner' || toolId === 'scanner-live' || toolId === 'scanner-prematch') {
+    const scannerSec = document.getElementById("live-scanner-section");
+    if (scannerSec) {
+      scannerSec.scrollIntoView({ behavior: 'smooth' });
+    }
+    const mode = scannerMode || (toolId.includes('prematch') ? 'prematch' : 'live');
+    if (typeof switchScannerMode === 'function') {
+      const modeBtn = document.querySelector(`.tabs-container .tab-btn[onclick*="${mode}"]`);
+      switchScannerMode(mode, modeBtn);
     }
     return;
   }
 
-  // Fallback sync the tabs container for the betting suite tools
-  const toolsSection = document.getElementById("betmines-tools");
-  if (!toolsSection) return;
+  // Delegate to switchTool for suite tools
+  if (typeof switchTool === 'function') {
+    const suiteSec = document.getElementById("betmines-tools");
+    const targetBtn = suiteSec ? Array.from(suiteSec.querySelectorAll(".tabs-container .tab-btn")).find(b => {
+      const attr = b.getAttribute("onclick");
+      return attr && attr.includes(`'${toolId}'`);
+    }) : null;
 
-  const panes = toolsSection.querySelectorAll(".tool-content-pane");
-  panes.forEach(p => {
-    p.classList.remove("active");
-    p.style.display = "none";
-  });
-  
-  const targetPane = document.getElementById(`tool-${toolId}`);
-  if (targetPane) {
-    targetPane.classList.add("active");
-    targetPane.style.display = "flex";
-    targetPane.style.flexDirection = "column";
-    if (toolId === 'valuebot') {
-      if (typeof renderValueBetBot === 'function') renderValueBetBot();
-    } else if (toolId === 'toptips') {
-      if (typeof renderTopTipsTool === 'function') renderTopTipsTool();
-    } else if (toolId === 'backtester') {
-      if (typeof syncBacktesterPremiumState === 'function') syncBacktesterPremiumState();
-    }
+    switchTool(toolId, targetBtn);
+    if (suiteSec) suiteSec.scrollIntoView({ behavior: 'smooth' });
   }
-
-  // Find target button if it exists
-  const tabBtn = Array.from(toolsSection.querySelectorAll(".section-header .tab-btn")).find(b => {
-    const attr = b.getAttribute("onclick");
-    return attr && attr.includes(toolId);
-  });
-
-  if (tabBtn) {
-    const allBtns = toolsSection.querySelectorAll(".section-header .tab-btn");
-    allBtns.forEach(b => b.classList.remove("active"));
-    tabBtn.classList.add("active");
-  }
-
-  // Handle Top Tips subtab and market card mapping
-  if (toolId === 'toptips' && scannerMode) {
-    window.appState.activeTopTipsToolMarket = scannerMode;
-    const grid = document.getElementById("toptips-tool-grid");
-    if (grid) {
-      const card = Array.from(grid.querySelectorAll(".checkbox-card")).find(c => {
-        const attr = c.getAttribute("onclick");
-        return attr && attr.includes(`'${scannerMode}'`);
-      });
-      if (card) {
-        const cards = grid.querySelectorAll(".checkbox-card");
-        cards.forEach(c => c.classList.remove("selected"));
-        card.classList.add("selected");
-      }
-    }
-    renderTopTipsTool();
-  }
-
-  // Scroll smoothly to the betting suite section
-  toolsSection.scrollIntoView({ behavior: 'smooth' });
 }
 
 // Route watchlist navigation click
