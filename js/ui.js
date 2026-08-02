@@ -2963,8 +2963,22 @@ function renderSidebarDirectory() {
 
   const query = (document.getElementById("sidebar-search-input")?.value || "").toLowerCase().trim();
 
-  // Iterate over COUNTRY_LEAGUES_DATA
-  COUNTRY_LEAGUES_DATA.forEach((item, index) => {
+  const countryData = (typeof COUNTRY_LEAGUES_DATA !== 'undefined' ? COUNTRY_LEAGUES_DATA : window.COUNTRY_LEAGUES_DATA) || [
+    { country: "England", emoji: "🏴󠁧󠁢󠁥󠁮󠁧󠁿", leagues: ["Premier League", "Championship", "League One", "League Two", "FA Cup", "EFL Cup"] },
+    { country: "Spain", emoji: "🇪🇸", leagues: ["La Liga", "La Liga 2", "Copa del Rey"] },
+    { country: "Germany", emoji: "🇩🇪", leagues: ["Bundesliga", "2. Bundesliga", "DFB-Pokal"] },
+    { country: "Italy", emoji: "🇮🇹", leagues: ["Serie A", "Serie B", "Coppa Italia"] },
+    { country: "France", emoji: "🇫🇷", leagues: ["Ligue 1", "Ligue 2", "Coupe de France"] },
+    { country: "Netherlands", emoji: "🇳🇱", leagues: ["Eredivisie", "KNVB Cup"] },
+    { country: "Portugal", emoji: "🇵🇹", leagues: ["Primeira Liga", "Taça de Portugal"] },
+    { country: "Turkey", emoji: "🇹🇷", leagues: ["Süper Lig", "Turkish Cup"] },
+    { country: "Nigeria", emoji: "🇳🇬", leagues: ["NPFL", "Federation Cup"] },
+    { country: "USA", emoji: "🇺🇸", leagues: ["MLS", "US Open Cup"] },
+    { country: "World", emoji: "🌎", leagues: ["World Cup", "Champions League", "Europa League", "AFCON"] }
+  ];
+
+  // Iterate over countryData
+  countryData.forEach((item, index) => {
     // Filter by search query if present
     const matchesCountry = item.country.toLowerCase().includes(query);
     const matchingLeagues = item.leagues.filter(l => l.toLowerCase().includes(query));
