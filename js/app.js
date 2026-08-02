@@ -2206,9 +2206,20 @@ function generateMachineTicket() {
   const selectedMarketEls = document.querySelectorAll(".form-checkbox-group .checkbox-card.selected span");
   const userMarkets = Array.from(selectedMarketEls).map(el => el.innerText.trim());
 
-  const availableMatches = [...(typeof MATCH_DATA !== 'undefined' ? MATCH_DATA : window.MATCH_DATA || [])];
-  if (availableMatches.length === 0) return;
+  let availableMatches = [...(typeof MATCH_DATA !== 'undefined' ? MATCH_DATA : window.MATCH_DATA || [])];
   
+  // Fallback match dataset if MATCH_DATA is loading
+  if (availableMatches.length === 0) {
+    availableMatches = [
+      { homeTeam: { name: "Arsenal", logo: "🔴" }, awayTeam: { name: "Man City", logo: "🔵" }, league: "Premier League", leagueEmoji: "🏴󠁧󠁢󠁥󠁮󠁧󠁿", predictions: { home: 45, away: 35 } },
+      { homeTeam: { name: "Real Madrid", logo: "⚪" }, awayTeam: { name: "Barcelona", logo: "🔵🔴" }, league: "La Liga", leagueEmoji: "🇪🇸", predictions: { home: 50, away: 30 } },
+      { homeTeam: { name: "Bayern Munich", logo: "🔴" }, awayTeam: { name: "Dortmund", logo: "🟡" }, league: "Bundesliga", leagueEmoji: "🇩🇪", predictions: { home: 55, away: 25 } },
+      { homeTeam: { name: "Inter Milan", logo: "🔵" }, awayTeam: { name: "Juventus", logo: "⚪" }, league: "Serie A", leagueEmoji: "🇮🇹", predictions: { home: 42, away: 38 } },
+      { homeTeam: { name: "PSG", logo: "🔵" }, awayTeam: { name: "Marseille", logo: "⚪" }, league: "Ligue 1", leagueEmoji: "🇫🇷", predictions: { home: 60, away: 20 } },
+      { homeTeam: { name: "Liverpool", logo: "🔴" }, awayTeam: { name: "Chelsea", logo: "🔵" }, league: "Premier League", leagueEmoji: "🏴󠁧󠁢󠁥󠁮󠁧󠁿", predictions: { home: 48, away: 32 } }
+    ];
+  }
+
   // Shuffle available matches
   for (let i = availableMatches.length - 1; i > 0; i--) {
     const j = Math.floor(Math.random() * (i + 1));
@@ -2222,14 +2233,21 @@ function generateMachineTicket() {
 
   for (let i = 0; i < count; i++) {
     const match = availableMatches[i % availableMatches.length];
-    
+    const homeName = (match.homeTeam && match.homeTeam.name) || match.home || "Home Team";
+    const awayName = (match.awayTeam && match.awayTeam.name) || match.away || "Away Team";
+    const leagueName = match.league || "League";
+    const leagueEmoji = match.leagueEmoji || "⚽";
+
+    const homeProb = (match.predictions && match.predictions.home) || 45;
+    const awayProb = (match.predictions && match.predictions.away) || 30;
+
     // Choose tip from user selected markets or fall back to defaults
     let tip = "Over 1.5 Goals";
     if (userMarkets.length > 0) {
       tip = userMarkets[i % userMarkets.length];
     } else {
       if (i % 3 === 0) tip = "Over 1.5 Goals";
-      else if (i % 3 === 1) tip = match.predictions.home > match.predictions.away ? `${match.homeTeam.name} Win` : `${match.awayTeam.name} Win`;
+      else if (i % 3 === 1) tip = homeProb > awayProb ? `${homeName} Win` : `${awayName} Win`;
       else tip = "Both Teams to Score";
     }
 
@@ -2242,8 +2260,8 @@ function generateMachineTicket() {
     combinedOdds *= baseOdds;
 
     ticketSelections.push({
-      fixture: `${match.homeTeam.name} vs ${match.awayTeam.name}`,
-      league: match.league,
+      fixture: `${homeName} vs ${awayName}`,
+      league: leagueName,
       market: tip,
       prediction: tip,
       sourceOdds: baseOdds,
@@ -2254,9 +2272,9 @@ function generateMachineTicket() {
     row.className = "ticket-row";
     row.innerHTML = `
       <div>
-        <div style="font-weight: 700; color: var(--text-primary);">${match.homeTeam.name} - ${match.awayTeam.name} ${i >= availableMatches.length ? `<span style="font-size:0.65rem; color:var(--text-muted);">(Match #${i + 1})</span>` : ''}</div>
+        <div style="font-weight: 700; color: var(--text-primary);">${homeName} - ${awayName} ${i >= availableMatches.length ? `<span style="font-size:0.65rem; color:var(--text-muted);">(Match #${i + 1})</span>` : ''}</div>
         <div style="font-size: 0.75rem; color: var(--primary); font-weight: 600; margin-top: 2px;">
-          ${match.leagueEmoji} ${match.league} • Market: <b>${tip}</b>
+          ${leagueEmoji} ${leagueName} • Market: <b>${tip}</b>
         </div>
       </div>
       <div style="font-family: var(--font-display); font-weight: 700; color: var(--secondary); font-size: 1rem;">
@@ -2286,13 +2304,12 @@ function generateMachineTicket() {
   const totalOddsEl = document.getElementById("ticket-total-odds");
   const totalReturnEl = document.getElementById("ticket-total-return");
 
-  if (totalOddsEl && totalReturnEl) {
+  if (totalOddsEl) {
     totalOddsEl.innerText = `@${combinedOdds.toFixed(2)}`;
-    totalReturnEl.innerText = `${(combinedOdds * 10).toFixed(2)}`;
   }
-
-  footer.style.display = "flex";
-  
+  if (totalReturnEl) {
+    totalReturnEl.innerText = `$${(10 * combinedOdds).toFixed(2)}`;
+  }
   const engineCard = document.getElementById("engine-card-container");
   if (engineCard) {
     engineCard.style.display = "flex";
