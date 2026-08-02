@@ -501,7 +501,17 @@ function switchTool(toolId, btn) {
   
   const buttons = suiteSec.querySelectorAll(".tabs-container > .tab-btn");
   buttons.forEach(b => b.classList.remove("active"));
-  btn.classList.add("active");
+  
+  if (!btn) {
+    btn = Array.from(buttons).find(b => {
+      const attr = b.getAttribute("onclick");
+      return attr && attr.includes(`'${toolId}'`);
+    }) || buttons[0];
+  }
+
+  if (btn && btn.classList) {
+    btn.classList.add("active");
+  }
 
   // Hide all panes
   const panes = suiteSec.querySelectorAll(".tool-content-pane");
@@ -528,11 +538,14 @@ function switchTool(toolId, btn) {
 
 // Switch between Live In-Play and Pre-Match Odds scanner modes
 function switchScannerMode(mode, btn) {
+  if (!btn) return;
   // Update button active state
   const parent = btn.parentElement;
-  const buttons = parent.querySelectorAll(".tab-btn");
-  buttons.forEach(b => b.classList.remove("active"));
-  btn.classList.add("active");
+  if (parent) {
+    const buttons = parent.querySelectorAll(".tab-btn");
+    buttons.forEach(b => b.classList.remove("active"));
+  }
+  if (btn.classList) btn.classList.add("active");
 
   // Get table header and container
   const header = document.getElementById("scanner-table-header");
@@ -1550,18 +1563,22 @@ function toggleSidebarTopLeaguesAccordion(index, header) {
 
 // Scouting clubs for this top league
 function scoutLeagueClubs(leagueName, btn) {
-  const allLeagueBtns = document.querySelectorAll(".sidebar-league-btn");
-  allLeagueBtns.forEach(b => b.classList.remove("active"));
-  btn.classList.add("active");
+  if (btn) {
+    const allLeagueBtns = document.querySelectorAll(".sidebar-league-btn");
+    allLeagueBtns.forEach(b => b.classList.remove("active"));
+    if (btn.classList) btn.classList.add("active");
+  }
 
   alert(`🔍 Gathering scout statistics for ${leagueName}... Select a match on the dashboard to chat with the AI Scout chatbot!`);
 }
 
 // Navigate and highlight league in stats table ledger
 function viewLeagueStatisticsLedger(leagueName, btn) {
-  const allLeagueBtns = document.querySelectorAll(".sidebar-league-btn");
-  allLeagueBtns.forEach(b => b.classList.remove("active"));
-  btn.classList.add("active");
+  if (btn) {
+    const allLeagueBtns = document.querySelectorAll(".sidebar-league-btn");
+    allLeagueBtns.forEach(b => b.classList.remove("active"));
+    if (btn.classList) btn.classList.add("active");
+  }
 
   const ledgerSec = document.getElementById("analytics");
   if (ledgerSec) {
@@ -1584,9 +1601,11 @@ function viewLeagueStatisticsLedger(leagueName, btn) {
 
 // Open mock modal with standings table list for this league
 function showMockTableStandings(leagueName, btn) {
-  const allLeagueBtns = document.querySelectorAll(".sidebar-league-btn");
-  allLeagueBtns.forEach(b => b.classList.remove("active"));
-  btn.classList.add("active");
+  if (btn) {
+    const allLeagueBtns = document.querySelectorAll(".sidebar-league-btn");
+    allLeagueBtns.forEach(b => b.classList.remove("active"));
+    if (btn.classList) btn.classList.add("active");
+  }
 
   // Create overlay/modal for standings table dynamically
   const modal = document.createElement("div");
