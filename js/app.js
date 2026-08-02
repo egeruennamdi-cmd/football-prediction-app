@@ -1413,11 +1413,15 @@ document.addEventListener("DOMContentLoaded", () => {
 function filterMatches(filterType, btn) {
   window.appState.currentFilter = filterType;
 
-  // Toggle active styling
-  const tabContainer = btn.parentElement;
-  const buttons = tabContainer.querySelectorAll(".tab-btn");
-  buttons.forEach(b => b.classList.remove("active"));
-  btn.classList.add("active");
+  if (btn) {
+    // Toggle active styling
+    const tabContainer = btn.parentElement;
+    if (tabContainer) {
+      const buttons = tabContainer.querySelectorAll(".tab-btn");
+      buttons.forEach(b => b.classList.remove("active"));
+    }
+    if (btn.classList) btn.classList.add("active");
+  }
 
   let filtered = MATCH_DATA;
   if (filterType === 'live') {
@@ -2712,15 +2716,21 @@ function copyDailyTipOdds(odd) {
 function switchPredictionDate(dateVal, btn) {
   window.appState.activePredictionDate = dateVal;
 
-  // Toggle active date buttons styling
-  const parent = btn.parentElement;
-  const buttons = parent.querySelectorAll(".date-btn");
-  buttons.forEach(b => {
-    b.classList.remove("btn-primary");
-    b.classList.add("btn-secondary");
-  });
-  btn.classList.add("btn-primary");
-  btn.classList.remove("btn-secondary");
+  if (btn) {
+    // Toggle active date buttons styling
+    const parent = btn.parentElement;
+    if (parent) {
+      const buttons = parent.querySelectorAll(".date-btn");
+      buttons.forEach(b => {
+        b.classList.remove("btn-primary");
+        b.classList.add("btn-secondary");
+      });
+    }
+    if (btn.classList) {
+      btn.classList.add("btn-primary");
+      btn.classList.remove("btn-secondary");
+    }
+  }
 
   // Update title
   const matchesTitle = document.getElementById("matches-section-title");
@@ -2748,10 +2758,14 @@ function filterMarketSubmenu(marketVal, btn) {
   window.appState.activeMarketSubmenu = marketVal;
   window.appState.activeTopTip = 'all';
 
-  const parent = btn.parentElement;
-  const buttons = parent.querySelectorAll(".tab-btn");
-  buttons.forEach(b => b.classList.remove("active"));
-  btn.classList.add("active");
+  if (btn) {
+    const parent = btn.parentElement;
+    if (parent) {
+      const buttons = parent.querySelectorAll(".tab-btn");
+      buttons.forEach(b => b.classList.remove("active"));
+    }
+    if (btn.classList) btn.classList.add("active");
+  }
 
   updateFixturesDisplay();
 }
@@ -2761,10 +2775,14 @@ function filterTopTip(topTipVal, btn) {
   window.appState.activeTopTip = topTipVal;
   window.appState.activeMarketSubmenu = 'toptips';
 
-  const parent = btn.parentElement;
-  const buttons = parent.querySelectorAll(".tab-btn");
-  buttons.forEach(b => b.classList.remove("active"));
-  btn.classList.add("active");
+  if (btn) {
+    const parent = btn.parentElement;
+    if (parent) {
+      const buttons = parent.querySelectorAll(".tab-btn");
+      buttons.forEach(b => b.classList.remove("active"));
+    }
+    if (btn.classList) btn.classList.add("active");
+  }
 
   updateFixturesDisplay();
 }
