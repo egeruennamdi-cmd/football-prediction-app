@@ -495,7 +495,14 @@ function toggleCheckboxCard(card, event) {
 
 // Switch between tools in BetMines Betting Suite
 function switchTool(toolId, btn) {
-  // Switch tab buttons active class
+  // If user is on another view, ensure view-generator is active
+  const genView = document.getElementById("view-generator");
+  if (genView && !genView.classList.contains("active")) {
+    const allViews = document.querySelectorAll(".page-view");
+    allViews.forEach(v => v.classList.remove("active"));
+    genView.classList.add("active");
+  }
+
   const suiteSec = document.getElementById("betmines-tools");
   if (!suiteSec) return;
   
@@ -532,6 +539,8 @@ function switchTool(toolId, btn) {
       if (typeof renderTopTipsTool === 'function') renderTopTipsTool();
     } else if (toolId === 'backtester') {
       if (typeof syncBacktesterPremiumState === 'function') syncBacktesterPremiumState();
+    } else if (toolId === 'machine' || toolId === 'generator') {
+      if (typeof generateMachineTicket === 'function') generateMachineTicket();
     }
   }
 }

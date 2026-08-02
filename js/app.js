@@ -2195,15 +2195,19 @@ function generateMachineTicket() {
   const footer = document.getElementById("ticket-footer-container");
   if (!body || !footer) return;
 
-  // Gather criteria
-  const maxOdds = parseFloat(document.getElementById("odds-max-slider").value);
-  const count = parseInt(document.getElementById("machine-match-count").value);
+  // Gather criteria safely
+  const oddsEl = document.getElementById("odds-max-slider");
+  const maxOdds = oddsEl ? parseFloat(oddsEl.value) || 2.40 : 2.40;
+
+  const countEl = document.getElementById("machine-match-count");
+  const count = countEl ? parseInt(countEl.value) || 5 : 5;
   
   // Gather user selected markets
   const selectedMarketEls = document.querySelectorAll(".form-checkbox-group .checkbox-card.selected span");
   const userMarkets = Array.from(selectedMarketEls).map(el => el.innerText.trim());
 
-  const availableMatches = [...MATCH_DATA];
+  const availableMatches = [...(typeof MATCH_DATA !== 'undefined' ? MATCH_DATA : window.MATCH_DATA || [])];
+  if (availableMatches.length === 0) return;
   
   // Shuffle available matches
   for (let i = availableMatches.length - 1; i > 0; i--) {
