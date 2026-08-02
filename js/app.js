@@ -1452,7 +1452,7 @@ function filterMatches(filterType, btn) {
 }
 
 // Route sidebar and menu tool buttons to target suite pane
-function triggerToolRoute(toolId, scannerMode) {
+window.triggerToolRoute = function triggerToolRoute(toolId, scannerMode) {
   // Ensure view-generator page view is active
   const genView = document.getElementById("view-generator");
   if (genView && !genView.classList.contains("active")) {
@@ -2137,23 +2137,23 @@ function syncBacktesterPremiumState() {
 }
 
 // Update odds range text val on slider input
-function updateOddsSliderVal(val) {
+window.updateOddsSliderVal = function updateOddsSliderVal(val) {
   const label = document.getElementById("odds-range-val");
   if (label) {
     label.innerText = `1.20 - ${parseFloat(val).toFixed(2)}`;
   }
-}
+};
 
 // Update probability range text val on slider input
-function updateProbSliderVal(val) {
+window.updateProbSliderVal = function updateProbSliderVal(val) {
   const label = document.getElementById("prob-range-val");
   if (label) {
     label.innerText = `[${val}% - 100%]`;
   }
-}
+};
 
 // BetMines Machine slip generation logic
-function generateMachineTicket() {
+window.generateMachineTicket = function generateMachineTicket() {
   const body = document.getElementById("ticket-body-container");
   const footer = document.getElementById("ticket-footer-container");
   if (!body || !footer) return;

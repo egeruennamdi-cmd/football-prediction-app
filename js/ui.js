@@ -494,7 +494,7 @@ function toggleCheckboxCard(card, event) {
 }
 
 // Switch between tools in BetMines Betting Suite
-function switchTool(toolId, btn) {
+window.switchTool = function switchTool(toolId, btn) {
   // If user is on another view, ensure view-generator is active
   const genView = document.getElementById("view-generator");
   if (genView && !genView.classList.contains("active")) {
