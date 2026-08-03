@@ -5,9 +5,9 @@
   "type": "module",
   "main": "index.html",
   "scripts": {
-    "dev": "vite",
-    "build": "vite build",
-    "build:frontend": "vite build",
+    "dev": "node scripts/sync-public.js && vite",
+    "build": "node scripts/sync-public.js && vite build",
+    "build:frontend": "node scripts/sync-public.js && vite build",
     "build:backend": "cd backend && npm install && npx prisma generate && npm run build",
     "start": "node backend/dist/server.js",
     "preview": "vite preview"
