@@ -1,3 +1,17 @@
+// Safe Ready Helper - Guarantees execution regardless of script load timing
+function runOnReady(fn) {
+  if (typeof document !== 'undefined' && (document.readyState === 'interactive' || document.readyState === 'complete')) {
+    setTimeout(fn, 0);
+  } else if (typeof document !== 'undefined') {
+    document.addEventListener("DOMContentLoaded", fn);
+  } else {
+    setTimeout(fn, 0);
+  }
+}
+if (typeof window !== 'undefined') {
+  window.runOnReady = runOnReady;
+}
+
 // Central Controller for KickAI
 
 // Standalone BetPaddi Bookmakers Data (Complete 50 Global Bookmakers Suite)
@@ -87,40 +101,7 @@ window.appState = {
   searchFilter: null
 }
 
-// Expose BetPaddi functions globally
-window.togglePaddiDropdown = togglePaddiDropdown;
-window.selectPaddiBookmaker = selectPaddiBookmaker;
-window.selectConverterBookmaker = selectConverterBookmaker;
-window.initBetPaddiConverter = initBetPaddiConverter;
-window.convertBetSlipCode = convertBetSlipCode;
-
-// Expose app.js functions globally
-window.applyBarTopTip = applyBarTopTip;
-window.createScannerRule = createScannerRule;
-window.removeScannerRule = removeScannerRule;
-window.filterMarketSubmenu = filterMarketSubmenu;
-window.filterMatches = filterMatches;
-window.filterTopTip = filterTopTip;
-window.generateMachineTicket = generateMachineTicket;
-window.runAdvancedFilters = runAdvancedFilters;
-window.runBacktestSimulation = runBacktestSimulation;
-window.saveGeneratedTicket = saveGeneratedTicket;
-window.submitPunterTip = submitPunterTip;
-window.toggleTelegramAlerts = toggleTelegramAlerts;
-window.triggerMatchPreview = triggerMatchPreview;
-window.triggerQuickFilter = triggerQuickFilter;
-window.triggerToolRoute = triggerToolRoute;
-window.triggerTopTipFilter = triggerTopTipFilter;
-window.triggerWatchlistFilter = triggerWatchlistFilter;
-window.unlockPremiumPlan = unlockPremiumPlan;
-window.updateBarDate = updateBarDate;
-window.copyGeneratedTicketCode = copyGeneratedTicketCode;
-window.copyEngineSourceCode = copyEngineSourceCode;
-window.copyEngineTargetCode = copyEngineTargetCode;
-window.runEngineConversion = runEngineConversion;
-window.closeSubmitTipModal = closeSubmitTipModal;
-window.openModalSubmitTip = openModalSubmitTip;
-window.sendScoutMessage = sendScoutMessage;
+// 
 
 // --- FLOATING ACCUMULATOR BETSLIP BUILDER FUNCTIONS ---
 
@@ -2119,6 +2100,1011 @@ function triggerHeroScoutPrompt() {
 
   const text = heroInput.value.trim();
 }
+
+function filterMarketSubmenu(marketVal, btn) {
+  window.appState.activeMarketSubmenu = marketVal;
+  window.appState.activeTopTip = 'all';
+
+  const parent = btn.parentElement;
+  const buttons = parent.querySelectorAll(".tab-btn");
+  buttons.forEach(b => b.classList.remove("active"));
+  btn.classList.add("active");
+
+  updateFixturesDisplay();
+}
+
+// Filter matches by specific Top Tips markets
+function filterTopTip(topTipVal, btn) {
+  window.appState.activeTopTip = topTipVal;
+  window.appState.activeMarketSubmenu = 'toptips';
+
+  const parent = btn.parentElement;
+  const buttons = parent.querySelectorAll(".tab-btn");
+  buttons.forEach(b => b.classList.remove("active"));
+  btn.classList.add("active");
+
+  updateFixturesDisplay();
+}
+
+// Route navbar flyout Top Tips clicks directly to dashboard and select target top tips tab
+function triggerTopTipFilter(dateVal, topTipVal) {
+  window.appState.activePredictionDate = dateVal;
+
+  const mainMarkets = ['1x2', 'btts', 'overunder', 'doublechance'];
+  if (mainMarkets.includes(topTipVal)) {
+    window.appState.activeMarketSubmenu = topTipVal;
+    window.appState.activeTopTip = 'all';
+  } else {
+    window.appState.activeMarketSubmenu = 'toptips';
+    window.appState.activeTopTip = topTipVal;
+  }
+
+  // Reset tab filter to 'all'
+  window.appState.currentFilter = 'all';
+  const mainFilterBtns = document.querySelectorAll("#predictions .section-header .tab-btn");
+  mainFilterBtns.forEach(btn => btn.classList.remove("active"));
+  mainFilterBtns.forEach(btn => {
+    const handler = btn.getAttribute("onclick");
+    if (handler && handler.includes("'all'")) {
+      btn.classList.add("active");
+    }
+  });
+
+  // Sync date buttons in DOM
+  if (typeof renderBetMinesDateBar === 'function') {
+    renderBetMinesDateBar();
+  }
+
+  // Update title
+  const matchesTitle = document.getElementById("matches-section-title");
+  if (matchesTitle) {
+    matchesTitle.innerText = dateVal === 'yesterday' ? "Yesterday's Results" : (dateVal === 'today' ? "Today's Predictions" : "Tomorrow's Predictions");
+  }
+
+  // Sync market submenu tabs
+  const marketSubTabs = document.querySelectorAll("#market-submenus-container .tab-btn");
+  marketSubTabs.forEach(b => b.classList.remove("active"));
+  
+  if (mainMarkets.includes(topTipVal)) {
+    // Find corresponding button in main markets submenu
+    const targetSubMenuBtn = Array.from(marketSubTabs).find(b => {
+      const attr = b.getAttribute("onclick");
+      return attr && attr.includes(topTipVal);
+    });
+    if (targetSubMenuBtn) targetSubMenuBtn.classList.add("active");
+  } else {
+    // Find corresponding top tip button in main markets submenu
+    const targetTopTipBtn = Array.from(marketSubTabs).find(b => {
+      const attr = b.getAttribute("onclick");
+      return attr && attr.includes(`'${topTipVal}'`);
+    });
+    if (targetTopTipBtn) targetTopTipBtn.classList.add("active");
+  }
+
+  // Call main filter logic
+  updateFixturesDisplay();
+
+  // Scroll smoothly down to the dashboard
+  const target = document.getElementById("predictions");
+  if (target) {
+    target.scrollIntoView({ behavior: 'smooth' });
+  }
+}
+
+// State for the horizontal filter bar
+window.barState = {
+  date: 'today',
+  tip: 'uo15'
+};
+
+function updateBarDate(dateVal, btn) {
+  window.barState.date = dateVal;
+  
+  // Update date button active states
+  const parent = btn.parentElement;
+  const buttons = parent.querySelectorAll(".tab-btn");
+  buttons.forEach(b => b.classList.remove("active"));
+  btn.classList.add("active");
+
+  // Automatically trigger the filter
+  triggerTopTipFilter(window.barState.date, window.barState.tip);
+}
+
+function applyBarTopTip(tipVal, btn) {
+  window.barState.tip = tipVal;
+
+  // Update tip button active states
+  const parent = btn.parentElement;
+  const buttons = parent.querySelectorAll(".btn");
+  buttons.forEach(b => {
+    b.classList.remove("btn-primary");
+    b.classList.add("btn-secondary");
+  });
+  btn.classList.remove("btn-secondary");
+  btn.classList.add("btn-primary");
+
+  // Automatically trigger the filter
+  triggerTopTipFilter(window.barState.date, window.barState.tip);
+}
+
+function triggerMatchPreview(leagueName, btn) {
+  // Update active styling for previews bar
+  const parent = btn.parentElement;
+  const buttons = parent.querySelectorAll(".btn");
+  buttons.forEach(b => {
+    b.classList.remove("btn-primary");
+    b.classList.add("btn-secondary");
+  });
+  btn.classList.remove("btn-secondary");
+  btn.classList.add("btn-primary");
+
+  // Sync date to today or whichever date has matches for this league
+  const matchedMatch = MATCH_DATA.find(m => m.league.toLowerCase() === leagueName.toLowerCase());
+  if (matchedMatch) {
+    const dateVal = matchedMatch.date;
+    window.appState.activePredictionDate = dateVal;
+    
+    // Sync timeline date selectors
+    if (typeof renderBetMinesDateBar === 'function') {
+      renderBetMinesDateBar();
+    }
+
+    const matchesTitle = document.getElementById("matches-section-title");
+    if (matchesTitle) {
+      if (dateVal === 'yesterday') {
+        matchesTitle.innerText = "Yesterday's Results";
+      } else if (dateVal === 'today') {
+        matchesTitle.innerText = "Today's Predictions";
+      } else {
+        matchesTitle.innerText = "Tomorrow's Predictions";
+      }
+    }
+
+    // Sync horizontal date selector
+    const barDateContainer = document.getElementById("bar-date-selector");
+    if (barDateContainer) {
+      const buttons = barDateContainer.querySelectorAll(".tab-btn");
+      buttons.forEach(b => b.classList.remove("active"));
+      const activeBarBtn = Array.from(buttons).find(b => b.innerText.toLowerCase() === dateVal.toLowerCase());
+      if (activeBarBtn) activeBarBtn.classList.add("active");
+    }
+
+    // Also sync the Calendar hub date select
+    const calDateSelect = document.getElementById("cal-date-select");
+    if (calDateSelect) {
+      calDateSelect.value = dateVal;
+    }
+  }
+
+  // Set the league filter in appState
+  window.appState.calLeague = leagueName;
+  window.appState.calCountry = 'all';
+  window.appState.calTeam = 'all';
+
+  // Sync Calendar selector in UI
+  const leagueSelect = document.getElementById("cal-league-select");
+  if (leagueSelect) {
+    leagueSelect.value = leagueName;
+  }
+  const countrySelect = document.getElementById("cal-country-select");
+  if (countrySelect) {
+    countrySelect.value = 'all';
+  }
+  const teamSelect = document.getElementById("cal-team-select");
+  if (teamSelect) {
+    teamSelect.value = 'all';
+  }
+
+  // Reset search filter
+  window.appState.searchFilter = null;
+  const searchInput = document.getElementById("timeline-search-input");
+  if (searchInput) {
+    searchInput.value = "";
+  }
+
+  // Render
+  updateFixturesDisplay();
+
+  // Scroll down smoothly to dashboard predictions
+  const target = document.getElementById("predictions");
+  if (target) {
+    target.scrollIntoView({ behavior: 'smooth' });
+  }
+
+  // Open the newly integrated League Preview Hub containing predictions, odds, and results tabs!
+  if (typeof openLeaguePreviewHub === 'function') {
+    setTimeout(() => {
+      openLeaguePreviewHub(leagueName, 'predictions');
+    }, 250);
+  }
+}
+
+function populateSearchSuggestions() {
+  const datalist = document.getElementById("search-suggestions");
+  if (!datalist) return;
+  datalist.innerHTML = "";
+
+  const suggestions = new Set();
+
+  // Add countries
+  const countries = ["England", "Spain", "Germany", "Italy", "France"];
+  countries.forEach(c => suggestions.add(c));
+
+  // Extract from MATCH_DATA
+  MATCH_DATA.forEach(match => {
+    if (match.homeTeam && match.homeTeam.name) suggestions.add(match.homeTeam.name);
+    if (match.awayTeam && match.awayTeam.name) suggestions.add(match.awayTeam.name);
+    if (match.league) suggestions.add(match.league);
+  });
+
+  // Populate datalist options
+  suggestions.forEach(item => {
+    const opt = document.createElement("option");
+    opt.value = item;
+    datalist.appendChild(opt);
+  });
+}
+
+function handleSearchSelect(val) {
+  if (!val || val.trim() === "") {
+    window.appState.searchFilter = null;
+    updateFixturesDisplay();
+    return;
+  }
+  
+  const searchVal = val.toLowerCase().trim();
+  window.appState.searchFilter = searchVal;
+  
+  // Find a matching match to auto-shift date if needed
+  const getCountry = (league) => {
+    if (league.includes("Premier League")) return "england";
+    if (league.includes("La Liga")) return "spain";
+    if (league.includes("Bundesliga")) return "germany";
+    if (league.includes("Serie A")) return "italy";
+    if (league.includes("Ligue")) return "france";
+    return "";
+  };
+
+  const matchedMatch = MATCH_DATA.find(m => {
+    return m.homeTeam.name.toLowerCase().includes(searchVal) ||
+           m.awayTeam.name.toLowerCase().includes(searchVal) ||
+           m.league.toLowerCase().includes(searchVal) ||
+           getCountry(m.league).includes(searchVal);
+  });
+
+  if (matchedMatch) {
+    // Sync date timeline
+    window.appState.activePredictionDate = matchedMatch.date;
+    
+    // Update timeline date cards styling
+    if (typeof renderBetMinesDateBar === 'function') {
+      renderBetMinesDateBar();
+    }
+  }
+
+  // Update the fixtures display
+  updateFixturesDisplay();
+
+  // Scroll down smoothly to matches section
+  const target = document.getElementById("predictions");
+  if (target) {
+    target.scrollIntoView({ behavior: 'smooth' });
+  }
+}
+
+function getOrdinalDate(dateOffset) {
+  const d = new Date();
+  d.setDate(d.getDate() + dateOffset);
+  
+  const day = d.getDate();
+  const months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+  const month = months[d.getMonth()];
+  
+  let suffix = "th";
+  if (day === 1 || day === 21 || day === 31) suffix = "st";
+  else if (day === 2 || day === 22) suffix = "nd";
+  else if (day === 3 || day === 23) suffix = "rd";
+  
+  return `${day}${suffix} ${month}`;
+}
+
+function populateCalSelectors() {
+  const dateSelect = document.getElementById("cal-date-select");
+  const countrySelect = document.getElementById("cal-country-select");
+  const leagueSelect = document.getElementById("cal-league-select");
+  const teamSelect = document.getElementById("cal-team-select");
+  if (!countrySelect || !leagueSelect || !teamSelect) return;
+
+  if (dateSelect) {
+    dateSelect.innerHTML = `
+      <option value="today">${getOrdinalDate(0)} (Today)</option>
+      <option value="tomorrow">${getOrdinalDate(1)} (Tomorrow)</option>
+      <option value="yesterday">${getOrdinalDate(-1)} (Yesterday)</option>
+    `;
+  }
+
+  // Populate the date button labels in `#bar-date-selector` inside the sidebar
+  const barDateContainer = document.getElementById("bar-date-selector");
+  if (barDateContainer) {
+    const buttons = barDateContainer.querySelectorAll(".tab-btn");
+    if (buttons.length >= 3) {
+      buttons[0].innerText = `${getOrdinalDate(-1)} (Yesterday)`;
+      buttons[1].innerText = `${getOrdinalDate(0)} (Today)`;
+      buttons[2].innerText = `${getOrdinalDate(1)} (Tomorrow)`;
+    }
+  }
+
+  const filtLeagueSelect = document.getElementById("filt-league-select");
+
+  countrySelect.innerHTML = `<option value="all">All Countries</option>`;
+  leagueSelect.innerHTML = `<option value="all">All Leagues</option>`;
+  if (filtLeagueSelect) {
+    filtLeagueSelect.innerHTML = `<option value="all">All Leagues</option>`;
+  }
+  teamSelect.innerHTML = `<option value="all">All Teams</option>`;
+
+  // Populate countries dynamically from COUNTRY_LEAGUES_DATA
+  if (typeof COUNTRY_LEAGUES_DATA !== 'undefined') {
+    COUNTRY_LEAGUES_DATA.forEach(item => {
+      const opt = document.createElement("option");
+      opt.value = item.country;
+      opt.innerText = `${item.emoji} ${item.country}`;
+      countrySelect.appendChild(opt);
+    });
+  }
+
+  const leagues = new Set();
+  const teams = new Set();
+
+  // Add all leagues from TOP_LEAGUES_DATA
+  if (typeof TOP_LEAGUES_DATA !== 'undefined') {
+    TOP_LEAGUES_DATA.forEach(l => leagues.add(l.name));
+  }
+
+  // Add active leagues from MATCH_DATA
+  MATCH_DATA.forEach(match => {
+    if (match.league) leagues.add(match.league);
+    if (match.homeTeam && match.homeTeam.name) teams.add(match.homeTeam.name);
+    if (match.awayTeam && match.awayTeam.name) teams.add(match.awayTeam.name);
+  });
+
+  leagues.forEach(l => {
+    // Find matching emoji parameter from TOP_LEAGUES_DATA
+    let emojiStr = "⚽";
+    if (typeof TOP_LEAGUES_DATA !== 'undefined') {
+      const found = TOP_LEAGUES_DATA.find(tl => tl.name === l);
+      if (found && found.emoji) emojiStr = found.emoji;
+    }
+
+    const opt = document.createElement("option");
+    opt.value = l;
+    opt.innerText = `${emojiStr} ${l}`;
+    leagueSelect.appendChild(opt);
+
+    if (filtLeagueSelect) {
+      const optFilt = document.createElement("option");
+      optFilt.value = l;
+      optFilt.innerText = `${emojiStr} ${l}`;
+      filtLeagueSelect.appendChild(optFilt);
+    }
+  });
+
+  teams.forEach(t => {
+    const opt = document.createElement("option");
+    opt.value = t;
+    
+    // Fetch custom emblem logo from MATCH_DATA
+    let logoStr = "";
+    const foundMatch = MATCH_DATA.find(m => (m.homeTeam && m.homeTeam.name === t) || (m.awayTeam && m.awayTeam.name === t));
+    if (foundMatch) {
+      if (foundMatch.homeTeam && foundMatch.homeTeam.name === t) {
+        logoStr = foundMatch.homeTeam.logo || "";
+      } else if (foundMatch.awayTeam && foundMatch.awayTeam.name === t) {
+        logoStr = foundMatch.awayTeam.logo || "";
+      }
+    }
+    
+    opt.innerText = logoStr ? `${logoStr} ${t}` : t;
+    teamSelect.appendChild(opt);
+  });
+}
+
+function runCalFilter() {
+  const dateVal = document.getElementById("cal-date-select").value;
+  const countryVal = document.getElementById("cal-country-select").value;
+  const leagueVal = document.getElementById("cal-league-select").value;
+  const teamVal = document.getElementById("cal-team-select").value;
+
+  window.appState.activePredictionDate = dateVal;
+  window.appState.calCountry = countryVal;
+  window.appState.calLeague = leagueVal;
+  window.appState.calTeam = teamVal;
+
+  // Sync date buttons in DOM
+  if (typeof renderBetMinesDateBar === 'function') {
+    renderBetMinesDateBar();
+  }
+
+  // Update the fixtures display
+  updateFixturesDisplay();
+
+  // Scroll down smoothly to matches section
+  const target = document.getElementById("predictions");
+  if (target) {
+    target.scrollIntoView({ behavior: 'smooth' });
+  }
+}
+
+// Trigger quick filter parameters from the header nav dropdown
+function triggerQuickFilter(dateVal, marketVal) {
+  window.appState.activePredictionDate = dateVal;
+  window.appState.activeMarketSubmenu = marketVal;
+
+  // Reset tab filter to 'all'
+  window.appState.currentFilter = 'all';
+  const mainFilterBtns = document.querySelectorAll("#predictions .section-header .tab-btn");
+  mainFilterBtns.forEach(btn => btn.classList.remove("active"));
+  mainFilterBtns.forEach(btn => {
+    const handler = btn.getAttribute("onclick");
+    if (handler && handler.includes("'all'")) {
+      btn.classList.add("active");
+    }
+  });
+
+  // Sync date selector buttons in DOM
+  if (typeof renderBetMinesDateBar === 'function') {
+    renderBetMinesDateBar();
+  }
+
+  // Update title
+  const matchesTitle = document.getElementById("matches-section-title");
+  if (matchesTitle) {
+    if (dateVal === 'yesterday') {
+      matchesTitle.innerText = "Yesterday's Results";
+      const cornersTab = document.getElementById("market-sub-corners");
+      if (cornersTab) cornersTab.style.display = "none";
+    } else if (dateVal === 'today') {
+      matchesTitle.innerText = "Today's Predictions";
+      const cornersTab = document.getElementById("market-sub-corners");
+      if (cornersTab) cornersTab.style.display = "block";
+    } else {
+      matchesTitle.innerText = "Tomorrow's Predictions";
+      const cornersTab = document.getElementById("market-sub-corners");
+      if (cornersTab) cornersTab.style.display = "block";
+    }
+  }
+
+  // Hide Top Tips tray
+  const topTipsBar = document.getElementById("toptips-bar-container");
+  if (topTipsBar) topTipsBar.style.display = "none";
+
+  // Sync market submenu subtabs in DOM
+  const marketSubTabs = document.querySelectorAll("#market-submenus-container > .tab-btn");
+  marketSubTabs.forEach(b => b.classList.remove("active"));
+
+  // Find tab that triggers this marketVal
+  marketSubTabs.forEach(tab => {
+    const clickHandler = tab.getAttribute("onclick");
+    if (clickHandler && clickHandler.includes(`'${marketVal}'`)) {
+      tab.classList.add("active");
+    }
+  });
+
+  // Call main filter logic
+  updateFixturesDisplay();
+
+  // Scroll smoothly down to the dashboard
+  const target = document.getElementById("predictions");
+  if (target) {
+    target.scrollIntoView({ behavior: 'smooth' });
+  }
+}
+
+// Unified filtering pipeline
+function updateFixturesDisplay() {
+  let filtered = MATCH_DATA;
+
+  // 1. Date Filter
+  const dateFilterVal = window.appState.activePredictionDate.startsWith('future-') ? 'tomorrow' : window.appState.activePredictionDate;
+  filtered = filtered.filter(m => m.date === dateFilterVal);
+
+  // 2. Tab Filter
+  const tabFilter = window.appState.currentFilter || 'all';
+  if (tabFilter === 'live') {
+    filtered = filtered.filter(m => m.isLive);
+  } else if (tabFilter === 'premium') {
+    filtered = filtered.filter(m => m.isPremium);
+  } else if (tabFilter === 'upcoming') {
+    filtered = filtered.filter(m => !m.isLive && m.time !== 'FT');
+  } else if (tabFilter === 'watchlist') {
+    filtered = filtered.filter(m => window.appState.watchlist.includes(m.id));
+  }
+
+  // 3. Market Submenu Filter
+  const marketVal = window.appState.activeMarketSubmenu || 'all';
+  if (marketVal === 'toptips') {
+    // Filter by Top Tips Classification
+    const targetTopTip = window.appState.activeTopTip || 'all';
+    if (targetTopTip !== 'all') {
+      filtered = filtered.filter(m => {
+        if (m.topTips && m.topTips.includes(targetTopTip)) return true;
+        const tip = getMatchTip(m).toLowerCase();
+        if (targetTopTip === 'dnb') return tip.includes("dnb") || tip.includes("draw no bet");
+        if (targetTopTip === 'bttsht') return tip.includes("btts") && tip.includes("ht");
+        if (targetTopTip === 'btts2h') return tip.includes("btts") && tip.includes("2h");
+        if (targetTopTip.startsWith('mg')) return tip.includes("goals") || tip.includes("multi");
+        if (targetTopTip.startsWith('eg')) return tip.includes("goal");
+        if (targetTopTip.startsWith('combo')) return tip.includes("+") || tip.includes("combo") || tip.includes("&");
+        if (targetTopTip.startsWith('htft')) return tip.includes("/") || tip.includes("ht/ft");
+        if (targetTopTip.startsWith('cards') || targetTopTip === 'redcard') return tip.includes("card") || tip.includes("yellow") || tip.includes("red");
+        if (targetTopTip === 'penalty') return tip.includes("penalty");
+        if (targetTopTip.startsWith('ah')) return tip.includes("handicap") || tip.includes("-") || tip.includes("+");
+        return true;
+      });
+    }
+  } else if (marketVal !== 'all') {
+    filtered = filtered.filter(match => {
+      const tip = getMatchTip(match).toLowerCase();
+      if (marketVal === '1x2') {
+        return tip.includes("win") || tip.includes("draw") || tip.includes("(1)") || tip.includes("(x)") || tip.includes("(2)");
+      } else if (marketVal === 'overunder') {
+        return tip.includes("over") || tip.includes("under") || tip.includes("goals");
+      } else if (marketVal === 'btts') {
+        return tip.includes("btts") || tip.includes("both") || tip.includes("score") || tip.includes("gg") || tip.includes("ng");
+      } else if (marketVal === 'corners') {
+        return tip.includes("corners") || tip.includes("corner");
+      } else if (marketVal === 'doublechance') {
+        return tip.includes("1x") || tip.includes("x2") || tip.includes("12") || tip.includes("double chance");
+      } else if (marketVal === 'dnb') {
+        return tip.includes("dnb") || tip.includes("draw no bet");
+      } else if (marketVal === 'combo') {
+        return tip.includes("combo") || tip.includes("&") || tip.includes("+") || (tip.includes("win") && tip.includes("over"));
+      } else if (marketVal === 'htft') {
+        return tip.includes("ht/ft") || tip.includes("/") || tip.includes("half time") || tip.includes("win either");
+      } else if (marketVal === 'multigoals') {
+        return tip.includes("goals") || tip.includes("multi") || tip.includes("exact");
+      } else if (marketVal === 'teamspec') {
+        return tip.includes("home") || tip.includes("away") || tip.includes("clean sheet") || tip.includes("nil");
+      } else if (marketVal === 'cards') {
+        return tip.includes("card") || tip.includes("yellow") || tip.includes("red") || tip.includes("booking");
+      } else if (marketVal === 'handicap') {
+        return tip.includes("handicap") || tip.includes("asian") || tip.includes("+") || tip.includes("-");
+      }
+      return true;
+    });
+  }
+
+  // 4. Search Filter
+  if (window.appState.searchFilter) {
+    const searchVal = window.appState.searchFilter.toLowerCase().trim();
+    const getCountry = (league) => {
+      if (league.includes("Premier League")) return "england";
+      if (league.includes("La Liga")) return "spain";
+      if (league.includes("Bundesliga")) return "germany";
+      if (league.includes("Serie A")) return "italy";
+      if (league.includes("Ligue")) return "france";
+      return "";
+    };
+
+    filtered = filtered.filter(m => {
+      return m.homeTeam.name.toLowerCase().includes(searchVal) ||
+             m.awayTeam.name.toLowerCase().includes(searchVal) ||
+             m.league.toLowerCase().includes(searchVal) ||
+             getCountry(m.league).includes(searchVal);
+    });
+  }
+
+  // 5. Calendar Box Filter
+  if (window.appState.calCountry && window.appState.calCountry !== 'all') {
+    const getCountry = (league) => {
+      if (league.includes("Premier League")) return "england";
+      if (league.includes("La Liga")) return "spain";
+      if (league.includes("Bundesliga")) return "germany";
+      if (league.includes("Serie A")) return "italy";
+      if (league.includes("Ligue")) return "france";
+      return "";
+    };
+    filtered = filtered.filter(m => getCountry(m.league).toLowerCase() === window.appState.calCountry.toLowerCase());
+  }
+  if (window.appState.calLeague && window.appState.calLeague !== 'all') {
+    filtered = filtered.filter(m => m.league === window.appState.calLeague);
+  }
+  if (window.appState.calTeam && window.appState.calTeam !== 'all') {
+    filtered = filtered.filter(m => m.homeTeam.name === window.appState.calTeam || m.awayTeam.name === window.appState.calTeam);
+  }
+
+  // Render cards or empty alert
+  const grid = document.getElementById("fixtures-grid");
+  if (!grid) return;
+
+  if (filtered.length === 0) {
+    let emptyMsg = "No fixtures found matching these parameters.";
+    if (tabFilter === 'watchlist') {
+      emptyMsg = "Your Watchlist is Empty. Click the star icon (☆) on any match row to monitor it.";
+    } else if (marketVal !== 'all') {
+      const displayMarket = marketVal === 'toptips' ? `Top Tip: ${window.appState.activeTopTip.toUpperCase()}` : marketVal.toUpperCase();
+      emptyMsg = `No predictions matching '${displayMarket}' markets exist for this day.`;
+    }
+    
+    grid.innerHTML = `
+      <div class="glass-card" style="grid-column: 1 / -1; padding: 40px; text-align: center; border: 1px dashed rgba(255,255,255,0.1);">
+        <span style="font-size: 2rem; display: block; margin-bottom: 12px;">📊</span>
+        <h4 style="font-family: var(--font-display); font-size: 1.1rem; margin-bottom: 6px;">No Matches Found</h4>
+        <p style="font-size: 0.85rem; color: var(--text-secondary); max-width: 420px; margin: 0 auto;">${emptyMsg}</p>
+      </div>
+    `;
+  } else {
+    renderMatchCards(filtered);
+  }
+}
+
+// --- AI BET DOCTOR TICKET AUDITOR ENGINE ---
+window.doctorState = {
+  currentSample: 'highrisk',
+  auditedHealth: 58,
+  optimizedHealth: 92,
+  isOptimized: false
+};
+
+function loadDoctorSample(sampleType) {
+  window.doctorState.currentSample = sampleType;
+  window.doctorState.isOptimized = (sampleType === 'safe');
+  const codeInput = document.getElementById("bet-doctor-input-code");
+  if (codeInput) {
+    if (sampleType === 'highrisk') codeInput.value = "BC1A7X-RISK";
+    else if (sampleType === 'moderate') codeInput.value = "BK992-MOD";
+    else codeInput.value = "1XB-SAFE92";
+  }
+  runBetDoctorAudit();
+}
+
+function runBetDoctorAudit() {
+  const container = document.getElementById("bet-doctor-results");
+  if (!container) return;
+
+  const codeVal = document.getElementById("bet-doctor-input-code")?.value || "BC1A7X";
+  const bookieVal = document.getElementById("bet-doctor-bookie-select")?.value || "sportybet";
+  const bookieInfo = typeof getBookieAffiliateInfo === 'function' ? getBookieAffiliateInfo(bookieVal) : { name: 'SportyBet' };
+  const bookieName = bookieInfo.name || 'Bookmaker';
+
+  // Call Live Backend API Server (Port 5000)
+  fetch('http://localhost:5000/api/v1/doctor/audit', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ bookingCode: codeVal, sourceBookie: bookieVal })
+  })
+  .then(res => res.json())
+  .then(apiData => {
+    if (apiData && apiData.success) {
+      console.log('🩺 Audited via Live Backend API Server (Port 5000):', apiData);
+    }
+  })
+  .catch(err => {
+    console.log('Doctor API fallback active:', err.message);
+  });
+
+  const isHighRisk = window.doctorState.currentSample === 'highrisk';
+  const isModerate = window.doctorState.currentSample === 'moderate';
+  const isOptimized = window.doctorState.isOptimized || window.doctorState.currentSample === 'safe';
+
+  const healthScore = isOptimized ? 92 : (isHighRisk ? 58 : 74);
+  const healthColor = healthScore >= 85 ? '#10b981' : (healthScore >= 70 ? '#f59e0b' : '#ef4444');
+  const healthLabel = healthScore >= 85 ? 'EXCELLENT (OPTIMIZED & HIGH WIN RATE)' : (healthScore >= 70 ? 'MODERATE RISK (1 WARNING FLAG)' : 'CRITICAL RISK (2 TRAP MATCHES DETECTED)');
+
+  container.style.display = "flex";
+  container.innerHTML = `
+    <!-- Top Summary Banner -->
+    <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 16px; background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.08); border-radius: var(--radius-md); padding: 16px;">
+      <div style="display: flex; align-items: center; gap: 16px;">
+        <!-- Circular Health Progress Gauge -->
+        <div style="position: relative; width: 68px; height: 68px; display: flex; align-items: center; justify-content: center; background: radial-gradient(circle, ${healthColor}22 0%, transparent 70%); border: 3px solid ${healthColor}; border-radius: 50%; box-shadow: 0 0 16px ${healthColor}44;">
+          <span style="font-size: 1.3rem; font-weight: 900; color: ${healthColor}; font-family: var(--font-display);">${healthScore}%</span>
+        </div>
+        <div>
+          <div style="font-size: 0.72rem; color: var(--text-secondary); font-weight: 700; text-transform: uppercase;">Ticket Health Diagnostic</div>
+          <div style="font-size: 1rem; font-weight: 800; color: ${healthColor}; font-family: var(--font-display);">${healthLabel}</div>
+          <div style="font-size: 0.75rem; color: var(--text-muted); margin-top: 2px;">
+            Auditing Code: <b style="color: #ffffff;">${codeVal}</b> (${bookieName}) &bull; Raw Probability: <b>${isOptimized ? '78.4%' : '34.2%'}</b>
+          </div>
+        </div>
+      </div>
+
+      <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+        ${!isOptimized ? `
+          <button onclick="applyDoctorPrescription()" class="btn btn-primary" style="background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%); border: 1px solid #fbbf24; color: #000; font-weight: 800; font-size: 0.78rem; padding: 10px 16px; box-shadow: 0 4px 14px rgba(245,158,11,0.4); cursor: pointer;">
+            ⚡ Apply AI Prescriptions (+34% Boost)
+          </button>
+        ` : `
+          <span style="background: rgba(16,185,129,0.15); border: 1px solid #10b981; color: #10b981; font-weight: 800; font-size: 0.75rem; padding: 8px 14px; border-radius: 4px; display: flex; align-items: center; gap: 6px;">
+            ✅ Ticket Fully Optimized
+          </span>
+        `}
+        <button onclick="convertAuditedTicket('${codeVal}', '${bookieVal}')" class="btn btn-secondary" style="font-weight: 700; font-size: 0.78rem; padding: 10px 16px; border: 1px solid var(--brand-royal-blue); cursor: pointer;">
+          📲 Convert to 50 Bookies
+        </button>
+      </div>
+    </div>
+
+    <!-- Match Diagnostics List -->
+    <div style="display: flex; flex-direction: column; gap: 10px;">
+      <div style="font-size: 0.8rem; font-weight: 700; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.5px;">
+        🔬 Match-by-Match AI Health Audit
+      </div>
+
+      <!-- Match 1: Safe -->
+      <div style="background: rgba(16,185,129,0.04); border: 1px solid rgba(16,185,129,0.2); border-radius: var(--radius-sm); padding: 12px 16px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px;">
+        <div>
+          <div style="font-weight: 800; font-size: 0.88rem; color: #ffffff;">🏴󠁧󠁢󠁥󠁮󠁧󠁿 Arsenal vs Chelsea</div>
+          <div style="font-size: 0.75rem; color: var(--text-secondary);">Selection: <b>Over 2.5 Goals</b> @ 1.75 odds</div>
+        </div>
+        <div style="text-align: right;">
+          <span style="background: rgba(16,185,129,0.2); color: #34d399; font-weight: 800; font-size: 0.7rem; padding: 4px 8px; border-radius: 4px;">✅ SAFE (84% PROBABILITY)</span>
+          <div style="font-size: 0.7rem; color: var(--text-muted); margin-top: 4px;">Both teams scored 2.4 avg goals in last 6 home/away matches.</div>
+        </div>
+      </div>
+
+      <!-- Match 2: Trap Match -->
+      <div style="background: ${isOptimized ? 'rgba(16,185,129,0.04)' : 'rgba(239,68,68,0.05)'}; border: 1px solid ${isOptimized ? 'rgba(16,185,129,0.2)' : 'rgba(239,68,68,0.3)'}; border-radius: var(--radius-sm); padding: 12px 16px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px;">
+        <div>
+          <div style="font-weight: 800; font-size: 0.88rem; color: #ffffff;">🇪🇸 Real Madrid vs Barcelona</div>
+          <div style="font-size: 0.75rem; color: var(--text-secondary);">Selection: <b>${isOptimized ? 'Double Chance 1X (Prescribed)' : 'Away Win (2) - TRAP PICK'}</b> @ ${isOptimized ? '1.38' : '2.40'} odds</div>
+        </div>
+        <div style="text-align: right;">
+          ${isOptimized ? `
+            <span style="background: rgba(16,185,129,0.2); color: #34d399; font-weight: 800; font-size: 0.7rem; padding: 4px 8px; border-radius: 4px;">✅ OPTIMIZED SAFE (88%)</span>
+            <div style="font-size: 0.7rem; color: var(--text-muted); margin-top: 4px;">Double chance covers Real Madrid home dominance.</div>
+          ` : `
+            <span style="background: rgba(239,68,68,0.2); color: #f87171; font-weight: 800; font-size: 0.7rem; padding: 4px 8px; border-radius: 4px;">⚠️ CRITICAL TRAP DETECTED (42%)</span>
+            <div style="font-size: 0.7rem; color: #f87171; margin-top: 4px;">Barca missing key midfielders; Real Madrid undefeated at home.</div>
+          `}
+        </div>
+      </div>
+
+      <!-- Match 3: High Risk / Moderate -->
+      <div style="background: ${isOptimized ? 'rgba(16,185,129,0.04)' : 'rgba(245,158,11,0.05)'}; border: 1px solid ${isOptimized ? 'rgba(16,185,129,0.2)' : 'rgba(245,158,11,0.3)'}; border-radius: var(--radius-sm); padding: 12px 16px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px;">
+        <div>
+          <div style="font-weight: 800; font-size: 0.88rem; color: #ffffff;">🇩🇪 Bayern Munich vs Borussia Dortmund</div>
+          <div style="font-size: 0.75rem; color: var(--text-secondary);">Selection: <b>${isOptimized ? 'Over 2.5 Goals (Prescribed)' : 'Over 3.5 Goals'}</b> @ ${isOptimized ? '1.50' : '2.15'} odds</div>
+        </div>
+        <div style="text-align: right;">
+          ${isOptimized ? `
+            <span style="background: rgba(16,185,129,0.2); color: #34d399; font-weight: 800; font-size: 0.7rem; padding: 4px 8px; border-radius: 4px;">✅ OPTIMIZED SAFE (85%)</span>
+            <div style="font-size: 0.7rem; color: var(--text-muted); margin-top: 4px;">Lowered line from 3.5 to 2.5 to eliminate high risk.</div>
+          ` : `
+            <span style="background: rgba(245,158,11,0.2); color: #fbbf24; font-weight: 800; font-size: 0.7rem; padding: 4px 8px; border-radius: 4px;">🟡 HIGH RISK (51%)</span>
+            <div style="font-size: 0.7rem; color: #fbbf24; margin-top: 4px;">Under 3.5 occurred in 4 of last 5 head-to-heads.</div>
+          `}
+        </div>
+      </div>
+    </div>
+
+    <!-- AI Prescription Recommendations Box -->
+    ${!isOptimized ? `
+      <div style="background: rgba(245, 158, 11, 0.08); border: 1px solid rgba(245, 158, 11, 0.3); border-radius: var(--radius-md); padding: 16px; display: flex; flex-direction: column; gap: 8px;">
+        <div style="font-size: 0.8rem; font-weight: 800; color: #fbbf24; text-transform: uppercase; display: flex; align-items: center; gap: 6px;">
+          <span>💡</span> AI Doctor Recommended Prescriptions
+        </div>
+        <div style="font-size: 0.75rem; color: var(--text-primary); display: flex; flex-direction: column; gap: 6px;">
+          <div>• <b>Prescription 1:</b> Replace <i>Real Madrid vs Barca [Away Win]</i> ➡️ <b>[Double Chance 1X]</b> (+28% Win Rate)</div>
+          <div>• <b>Prescription 2:</b> Lower <i>Bayern vs Dortmund [Over 3.5]</i> ➡️ <b>[Over 2.5 Goals]</b> (+21% Win Rate)</div>
+        </div>
+        <button onclick="applyDoctorPrescription()" class="btn btn-primary" style="margin-top: 6px; background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%); border: 1px solid #fbbf24; color: #000; font-weight: 800; font-size: 0.8rem; padding: 10px 18px; align-self: flex-start; cursor: pointer;">
+          ⚡ Apply All Prescriptions & Boost Health to 92%
+        </button>
+      </div>
+    ` : ''}
+  `;
+}
+
+function applyDoctorPrescription() {
+  window.doctorState.isOptimized = true;
+  runBetDoctorAudit();
+  if (typeof showToast === 'function') {
+    showToast("🩺 Doctor Prescriptions Applied! Ticket Health Boosted to 92%!", "success");
+  }
+}
+
+function convertAuditedTicket(code, bookie) {
+  window.location.hash = "#converter";
+  if (typeof selectPaddiBookmaker === 'function') {
+    selectPaddiBookmaker('src', bookie);
+  }
+  const srcInput = document.getElementById("paddi-src-code");
+  if (srcInput) srcInput.value = code;
+  if (typeof showToast === 'function') {
+    showToast(`📲 Loading Code ${code} into 50-Bookmaker Converter...`, "info");
+  }
+}
+
+window.loadDoctorSample = loadDoctorSample;
+window.runBetDoctorAudit = runBetDoctorAudit;
+window.applyDoctorPrescription = applyDoctorPrescription;
+window.convertAuditedTicket = convertAuditedTicket;
+
+// Run initial audit display on page DOM ready
+document.addEventListener("DOMContentLoaded", () => {
+  setTimeout(() => {
+    runBetDoctorAudit();
+    runArbitrageScanner();
+  }, 500);
+});
+
+// --- ARBITRAGE & SUREBET PROFIT FINDER ENGINE ---
+window.arbitrageDeals = [
+  {
+    id: "arb-1",
+    match: "🏴󠁧󠁢󠁥󠁮󠁧󠁿 Arsenal vs Chelsea",
+    league: "Premier League",
+    time: "Today 19:45 GMT",
+    market: "Over / Under 2.5 Goals",
+    roi: 7.4,
+    leg1: {
+      bookieKey: "sportybet",
+      selection: "Over 2.5 Goals",
+      odds: 2.15,
+      link: "https://www.sportybet.com/?tag=betmines"
+    },
+    leg2: {
+      bookieKey: "bet365",
+      selection: "Under 2.5 Goals",
+      odds: 2.05,
+      link: "https://www.bet365.com/?affiliate=betmines"
+    }
+  },
+  {
+    id: "arb-2",
+    match: "🇪🇸 Real Madrid vs Barcelona",
+    league: "La Liga",
+    time: "Tomorrow 20:00 GMT",
+    market: "1X2 Match Result",
+    roi: 5.8,
+    leg1: {
+      bookieKey: "1xbet",
+      selection: "Real Madrid Win (1)",
+      odds: 2.45,
+      link: "https://1xbet.com/?tag=betmines"
+    },
+    leg2: {
+      bookieKey: "bet9ja",
+      selection: "Draw or Barcelona (X2)",
+      odds: 1.85,
+      link: "https://www.bet9ja.com/?affiliate=betmines"
+    }
+  },
+  {
+    id: "arb-3",
+    match: "🇩🇪 Bayern Munich vs Borussia Dortmund",
+    league: "Bundesliga",
+    time: "Saturday 17:30 GMT",
+    market: "Both Teams To Score (BTTS)",
+    roi: 4.2,
+    leg1: {
+      bookieKey: "stake",
+      selection: "BTTS Yes",
+      odds: 1.95,
+      link: "https://stake.com/?c=betmines"
+    },
+    leg2: {
+      bookieKey: "betking",
+      selection: "BTTS No",
+      odds: 2.20,
+      link: "https://www.betking.com/?affiliate=betmines"
+    }
+  }
+];
+
+function runArbitrageScanner() {
+  const container = document.getElementById("arbitrage-results-container");
+  if (!container) return;
+
+  const minRoi = parseFloat(document.getElementById("arb-min-roi-select")?.value || "4.0");
+  const totalStake = parseFloat(document.getElementById("arb-stake-input")?.value || "100");
+
+  const filteredDeals = window.arbitrageDeals.filter(d => d.roi >= minRoi);
+
+  if (filteredDeals.length === 0) {
+    container.innerHTML = `
+      <div style="text-align: center; color: var(--text-muted); font-size: 0.85rem; padding: 24px;">
+        🛡️ No active SureBets found matching +${minRoi}% ROI threshold right now. Lower the minimum ROI filter above to view deals.
+      </div>
+    `;
+    return;
+  }
+
+  let html = `
+    <div style="font-size: 0.8rem; font-weight: 700; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.5px; display: flex; justify-content: space-between; align-items: center;">
+      <span>🎯 Live SureBet Arbitrage Opportunities (${filteredDeals.length} Found)</span>
+      <span style="color: #10b981; font-weight: 800;">Investment Budget: ${totalStake.toFixed(2)}</span>
+    </div>
+  `;
+
+  filteredDeals.forEach(deal => {
+    const o1 = deal.leg1.odds;
+    const o2 = deal.leg2.odds;
+    const inv1 = 1 / o1;
+    const inv2 = 1 / o2;
+    const invSum = inv1 + inv2;
+
+    const stake1 = (totalStake * inv1) / invSum;
+    const stake2 = (totalStake * inv2) / invSum;
+
+    const return1 = stake1 * o1;
+    const return2 = stake2 * o2;
+    const guaranteedReturn = Math.min(return1, return2);
+    const profitNet = guaranteedReturn - totalStake;
+    const realRoiPct = ((profitNet / totalStake) * 100).toFixed(1);
+
+    const b1Info = typeof getBookieAffiliateInfo === 'function' ? getBookieAffiliateInfo(deal.leg1.bookieKey) : { name: deal.leg1.bookieKey };
+    const b2Info = typeof getBookieAffiliateInfo === 'function' ? getBookieAffiliateInfo(deal.leg2.bookieKey) : { name: deal.leg2.bookieKey };
+
+    html += `
+      <div class="glass-card" style="padding: 18px; border: 1px solid rgba(16,185,129,0.3); background: rgba(0,0,0,0.4); border-radius: var(--radius-md); display: flex; flex-direction: column; gap: 14px;">
+        
+        <!-- Header Row -->
+        <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 10px; border-bottom: 1px solid rgba(255,255,255,0.06); padding-bottom: 10px;">
+          <div>
+            <div style="font-size: 0.72rem; color: #10b981; font-weight: 800; text-transform: uppercase;">${deal.league} &bull; ${deal.time}</div>
+            <div style="font-size: 1.05rem; font-weight: 900; color: #ffffff; font-family: var(--font-display);">${deal.match}</div>
+            <div style="font-size: 0.75rem; color: var(--text-secondary);">Market: <b>${deal.market}</b></div>
+          </div>
+
+          <div style="text-align: right;">
+            <div style="background: linear-gradient(135deg, rgba(16,185,129,0.2) 0%, rgba(5,150,105,0.2) 100%); border: 1px solid #10b981; color: #34d399; font-weight: 900; font-size: 0.9rem; padding: 6px 14px; border-radius: 20px; font-family: var(--font-display); display: inline-flex; align-items: center; gap: 6px;">
+              🛡️ +${realRoiPct}% NET PROFIT
+            </div>
+            <div style="font-size: 0.75rem; color: #10b981; font-weight: 700; margin-top: 4px;">
+              Guaranteed Net Profit: <b>+${profitNet.toFixed(2)}</b> (No Risk)
+            </div>
+          </div>
+        </div>
+
+        <!-- Stake Split Legs Breakdown Grid -->
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 12px;">
+          
+          <!-- Leg 1 Card -->
+          <div style="background: rgba(26,104,219,0.08); border: 1px solid rgba(59,130,246,0.3); border-radius: var(--radius-sm); padding: 12px 14px; display: flex; flex-direction: column; justify-content: space-between; gap: 10px;">
+            <div>
+              <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px;">
+                <span style="font-size: 0.75rem; font-weight: 800; color: #3b82f6; text-transform: uppercase;">LEG 1 &bull; ${b1Info.name}</span>
+                <span style="font-size: 0.8rem; font-weight: 900; color: #ffffff;">@${o1.toFixed(2)} Odds</span>
+              </div>
+              <div style="font-size: 0.85rem; font-weight: 800; color: #ffffff;">${deal.leg1.selection}</div>
+              <div style="font-size: 0.75rem; color: var(--text-secondary); margin-top: 4px;">
+                Stake: <b style="color: #3b82f6;">${stake1.toFixed(2)}</b> &bull; Payout: <b>${return1.toFixed(2)}</b>
+              </div>
+            </div>
+            <a href="${deal.leg1.link}" target="_blank" class="btn btn-secondary" style="font-size: 0.72rem; padding: 6px 12px; border: 1px solid var(--brand-royal-blue); color: #ffffff; text-align: center; text-decoration: none; font-weight: 700; display: block;">
+              📲 Bet ${stake1.toFixed(2)} on ${b1Info.name}
+            </a>
+          </div>
+
+          <!-- Leg 2 Card -->
+          <div style="background: rgba(245,158,11,0.08); border: 1px solid rgba(245,158,11,0.3); border-radius: var(--radius-sm); padding: 12px 14px; display: flex; flex-direction: column; justify-content: space-between; gap: 10px;">
+            <div>
+              <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px;">
+                <span style="font-size: 0.75rem; font-weight: 800; color: #fbbf24; text-transform: uppercase;">LEG 2 &bull; ${b2Info.name}</span>
+                <span style="font-size: 0.8rem; font-weight: 900; color: #ffffff;">@${o2.toFixed(2)} Odds</span>
+              </div>
+              <div style="font-size: 0.85rem; font-weight: 800; color: #ffffff;">${deal.leg2.selection}</div>
+              <div style="font-size: 0.75rem; color: var(--text-secondary); margin-top: 4px;">
+                Stake: <b style="color: #fbbf24;">${stake2.toFixed(2)}</b> &bull; Payout: <b>${return2.toFixed(2)}</b>
+              </div>
+            </div>
+            <a href="${deal.leg2.link}" target="_blank" class="btn btn-secondary" style="font-size: 0.72rem; padding: 6px 12px; border: 1px solid #d97706; color: #ffffff; text-align: center; text-decoration: none; font-weight: 700; display: block;">
+              📲 Bet ${stake2.toFixed(2)} on ${b2Info.name}
+            </a>
+          </div>
+
+        </div>
+
+      </div>
+    `;
+  });
+
+  container.innerHTML = html;
+}
+
+
 
 window.runArbitrageScanner = runArbitrageScanner;
 
