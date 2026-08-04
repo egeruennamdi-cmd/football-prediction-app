@@ -10,7 +10,7 @@
     "build:frontend": "vite build",
     "build:backend": "cd backend && npm install && npx prisma generate && npm run build",
     "start": "node backend/dist/server.js",
-    "preview": "vite preview"
+    "preview": "vite preview --port 8080"
   },
   "devDependencies": {
     "@cloudflare/vite-plugin": "^1.50.0",
