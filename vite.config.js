@@ -37,6 +37,11 @@ export default defineConfig({
   build: {
     outDir: 'dist',
     emptyOutDir: true,
+    watch: process.env.WATCH_MODE ? {
+      // https://rolldown.rs/reference/InputOptions.watch
+      exclude: 'node_modules/**',
+      include: ['js/**', 'css/**', 'index.html']
+    } : null,
     rollupOptions: {
       output: {
         entryFileNames: 'assets/[name]-[hash].js',
