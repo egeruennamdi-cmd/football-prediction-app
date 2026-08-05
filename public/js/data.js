@@ -516,14 +516,14 @@ const TOP_LEAGUES_DATA = [
   { name: "World Cup", emoji: "🏆", country: "World" }
 ];
 
-window.MATCH_DATA = MATCH_DATA;
-window.MATCHES_DATA = MATCHES_DATA;
-window.MATCH_STATS_DATA = MATCH_STATS_DATA;
-window.LEAGUE_STATS_DATA = LEAGUE_STATS_DATA;
-window.DAILY_TIPS = DAILY_TIPS;
-window.HOT_TRENDS = HOT_TRENDS;
-window.VALUE_BETS = VALUE_BETS;
-window.COUNTRY_LEAGUES_DATA = COUNTRY_LEAGUES_DATA;
-window.TOP_LEAGUES_DATA = TOP_LEAGUES_DATA;
+try { if (typeof MATCH_DATA !== 'undefined') window.MATCH_DATA = MATCH_DATA; } catch (e) {}
+try { if (typeof MATCHES_DATA !== 'undefined') window.MATCHES_DATA = MATCHES_DATA; else if (typeof MATCH_DATA !== 'undefined') window.MATCHES_DATA = MATCH_DATA; } catch (e) {}
+try { if (typeof MATCH_STATS_DATA !== 'undefined') window.MATCH_STATS_DATA = MATCH_STATS_DATA; } catch (e) {}
+try { if (typeof LEAGUE_STATS_DATA !== 'undefined') window.LEAGUE_STATS_DATA = LEAGUE_STATS_DATA; } catch (e) {}
+try { if (typeof DAILY_TIPS !== 'undefined') window.DAILY_TIPS = DAILY_TIPS; } catch (e) {}
+try { if (typeof HOT_TRENDS !== 'undefined') window.HOT_TRENDS = HOT_TRENDS; } catch (e) {}
+try { if (typeof VALUE_BETS !== 'undefined') window.VALUE_BETS = VALUE_BETS; } catch (e) {}
+try { if (typeof COUNTRY_LEAGUES_DATA !== 'undefined') window.COUNTRY_LEAGUES_DATA = COUNTRY_LEAGUES_DATA; } catch (e) {}
+try { if (typeof TOP_LEAGUES_DATA !== 'undefined') window.TOP_LEAGUES_DATA = TOP_LEAGUES_DATA; } catch (e) {}
 
 

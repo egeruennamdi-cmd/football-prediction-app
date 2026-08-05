@@ -1324,70 +1324,56 @@ runOnReady(() => {
   window.appState.activeScoutMatchId = null;
 
   // Render initially all matches
-  renderMatchCards(MATCH_DATA);
+  if (typeof window.renderMatchCards === 'function') window.renderMatchCards(window.MATCH_DATA || []);
   
   // Render country accordion sidebar directory list
-  renderSidebarDirectory();
+  if (typeof window.renderSidebarDirectory === 'function') window.renderSidebarDirectory();
 
   // Render universal date & live bar
-  renderBetMinesDateBar();
+  if (typeof window.renderBetMinesDateBar === 'function') window.renderBetMinesDateBar();
 
   // Render top leagues sidebar list
-  renderSidebarTopLeagues();
+  if (typeof window.renderSidebarTopLeagues === 'function') window.renderSidebarTopLeagues();
 
   // Render live match scanner
-  renderLiveScanner();
+  if (typeof window.renderLiveScanner === 'function') window.renderLiveScanner();
 
   // Render Daily Curated Bets
-  renderDailyBets();
+  if (typeof window.renderDailyBets === 'function') window.renderDailyBets();
 
   // Initialize standalone Bet Code Converter
-  if (typeof initBetCodeConverter === 'function') {
-    initBetCodeConverter();
-  }
-  renderRecentConvertedSlips();
+  if (typeof window.initBetCodeConverter === 'function') window.initBetCodeConverter();
+  if (typeof window.renderRecentConvertedSlips === 'function') window.renderRecentConvertedSlips();
 
   // Render Hot Trends Ticker
-  renderTrends();
+  if (typeof window.renderTrends === 'function') window.renderTrends();
 
   // Render League Stats Ledger
-  renderLeagueStatsLedger();
+  if (typeof window.renderLeagueStatsLedger === 'function') window.renderLeagueStatsLedger();
 
   // Sync backtester visibility state
-  syncBacktesterPremiumState();
+  if (typeof window.syncBacktesterPremiumState === 'function') window.syncBacktesterPremiumState();
   
   // Render Value Bet Bot listings
-  if (typeof renderValueBetBot === 'function') {
-    renderValueBetBot();
-  }
+  if (typeof window.renderValueBetBot === 'function') window.renderValueBetBot();
 
   // Render Top Tips Tool listings
-  if (typeof renderTopTipsTool === 'function') {
-    renderTopTipsTool();
-  }
+  if (typeof window.renderTopTipsTool === 'function') window.renderTopTipsTool();
 
   // Render accuracy chart
-  renderAccuracyChart();
+  if (typeof window.renderAccuracyChart === 'function') window.renderAccuracyChart();
 
   // Render inline leaderboard challenge sidebar
-  if (typeof switchInlineLeadTab === 'function') {
-    switchInlineLeadTab('monthly');
-  }
+  if (typeof window.switchInlineLeadTab === 'function') window.switchInlineLeadTab('monthly');
 
   // Render inline store shop sidebar
-  if (typeof switchInlineStoreTab === 'function') {
-    switchInlineStoreTab('shop');
-  }
+  if (typeof window.switchInlineStoreTab === 'function') window.switchInlineStoreTab('shop');
 
   // Render inline user hub sidebar
-  if (typeof switchInlineUserTab === 'function') {
-    switchInlineUserTab('profile');
-  }
+  if (typeof window.switchInlineUserTab === 'function') window.switchInlineUserTab('profile');
 
   // Initialize advanced filter sub-markets options
-  if (typeof onFilterMarketChange === 'function') {
-    onFilterMarketChange();
-  }
+  if (typeof window.onFilterMarketChange === 'function') window.onFilterMarketChange();
 
   // Set up parallax glow movement effect on cards
   const cards = document.querySelectorAll(".glass-card");
@@ -1402,12 +1388,10 @@ runOnReady(() => {
   });
 
   // Start background live in-play scanner notifications check
-  startLiveAlertsScanner();
+  if (typeof window.startLiveAlertsScanner === 'function') window.startLiveAlertsScanner();
 
   // Initialize the standalone live scanner
-  if (typeof renderLiveScanner === 'function') {
-    renderLiveScanner();
-  }
+  if (typeof window.renderLiveScanner === 'function') window.renderLiveScanner();
 
   // Programmatically trigger the default active tool tab to ensure layout sync
   if (typeof switchTool === 'function') {
