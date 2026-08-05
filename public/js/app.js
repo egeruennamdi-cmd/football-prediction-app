@@ -2089,26 +2089,32 @@ function filterMarketSubmenu(marketVal, btn) {
   window.appState.activeMarketSubmenu = marketVal;
   window.appState.activeTopTip = 'all';
 
-  const parent = btn.parentElement;
-  const buttons = parent.querySelectorAll(".tab-btn");
-  buttons.forEach(b => b.classList.remove("active"));
-  btn.classList.add("active");
+  if (btn && btn.parentElement) {
+    const parent = btn.parentElement;
+    const buttons = parent.querySelectorAll(".tab-btn");
+    buttons.forEach(b => b.classList.remove("active"));
+    btn.classList.add("active");
+  }
 
-  updateFixturesDisplay();
+  if (typeof updateFixturesDisplay === 'function') updateFixturesDisplay();
 }
+window.filterMarketSubmenu = filterMarketSubmenu;
 
 // Filter matches by specific Top Tips markets
 function filterTopTip(topTipVal, btn) {
   window.appState.activeTopTip = topTipVal;
   window.appState.activeMarketSubmenu = 'toptips';
 
-  const parent = btn.parentElement;
-  const buttons = parent.querySelectorAll(".tab-btn");
-  buttons.forEach(b => b.classList.remove("active"));
-  btn.classList.add("active");
+  if (btn && btn.parentElement) {
+    const parent = btn.parentElement;
+    const buttons = parent.querySelectorAll(".tab-btn");
+    buttons.forEach(b => b.classList.remove("active"));
+    btn.classList.add("active");
+  }
 
-  updateFixturesDisplay();
+  if (typeof updateFixturesDisplay === 'function') updateFixturesDisplay();
 }
+window.filterTopTip = filterTopTip;
 
 // Route navbar flyout Top Tips clicks directly to dashboard and select target top tips tab
 function triggerTopTipFilter(dateVal, topTipVal) {
@@ -2166,7 +2172,7 @@ function triggerTopTipFilter(dateVal, topTipVal) {
   }
 
   // Call main filter logic
-  updateFixturesDisplay();
+  if (typeof updateFixturesDisplay === 'function') updateFixturesDisplay();
 
   // Scroll smoothly down to the dashboard
   const target = document.getElementById("predictions");
@@ -2174,6 +2180,7 @@ function triggerTopTipFilter(dateVal, topTipVal) {
     target.scrollIntoView({ behavior: 'smooth' });
   }
 }
+window.triggerTopTipFilter = triggerTopTipFilter;
 
 // State for the horizontal filter bar
 window.barState = {
@@ -2184,32 +2191,36 @@ window.barState = {
 function updateBarDate(dateVal, btn) {
   window.barState.date = dateVal;
   
-  // Update date button active states
-  const parent = btn.parentElement;
-  const buttons = parent.querySelectorAll(".tab-btn");
-  buttons.forEach(b => b.classList.remove("active"));
-  btn.classList.add("active");
+  if (btn && btn.parentElement) {
+    const parent = btn.parentElement;
+    const buttons = parent.querySelectorAll(".tab-btn");
+    buttons.forEach(b => b.classList.remove("active"));
+    btn.classList.add("active");
+  }
 
   // Automatically trigger the filter
   triggerTopTipFilter(window.barState.date, window.barState.tip);
 }
+window.updateBarDate = updateBarDate;
 
 function applyBarTopTip(tipVal, btn) {
   window.barState.tip = tipVal;
 
-  // Update tip button active states
-  const parent = btn.parentElement;
-  const buttons = parent.querySelectorAll(".btn");
-  buttons.forEach(b => {
-    b.classList.remove("btn-primary");
-    b.classList.add("btn-secondary");
-  });
-  btn.classList.remove("btn-secondary");
-  btn.classList.add("btn-primary");
+  if (btn && btn.parentElement) {
+    const parent = btn.parentElement;
+    const buttons = parent.querySelectorAll(".btn");
+    buttons.forEach(b => {
+      b.classList.remove("btn-primary");
+      b.classList.add("btn-secondary");
+    });
+    btn.classList.remove("btn-secondary");
+    btn.classList.add("btn-primary");
+  }
 
   // Automatically trigger the filter
   triggerTopTipFilter(window.barState.date, window.barState.tip);
 }
+window.applyBarTopTip = applyBarTopTip;
 
 function triggerMatchPreview(leagueName, btn) {
   // Update active styling for previews bar
