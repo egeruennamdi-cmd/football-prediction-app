@@ -1,3 +1,4 @@
+import { resolve } from 'node:path';
 import { defineConfig } from 'vite';
 import fs from 'fs';
 import path from 'path';
@@ -43,6 +44,9 @@ export default defineConfig({
       include: ['js/**', 'css/**', 'index.html']
     } : null,
     rollupOptions: {
+      input: {
+        main: resolve(process.cwd(), 'index.html')
+      },
       output: {
         entryFileNames: 'assets/[name]-[hash].js',
         chunkFileNames: 'assets/[name]-[hash].js',
@@ -50,7 +54,9 @@ export default defineConfig({
       }
     },
     rolldownOptions: {
-      // Next-gen Rolldown bundler configuration (https://rolldown.rs/reference/)
+      input: {
+        main: resolve(process.cwd(), 'index.html')
+      }
     }
   }
 });
