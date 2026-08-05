@@ -1,0 +1,7 @@
+# Cloudflare Pages Edge Redirect & SPA Router Configuration
+https://www.deeppredictbet.com/* https://deeppredictbet.com/:splat 301!
+http://www.deeppredictbet.com/* https://deeppredictbet.com/:splat 301!
+http://deeppredictbet.com/* https://deeppredictbet.com/:splat 301!
+
+# SPA Router Fallback Rule (Directs Deep Linking Routes to index.html)
+/* /index.html 200
