@@ -526,4 +526,5 @@ try { if (typeof VALUE_BETS !== 'undefined') window.VALUE_BETS = VALUE_BETS; } c
 try { if (typeof COUNTRY_LEAGUES_DATA !== 'undefined') window.COUNTRY_LEAGUES_DATA = COUNTRY_LEAGUES_DATA; } catch (e) {}
 try { if (typeof TOP_LEAGUES_DATA !== 'undefined') window.TOP_LEAGUES_DATA = TOP_LEAGUES_DATA; } catch (e) {}
 
+// Auto-Export Window Bindings for data.js
 

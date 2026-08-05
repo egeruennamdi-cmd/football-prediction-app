@@ -2275,7 +2275,9 @@ function submitSupportTicketInline() {
 
 // Dropdown change handler for advanced filters markets
 function onFilterMarketChange() {
-  const mkt = document.getElementById("filt-market-select").value;
+  const mktEl = document.getElementById("filt-market-select");
+  if (!mktEl) return;
+  const mkt = mktEl.value;
   const subSel = document.getElementById("filt-submarket-select");
   if (!subSel) return;
   subSel.innerHTML = "";
@@ -3353,3 +3355,85 @@ function showToast(msg, type = 'info') {
 
 
 // Render match cards dynamically
+
+// Auto-Export Window Bindings for ui.js
+try { if (typeof buyCoinsInline === 'function') window.buyCoinsInline = buyCoinsInline; } catch (e) {}
+try { if (typeof claimDailyRewardInline === 'function') window.claimDailyRewardInline = claimDailyRewardInline; } catch (e) {}
+try { if (typeof claimDailyRewardNav === 'function') window.claimDailyRewardNav = claimDailyRewardNav; } catch (e) {}
+try { if (typeof closeLeaderboardModal === 'function') window.closeLeaderboardModal = closeLeaderboardModal; } catch (e) {}
+try { if (typeof closeProfileModal === 'function') window.closeProfileModal = closeProfileModal; } catch (e) {}
+try { if (typeof closeScoutModal === 'function') window.closeScoutModal = closeScoutModal; } catch (e) {}
+try { if (typeof closeStoreModal === 'function') window.closeStoreModal = closeStoreModal; } catch (e) {}
+try { if (typeof closeSupportModal === 'function') window.closeSupportModal = closeSupportModal; } catch (e) {}
+try { if (typeof copyDailyTipOdds === 'function') window.copyDailyTipOdds = copyDailyTipOdds; } catch (e) {}
+try { if (typeof filterSidebarCountries === 'function') window.filterSidebarCountries = filterSidebarCountries; } catch (e) {}
+try { if (typeof filterSidebarTopLeagues === 'function') window.filterSidebarTopLeagues = filterSidebarTopLeagues; } catch (e) {}
+try { if (typeof getMatchTip === 'function') window.getMatchTip = getMatchTip; } catch (e) {}
+try { if (typeof onFilterMarketChange === 'function') window.onFilterMarketChange = onFilterMarketChange; } catch (e) {}
+try { if (typeof openClubScoutModal === 'function') window.openClubScoutModal = openClubScoutModal; } catch (e) {}
+try { if (typeof openGeneralScout === 'function') window.openGeneralScout = openGeneralScout; } catch (e) {}
+try { if (typeof openLeaderboardModal === 'function') window.openLeaderboardModal = openLeaderboardModal; } catch (e) {}
+try { if (typeof openLeaguePreviewHub === 'function') window.openLeaguePreviewHub = openLeaguePreviewHub; } catch (e) {}
+try { if (typeof openLiveScannerHub === 'function') window.openLiveScannerHub = openLiveScannerHub; } catch (e) {}
+try { if (typeof openProfileModal === 'function') window.openProfileModal = openProfileModal; } catch (e) {}
+try { if (typeof openScoutModal === 'function') window.openScoutModal = openScoutModal; } catch (e) {}
+try { if (typeof openStoreModal === 'function') window.openStoreModal = openStoreModal; } catch (e) {}
+try { if (typeof openSupportModal === 'function') window.openSupportModal = openSupportModal; } catch (e) {}
+try { if (typeof purchaseCoins === 'function') window.purchaseCoins = purchaseCoins; } catch (e) {}
+try { if (typeof quickPromptScout === 'function') window.quickPromptScout = quickPromptScout; } catch (e) {}
+try { if (typeof redeemVoucherCode === 'function') window.redeemVoucherCode = redeemVoucherCode; } catch (e) {}
+try { if (typeof redeemVoucherInline === 'function') window.redeemVoucherInline = redeemVoucherInline; } catch (e) {}
+try { if (typeof renderAccuracyChart === 'function') window.renderAccuracyChart = renderAccuracyChart; } catch (e) {}
+try { if (typeof renderAdvancedTeamStats === 'function') window.renderAdvancedTeamStats = renderAdvancedTeamStats; } catch (e) {}
+try { if (typeof renderBriefTab === 'function') window.renderBriefTab = renderBriefTab; } catch (e) {}
+try { if (typeof renderDailyBets === 'function') window.renderDailyBets = renderDailyBets; } catch (e) {}
+try { if (typeof renderH2HHistory === 'function') window.renderH2HHistory = renderH2HHistory; } catch (e) {}
+try { if (typeof renderInlineLeaderboardList === 'function') window.renderInlineLeaderboardList = renderInlineLeaderboardList; } catch (e) {}
+try { if (typeof renderInlineSavedTickets === 'function') window.renderInlineSavedTickets = renderInlineSavedTickets; } catch (e) {}
+try { if (typeof renderLeaderboardList === 'function') window.renderLeaderboardList = renderLeaderboardList; } catch (e) {}
+try { if (typeof renderLeagueStatsLedger === 'function') window.renderLeagueStatsLedger = renderLeagueStatsLedger; } catch (e) {}
+try { if (typeof renderLiveScanner === 'function') window.renderLiveScanner = renderLiveScanner; } catch (e) {}
+try { if (typeof renderMatchCards === 'function') window.renderMatchCards = renderMatchCards; } catch (e) {}
+try { if (typeof renderOddsComparison === 'function') window.renderOddsComparison = renderOddsComparison; } catch (e) {}
+try { if (typeof renderOddsTab === 'function') window.renderOddsTab = renderOddsTab; } catch (e) {}
+try { if (typeof renderPredictionsTab === 'function') window.renderPredictionsTab = renderPredictionsTab; } catch (e) {}
+try { if (typeof renderPrematchScanner === 'function') window.renderPrematchScanner = renderPrematchScanner; } catch (e) {}
+try { if (typeof renderProfileSavedTickets === 'function') window.renderProfileSavedTickets = renderProfileSavedTickets; } catch (e) {}
+try { if (typeof renderResultsTab === 'function') window.renderResultsTab = renderResultsTab; } catch (e) {}
+try { if (typeof renderRulesTab === 'function') window.renderRulesTab = renderRulesTab; } catch (e) {}
+try { if (typeof renderSidebarDirectory === 'function') window.renderSidebarDirectory = renderSidebarDirectory; } catch (e) {}
+try { if (typeof renderSidebarTopLeagues === 'function') window.renderSidebarTopLeagues = renderSidebarTopLeagues; } catch (e) {}
+try { if (typeof renderStatsTab === 'function') window.renderStatsTab = renderStatsTab; } catch (e) {}
+try { if (typeof renderTopTipsTool === 'function') window.renderTopTipsTool = renderTopTipsTool; } catch (e) {}
+try { if (typeof renderTrends === 'function') window.renderTrends = renderTrends; } catch (e) {}
+try { if (typeof renderValueBetBot === 'function') window.renderValueBetBot = renderValueBetBot; } catch (e) {}
+try { if (typeof scoutLeagueClubs === 'function') window.scoutLeagueClubs = scoutLeagueClubs; } catch (e) {}
+try { if (typeof selectSidebarLeague === 'function') window.selectSidebarLeague = selectSidebarLeague; } catch (e) {}
+try { if (typeof showAppNotification === 'function') window.showAppNotification = showAppNotification; } catch (e) {}
+try { if (typeof showMockTableStandings === 'function') window.showMockTableStandings = showMockTableStandings; } catch (e) {}
+try { if (typeof showToast === 'function') window.showToast = showToast; } catch (e) {}
+try { if (typeof smoothScrollToPremium === 'function') window.smoothScrollToPremium = smoothScrollToPremium; } catch (e) {}
+try { if (typeof submitSupportTicket === 'function') window.submitSupportTicket = submitSupportTicket; } catch (e) {}
+try { if (typeof submitSupportTicketInline === 'function') window.submitSupportTicketInline = submitSupportTicketInline; } catch (e) {}
+try { if (typeof switchInlineLeadTab === 'function') window.switchInlineLeadTab = switchInlineLeadTab; } catch (e) {}
+try { if (typeof switchInlineStoreTab === 'function') window.switchInlineStoreTab = switchInlineStoreTab; } catch (e) {}
+try { if (typeof switchInlineUserTab === 'function') window.switchInlineUserTab = switchInlineUserTab; } catch (e) {}
+try { if (typeof switchLeadTab === 'function') window.switchLeadTab = switchLeadTab; } catch (e) {}
+try { if (typeof switchModalTab === 'function') window.switchModalTab = switchModalTab; } catch (e) {}
+try { if (typeof switchProfileTab === 'function') window.switchProfileTab = switchProfileTab; } catch (e) {}
+try { if (typeof switchScannerMode === 'function') window.switchScannerMode = switchScannerMode; } catch (e) {}
+try { if (typeof switchStoreTab === 'function') window.switchStoreTab = switchStoreTab; } catch (e) {}
+try { if (typeof switchSupportTab === 'function') window.switchSupportTab = switchSupportTab; } catch (e) {}
+try { if (typeof switchTool === 'function') window.switchTool = switchTool; } catch (e) {}
+try { if (typeof switchTopTipsToolMarket === 'function') window.switchTopTipsToolMarket = switchTopTipsToolMarket; } catch (e) {}
+try { if (typeof toggleCheckboxCard === 'function') window.toggleCheckboxCard = toggleCheckboxCard; } catch (e) {}
+try { if (typeof toggleFAQCollapse === 'function') window.toggleFAQCollapse = toggleFAQCollapse; } catch (e) {}
+try { if (typeof toggleFollowPunter === 'function') window.toggleFollowPunter = toggleFollowPunter; } catch (e) {}
+try { if (typeof toggleFollowPunterInline === 'function') window.toggleFollowPunterInline = toggleFollowPunterInline; } catch (e) {}
+try { if (typeof toggleSidebarAccordion === 'function') window.toggleSidebarAccordion = toggleSidebarAccordion; } catch (e) {}
+try { if (typeof toggleSidebarTopLeaguesAccordion === 'function') window.toggleSidebarTopLeaguesAccordion = toggleSidebarTopLeaguesAccordion; } catch (e) {}
+try { if (typeof triggerCloseScoutModal === 'function') window.triggerCloseScoutModal = triggerCloseScoutModal; } catch (e) {}
+try { if (typeof triggerHeroScoutPrompt === 'function') window.triggerHeroScoutPrompt = triggerHeroScoutPrompt; } catch (e) {}
+try { if (typeof updatePane === 'function') window.updatePane = updatePane; } catch (e) {}
+try { if (typeof updateStoreBalanceDisplay === 'function') window.updateStoreBalanceDisplay = updateStoreBalanceDisplay; } catch (e) {}
+try { if (typeof viewLeagueStatisticsLedger === 'function') window.viewLeagueStatisticsLedger = viewLeagueStatisticsLedger; } catch (e) {}

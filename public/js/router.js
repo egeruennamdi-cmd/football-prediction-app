@@ -91,3 +91,8 @@
   window.addEventListener('hashchange', handleRouteNavigation);
   document.addEventListener('DOMContentLoaded', handleRouteNavigation);
 })();
+
+// Auto-Export Window Bindings for router.js
+try { if (typeof getRouteFromHash === 'function') window.getRouteFromHash = getRouteFromHash; } catch (e) {}
+try { if (typeof handleRouteNavigation === 'function') window.handleRouteNavigation = handleRouteNavigation; } catch (e) {}
+try { if (typeof navigateToPage === 'function') window.navigateToPage = navigateToPage; } catch (e) {}
