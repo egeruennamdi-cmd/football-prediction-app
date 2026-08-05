@@ -516,6 +516,7 @@ const TOP_LEAGUES_DATA = [
   { name: "World Cup", emoji: "🏆", country: "World" }
 ];
 
+window.MATCH_DATA = MATCH_DATA;
 window.MATCHES_DATA = MATCHES_DATA;
 window.MATCH_STATS_DATA = MATCH_STATS_DATA;
 window.LEAGUE_STATS_DATA = LEAGUE_STATS_DATA;
