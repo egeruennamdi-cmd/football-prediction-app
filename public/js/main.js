@@ -3,9 +3,10 @@ import './data.js';
 import './ui.js';
 import './router.js';
 import './app.js';
-import imgUrl from './img.png';
 
-// Dynamically bind hero image src via Vite asset import
+// Dynamic asset resolution using Vite's native URL pattern
+const imgUrl = new URL('./img.png', import.meta.url).href;
+
 if (typeof document !== 'undefined') {
   const applyHeroImg = () => {
     const heroImg = document.getElementById('hero-img');
@@ -20,4 +21,4 @@ if (typeof document !== 'undefined') {
   }
 }
 
-console.log('🚀 BetMines Main Bundle Initialized Successfully with Dynamic Image Assets!');
+console.log('🚀 BetMines Main Bundle Initialized Successfully with Native Dynamic URL Assets!');
