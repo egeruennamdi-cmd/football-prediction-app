@@ -12,7 +12,6 @@
       'claimDailyRewardInline',
       'claimDailyRewardNav',
       'clearBetslip',
-      'closeAuthModal',
       'closeLeaderboardModal',
       'closeProfileModal',
       'closeScoutModal',
@@ -37,19 +36,15 @@
       'getMatchTip',
       'getOrdinalDate',
       'getRouteFromHash',
-      'handleAuthSubmit',
       'handleChatKeyPress',
-      'handleLogout',
       'handleRouteNavigation',
       'handleSearchSelect',
-      'handleSocialAuth',
       'initAppEngine',
       'initBetPaddiConverter',
       'loadDoctorSample',
       'loadRecentConversion',
       'navigateToPage',
       'onFilterMarketChange',
-      'openAuthModal',
       'openClubScoutModal',
       'openGeneralScout',
       'openLeaderboardModal',
@@ -131,7 +126,6 @@
       'switchSupportTab',
       'switchTool',
       'switchTopTipsToolMarket',
-      'toggleAuthMode',
       'toggleBetslipDrawer',
       'toggleCheckboxCard',
       'toggleFAQCollapse',
@@ -151,17 +145,17 @@
       'unlockPremiumPlanLigue2',
       'updateBarDate',
       'updateFixturesDisplay',
-      'updateNavAuthState',
       'updatePane',
       'updateStoreBalanceDisplay',
       'viewLeagueStatisticsLedger'
     ].forEach(function(fn) {
       if (!window[fn]) {
-        window[fn] = function() {
+        window[fn] = function stub() {
           var args = Array.prototype.slice.call(arguments);
+          var self = this;
           setTimeout(function() {
-            if (typeof window[fn] === 'function' && window[fn] !== arguments.callee) {
-              try { window[fn].apply(null, args); } catch(e) {}
+            if (typeof window[fn] === 'function' && window[fn] !== stub) {
+              try { window[fn].apply(self, args); } catch(e) {}
             }
           }, 150);
         };
