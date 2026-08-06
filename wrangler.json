@@ -1,6 +1,4 @@
 {
   "name": "deeppredictbet",
-  "assets": {
-    "directory": "./dist"
-  }
+  "pages_build_output_dir": "./dist"
 }
