@@ -3440,23 +3440,27 @@ try { if (typeof viewLeagueStatisticsLedger === 'function') window.viewLeagueSta
 
 
 
-// --- MOBILE NAVIGATION DRAWER & ACCORDION CONTROLLERS ---
-function toggleMobileDrawer() {
-  const drawer = document.getElementById("mobile-nav-drawer");
-  const overlay = document.getElementById("mobile-drawer-overlay");
-  if (!drawer || !overlay) return;
 
-  const isOpen = drawer.classList.contains("open") || drawer.style.left === "0px";
+// --- FAIL-SAFE MOBILE NAVIGATION DRAWER CONTROLLER ---
+function toggleMobileDrawer() {
+  var drawer = document.getElementById("mobile-nav-drawer");
+  var overlay = document.getElementById("mobile-drawer-overlay");
+  if (!drawer || !overlay) {
+    console.error("Drawer or Overlay element not found");
+    return;
+  }
+
+  var isOpen = drawer.classList.contains("open") || drawer.style.left === "0px";
   if (isOpen) {
     drawer.classList.remove("open");
-    drawer.style.left = "-320px";
+    drawer.style.left = "-340px";
     overlay.style.opacity = "0";
-    setTimeout(() => { overlay.style.display = "none"; }, 300);
+    setTimeout(function() { overlay.style.display = "none"; }, 300);
     document.body.style.overflow = "";
   } else {
     overlay.style.display = "block";
     drawer.classList.add("open");
-    setTimeout(() => { overlay.style.opacity = "1"; }, 10);
+    setTimeout(function() { overlay.style.opacity = "1"; }, 10);
     drawer.style.left = "0px";
     document.body.style.overflow = "hidden";
   }
@@ -3464,11 +3468,11 @@ function toggleMobileDrawer() {
 window.toggleMobileDrawer = toggleMobileDrawer;
 
 function toggleMobileAccordion(accId) {
-  const target = document.getElementById(accId);
-  const icon = document.getElementById(accId + "-icon");
+  var target = document.getElementById(accId);
+  var icon = document.getElementById(accId + "-icon");
   if (!target) return;
 
-  const isHidden = target.style.display === "none" || target.style.display === "";
+  var isHidden = target.style.display === "none" || target.style.display === "";
   if (isHidden) {
     target.style.display = "flex";
     if (icon) icon.style.transform = "rotate(180deg)";
