@@ -2765,3 +2765,116 @@ header {
   to { opacity: 1; transform: translateY(0); }
 }
 
+
+/* ==========================================================================
+   ADVANCED MOBILE & TABLET RESPONSIVE SYSTEM (320px - 1024px)
+   ========================================================================== */
+
+/* --- TABLET ADAPTATION (481px - 1024px) --- */
+@media (max-width: 1024px) {
+  .container {
+    padding-left: 16px !important;
+    padding-right: 16px !important;
+  }
+  
+  .hero-subtitle {
+    font-size: 0.95rem !important;
+    padding: 0 12px;
+  }
+  
+  .recent-conversions-grid,
+  .footer-grid {
+    grid-template-columns: repeat(2, 1fr) !important;
+    gap: 18px !important;
+  }
+  
+  .betcode-converter-card {
+    width: 100% !important;
+    max-width: 100% !important;
+    border-radius: 16px !important;
+  }
+  
+  .betslip-drawer {
+    width: 380px !important;
+    right: 16px !important;
+  }
+}
+
+/* --- MOBILE PHONE ADAPTATION (320px - 480px) --- */
+@media (max-width: 576px) {
+  /* Navigation & Top Bar */
+  .nav-container {
+    padding: 8px 12px !important;
+  }
+  
+  .logo {
+    font-size: 1.15rem !important;
+  }
+  
+  /* Universal Sticky Date Selector Bar - Smooth Touch Scroll */
+  #universal-date-bar-wrapper {
+    top: 50px !important;
+    padding: 8px 10px !important;
+  }
+  
+  .betmines-date-bar {
+    padding: 4px 8px !important;
+    gap: 8px !important;
+    border-radius: 12px !important;
+  }
+  
+  .betmines-date-bar .date-item {
+    padding: 4px 8px !important;
+    font-size: 0.82rem !important;
+  }
+  
+  .betmines-date-bar .live-btn {
+    padding: 4px 10px !important;
+    font-size: 0.78rem !important;
+  }
+  
+  /* Form Inputs & Buttons Touch Friendliness */
+  button, input, select, textarea {
+    min-height: 42px !important;
+    font-size: 0.9rem !important;
+  }
+  
+  /* Single Column Stacking for Small Screens */
+  .recent-conversions-grid,
+  .footer-grid {
+    grid-template-columns: 1fr !important;
+    gap: 20px !important;
+  }
+  
+  /* Full Width Floating Mobile Betslip Bottom Sheet */
+  .betslip-drawer {
+    right: 0 !important;
+    left: 0 !important;
+    width: 100% !important;
+    border-radius: 16px 16px 0 0 !important;
+  }
+  
+  /* Modals Full Screen Adaptability */
+  .modal-content, .scout-modal-content {
+    width: 95vw !important;
+    max-width: 95vw !important;
+    margin: 10px auto !important;
+    padding: 16px !important;
+    max-height: 90vh !important;
+    overflow-y: auto !important;
+  }
+  
+  /* Footer Mobile Alignment */
+  .footer-top-row,
+  .footer-bottom-row {
+    flex-direction: column !important;
+    align-items: center !important;
+    text-align: center !important;
+    gap: 14px !important;
+  }
+  
+  .responsible-badges {
+    flex-wrap: wrap !important;
+    justify-content: center !important;
+  }
+}
