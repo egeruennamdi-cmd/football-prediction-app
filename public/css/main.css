@@ -2889,3 +2889,20 @@ header {
     font-size: 0.58rem !important;
   }
 }
+
+/* --- MOBILE LANGUAGE SWITCHER & COINS PILL ROW (POSITIONED BEFORE WIN RATE BADGE) --- */
+@media (min-width: 992px) {
+  .mobile-lang-coins-row {
+    display: none !important;
+  }
+}
+
+@media (max-width: 991px) {
+  .mobile-lang-coins-row {
+    display: flex !important;
+  }
+  .nav-actions #lang-switcher,
+  .nav-actions [title="Mines Coins Store"] {
+    display: none !important;
+  }
+}

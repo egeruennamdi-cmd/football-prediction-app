@@ -1865,6 +1865,8 @@ function updateStoreBalanceDisplay() {
   if (storeBal) storeBal.innerText = `${bal} Coins`;
   if (navBal) navBal.innerText = `${bal} Coins`;
   if (headerCount) headerCount.innerText = bal;
+  const mobCount = document.getElementById("mobile-coins-count");
+  if (mobCount) mobCount.innerText = bal;
   if (inlineStoreBal) inlineStoreBal.innerText = `${bal} Coins`;
   if (modalBal) modalBal.innerText = bal;
 

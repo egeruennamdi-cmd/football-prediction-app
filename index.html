@@ -411,6 +411,21 @@
   <main id="view-predictions" class="page-view active">
     <!-- --- HERO SECTION --- -->
     <section class="hero container">
+    <!-- Language Switcher & Coins Counter Row (Moved before Win Rate Accuracy on Mobile) -->
+    <div class="mobile-lang-coins-row" style="display: flex; align-items: center; justify-content: center; gap: 12px; margin: 0 auto 14px;">
+      <!-- Language Switcher Selector -->
+      <select id="lang-switcher-mobile" onchange="changeAppLanguage(this.value)" style="background: rgba(15, 23, 42, 0.9); border: 1.5px solid rgba(59, 130, 246, 0.35); border-radius: 10px; padding: 6px 12px; color: #ffffff; outline: none; cursor: pointer; font-size: 0.85rem; font-weight: 700; font-family: var(--font-body); box-shadow: 0 4px 12px rgba(0,0,0,0.4);">
+        <option value="en">🇺🇸 EN</option>
+        <option value="fr">🇫🇷 FR</option>
+        <option value="it">🇮🇹 IT</option>
+        <option value="es">🇪🇸 ES</option>
+      </select>
+
+      <!-- Coins Counter Pill -->
+      <div style="display: flex; align-items: center; gap: 6px; background: rgba(245, 158, 11, 0.12); border: 1.5px solid rgba(245, 158, 11, 0.35); border-radius: 20px; padding: 5px 14px; font-size: 0.88rem; font-weight: 800; color: var(--accent-gold); cursor: pointer; box-shadow: 0 4px 12px rgba(245, 158, 11, 0.25);" onclick="openStoreModal('shop')" title="Mines Coins Store">
+        <span>🪙</span> <span id="mobile-coins-count">500</span>
+      </div>
+    </div>
     <div class="hero-tag">
       <span style="animation: pulse 1.5s infinite; color: var(--primary);">●</span>
       Win Rate: 87.6% Accuracy
