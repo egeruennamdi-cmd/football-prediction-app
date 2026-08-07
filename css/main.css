@@ -2840,3 +2840,52 @@ header {
   z-index: 999998 !important;
   transition: opacity 0.3s ease !important;
 }
+
+/* --- MOBILE FIT & ALIGNMENT FOR UNIVERSAL DATE BAR --- */
+@media (max-width: 768px) {
+  #universal-date-bar-wrapper {
+    padding: 6px 8px !important;
+    top: 50px !important;
+  }
+  
+  .betmines-date-bar {
+    padding: 4px 8px !important;
+    gap: 6px !important;
+    border-radius: 12px !important;
+    border-width: 2px !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    justify-content: flex-start !important;
+  }
+
+  .betmines-date-bar .live-btn {
+    padding: 4px 8px !important;
+    font-size: 0.8rem !important;
+    flex-shrink: 0 !important;
+    border-radius: 8px !important;
+  }
+
+  .betmines-date-bar .date-list {
+    gap: 4px !important;
+    flex-shrink: 0 !important;
+  }
+
+  .betmines-date-bar .date-item {
+    padding: 4px 7px !important;
+    font-size: 0.82rem !important;
+    flex-shrink: 0 !important;
+  }
+
+  .betmines-date-bar .date-item.active {
+    padding: 3px 9px !important;
+    border-radius: 8px !important;
+  }
+
+  .betmines-date-bar .date-item.active .day-num {
+    font-size: 1.05rem !important;
+  }
+
+  .betmines-date-bar .date-item.active .day-name {
+    font-size: 0.58rem !important;
+  }
+}
