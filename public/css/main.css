@@ -2783,3 +2783,8 @@ header {
   background: #ecfdf5 !important;
   color: #059669 !important;
 }
+
+/* Fail-safe Mobile Drawer Open State */
+#mobile-nav-drawer.open {
+  left: 0px !important;
+}

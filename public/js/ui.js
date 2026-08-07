@@ -3439,20 +3439,23 @@ try { if (typeof updateStoreBalanceDisplay === 'function') window.updateStoreBal
 try { if (typeof viewLeagueStatisticsLedger === 'function') window.viewLeagueStatisticsLedger = viewLeagueStatisticsLedger; } catch (e) {}
 
 
+
 // --- MOBILE NAVIGATION DRAWER & ACCORDION CONTROLLERS ---
 function toggleMobileDrawer() {
   const drawer = document.getElementById("mobile-nav-drawer");
   const overlay = document.getElementById("mobile-drawer-overlay");
   if (!drawer || !overlay) return;
 
-  const isOpen = drawer.style.left === "0px";
+  const isOpen = drawer.classList.contains("open") || drawer.style.left === "0px";
   if (isOpen) {
+    drawer.classList.remove("open");
     drawer.style.left = "-320px";
     overlay.style.opacity = "0";
     setTimeout(() => { overlay.style.display = "none"; }, 300);
     document.body.style.overflow = "";
   } else {
     overlay.style.display = "block";
+    drawer.classList.add("open");
     setTimeout(() => { overlay.style.opacity = "1"; }, 10);
     drawer.style.left = "0px";
     document.body.style.overflow = "hidden";

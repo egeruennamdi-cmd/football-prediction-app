@@ -15,16 +15,18 @@
 
   <!-- --- HEADER / NAVBAR --- -->
   <header>
-    <div class="container nav-container">
-      <a href="#" class="logo">
-        <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="color: var(--brand-royal-blue); filter: drop-shadow(var(--glow-blue));">
-          <path d="M12 2a10 10 0 1 0 10 10A10 10 0 0 0 12 2Zm0 0v20M2 12h20M12 12l5.5-5.5M12 12l-5.5 5.5"/>
-        </svg>
-        DEEP <span>PREDICT</span>
-      </a>
-        <button class="mobile-hamburger-btn" onclick="toggleMobileDrawer()" aria-label="Open Navigation Menu" style="background: transparent; border: none; color: #ffffff; font-size: 1.6rem; cursor: pointer; padding: 4px 8px; display: flex; align-items: center; justify-content: center; line-height: 1;">
+    <div class="container nav-container" style="display: flex; align-items: center; justify-content: space-between;">
+      <div style="display: flex; align-items: center; gap: 12px;">
+        <button class="mobile-hamburger-btn" onclick="toggleMobileDrawer()" aria-label="Open Navigation Menu" style="background: transparent; border: none; color: #ffffff; font-size: 1.8rem; cursor: pointer; padding: 4px 8px; display: flex; align-items: center; justify-content: center; line-height: 1; z-index: 100;">
           ☰
         </button>
+        <a href="#" class="logo">
+          <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="color: var(--brand-royal-blue); filter: drop-shadow(var(--glow-blue));">
+            <path d="M12 2a10 10 0 1 0 10 10A10 10 0 0 0 12 2Zm0 0v20M2 12h20M12 12l5.5-5.5M12 12l-5.5 5.5"/>
+          </svg>
+          DEEP <span>PREDICT</span>
+        </a>
+      </div>
       <nav>
         <ul class="nav-menu">
           <li><a href="#predictions" class="nav-link">Home</a></li>
