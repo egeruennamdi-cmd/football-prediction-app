@@ -2766,78 +2766,74 @@ header {
 }
 
 
-/* --- MOBILE HAMBURGER & SLIDE-OUT DRAWER STYLING (MATCHES ATTACHED DESIGN) --- */
+
+/* ==========================================================================
+   MOBILE HAMBURGER & LEFT NAVIGATION DRAWER (HIDDEN ON DESKTOP/LAPTOP)
+   ========================================================================== */
+@media (min-width: 992px) {
+  .mobile-hamburger-btn {
+    display: none !important;
+  }
+}
+
 @media (max-width: 991px) {
   .mobile-hamburger-btn {
-    display: flex !important;
+    display: inline-flex !important;
   }
   header .nav-menu {
     display: none !important;
   }
 }
 
-.mobile-drawer-item:hover {
-  background: #f1f5f9 !important;
-}
-.mobile-drawer-item.active {
-  background: #ecfdf5 !important;
-  color: #059669 !important;
-}
-
-/* Fail-safe Mobile Drawer Open State */
-#mobile-nav-drawer.open {
-  left: 0px !important;
-}
-
-/* ==========================================================================
-   3 DASH LINES HAMBURGER BUTTON & LEFT NAVIGATION DRAWER
-   ========================================================================== */
 .mobile-hamburger-btn {
-  display: inline-flex !important;
-  align-items: center !important;
-  justify-content: center !important;
-  background: rgba(255, 255, 255, 0.1) !important;
-  border: 1.5px solid rgba(255, 255, 255, 0.25) !important;
-  border-radius: 8px !important;
-  color: #ffffff !important;
-  font-size: 1.5rem !important;
-  width: 40px !important;
-  height: 40px !important;
-  cursor: pointer !important;
-  transition: all 0.2s ease !important;
+  align-items: center;
+  justify-content: center;
+  background: rgba(255, 255, 255, 0.1);
+  border: 1.5px solid rgba(255, 255, 255, 0.25);
+  border-radius: 8px;
+  color: #ffffff;
+  font-size: 1.5rem;
+  width: 40px;
+  height: 40px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  z-index: 1000;
 }
+
 .mobile-hamburger-btn:hover {
-  background: rgba(255, 255, 255, 0.22) !important;
-  border-color: #3b82f6 !important;
-  color: #60a5fa !important;
+  background: rgba(255, 255, 255, 0.22);
+  border-color: #3b82f6;
+  color: #60a5fa;
 }
 
 #mobile-nav-drawer {
-  position: fixed !important;
-  top: 0 !important;
-  left: -340px !important;
-  width: 320px !important;
-  height: 100vh !important;
-  background: #ffffff !important;
-  color: #0f172a !important;
-  z-index: 999999 !important;
-  display: flex !important;
-  flex-direction: column !important;
-  box-shadow: 4px 0 24px rgba(0,0,0,0.4) !important;
-  transition: left 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
-  overflow-y: auto !important;
+  position: fixed;
+  top: 0;
+  left: -340px;
+  width: 320px;
+  height: 100vh;
+  background: #ffffff;
+  color: #0f172a;
+  z-index: 999999;
+  display: flex;
+  flex-direction: column;
+  box-shadow: 4px 0 24px rgba(0,0,0,0.4);
+  transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1), left 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  overflow-y: auto;
 }
 
-#mobile-nav-drawer.open {
+#mobile-nav-drawer.open,
+#mobile-nav-drawer.active {
   left: 0px !important;
+  transform: translateX(340px) !important;
 }
 
 #mobile-drawer-overlay {
   display: none;
-  position: fixed !important;
-  inset: 0 !important;
-  background: rgba(0, 0, 0, 0.7) !important;
-  backdrop-filter: blur(6px) !important;
-  z-index: 999998 !important;
-  transition: opacity 0.3s ease !important;
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.7);
+  backdrop-filter: blur(6px);
+  z-index: 999998;
+  transition: opacity 0.3s ease;
 }

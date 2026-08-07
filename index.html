@@ -10,6 +10,50 @@
   <title>BetMines | Next-Gen AI Football Predictions & Analytics</title>
   <meta name="build-version" content="2026.08.02.2055">
   <link rel="stylesheet" href="css/main.css?v=202608022055">
+
+  <script>
+    function toggleMobileDrawer() {
+      var drawer = document.getElementById("mobile-nav-drawer");
+      var overlay = document.getElementById("mobile-drawer-overlay");
+      if (!drawer || !overlay) return;
+
+      var isOpen = drawer.classList.contains("open") || drawer.style.transform === "translateX(340px)" || drawer.style.left === "0px";
+      if (isOpen) {
+        drawer.classList.remove("open");
+        drawer.classList.remove("active");
+        drawer.style.left = "-340px";
+        drawer.style.transform = "translateX(0px)";
+        overlay.style.opacity = "0";
+        setTimeout(function() { overlay.style.display = "none"; }, 300);
+        document.body.style.overflow = "";
+      } else {
+        overlay.style.display = "block";
+        drawer.classList.add("open");
+        drawer.classList.add("active");
+        setTimeout(function() { overlay.style.opacity = "1"; }, 10);
+        drawer.style.left = "0px";
+        drawer.style.transform = "translateX(340px)";
+        document.body.style.overflow = "hidden";
+      }
+    }
+    window.toggleMobileDrawer = toggleMobileDrawer;
+
+    function toggleMobileAccordion(accId) {
+      var target = document.getElementById(accId);
+      var icon = document.getElementById(accId + "-icon");
+      if (!target) return;
+
+      var isHidden = target.style.display === "none" || target.style.display === "";
+      if (isHidden) {
+        target.style.display = "flex";
+        if (icon) icon.style.transform = "rotate(180deg)";
+      } else {
+        target.style.display = "none";
+        if (icon) icon.style.transform = "rotate(0deg)";
+      }
+    }
+    window.toggleMobileAccordion = toggleMobileAccordion;
+  </script>
 </head>
 <body>
 
@@ -18,7 +62,7 @@
     <div class="container nav-container" style="display: flex; align-items: center; justify-content: space-between;">
       <div style="display: flex; align-items: center; gap: 10px;">
         <!-- 3 Dash Lines Icon Button (Always visible on all screen sizes) -->
-        <button class="mobile-hamburger-btn" onclick="toggleMobileDrawer()" aria-label="Open Navigation Menu" title="Open Menu Drawer" style="display: inline-flex !important; align-items: center; justify-content: center; background: rgba(255, 255, 255, 0.1); border: 1.5px solid rgba(255, 255, 255, 0.25); border-radius: 8px; color: #ffffff; font-size: 1.5rem; width: 40px; height: 40px; cursor: pointer; transition: all 0.2s ease; z-index: 1000;">
+        <button class="mobile-hamburger-btn" onclick="toggleMobileDrawer()" aria-label="Open Navigation Menu" title="Open Menu Drawer">
           ☰
         </button>
         <a href="#" class="logo">
