@@ -2765,3 +2765,21 @@ header {
   to { opacity: 1; transform: translateY(0); }
 }
 
+
+/* --- MOBILE HAMBURGER & SLIDE-OUT DRAWER STYLING (MATCHES ATTACHED DESIGN) --- */
+@media (max-width: 991px) {
+  .mobile-hamburger-btn {
+    display: flex !important;
+  }
+  header .nav-menu {
+    display: none !important;
+  }
+}
+
+.mobile-drawer-item:hover {
+  background: #f1f5f9 !important;
+}
+.mobile-drawer-item.active {
+  background: #ecfdf5 !important;
+  color: #059669 !important;
+}

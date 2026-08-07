@@ -22,6 +22,9 @@
         </svg>
         DEEP <span>PREDICT</span>
       </a>
+        <button class="mobile-hamburger-btn" onclick="toggleMobileDrawer()" aria-label="Open Navigation Menu" style="background: transparent; border: none; color: #ffffff; font-size: 1.6rem; cursor: pointer; padding: 4px 8px; display: flex; align-items: center; justify-content: center; line-height: 1;">
+          ☰
+        </button>
       <nav>
         <ul class="nav-menu">
           <li><a href="#predictions" class="nav-link">Home</a></li>
@@ -214,6 +217,143 @@
       </div>
     </div>
   </header>
+  <!-- --- MOBILE SLIDE-OUT NAVIGATION DRAWER (MATCHES ATTACHED DESIGN) --- -->
+  <div id="mobile-drawer-overlay" onclick="toggleMobileDrawer()" style="display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.65); backdrop-filter: blur(4px); z-index: 99998; transition: opacity 0.3s ease;"></div>
+
+  <aside id="mobile-nav-drawer" style="position: fixed; top: 0; left: -320px; width: 300px; height: 100vh; background: #ffffff; color: #0f172a; z-index: 99999; display: flex; flex-direction: column; box-shadow: 4px 0 24px rgba(0,0,0,0.3); transition: left 0.3s cubic-bezier(0.4, 0, 0.2, 1); overflow-y: auto;">
+    
+    <!-- Drawer Header / User Profile -->
+    <div style="padding: 16px; border-bottom: 1px solid #e2e8f0; display: flex; align-items: center; justify-content: space-between; background: #f8fafc;">
+      <div style="display: flex; align-items: center; gap: 12px; cursor: pointer;" onclick="openAuthModal('login')">
+        <div style="width: 38px; height: 38px; border-radius: 50%; border: 1.5px solid #cbd5e1; display: flex; align-items: center; justify-content: center; font-size: 1.1rem; background: #ffffff;">
+          👤
+        </div>
+        <div style="display: flex; flex-direction: column;">
+          <span id="mobile-drawer-username" style="font-weight: 800; font-size: 0.95rem; color: #0f172a;">Egeruennamdi78</span>
+          <span style="font-size: 0.72rem; color: #64748b; font-weight: 600;">My Account</span>
+        </div>
+      </div>
+      <button onclick="toggleMobileDrawer()" style="background: transparent; border: none; font-size: 1.4rem; color: #64748b; cursor: pointer; padding: 4px 8px;">✕</button>
+    </div>
+
+    <!-- Tools & Navigation Section -->
+    <div style="padding: 14px 16px 80px; display: flex; flex-direction: column; gap: 4px; flex-grow: 1;">
+      <div style="font-size: 0.75rem; font-weight: 800; color: #64748b; text-transform: uppercase; letter-spacing: 0.5px; margin: 6px 0 8px;">Tools</div>
+
+      <!-- Item: Matches -->
+      <a href="#predictions" onclick="toggleMobileDrawer()" class="mobile-drawer-item active" style="display: flex; align-items: center; justify-content: space-between; padding: 10px 12px; border-radius: 10px; text-decoration: none; color: #059669; background: #ecfdf5; font-weight: 800; font-size: 0.92rem;">
+        <span style="display: flex; align-items: center; gap: 10px;">⚽ Matches</span>
+      </a>
+
+      <!-- Item: Leagues -->
+      <a href="#analytics" onclick="toggleMobileDrawer()" class="mobile-drawer-item" style="display: flex; align-items: center; gap: 10px; padding: 10px 12px; border-radius: 10px; text-decoration: none; color: #1e293b; font-weight: 700; font-size: 0.92rem;">
+        🏆 Leagues
+      </a>
+
+      <!-- Item: Match Previews -->
+      <a href="#predictions" onclick="toggleMobileDrawer()" class="mobile-drawer-item" style="display: flex; align-items: center; gap: 10px; padding: 10px 12px; border-radius: 10px; text-decoration: none; color: #1e293b; font-weight: 700; font-size: 0.92rem;">
+        📝 Match Previews
+      </a>
+
+      <!-- Item: Advanced Filters -->
+      <a href="#toptips" onclick="toggleMobileDrawer()" class="mobile-drawer-item" style="display: flex; align-items: center; gap: 10px; padding: 10px 12px; border-radius: 10px; text-decoration: none; color: #1e293b; font-weight: 700; font-size: 0.92rem;">
+        🎯 Advanced Filters
+      </a>
+
+      <!-- Item: DeepPredict Machine -->
+      <a href="#generator" onclick="toggleMobileDrawer()" class="mobile-drawer-item" style="display: flex; align-items: center; gap: 10px; padding: 10px 12px; border-radius: 10px; text-decoration: none; color: #1e293b; font-weight: 700; font-size: 0.92rem;">
+        🎰 DeepPredict Machine
+      </a>
+
+      <!-- Item: Leagues Stats -->
+      <a href="#analytics" onclick="toggleMobileDrawer()" class="mobile-drawer-item" style="display: flex; align-items: center; gap: 10px; padding: 10px 12px; border-radius: 10px; text-decoration: none; color: #1e293b; font-weight: 700; font-size: 0.92rem;">
+        📈 Leagues Stats
+      </a>
+
+      <!-- Item: Daily Bets -->
+      <a href="#predictions" onclick="toggleMobileDrawer()" class="mobile-drawer-item" style="display: flex; align-items: center; gap: 10px; padding: 10px 12px; border-radius: 10px; text-decoration: none; color: #1e293b; font-weight: 700; font-size: 0.92rem;">
+        🃏 Daily Bets
+      </a>
+
+      <!-- ACCORDION 1: Predictions -->
+      <div style="display: flex; flex-direction: column;">
+        <div onclick="toggleMobileAccordion('mobile-acc-predictions')" style="display: flex; align-items: center; justify-content: space-between; padding: 10px 12px; border-radius: 10px; cursor: pointer; color: #1e293b; font-weight: 700; font-size: 0.92rem;">
+          <span style="display: flex; align-items: center; gap: 10px;">🎯 Predictions</span>
+          <span id="mobile-acc-predictions-icon" style="font-size: 0.7rem; transition: transform 0.2s;">▼</span>
+        </div>
+        <div id="mobile-acc-predictions" style="display: none; flex-direction: column; padding-left: 28px; gap: 6px; margin: 4px 0 8px;">
+          <a href="#predictions" onclick="triggerQuickFilter('today', 'all'); toggleMobileDrawer();" style="color: #475569; font-size: 0.86rem; text-decoration: none; font-weight: 600; padding: 4px 0;">📅 Today's Predictions</a>
+          <a href="#predictions" onclick="triggerQuickFilter('tomorrow', 'all'); toggleMobileDrawer();" style="color: #475569; font-size: 0.86rem; text-decoration: none; font-weight: 600; padding: 4px 0;">📅 Tomorrow's Predictions</a>
+          <a href="#predictions" onclick="triggerQuickFilter('yesterday', 'all'); toggleMobileDrawer();" style="color: #475569; font-size: 0.86rem; text-decoration: none; font-weight: 600; padding: 4px 0;">📅 Yesterday's Results</a>
+          <a href="#predictions" onclick="triggerTopTipFilter('today', 'uo15'); toggleMobileDrawer();" style="color: #2563eb; font-size: 0.86rem; text-decoration: none; font-weight: 700; padding: 4px 0;">⭐ Top Tips: Under/Over 1.5</a>
+          <a href="#predictions" onclick="triggerTopTipFilter('today', 'uo35'); toggleMobileDrawer();" style="color: #2563eb; font-size: 0.86rem; text-decoration: none; font-weight: 700; padding: 4px 0;">⭐ Top Tips: Under/Over 3.5</a>
+        </div>
+      </div>
+
+      <!-- ACCORDION 2: Betting Tools -->
+      <div style="display: flex; flex-direction: column;">
+        <div onclick="toggleMobileAccordion('mobile-acc-tools')" style="display: flex; align-items: center; justify-content: space-between; padding: 10px 12px; border-radius: 10px; cursor: pointer; color: #1e293b; font-weight: 700; font-size: 0.92rem;">
+          <span style="display: flex; align-items: center; gap: 10px;">🛠️ Betting Tools</span>
+          <span id="mobile-acc-tools-icon" style="font-size: 0.7rem; transition: transform 0.2s;">▼</span>
+        </div>
+        <div id="mobile-acc-tools" style="display: none; flex-direction: column; padding-left: 28px; gap: 6px; margin: 4px 0 8px;">
+          <a href="#doctor" onclick="toggleMobileDrawer()" style="color: #475569; font-size: 0.86rem; text-decoration: none; font-weight: 600; padding: 4px 0;">🩺 AI Bet Doctor</a>
+          <a href="#arbitrage" onclick="toggleMobileDrawer()" style="color: #475569; font-size: 0.86rem; text-decoration: none; font-weight: 600; padding: 4px 0;">🛡️ Arbitrage Finder</a>
+          <a href="#converter" onclick="toggleMobileDrawer()" style="color: #475569; font-size: 0.86rem; text-decoration: none; font-weight: 600; padding: 4px 0;">🎫 Bet Code Converter</a>
+          <a href="#backtester" onclick="toggleMobileDrawer()" style="color: #475569; font-size: 0.86rem; text-decoration: none; font-weight: 600; padding: 4px 0;">🧪 Strategy Backtester</a>
+          <a href="#valuebot" onclick="toggleMobileDrawer()" style="color: #475569; font-size: 0.86rem; text-decoration: none; font-weight: 600; padding: 4px 0;">💰 Value Bet Bot</a>
+        </div>
+      </div>
+
+      <!-- ACCORDION 3: Analytics & VIP -->
+      <div style="display: flex; flex-direction: column;">
+        <div onclick="toggleMobileAccordion('mobile-acc-analytics')" style="display: flex; align-items: center; justify-content: space-between; padding: 10px 12px; border-radius: 10px; cursor: pointer; color: #1e293b; font-weight: 700; font-size: 0.92rem;">
+          <span style="display: flex; align-items: center; gap: 10px;">📊 Analytics & VIP</span>
+          <span id="mobile-acc-analytics-icon" style="font-size: 0.7rem; transition: transform 0.2s;">▼</span>
+        </div>
+        <div id="mobile-acc-analytics" style="display: none; flex-direction: column; padding-left: 28px; gap: 6px; margin: 4px 0 8px;">
+          <a href="#analytics" onclick="toggleMobileDrawer()" style="color: #475569; font-size: 0.86rem; text-decoration: none; font-weight: 600; padding: 4px 0;">📊 League Stats Ledger</a>
+          <a href="#predictions" onclick="openGeneralScout(); toggleMobileDrawer();" style="color: #475569; font-size: 0.86rem; text-decoration: none; font-weight: 600; padding: 4px 0;">🧠 Advanced Team Stats</a>
+          <a href="#telegram-vip-section" onclick="toggleMobileDrawer()" style="color: #2563eb; font-size: 0.86rem; text-decoration: none; font-weight: 700; padding: 4px 0;">💬 VIP Telegram Group</a>
+        </div>
+      </div>
+
+      <!-- Item: Leagues Directory -->
+      <a href="#predictions" onclick="toggleMobileDrawer()" class="mobile-drawer-item" style="display: flex; align-items: center; gap: 10px; padding: 10px 12px; border-radius: 10px; text-decoration: none; color: #1e293b; font-weight: 700; font-size: 0.92rem;">
+        🌍 Leagues Directory
+      </a>
+
+      <!-- Pro Features Badges Items -->
+      <a href="#scanner" onclick="toggleMobileDrawer()" style="display: flex; align-items: center; justify-content: space-between; padding: 10px 12px; border-radius: 10px; text-decoration: none; color: #d97706; font-weight: 700; font-size: 0.92rem;">
+        <span style="display: flex; align-items: center; gap: 8px;">👑 Live Scanner</span>
+      </a>
+
+      <a href="#scanner" onclick="toggleMobileDrawer()" style="display: flex; align-items: center; justify-content: space-between; padding: 10px 12px; border-radius: 10px; text-decoration: none; color: #d97706; font-weight: 700; font-size: 0.92rem;">
+        <span style="display: flex; align-items: center; gap: 8px;">👑 Pre-Match Scanner</span>
+      </a>
+
+      <a href="#scanner" onclick="toggleMobileDrawer()" style="display: flex; align-items: center; justify-content: space-between; padding: 10px 12px; border-radius: 10px; text-decoration: none; color: #d97706; font-weight: 700; font-size: 0.92rem;">
+        <span style="display: flex; align-items: center; gap: 8px;">👑 Monitoring</span>
+        <span style="background: #f97316; color: #fff; font-size: 0.65rem; font-weight: 900; padding: 2px 6px; border-radius: 10px; text-transform: uppercase;">NEW</span>
+      </a>
+
+      <!-- Bottom Controls: Favourites & Settings -->
+      <div style="display: flex; justify-content: space-between; align-items: center; border-top: 1px solid #e2e8f0; margin-top: 14px; padding-top: 14px;">
+        <button onclick="toggleMobileDrawer(); showToast('⭐ Favourites Saved');" style="background: transparent; border: none; font-weight: 700; font-size: 0.85rem; color: #475569; display: flex; align-items: center; gap: 6px; cursor: pointer;">
+          ⭐ Favourites
+        </button>
+        <button onclick="toggleMobileDrawer(); openSupportModal('faq');" style="background: transparent; border: none; font-weight: 700; font-size: 0.85rem; color: #475569; display: flex; align-items: center; gap: 6px; cursor: pointer;">
+          ⚙️ Settings
+        </button>
+      </div>
+
+      <!-- Bottom Sticky Go Premium Button -->
+      <a href="#premium" onclick="toggleMobileDrawer()" style="margin-top: 12px; background: linear-gradient(135deg, #f97316 0%, #ea580c 100%); color: #ffffff; font-weight: 900; border-radius: 12px; padding: 14px; text-align: center; text-decoration: none; font-family: var(--font-display); font-size: 0.98rem; box-shadow: 0 4px 14px rgba(234, 88, 12, 0.45); display: block;">
+        Go Premium
+      </a>
+
+    </div>
+  </aside>
 
   <!-- --- UNIVERSAL STICKY SUB-HEADER DATE & LIVE BAR (ON EVERY PAGE) --- -->
   <div id="universal-date-bar-wrapper">

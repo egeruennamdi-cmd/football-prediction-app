@@ -3437,3 +3437,41 @@ try { if (typeof triggerHeroScoutPrompt === 'function') window.triggerHeroScoutP
 try { if (typeof updatePane === 'function') window.updatePane = updatePane; } catch (e) {}
 try { if (typeof updateStoreBalanceDisplay === 'function') window.updateStoreBalanceDisplay = updateStoreBalanceDisplay; } catch (e) {}
 try { if (typeof viewLeagueStatisticsLedger === 'function') window.viewLeagueStatisticsLedger = viewLeagueStatisticsLedger; } catch (e) {}
+
+
+// --- MOBILE NAVIGATION DRAWER & ACCORDION CONTROLLERS ---
+function toggleMobileDrawer() {
+  const drawer = document.getElementById("mobile-nav-drawer");
+  const overlay = document.getElementById("mobile-drawer-overlay");
+  if (!drawer || !overlay) return;
+
+  const isOpen = drawer.style.left === "0px";
+  if (isOpen) {
+    drawer.style.left = "-320px";
+    overlay.style.opacity = "0";
+    setTimeout(() => { overlay.style.display = "none"; }, 300);
+    document.body.style.overflow = "";
+  } else {
+    overlay.style.display = "block";
+    setTimeout(() => { overlay.style.opacity = "1"; }, 10);
+    drawer.style.left = "0px";
+    document.body.style.overflow = "hidden";
+  }
+}
+window.toggleMobileDrawer = toggleMobileDrawer;
+
+function toggleMobileAccordion(accId) {
+  const target = document.getElementById(accId);
+  const icon = document.getElementById(accId + "-icon");
+  if (!target) return;
+
+  const isHidden = target.style.display === "none" || target.style.display === "";
+  if (isHidden) {
+    target.style.display = "flex";
+    if (icon) icon.style.transform = "rotate(180deg)";
+  } else {
+    target.style.display = "none";
+    if (icon) icon.style.transform = "rotate(0deg)";
+  }
+}
+window.toggleMobileAccordion = toggleMobileAccordion;
