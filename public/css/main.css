@@ -2906,3 +2906,72 @@ header {
     display: none !important;
   }
 }
+
+/* --- PERFECT MOBILE TOP HEADER ALIGNMENT (LOGIN + GO PREMIUM) --- */
+@media (max-width: 768px) {
+  header {
+    padding: 6px 0 !important;
+  }
+  
+  .nav-container {
+    padding-left: 10px !important;
+    padding-right: 10px !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: space-between !important;
+  }
+  
+  .logo {
+    font-size: 1.05rem !important;
+    gap: 6px !important;
+  }
+  
+  .logo svg {
+    width: 22px !important;
+    height: 22px !important;
+  }
+  
+  .mobile-hamburger-btn {
+    width: 34px !important;
+    height: 34px !important;
+    font-size: 1.3rem !important;
+  }
+
+  .nav-actions {
+    display: flex !important;
+    align-items: center !important;
+    gap: 6px !important;
+    flex-shrink: 0 !important;
+  }
+
+  #nav-auth-container button {
+    padding: 2px 4px !important;
+    font-size: 0.8rem !important;
+    gap: 4px !important;
+  }
+
+  #nav-auth-container button div {
+    width: 28px !important;
+    height: 28px !important;
+    font-size: 0.8rem !important;
+  }
+
+  #nav-user-label {
+    font-size: 0.8rem !important;
+  }
+
+  .nav-actions .btn {
+    padding: 6px 11px !important;
+    border-radius: 8px !important;
+    box-shadow: 0 2px 8px rgba(234, 88, 12, 0.4) !important;
+  }
+
+  .nav-actions .btn span:nth-child(1) {
+    font-size: 0.78rem !important;
+    font-weight: 900 !important;
+  }
+
+  .nav-actions .btn span:nth-child(2) {
+    display: none !important;
+  }
+}
