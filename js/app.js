@@ -2083,7 +2083,19 @@ function triggerHeroScoutPrompt() {
   if (!heroInput || !heroInput.value.trim()) return;
 
   const text = heroInput.value.trim();
+  heroInput.value = "";
+
+  if (typeof openGeneralScout === 'function') openGeneralScout();
+
+  setTimeout(() => {
+    const scoutInput = document.getElementById("scout-chat-input");
+    if (scoutInput) {
+      scoutInput.value = text;
+      if (typeof sendScoutMessage === 'function') sendScoutMessage();
+    }
+  }, 350);
 }
+window.triggerHeroScoutPrompt = triggerHeroScoutPrompt;
 
 function filterMarketSubmenu(marketVal, btn) {
   window.appState.activeMarketSubmenu = marketVal;
