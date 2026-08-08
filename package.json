@@ -11,7 +11,7 @@
     "build:backend": "cd backend && npm install && npx prisma generate && npm run build",
     "start": "node backend/dist/server.js",
     "preview": "vite preview --port 8080",
-    "deploy": "npm run build && wrangler deploy"
+    "deploy": "npm run build && wrangler pages deploy ./dist --project-name=deeppredictbet"
   },
   "devDependencies": {
     "@cloudflare/vite-plugin": "^1.50.0",
