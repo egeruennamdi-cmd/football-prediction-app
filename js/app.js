@@ -3263,3 +3263,170 @@ try { if (typeof unlockPremiumPlan === 'function') window.unlockPremiumPlan = un
 try { if (typeof unlockPremiumPlanLigue2 === 'function') window.unlockPremiumPlanLigue2 = unlockPremiumPlanLigue2; } catch (e) {}
 try { if (typeof updateBarDate === 'function') window.updateBarDate = updateBarDate; } catch (e) {}
 try { if (typeof updateFixturesDisplay === 'function') window.updateFixturesDisplay = updateFixturesDisplay; } catch (e) {}
+
+
+/* --- DEEPPREDICT MACHINE TICKET GENERATOR & SLIDER HELPERS --- */
+function updateOddsSliderVal(val) {
+  const display = document.getElementById("odds-range-val");
+  if (display) {
+    display.innerText = `1.20 - ${parseFloat(val).toFixed(2)}`;
+  }
+}
+
+function updateProbSliderVal(val) {
+  const display = document.getElementById("prob-range-val");
+  if (display) {
+    display.innerText = `[${val}% - 100%]`;
+  }
+}
+
+function generateMachineTicket() {
+  if (typeof MATCH_DATA === 'undefined' || !MATCH_DATA || MATCH_DATA.length === 0) return;
+
+  const countEl = document.getElementById("machine-match-count");
+  const count = countEl ? parseInt(countEl.value) || 4 : 4;
+  const matchCount = Math.min(Math.max(count, 1), 40);
+
+  const maxOddsEl = document.getElementById("odds-max-slider");
+  const maxOddsCap = maxOddsEl ? parseFloat(maxOddsEl.value) || 2.40 : 2.40;
+
+  // Selected market types
+  const selectedMarkets = [];
+  const cardCheckboxes = document.querySelectorAll("#tool-machine input[type='checkbox']:checked, #tool-generator input[type='checkbox']:checked");
+  cardCheckboxes.forEach(cb => selectedMarkets.push(cb.value));
+
+  const marketOptions = [
+    "Home Win (1)", "Over 1.5 Goals", "Both Teams To Score (BTTS)",
+    "Double Chance (1X)", "Away Win (2)", "Under 3.5 Goals", "Over 2.5 Goals", "Draw No Bet (1)"
+  ];
+
+  const ticketItems = [];
+  let totalOdds = 1.0;
+
+  window.appState.betslip = [];
+
+  for (let i = 0; i < matchCount; i++) {
+    const match = MATCH_DATA[i % MATCH_DATA.length];
+    const tip = marketOptions[i % marketOptions.length];
+    
+    // Calculate deterministic reasonable odds capped by maxOddsCap
+    const seed = (match.homeTeam.name.length + match.awayTeam.name.length + i * 7);
+    const oddsRaw = 1.25 + (seed % 15) * 0.08;
+    const odds = parseFloat(Math.min(oddsRaw, maxOddsCap).toFixed(2));
+    
+    totalOdds *= odds;
+
+    const cycle = Math.floor(i / MATCH_DATA.length);
+    const homeSuffix = cycle > 0 ? ` [R${cycle + 1}]` : '';
+    const awaySuffix = cycle > 0 ? ` [R${cycle + 1}]` : '';
+
+    const item = {
+      matchId: `mach-${i}-${match.id}`,
+      homeTeam: match.homeTeam.name + homeSuffix,
+      awayTeam: match.awayTeam.name + awaySuffix,
+      league: match.league,
+      leagueEmoji: match.leagueEmoji || "⚽",
+      tip: tip,
+      odds: odds
+    };
+
+    ticketItems.push(item);
+
+    window.appState.betslip.push({
+      matchId: item.matchId,
+      match: {
+        ...match,
+        homeTeam: { name: item.homeTeam },
+        awayTeam: { name: item.awayTeam }
+      },
+      tip: tip,
+      odds: odds
+    });
+  }
+
+  // Generate Booking Code
+  const chars = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
+  let randomCode = "";
+  for (let c = 0; c < 5; c++) {
+    randomCode += chars.charAt(Math.floor(Math.random() * chars.length));
+  }
+  const bookingCode = `DP-${randomCode}`;
+
+  // Render Ticket Body
+  const bodyContainer = document.getElementById("ticket-body-container");
+  if (bodyContainer) {
+    let html = "";
+    ticketItems.forEach((item, index) => {
+      html += `
+        <div style="display: flex; justify-content: space-between; align-items: center; padding: 10px 12px; background: rgba(255,255,255,0.02); border: 1px solid var(--border-color); border-radius: var(--radius-sm); margin-bottom: 8px;">
+          <div>
+            <div style="font-size: 0.7rem; color: var(--text-muted); text-transform: uppercase;">${item.leagueEmoji} ${item.league}</div>
+            <div style="font-size: 0.85rem; font-weight: 700; color: var(--text-primary); margin: 2px 0;">${item.homeTeam} vs ${item.awayTeam}</div>
+            <div style="font-size: 0.75rem; color: #60a5fa; font-weight: 600;">Prediction: ${item.tip}</div>
+          </div>
+          <div style="font-size: 1.05rem; font-weight: 800; color: var(--secondary); font-family: var(--font-display);">@${item.odds.toFixed(2)}</div>
+        </div>
+      `;
+    });
+    bodyContainer.innerHTML = html;
+  }
+
+  // Update Footer Displays
+  const footerContainer = document.getElementById("ticket-footer-container");
+  if (footerContainer) {
+    footerContainer.style.display = "flex";
+  }
+
+  const codeDisplay = document.getElementById("ticket-booking-code");
+  if (codeDisplay) {
+    codeDisplay.innerText = bookingCode;
+  }
+
+  const sourceCodeDisplay = document.getElementById("engine-source-code");
+  if (sourceCodeDisplay) {
+    sourceCodeDisplay.innerText = bookingCode;
+  }
+
+  const engineCard = document.getElementById("engine-card-container");
+  if (engineCard) {
+    engineCard.style.display = "flex";
+  }
+
+  const finalOdds = parseFloat(totalOdds.toFixed(2));
+  const oddsDisplay = document.getElementById("ticket-total-odds");
+  if (oddsDisplay) {
+    oddsDisplay.innerText = `@${finalOdds}`;
+  }
+
+  const returnDisplay = document.getElementById("ticket-total-return");
+  if (returnDisplay) {
+    returnDisplay.innerText = `$${(finalOdds * 10).toFixed(2)}`;
+  }
+
+  // Render Betsy Drawer
+  if (typeof renderBetslip === 'function') renderBetslip();
+
+  if (typeof showAppNotification === 'function') {
+    showAppNotification(`⚡ DeepPredict Machine generated a ${matchCount}-Match Ticket (${bookingCode})!`);
+  }
+}
+
+function copyGeneratedTicketCode() {
+  const codeEl = document.getElementById("ticket-booking-code");
+  if (!codeEl) return;
+  const code = codeEl.innerText.trim();
+  navigator.clipboard.writeText(code).then(() => {
+    if (typeof showAppNotification === 'function') {
+      showAppNotification(`✓ Booking code '${code}' copied to clipboard!`);
+    }
+  }).catch(() => {
+    if (typeof showAppNotification === 'function') {
+      showAppNotification(`Booking code: ${code}`);
+    }
+  });
+}
+
+window.updateOddsSliderVal = updateOddsSliderVal;
+window.updateProbSliderVal = updateProbSliderVal;
+window.generateMachineTicket = generateMachineTicket;
+window.copyGeneratedTicketCode = copyGeneratedTicketCode;
