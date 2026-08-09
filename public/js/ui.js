@@ -3734,3 +3734,20 @@ window.updateProbSliderVal = updateProbSliderVal;
 window.generateMachineTicket = generateMachineTicket;
 window.copyGeneratedTicketCode = copyGeneratedTicketCode;
 window.saveGeneratedTicket = saveGeneratedTicket;
+
+
+/* --- DEEPPREDICTBET OPTION C CONVERTER ENGINE HELPERS --- */
+function swapConverterBookmakers() {
+  const srcSelect = document.getElementById("betcode-src-select");
+  const tgtSelect = document.getElementById("betcode-tgt-select");
+  if (!srcSelect || !tgtSelect) return;
+
+  const temp = srcSelect.value;
+  srcSelect.value = tgtSelect.value;
+  tgtSelect.value = temp;
+
+  if (typeof showAppNotification === 'function') {
+    showAppNotification("↔️ Bookmakers swapped successfully!");
+  }
+}
+window.swapConverterBookmakers = swapConverterBookmakers;
