@@ -3000,3 +3000,104 @@ header {
     box-sizing: border-box !important;
   }
 }
+
+/* --- MODAL SUBTABS & ACTION TOOLBAR RESPONSIVE ALIGNMENT --- */
+.modal-subtabs-bar {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  margin: 0 16px 14px;
+  border-bottom: 1px solid var(--border-color);
+  padding-bottom: 10px;
+  gap: 10px;
+  width: calc(100% - 32px);
+  box-sizing: border-box;
+}
+
+.modal-tab-group {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 6px;
+  width: 100%;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  padding-bottom: 4px;
+  scrollbar-width: none;
+}
+.modal-tab-group::-webkit-scrollbar {
+  display: none;
+}
+
+.modal-tab-group .tab-btn {
+  padding: 6px 12px;
+  font-size: 0.8rem;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.modal-action-toolbar {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 6px;
+  width: 100%;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  padding-bottom: 4px;
+  flex-wrap: nowrap;
+  scrollbar-width: none;
+}
+.modal-action-toolbar::-webkit-scrollbar {
+  display: none;
+}
+
+.modal-coins-badge {
+  font-size: 0.75rem;
+  color: var(--text-secondary);
+  font-weight: 600;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.modal-action-toolbar .action-btn {
+  font-size: 0.7rem;
+  padding: 5px 10px;
+  border-radius: var(--radius-sm);
+  font-weight: 700;
+  white-space: nowrap;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+@media (max-width: 768px) {
+  .modal-subtabs-bar {
+    margin: 0 8px 10px !important;
+    width: calc(100% - 16px) !important;
+    padding-bottom: 8px !important;
+    gap: 8px !important;
+  }
+
+  .modal-tab-group {
+    justify-content: flex-start !important;
+    width: 100% !important;
+  }
+
+  .modal-tab-group .tab-btn {
+    padding: 6px 10px !important;
+    font-size: 0.75rem !important;
+  }
+
+  .modal-action-toolbar {
+    justify-content: flex-start !important;
+    width: 100% !important;
+  }
+
+  .modal-action-toolbar .action-btn {
+    padding: 5px 8px !important;
+    font-size: 0.68rem !important;
+  }
+}

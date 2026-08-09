@@ -2856,33 +2856,22 @@
         <button class="modal-close" onclick="triggerCloseScoutModal()">&times;</button>
       </div>
 
-      <!-- Modal Sub-Tabs -->
-      <div style="display: flex; justify-content: space-between; align-items: center; margin: 0 20px 12px; border-bottom: 1px solid var(--border-color); padding-bottom: 8px; flex-wrap: wrap; gap: 8px;">
-        <div style="display: flex; gap: 8px;">
-          <button class="tab-btn active" id="modal-tab-btn-chat" onclick="switchModalTab('chat')" style="padding: 6px 12px; font-size: 0.8rem;">AI Scout Chat</button>
-          <button class="tab-btn" id="modal-tab-btn-stats" onclick="switchModalTab('stats')" style="padding: 6px 12px; font-size: 0.8rem;">Advanced Team Stats</button>
-          <button class="tab-btn" id="modal-tab-btn-h2h" onclick="switchModalTab('h2h')" style="padding: 6px 12px; font-size: 0.8rem;">H2H History</button>
-          <button class="tab-btn" id="modal-tab-btn-odds" onclick="switchModalTab('odds')" style="padding: 6px 12px; font-size: 0.8rem;">Odds Comparison</button>
+      <!-- Modal Sub-Tabs & Action Toolbar -->
+      <div class="modal-subtabs-bar">
+        <div class="modal-tab-group">
+          <button class="tab-btn active" id="modal-tab-btn-chat" onclick="switchModalTab('chat')">AI Scout Chat</button>
+          <button class="tab-btn" id="modal-tab-btn-stats" onclick="switchModalTab('stats')">Advanced Team Stats</button>
+          <button class="tab-btn" id="modal-tab-btn-h2h" onclick="switchModalTab('h2h')">H2H History</button>
+          <button class="tab-btn" id="modal-tab-btn-odds" onclick="switchModalTab('odds')">Odds Comparison</button>
         </div>
         
-        <!-- Post Simulated Tip Quick Link -->
-        <div style="display: flex; align-items: center; gap: 8px;">
-          <span style="font-size: 0.75rem; color: var(--text-secondary); font-weight: 600;">🪙 <span id="modal-user-coins-display">500</span></span>
-          <button class="btn btn-secondary" onclick="openModalSubmitTip()" style="font-size: 0.7rem; padding: 4px 10px; border: 1.5px solid #3b82f6; color: #60a5fa; background: rgba(37, 99, 235, 0.08); border-radius: var(--radius-sm); font-weight: 700;">
-            ✍️ Submit Tip
-          </button>
-          <button class="btn btn-primary" id="modal-add-betslip-btn" onclick="addActiveMatchToBetslip()" style="font-size: 0.7rem; padding: 4px 10px; background: var(--brand-royal-blue); border: 1.5px solid var(--brand-royal-blue); border-radius: var(--radius-sm); font-weight: 700; display: flex; align-items: center; gap: 4px;">
-            <span>➕</span> Add to Slip
-          </button>
-          <button class="btn btn-secondary" onclick="generateScoutAccumulator(40)" style="font-size: 0.7rem; padding: 4px 10px; border: 1.5px solid #3b82f6; color: #60a5fa; background: rgba(37, 99, 235, 0.08); border-radius: var(--radius-sm); font-weight: 700; display: flex; align-items: center; gap: 4px;">
-            🚀 40 Picks Ticket
-          </button>
-          <button class="btn btn-secondary" onclick="generateScoutAccumulator(30)" style="font-size: 0.7rem; padding: 4px 10px; border: 1.5px solid #3b82f6; color: #60a5fa; background: rgba(37, 99, 235, 0.08); border-radius: var(--radius-sm); font-weight: 700; display: flex; align-items: center; gap: 4px;">
-            🚀 30 Picks Ticket
-          </button>
-          <button class="btn btn-secondary" onclick="generateScoutAccumulator(20)" style="font-size: 0.7rem; padding: 4px 10px; border: 1.5px solid #3b82f6; color: #60a5fa; background: rgba(37, 99, 235, 0.08); border-radius: var(--radius-sm); font-weight: 700; display: flex; align-items: center; gap: 4px;">
-            🚀 20 Picks Ticket
-          </button>
+        <div class="modal-action-toolbar">
+          <span class="modal-coins-badge">🪙 <span id="modal-user-coins-display">500</span></span>
+          <button class="btn btn-secondary action-btn" onclick="openModalSubmitTip()">✍️ Submit Tip</button>
+          <button class="btn btn-primary action-btn" id="modal-add-betslip-btn" onclick="addActiveMatchToBetslip()">➕ Add to Slip</button>
+          <button class="btn btn-secondary action-btn" onclick="generateScoutAccumulator(40)">🚀 40 Picks</button>
+          <button class="btn btn-secondary action-btn" onclick="generateScoutAccumulator(30)">🚀 30 Picks</button>
+          <button class="btn btn-secondary action-btn" onclick="generateScoutAccumulator(20)">🚀 20 Picks</button>
         </div>
       </div>
 
