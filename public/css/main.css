@@ -359,14 +359,7 @@ header {
   font-weight: 800;
 }
 
-.tabs-container {
-  display: flex;
-  gap: 4px;
-  background: var(--bg-dark-accent);
-  padding: 4px;
-  border-radius: var(--radius-sm);
-  border: 1px solid var(--border-color);
-}
+
 
 .tab-btn {
   padding: 8px 16px;
@@ -3101,5 +3094,46 @@ header {
     font-size: 0.7rem !important;
     display: inline-flex !important;
     align-items: center !important;
+  }
+}
+
+
+/* --- MATCH DIRECTORY TABS CONTAINER MOBILE CENTER FIT --- */
+.tabs-container {
+  display: flex;
+  gap: 4px;
+  background: var(--bg-dark-accent);
+  padding: 4px;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border-color);
+  justify-content: center;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+@media (max-width: 768px) {
+  .section-header {
+    justify-content: center !important;
+    text-align: center !important;
+  }
+
+  .tabs-container {
+    width: 100% !important;
+    justify-content: center !important;
+    align-items: center !important;
+    flex-wrap: wrap !important;
+    gap: 4px !important;
+    margin: 0 auto !important;
+    padding: 4px !important;
+    box-sizing: border-box !important;
+  }
+
+  .tabs-container .tab-btn {
+    flex: 1 1 auto !important;
+    text-align: center !important;
+    justify-content: center !important;
+    padding: 7px 8px !important;
+    font-size: 0.76rem !important;
+    white-space: nowrap !important;
   }
 }
