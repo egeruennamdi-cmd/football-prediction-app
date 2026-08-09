@@ -3397,7 +3397,19 @@ function generateMachineTicket() {
     const returnDisplay = document.getElementById("ticket-total-return");
     if (returnDisplay) returnDisplay.innerText = `${(finalOdds * 10).toFixed(2)}`;
 
+    // Render Betslip and open drawer on mobile/tablet
     if (typeof renderBetslip === 'function') renderBetslip();
+
+    const drawer = document.getElementById("floating-betslip-drawer");
+    if (drawer) {
+      drawer.classList.add("open");
+    }
+
+    // Scroll to Ticket Preview on Mobile & Tablet
+    const ticketPreview = document.querySelector(".machine-ticket-preview");
+    if (ticketPreview && window.innerWidth <= 1024) {
+      ticketPreview.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }
 
     if (typeof showAppNotification === 'function') {
       showAppNotification(`⚡ DeepPredict Machine generated a ${matchCount}-Match Ticket (${bookingCode})!`);
