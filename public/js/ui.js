@@ -139,7 +139,7 @@ function renderMatchCards(fixtures) {
             <div class="premium-lock-icon">👑</div>
             <div>
               <h4 class="premium-lock-title">Premium Prediction</h4>
-              <p class="premium-lock-desc">Unlock BetMines Pro algorithmic outcomes.</p>
+              <p class="premium-lock-desc">Unlock DeepPredict Pro algorithmic outcomes.</p>
             </div>
           </div>
           <a href="#premium" class="btn btn-premium btn-premium-card" onclick="smoothScrollToPremium()">Unlock Pro Pick</a>
@@ -405,7 +405,7 @@ function openScoutModal(matchId) {
   if (chatBody) {
     chatBody.innerHTML = `
       <div class="chat-bubble scout">
-        Hello! I am your <b>BetMines Scout</b>. Here is my strategic briefing for the upcoming fixture between <b>${match.homeTeam.name}</b> and <b>${match.awayTeam.name}</b>:
+        Hello! I am your <b>DeepPredict Scout</b>. Here is my strategic briefing for the upcoming fixture between <b>${match.homeTeam.name}</b> and <b>${match.awayTeam.name}</b>:
         
         <div class="scout-match-summary">
           <div class="scout-sum-row">
@@ -450,14 +450,14 @@ function openGeneralScout() {
 
   const modalTitle = document.getElementById("scout-modal-title");
   if (modalTitle) {
-    modalTitle.innerText = "BetMines Master Scout";
+    modalTitle.innerText = "DeepPredict Master Scout";
   }
 
   const chatBody = document.getElementById("scout-chat-body");
   if (chatBody) {
     chatBody.innerHTML = `
       <div class="chat-bubble scout">
-        Welcome to the <b>BetMines Master Briefing Center</b>. I analyze overall league trends, team forms, and algorithmic accuracy.
+        Welcome to the <b>DeepPredict Master Briefing Center</b>. I analyze overall league trends, team forms, and algorithmic accuracy.
         <br><br>
         Currently, my algorithms are monitoring <b>${MATCH_DATA.length} major fixtures</b> today. Our general weekly win-rate is resting at a solid <b>${HISTORICAL_PERFORMANCE.winRate}</b>.
         <br><br>
@@ -470,7 +470,7 @@ function openGeneralScout() {
   document.body.style.overflow = "hidden";
 }
 
-// Toggle active checkboxes in BetMines Machine cards
+// Toggle active checkboxes in DeepPredict Machine cards
 function toggleCheckboxCard(card, event) {
   const checkbox = card.querySelector('input[type="checkbox"]');
   if (!checkbox) return;
@@ -493,7 +493,7 @@ function toggleCheckboxCard(card, event) {
   }
 }
 
-// Switch between tools in BetMines Betting Suite
+// Switch between tools in DeepPredict Betting Suite
 window.switchTool = function switchTool(toolId, btn) {
   // If user is on another view, ensure view-generator is active
   const genView = document.getElementById("view-generator");
@@ -1908,7 +1908,7 @@ function redeemVoucherCode() {
   } else if (val === "PROSCOUT") {
     unlockPremiumPlan();
     msg.style.color = "var(--secondary)";
-    msg.innerText = "✓ Promo code 'PROSCOUT' successfully redeemed! BetMines Pro Pass unlocked.";
+    msg.innerText = "✓ Promo code 'PROSCOUT' successfully redeemed! DeepPredict Pro Pass unlocked.";
   } else {
     msg.style.color = "var(--danger)";
     msg.innerText = "✗ Invalid or expired promo voucher code.";
@@ -1986,7 +1986,7 @@ function renderProfileSavedTickets() {
   if (mockTickets.length === 0) {
     container.innerHTML = `
       <div style="text-align: center; font-size: 0.8rem; color: var(--text-muted); padding: 20px;">
-        No saved tickets in history yet. Open the BetMines Machine to build and save.
+        No saved tickets in history yet. Open the DeepPredict Machine to build and save.
       </div>
     `;
   } else {
@@ -2369,7 +2369,7 @@ function openLeaguePreviewHub(leagueName, defaultTab = 'predictions') {
         <span style="font-size: 1.8rem;">${flagEmoji}</span>
         <div>
           <h3 style="font-family: var(--font-display); font-size: 1.25rem; color: var(--text-primary); margin: 0;">${leagueName} Hub</h3>
-          <span style="font-size: 0.72rem; color: var(--text-muted); font-weight: 700; text-transform: uppercase;">BetMines League Central Preview</span>
+          <span style="font-size: 0.72rem; color: var(--text-muted); font-weight: 700; text-transform: uppercase;">DeepPredict League Central Preview</span>
         </div>
       </div>
       <button class="btn btn-secondary" style="padding: 6px 12px; font-size: 0.75rem;" id="close-preview-hub-btn">✕ Close</button>
@@ -3242,7 +3242,7 @@ function openClubScoutModal(clubName) {
   if (chatBody) {
     chatBody.innerHTML = `
       <div class="chat-bubble scout">
-        Hello! I am your <b>BetMines Scout</b>. Here is my strategic overview for <b>${club.name}</b> competing in the <b>${club.league}</b>:
+        Hello! I am your <b>DeepPredict Scout</b>. Here is my strategic overview for <b>${club.name}</b> competing in the <b>${club.league}</b>:
         
         <div class="scout-match-summary">
           <div class="scout-sum-row">

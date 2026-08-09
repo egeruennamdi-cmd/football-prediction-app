@@ -1568,7 +1568,7 @@ const TRANSLATIONS = {
     scoutBtn: 'Ask Scout',
     proBtn: 'Join Pro',
     dashboardTitle: 'Matches Dashboard',
-    suiteTitle: 'BetMines Betting Suite',
+    suiteTitle: 'DeepPredict Betting Suite',
     scoutChatTitle: 'AI Match Scout Briefing',
   },
   fr: {
