@@ -3280,6 +3280,12 @@ function updateProbSliderVal(val) {
   }
 }
 
+function openBetslipDrawerMobile() {
+  const drawer = document.getElementById("floating-betslip-drawer");
+  if (drawer) drawer.classList.add("open");
+}
+window.openBetslipDrawerMobile = openBetslipDrawerMobile;
+
 function generateMachineTicket() {
   try {
     const matchesSource = (typeof MATCH_DATA !== 'undefined' && MATCH_DATA && MATCH_DATA.length > 0) 
@@ -3397,7 +3403,17 @@ function generateMachineTicket() {
     const returnDisplay = document.getElementById("ticket-total-return");
     if (returnDisplay) returnDisplay.innerText = `${(finalOdds * 10).toFixed(2)}`;
 
-    // Render Betslip and open drawer on mobile/tablet
+    // POPULATE MOBILE QUICK CARD (DIRECTLY UNDER BUTTON ON MOBILE)
+    const mobileQuickCard = document.getElementById("mobile-ticket-quick-card");
+    if (mobileQuickCard) {
+      mobileQuickCard.style.display = "block";
+      const mCode = document.getElementById("mobile-quick-code");
+      if (mCode) mCode.innerText = bookingCode;
+      const mOdds = document.getElementById("mobile-quick-odds");
+      if (mOdds) mOdds.innerText = `@${finalOdds}`;
+    }
+
+    // Render Betslip and open drawer
     if (typeof renderBetslip === 'function') renderBetslip();
 
     const drawer = document.getElementById("floating-betslip-drawer");
@@ -3405,10 +3421,14 @@ function generateMachineTicket() {
       drawer.classList.add("open");
     }
 
-    // Scroll to Ticket Preview on Mobile & Tablet
-    const ticketPreview = document.querySelector(".machine-ticket-preview");
-    if (ticketPreview && window.innerWidth <= 1024) {
-      ticketPreview.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    // Scroll to Mobile Quick Card or Ticket Preview
+    if (mobileQuickCard && window.innerWidth <= 768) {
+      mobileQuickCard.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    } else {
+      const ticketPreview = document.querySelector(".machine-ticket-preview");
+      if (ticketPreview && window.innerWidth <= 1024) {
+        ticketPreview.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      }
     }
 
     if (typeof showAppNotification === 'function') {
