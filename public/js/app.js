@@ -3286,25 +3286,42 @@ function openBetslipDrawerMobile() {
 }
 window.openBetslipDrawerMobile = openBetslipDrawerMobile;
 
+
+
 function generateMachineTicket() {
   try {
-    const matchesSource = (typeof MATCH_DATA !== 'undefined' && MATCH_DATA && MATCH_DATA.length > 0) 
-      ? MATCH_DATA 
-      : (window.MATCH_DATA || window.MATCHES_DATA || [
-          { id: "m1", homeTeam: { name: "Arsenal" }, awayTeam: { name: "Chelsea" }, league: "Premier League", leagueEmoji: "⚽" },
-          { id: "m2", homeTeam: { name: "Real Madrid" }, awayTeam: { name: "Barcelona" }, league: "La Liga", leagueEmoji: "🇪🇸" },
-          { id: "m3", homeTeam: { name: "Bayern Munich" }, awayTeam: { name: "Dortmund" }, league: "Bundesliga", leagueEmoji: "🇩🇪" },
-          { id: "m4", homeTeam: { name: "Inter Milan" }, awayTeam: { name: "AC Milan" }, league: "Serie A", leagueEmoji: "🇮🇹" },
-          { id: "m5", homeTeam: { name: "PSG" }, awayTeam: { name: "Marseille" }, league: "Ligue 1", leagueEmoji: "🇫🇷" }
-        ]);
+    console.log("generateMachineTicket triggered!");
+    
+    // 1. Resolve dataset robustly
+    let matchesSource = [];
+    if (typeof MATCH_DATA !== 'undefined' && Array.isArray(MATCH_DATA) && MATCH_DATA.length > 0) {
+      matchesSource = MATCH_DATA;
+    } else if (window.MATCH_DATA && Array.isArray(window.MATCH_DATA) && window.MATCH_DATA.length > 0) {
+      matchesSource = window.MATCH_DATA;
+    } else if (window.MATCHES_DATA && Array.isArray(window.MATCHES_DATA) && window.MATCHES_DATA.length > 0) {
+      matchesSource = window.MATCHES_DATA;
+    } else {
+      matchesSource = [
+        { id: "m1", homeTeam: { name: "Arsenal" }, awayTeam: { name: "Man City" }, league: "Premier League", leagueEmoji: "🏴󠁧󠁢󠁥󠁮󠁧󠁿" },
+        { id: "m2", homeTeam: { name: "Real Madrid" }, awayTeam: { name: "Barcelona" }, league: "La Liga", leagueEmoji: "🇪🇸" },
+        { id: "m3", homeTeam: { name: "Bayern Munich" }, awayTeam: { name: "Dortmund" }, league: "Bundesliga", leagueEmoji: "🇩🇪" },
+        { id: "m4", homeTeam: { name: "Inter Milan" }, awayTeam: { name: "AC Milan" }, league: "Serie A", leagueEmoji: "🇮🇹" },
+        { id: "m5", homeTeam: { name: "PSG" }, awayTeam: { name: "Marseille" }, league: "Ligue 1", leagueEmoji: "🇫🇷" },
+        { id: "m6", homeTeam: { name: "Liverpool" }, awayTeam: { name: "Man Utd" }, league: "Premier League", leagueEmoji: "🏴󠁧󠁢󠁥󠁮󠁧󠁿" }
+      ];
+    }
 
+    // 2. Resolve match count
     const countEl = document.getElementById("machine-match-count");
-    const count = countEl ? parseInt(countEl.value) || 4 : 4;
+    const rawVal = countEl ? countEl.value : "4";
+    const count = parseInt(rawVal) || 4;
     const matchCount = Math.min(Math.max(count, 1), 40);
 
+    // 3. Resolve max odds slider
     const maxOddsEl = document.getElementById("odds-max-slider");
     const maxOddsCap = maxOddsEl ? parseFloat(maxOddsEl.value) || 2.40 : 2.40;
 
+    // 4. Market options pool
     const marketOptions = [
       "Home Win (1)", "Over 1.5 Goals", "Both Teams To Score (BTTS)",
       "Double Chance (1X)", "Away Win (2)", "Under 3.5 Goals", "Over 2.5 Goals", "Draw No Bet (1)"
@@ -3316,10 +3333,18 @@ function generateMachineTicket() {
     if (!window.appState) window.appState = {};
     window.appState.betslip = [];
 
+    // Helper to safely extract team names whether object or string
+    function parseTeamName(t, defaultName) {
+      if (!t) return defaultName;
+      if (typeof t === 'string') return t;
+      if (typeof t === 'object' && t.name) return t.name;
+      return defaultName;
+    }
+
     for (let i = 0; i < matchCount; i++) {
-      const match = matchesSource[i % matchesSource.length];
-      const homeName = (match.homeTeam && match.homeTeam.name) ? match.homeTeam.name : "Home Team";
-      const awayName = (match.awayTeam && match.awayTeam.name) ? match.awayTeam.name : "Away Team";
+      const match = matchesSource[i % matchesSource.length] || {};
+      const homeName = parseTeamName(match.homeTeam, "Home Team");
+      const awayName = parseTeamName(match.awayTeam, "Away Team");
       const tip = marketOptions[i % marketOptions.length];
       
       const seed = (homeName.length + awayName.length + i * 7);
@@ -3356,7 +3381,7 @@ function generateMachineTicket() {
       });
     }
 
-    // Generate Booking Code
+    // 5. Generate Booking Code
     const chars = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
     let randomCode = "";
     for (let c = 0; c < 5; c++) {
@@ -3364,46 +3389,49 @@ function generateMachineTicket() {
     }
     const bookingCode = `DP-${randomCode}`;
 
-    // Render Ticket Body Container
-    const bodyContainer = document.getElementById("ticket-body-container");
-    if (bodyContainer) {
-      let html = "";
-      ticketItems.forEach((item) => {
-        html += `
-          <div style="display: flex; justify-content: space-between; align-items: center; padding: 10px 12px; background: rgba(255,255,255,0.03); border: 1px solid var(--border-color); border-radius: var(--radius-sm); margin-bottom: 8px;">
-            <div>
-              <div style="font-size: 0.7rem; color: var(--text-muted); text-transform: uppercase;">${item.leagueEmoji} ${item.league}</div>
-              <div style="font-size: 0.85rem; font-weight: 700; color: var(--text-primary); margin: 2px 0;">${item.homeTeam} vs ${item.awayTeam}</div>
-              <div style="font-size: 0.75rem; color: #60a5fa; font-weight: 600;">Prediction: ${item.tip}</div>
-            </div>
-            <div style="font-size: 1.05rem; font-weight: 800; color: var(--secondary); font-family: var(--font-display);">@${item.odds.toFixed(2)}</div>
+    // 6. RENDER TICKET BODY INTO DEEPPREDICT MACHINE TICKET CARD
+    const bodyContainers = document.querySelectorAll("#ticket-body-container");
+    let html = "";
+    ticketItems.forEach((item) => {
+      html += `
+        <div style="display: flex; justify-content: space-between; align-items: center; padding: 10px 12px; background: rgba(255,255,255,0.04); border: 1px solid var(--border-color); border-radius: var(--radius-sm); margin-bottom: 8px; text-align: left;">
+          <div>
+            <div style="font-size: 0.7rem; color: var(--text-muted); text-transform: uppercase;">${item.leagueEmoji} ${item.league}</div>
+            <div style="font-size: 0.85rem; font-weight: 700; color: var(--text-primary); margin: 2px 0;">${item.homeTeam} vs ${item.awayTeam}</div>
+            <div style="font-size: 0.75rem; color: #60a5fa; font-weight: 600;">Prediction: ${item.tip}</div>
           </div>
-        `;
-      });
-      bodyContainer.innerHTML = html;
-    }
+          <div style="font-size: 1.05rem; font-weight: 800; color: var(--secondary); font-family: var(--font-display);">@${item.odds.toFixed(2)}</div>
+        </div>
+      `;
+    });
 
-    // Show Footer & Update Codes/Odds
-    const footerContainer = document.getElementById("ticket-footer-container");
-    if (footerContainer) footerContainer.style.display = "flex";
+    bodyContainers.forEach(container => {
+      container.innerHTML = html;
+    });
 
-    const codeDisplay = document.getElementById("ticket-booking-code");
-    if (codeDisplay) codeDisplay.innerText = bookingCode;
+    // 7. SHOW FOOTER & UPDATE CODES & ODDS
+    const footerContainers = document.querySelectorAll("#ticket-footer-container");
+    footerContainers.forEach(footer => {
+      footer.style.display = "flex";
+    });
 
-    const sourceCodeDisplay = document.getElementById("engine-source-code");
-    if (sourceCodeDisplay) sourceCodeDisplay.innerText = bookingCode;
+    const codeDisplays = document.querySelectorAll("#ticket-booking-code");
+    codeDisplays.forEach(el => el.innerText = bookingCode);
 
-    const engineCard = document.getElementById("engine-card-container");
-    if (engineCard) engineCard.style.display = "flex";
+    const sourceCodeDisplays = document.querySelectorAll("#engine-source-code");
+    sourceCodeDisplays.forEach(el => el.innerText = bookingCode);
+
+    const engineCards = document.querySelectorAll("#engine-card-container");
+    engineCards.forEach(el => el.style.display = "flex");
 
     const finalOdds = parseFloat(totalOdds.toFixed(2));
-    const oddsDisplay = document.getElementById("ticket-total-odds");
-    if (oddsDisplay) oddsDisplay.innerText = `@${finalOdds}`;
+    const oddsDisplays = document.querySelectorAll("#ticket-total-odds");
+    oddsDisplays.forEach(el => el.innerText = `@${finalOdds}`);
 
-    const returnDisplay = document.getElementById("ticket-total-return");
-    if (returnDisplay) returnDisplay.innerText = `${(finalOdds * 10).toFixed(2)}`;
+    const returnDisplays = document.querySelectorAll("#ticket-total-return");
+    returnDisplays.forEach(el => el.innerText = `${(finalOdds * 10).toFixed(2)}`);
 
-    // POPULATE MOBILE QUICK CARD (DIRECTLY UNDER BUTTON ON MOBILE)
+    // 8. POPULATE MOBILE QUICK CARD (DIRECTLY UNDER BUTTON)
     const mobileQuickCard = document.getElementById("mobile-ticket-quick-card");
     if (mobileQuickCard) {
       mobileQuickCard.style.display = "block";
@@ -3413,7 +3441,7 @@ function generateMachineTicket() {
       if (mOdds) mOdds.innerText = `@${finalOdds}`;
     }
 
-    // Render Betslip and open drawer
+    // 9. RENDER BETSLIP DRAWER & OPEN IT
     if (typeof renderBetslip === 'function') renderBetslip();
 
     const drawer = document.getElementById("floating-betslip-drawer");
@@ -3421,14 +3449,10 @@ function generateMachineTicket() {
       drawer.classList.add("open");
     }
 
-    // Scroll to Mobile Quick Card or Ticket Preview
-    if (mobileQuickCard && window.innerWidth <= 768) {
-      mobileQuickCard.scrollIntoView({ behavior: 'smooth', block: 'center' });
-    } else {
-      const ticketPreview = document.querySelector(".machine-ticket-preview");
-      if (ticketPreview && window.innerWidth <= 1024) {
-        ticketPreview.scrollIntoView({ behavior: 'smooth', block: 'center' });
-      }
+    // 10. SMOOTH SCROLL DIRECTLY TO DEEPPREDICT MACHINE TICKET CARD
+    const ticketPreview = document.querySelector(".machine-ticket-preview");
+    if (ticketPreview && window.innerWidth <= 1024) {
+      ticketPreview.scrollIntoView({ behavior: 'smooth', block: 'center' });
     }
 
     if (typeof showAppNotification === 'function') {
@@ -3436,6 +3460,28 @@ function generateMachineTicket() {
     }
   } catch (err) {
     console.error("Error in generateMachineTicket:", err);
+  }
+}
+
+// Global window assignments
+window.generateMachineTicket = generateMachineTicket;
+
+// Touch & Click event binding for Mobile Browsers
+if (typeof window !== 'undefined') {
+  const bindMobileEvents = () => {
+    const btn = document.getElementById("btn-generate-machine-ticket");
+    if (btn) {
+      btn.onclick = (e) => {
+        if (e && e.preventDefault) e.preventDefault();
+        generateMachineTicket();
+      };
+    }
+  };
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', bindMobileEvents);
+  } else {
+    bindMobileEvents();
   }
 }
 
