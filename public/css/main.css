@@ -3001,7 +3001,8 @@ header {
   }
 }
 
-/* --- MODAL SUBTABS & ACTION TOOLBAR RESPONSIVE ALIGNMENT --- */
+
+/* --- MODAL SUBTABS & ACTION TOOLBAR MOBILE CENTER ALIGNMENT --- */
 .modal-subtabs-bar {
   display: flex;
   flex-direction: column;
@@ -3021,20 +3022,13 @@ header {
   align-items: center;
   gap: 6px;
   width: 100%;
-  overflow-x: auto;
-  -webkit-overflow-scrolling: touch;
-  padding-bottom: 4px;
-  scrollbar-width: none;
-}
-.modal-tab-group::-webkit-scrollbar {
-  display: none;
+  flex-wrap: wrap;
 }
 
 .modal-tab-group .tab-btn {
   padding: 6px 12px;
   font-size: 0.8rem;
   white-space: nowrap;
-  flex-shrink: 0;
 }
 
 .modal-action-toolbar {
@@ -3043,14 +3037,7 @@ header {
   align-items: center;
   gap: 6px;
   width: 100%;
-  overflow-x: auto;
-  -webkit-overflow-scrolling: touch;
-  padding-bottom: 4px;
-  flex-wrap: nowrap;
-  scrollbar-width: none;
-}
-.modal-action-toolbar::-webkit-scrollbar {
-  display: none;
+  flex-wrap: wrap;
 }
 
 .modal-coins-badge {
@@ -3058,7 +3045,6 @@ header {
   color: var(--text-secondary);
   font-weight: 600;
   white-space: nowrap;
-  flex-shrink: 0;
 }
 
 .modal-action-toolbar .action-btn {
@@ -3067,37 +3053,53 @@ header {
   border-radius: var(--radius-sm);
   font-weight: 700;
   white-space: nowrap;
-  flex-shrink: 0;
   display: flex;
   align-items: center;
+  justify-content: center;
   gap: 4px;
 }
 
 @media (max-width: 768px) {
   .modal-subtabs-bar {
-    margin: 0 8px 10px !important;
-    width: calc(100% - 16px) !important;
+    margin: 0 6px 10px !important;
+    width: calc(100% - 12px) !important;
     padding-bottom: 8px !important;
     gap: 8px !important;
   }
 
   .modal-tab-group {
-    justify-content: flex-start !important;
+    justify-content: center !important;
     width: 100% !important;
+    flex-wrap: wrap !important;
+    gap: 5px !important;
   }
 
   .modal-tab-group .tab-btn {
-    padding: 6px 10px !important;
-    font-size: 0.75rem !important;
+    padding: 5px 8px !important;
+    font-size: 0.72rem !important;
+    flex: 1 1 auto !important;
+    text-align: center !important;
+    justify-content: center !important;
   }
 
   .modal-action-toolbar {
-    justify-content: flex-start !important;
+    justify-content: center !important;
     width: 100% !important;
+    flex-wrap: wrap !important;
+    gap: 5px !important;
   }
 
   .modal-action-toolbar .action-btn {
     padding: 5px 8px !important;
     font-size: 0.68rem !important;
+    flex: 1 1 auto !important;
+    text-align: center !important;
+    justify-content: center !important;
+  }
+
+  .modal-coins-badge {
+    font-size: 0.7rem !important;
+    display: inline-flex !important;
+    align-items: center !important;
   }
 }
