@@ -2421,8 +2421,15 @@ window.swapConverterBookmakers = swapConverterBookmakers;
 
 
 
-/* --- INSTANT 0MS TAP & CLICK AUTH / LOGIN CONTROLLERS FOR ALL DEVICES --- */
+
+
+/* --- FOOLPROOF POPUP AUTH & PROFILE CONTROLLERS --- */
 function openAuthModal(mode) {
+  // Prevent duplicate execution if triggered twice in same tick
+  if (window._authModalOpening) return;
+  window._authModalOpening = true;
+  setTimeout(function() { window._authModalOpening = false; }, 250);
+
   // 1. Automatically close Mobile Drawer on phones/tablets if open
   const drawer = document.getElementById("mobile-nav-drawer");
   const overlay = document.getElementById("mobile-drawer-overlay");
@@ -2450,9 +2457,11 @@ function openAuthModal(mode) {
   if (!modal) return;
 
   modal.classList.add("active");
+  modal.style.display = "flex";
   modal.style.zIndex = "1000000";
   modal.style.opacity = "1";
   modal.style.pointerEvents = "all";
+  modal.style.visibility = "visible";
   document.body.style.overflow = "hidden";
   
   if (typeof switchAuthTab === 'function') {
@@ -2465,6 +2474,7 @@ function closeAuthModal(event, force) {
     const modal = document.getElementById("auth-modal");
     if (modal) {
       modal.classList.remove("active");
+      modal.style.display = "none";
       modal.style.opacity = "0";
       modal.style.pointerEvents = "none";
     }
@@ -2602,6 +2612,7 @@ function logoutUser(e) {
   const profModal = document.getElementById("profile-modal");
   if (profModal) {
     profModal.classList.remove("active");
+    profModal.style.display = "none";
     profModal.style.opacity = "0";
     profModal.style.pointerEvents = "none";
   }
@@ -2609,6 +2620,7 @@ function logoutUser(e) {
   const authModal = document.getElementById("auth-modal");
   if (authModal) {
     authModal.classList.remove("active");
+    authModal.style.display = "none";
     authModal.style.opacity = "0";
     authModal.style.pointerEvents = "none";
   }
@@ -2656,9 +2668,11 @@ function openProfileModal(activeTab) {
   updateAuthUIState();
 
   modal.classList.add("active");
+  modal.style.display = "flex";
   modal.style.zIndex = "1000000";
   modal.style.opacity = "1";
   modal.style.pointerEvents = "all";
+  modal.style.visibility = "visible";
   document.body.style.overflow = "hidden";
 
   if (typeof switchProfileTab === 'function') {
@@ -2671,6 +2685,7 @@ function closeProfileModal(event, force) {
     const modal = document.getElementById("profile-modal");
     if (modal) {
       modal.classList.remove("active");
+      modal.style.display = "none";
       modal.style.opacity = "0";
       modal.style.pointerEvents = "none";
     }
