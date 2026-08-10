@@ -532,7 +532,7 @@
         <!-- Date Selector (Calendar blocks style) -->
         <div style="display: flex; flex-direction: column; gap: 4px;">
           <label style="font-size: 0.7rem; color: var(--text-secondary); font-weight: 700; text-transform: uppercase;">1. Select Date</label>
-          <select id="cal-date-select" onchange="runCalFilter()" style="background: var(--bg-dark); border: 1px solid var(--border-color); border-radius: var(--radius-sm); padding: 8px; color: var(--text-primary); font-size: 0.75rem; cursor: pointer; outline: none; width: 100%;">
+          <select id="cal-date-select" onchange="runCalFilter(this.id)" style="background: var(--bg-dark); border: 1px solid var(--border-color); border-radius: var(--radius-sm); padding: 8px; color: var(--text-primary); font-size: 0.75rem; cursor: pointer; outline: none; width: 100%;">
             <option value="today">Today</option>
             <option value="tomorrow">Tomorrow</option>
             <option value="yesterday">Yesterday</option>
@@ -542,7 +542,7 @@
         <!-- Country Selector -->
         <div style="display: flex; flex-direction: column; gap: 4px;">
           <label style="font-size: 0.7rem; color: var(--text-secondary); font-weight: 700; text-transform: uppercase;">2. Country</label>
-          <select id="cal-country-select" onchange="runCalFilter()" style="background: var(--bg-dark); border: 1px solid var(--border-color); border-radius: var(--radius-sm); padding: 8px; color: var(--text-primary); font-size: 0.75rem; cursor: pointer; outline: none; width: 100%;">
+          <select id="cal-country-select" onchange="runCalFilter(this.id)" style="background: var(--bg-dark); border: 1px solid var(--border-color); border-radius: var(--radius-sm); padding: 8px; color: var(--text-primary); font-size: 0.75rem; cursor: pointer; outline: none; width: 100%;">
             <option value="all">All Countries</option>
           </select>
         </div>
@@ -550,7 +550,7 @@
         <!-- League Selector -->
         <div style="display: flex; flex-direction: column; gap: 4px;">
           <label style="font-size: 0.7rem; color: var(--text-secondary); font-weight: 700; text-transform: uppercase;">3. League</label>
-          <select id="cal-league-select" onchange="runCalFilter()" style="background: var(--bg-dark); border: 1px solid var(--border-color); border-radius: var(--radius-sm); padding: 8px; color: var(--text-primary); font-size: 0.75rem; cursor: pointer; outline: none; width: 100%;">
+          <select id="cal-league-select" onchange="runCalFilter(this.id)" style="background: var(--bg-dark); border: 1px solid var(--border-color); border-radius: var(--radius-sm); padding: 8px; color: var(--text-primary); font-size: 0.75rem; cursor: pointer; outline: none; width: 100%;">
             <option value="all">All Leagues</option>
           </select>
         </div>
@@ -558,7 +558,7 @@
         <!-- Team Selector -->
         <div style="display: flex; flex-direction: column; gap: 4px;">
           <label style="font-size: 0.7rem; color: var(--text-secondary); font-weight: 700; text-transform: uppercase;">4. Team</label>
-          <select id="cal-team-select" onchange="runCalFilter()" style="background: var(--bg-dark); border: 1px solid var(--border-color); border-radius: var(--radius-sm); padding: 8px; color: var(--text-primary); font-size: 0.75rem; cursor: pointer; outline: none; width: 100%;">
+          <select id="cal-team-select" onchange="runCalFilter(this.id)" style="background: var(--bg-dark); border: 1px solid var(--border-color); border-radius: var(--radius-sm); padding: 8px; color: var(--text-primary); font-size: 0.75rem; cursor: pointer; outline: none; width: 100%;">
             <option value="all">All Teams</option>
           </select>
         </div>

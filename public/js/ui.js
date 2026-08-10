@@ -2735,3 +2735,195 @@ window.switchProfileTab = switchProfileTab;
 document.addEventListener("DOMContentLoaded", function() {
   updateAuthUIState();
 });
+
+
+
+
+/* --- COMPLETE MATCH FINDER & CALENDAR HUB DYNAMIC POPULATOR --- */
+function populateCalSelectors() {
+  const dateSelect = document.getElementById("cal-date-select");
+  const countrySelect = document.getElementById("cal-country-select");
+  const leagueSelect = document.getElementById("cal-league-select");
+  const teamSelect = document.getElementById("cal-team-select");
+  if (!countrySelect || !leagueSelect || !teamSelect) return;
+
+  const prevDate = dateSelect ? dateSelect.value : 'today';
+  const prevCountry = countrySelect.value || 'all';
+  const prevLeague = leagueSelect.value || 'all';
+  const prevTeam = teamSelect.value || 'all';
+
+  // 1. Date Selector
+  if (dateSelect) {
+    dateSelect.innerHTML = `
+      <option value="today">${getOrdinalDate(0)} (Today)</option>
+      <option value="tomorrow">${getOrdinalDate(1)} (Tomorrow)</option>
+      <option value="yesterday">${getOrdinalDate(-1)} (Yesterday)</option>
+      <option value="all">📅 All Dates</option>
+    `;
+    dateSelect.value = prevDate || 'today';
+  }
+
+  // 2. Populate Countries from COUNTRY_LEAGUES_DATA & MATCH_DATA
+  const countriesMap = new Map();
+
+  if (typeof COUNTRY_LEAGUES_DATA !== 'undefined' && Array.isArray(COUNTRY_LEAGUES_DATA)) {
+    COUNTRY_LEAGUES_DATA.forEach(c => {
+      if (c && c.country) {
+        countriesMap.set(c.country, c.emoji || '🏳️');
+      }
+    });
+  }
+
+  if (typeof MATCH_DATA !== 'undefined' && Array.isArray(MATCH_DATA)) {
+    MATCH_DATA.forEach(m => {
+      if (m.country && !countriesMap.has(m.country)) {
+        countriesMap.set(m.country, m.flag || '⚽');
+      }
+    });
+  }
+
+  let countryHtml = `<option value="all">🌐 All Countries (${countriesMap.size})</option>`;
+  Array.from(countriesMap.entries()).sort((a, b) => a[0].localeCompare(b[0])).forEach(([cName, emoji]) => {
+    countryHtml += `<option value="${cName}">${emoji} ${cName}</option>`;
+  });
+  countrySelect.innerHTML = countryHtml;
+  if (prevCountry && Array.from(countriesMap.keys()).includes(prevCountry)) {
+    countrySelect.value = prevCountry;
+  } else {
+    countrySelect.value = 'all';
+  }
+
+  // 3. Populate Cascading Leagues & Teams
+  populateLeagueDropdown(countrySelect.value, prevLeague);
+  populateTeamDropdown(countrySelect.value, leagueSelect.value, prevTeam);
+}
+
+function populateLeagueDropdown(selectedCountry, targetLeagueVal) {
+  const leagueSelect = document.getElementById("cal-league-select");
+  const filtLeagueSelect = document.getElementById("filt-league-select");
+  if (!leagueSelect) return;
+
+  const leaguesMap = new Map();
+
+  if (typeof TOP_LEAGUES_DATA !== 'undefined' && Array.isArray(TOP_LEAGUES_DATA)) {
+    TOP_LEAGUES_DATA.forEach(l => {
+      if (!selectedCountry || selectedCountry === 'all' || l.country === selectedCountry || (l.name && l.name.toLowerCase().includes(selectedCountry.toLowerCase()))) {
+        leaguesMap.set(l.name, l.emoji || '🏆');
+      }
+    });
+  }
+
+  if (selectedCountry && selectedCountry !== 'all' && typeof COUNTRY_LEAGUES_DATA !== 'undefined') {
+    const cData = COUNTRY_LEAGUES_DATA.find(c => c.country.toLowerCase() === selectedCountry.toLowerCase());
+    if (cData && cData.leagues) {
+      cData.leagues.forEach(lg => {
+        if (!leaguesMap.has(lg)) leaguesMap.set(lg, cData.emoji || '🏆');
+      });
+    }
+  }
+
+  if (typeof MATCH_DATA !== 'undefined' && Array.isArray(MATCH_DATA)) {
+    MATCH_DATA.forEach(m => {
+      if (m.league) {
+        if (!selectedCountry || selectedCountry === 'all' || (m.country && m.country.toLowerCase() === selectedCountry.toLowerCase())) {
+          if (!leaguesMap.has(m.league)) leaguesMap.set(m.league, m.leagueEmoji || '⚽');
+        }
+      }
+    });
+  }
+
+  let leagueHtml = `<option value="all">🏆 All Leagues (${leaguesMap.size})</option>`;
+  Array.from(leaguesMap.entries()).sort((a, b) => a[0].localeCompare(b[0])).forEach(([name, emoji]) => {
+    leagueHtml += `<option value="${name}">${emoji} ${name}</option>`;
+  });
+
+  leagueSelect.innerHTML = leagueHtml;
+  if (filtLeagueSelect) filtLeagueSelect.innerHTML = leagueHtml;
+
+  const currentVal = targetLeagueVal || leagueSelect.value || 'all';
+  if (Array.from(leaguesMap.keys()).includes(currentVal)) {
+    leagueSelect.value = currentVal;
+  } else {
+    leagueSelect.value = 'all';
+  }
+}
+
+function populateTeamDropdown(selectedCountry, selectedLeague, targetTeamVal) {
+  const teamSelect = document.getElementById("cal-team-select");
+  if (!teamSelect) return;
+
+  const teams = new Set();
+
+  if (typeof MATCH_DATA !== 'undefined' && Array.isArray(MATCH_DATA)) {
+    MATCH_DATA.forEach(m => {
+      const matchCountry = m.country ? m.country.toLowerCase() : '';
+      const matchLeague = m.league ? m.league.toLowerCase() : '';
+
+      const countryMatch = !selectedCountry || selectedCountry === 'all' || matchCountry === selectedCountry.toLowerCase();
+      const leagueMatch = !selectedLeague || selectedLeague === 'all' || matchLeague === selectedLeague.toLowerCase();
+
+      if (countryMatch && leagueMatch) {
+        if (m.homeTeam && m.homeTeam.name) teams.add(m.homeTeam.name);
+        if (m.awayTeam && m.awayTeam.name) teams.add(m.awayTeam.name);
+      }
+    });
+  }
+
+  if (teams.size === 0 && typeof MATCH_DATA !== 'undefined') {
+    MATCH_DATA.forEach(m => {
+      if (m.homeTeam && m.homeTeam.name) teams.add(m.homeTeam.name);
+      if (m.awayTeam && m.awayTeam.name) teams.add(m.awayTeam.name);
+    });
+  }
+
+  let teamHtml = `<option value="all">⚽ All Teams (${teams.size})</option>`;
+  Array.from(teams).sort().forEach(tName => {
+    teamHtml += `<option value="${tName}">${tName}</option>`;
+  });
+
+  teamSelect.innerHTML = teamHtml;
+  const currentVal = targetTeamVal || teamSelect.value || 'all';
+  if (Array.from(teams).includes(currentVal)) {
+    teamSelect.value = currentVal;
+  } else {
+    teamSelect.value = 'all';
+  }
+}
+
+function runCalFilter(changedId) {
+  const dateVal = document.getElementById("cal-date-select") ? document.getElementById("cal-date-select").value : 'today';
+  const countryVal = document.getElementById("cal-country-select") ? document.getElementById("cal-country-select").value : 'all';
+  
+  if (changedId === 'cal-country-select') {
+    populateLeagueDropdown(countryVal, 'all');
+    populateTeamDropdown(countryVal, 'all', 'all');
+  } else if (changedId === 'cal-league-select') {
+    const leagueVal = document.getElementById("cal-league-select") ? document.getElementById("cal-league-select").value : 'all';
+    populateTeamDropdown(countryVal, leagueVal, 'all');
+  }
+
+  const leagueVal = document.getElementById("cal-league-select") ? document.getElementById("cal-league-select").value : 'all';
+  const teamVal = document.getElementById("cal-team-select") ? document.getElementById("cal-team-select").value : 'all';
+
+  window.appState.activePredictionDate = dateVal;
+  window.appState.calCountry = countryVal;
+  window.appState.calLeague = leagueVal;
+  window.appState.calTeam = teamVal;
+
+  if (typeof renderDeepPredictBetDateBar === 'function') {
+    renderDeepPredictBetDateBar();
+  }
+
+  updateFixturesDisplay();
+
+  const target = document.getElementById("predictions");
+  if (target && changedId) {
+    target.scrollIntoView({ behavior: 'smooth' });
+  }
+}
+
+// Global Exports
+window.populateCalSelectors = populateCalSelectors;
+window.populateLeagueDropdown = populateLeagueDropdown;
+window.populateTeamDropdown = populateTeamDropdown;
+window.runCalFilter = runCalFilter;
