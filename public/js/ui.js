@@ -2417,8 +2417,17 @@ window.swapConverterBookmakers = swapConverterBookmakers;
 
 
 
-/* --- COMPLETE MOBILE & DESKTOP AUTH / LOGIN CONTROLLERS --- */
+
+
+/* --- COMPLETE MOBILE PHONE TOUCH & DESKTOP AUTH / LOGIN CONTROLLERS --- */
 function openAuthModal(mode) {
+  // Prevent dual-triggering on fast touch + click on smartphones
+  const now = Date.now();
+  if (window._lastAuthModalOpenTime && (now - window._lastAuthModalOpenTime < 350)) {
+    return;
+  }
+  window._lastAuthModalOpenTime = now;
+
   // 1. Automatically close Mobile Drawer on phones if open
   const drawer = document.getElementById("mobile-nav-drawer");
   const overlay = document.getElementById("mobile-drawer-overlay");
@@ -2447,6 +2456,8 @@ function openAuthModal(mode) {
 
   modal.classList.add("active");
   modal.style.zIndex = "1000000";
+  modal.style.opacity = "1";
+  modal.style.pointerEvents = "all";
   document.body.style.overflow = "hidden";
   
   if (typeof switchAuthTab === 'function') {
@@ -2457,7 +2468,11 @@ function openAuthModal(mode) {
 function closeAuthModal(event, force) {
   if (force || (event && event.target && event.target.id === "auth-modal")) {
     const modal = document.getElementById("auth-modal");
-    if (modal) modal.classList.remove("active");
+    if (modal) {
+      modal.classList.remove("active");
+      modal.style.opacity = "0";
+      modal.style.pointerEvents = "none";
+    }
     document.body.style.overflow = "";
   }
 }
@@ -2590,10 +2605,18 @@ function logoutUser(e) {
   updateAuthUIState();
 
   const profModal = document.getElementById("profile-modal");
-  if (profModal) profModal.classList.remove("active");
+  if (profModal) {
+    profModal.classList.remove("active");
+    profModal.style.opacity = "0";
+    profModal.style.pointerEvents = "none";
+  }
 
   const authModal = document.getElementById("auth-modal");
-  if (authModal) authModal.classList.remove("active");
+  if (authModal) {
+    authModal.classList.remove("active");
+    authModal.style.opacity = "0";
+    authModal.style.pointerEvents = "none";
+  }
 
   const drawer = document.getElementById("mobile-nav-drawer");
   const overlay = document.getElementById("mobile-drawer-overlay");
@@ -2639,6 +2662,8 @@ function openProfileModal(activeTab) {
 
   modal.classList.add("active");
   modal.style.zIndex = "1000000";
+  modal.style.opacity = "1";
+  modal.style.pointerEvents = "all";
   document.body.style.overflow = "hidden";
 
   if (typeof switchProfileTab === 'function') {
@@ -2649,7 +2674,11 @@ function openProfileModal(activeTab) {
 function closeProfileModal(event, force) {
   if (force || (event && event.target && event.target.id === "profile-modal")) {
     const modal = document.getElementById("profile-modal");
-    if (modal) modal.classList.remove("active");
+    if (modal) {
+      modal.classList.remove("active");
+      modal.style.opacity = "0";
+      modal.style.pointerEvents = "none";
+    }
     document.body.style.overflow = "";
   }
 }
