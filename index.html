@@ -307,119 +307,154 @@
     </div>
 
     <!-- Tools & Navigation Section -->
-    <div style="padding: 14px 16px 80px; display: flex; flex-direction: column; gap: 4px; flex-grow: 1;">
-      <div style="font-size: 0.75rem; font-weight: 800; color: #64748b; text-transform: uppercase; letter-spacing: 0.5px; margin: 6px 0 8px;">Tools</div>
+    <div style="padding: 16px 18px 80px; display: flex; flex-direction: column; gap: 8px; flex-grow: 1; background: #ffffff;">
+      
+      <!-- Section Header 1: Main Navigation -->
+      <div style="display: flex; align-items: center; justify-content: space-between; margin: 4px 0 6px;">
+        <span style="font-size: 0.72rem; font-weight: 900; color: #1d4ed8; text-transform: uppercase; letter-spacing: 0.8px; background: rgba(59, 130, 246, 0.08); border-left: 3px solid #3b82f6; padding: 4px 8px; border-radius: 0 6px 6px 0;">⚡ Main Navigation</span>
+      </div>
 
       <!-- Item: Matches -->
-      <a href="#predictions" onclick="toggleMobileDrawer()" class="mobile-drawer-item active" style="display: flex; align-items: center; justify-content: space-between; padding: 10px 12px; border-radius: 10px; text-decoration: none; color: #059669; background: #ecfdf5; font-weight: 800; font-size: 0.92rem;">
-        <span style="display: flex; align-items: center; gap: 10px;">⚽ Matches</span>
+      <a href="#predictions" onclick="toggleMobileDrawer()" class="mobile-drawer-item active" style="display: flex; align-items: center; justify-content: space-between; padding: 10px 14px; border-radius: 12px; text-decoration: none; color: #047857; background: linear-gradient(135deg, rgba(16, 185, 129, 0.12) 0%, rgba(5, 150, 105, 0.06) 100%); border: 1px solid rgba(16, 185, 129, 0.3); font-weight: 800; font-size: 0.93rem; box-shadow: 0 2px 8px rgba(16, 185, 129, 0.12);">
+        <span style="display: flex; align-items: center; gap: 12px;">
+          <span style="width: 32px; height: 32px; border-radius: 8px; background: #ffffff; display: flex; align-items: center; justify-content: center; font-size: 1.05rem; box-shadow: 0 2px 6px rgba(0,0,0,0.06);">⚽</span>
+          <span>Matches</span>
+        </span>
+        <span style="font-size: 0.7rem; background: #10b981; color: #ffffff; font-weight: 800; padding: 2px 8px; border-radius: 10px;">LIVE</span>
       </a>
 
       <!-- Item: Leagues -->
-      <a href="#analytics" onclick="toggleMobileDrawer()" class="mobile-drawer-item" style="display: flex; align-items: center; gap: 10px; padding: 10px 12px; border-radius: 10px; text-decoration: none; color: #1e293b; font-weight: 700; font-size: 0.92rem;">
-        🏆 Leagues
+      <a href="#analytics" onclick="toggleMobileDrawer()" class="mobile-drawer-item" style="display: flex; align-items: center; gap: 12px; padding: 10px 14px; border-radius: 12px; text-decoration: none; color: #0f172a; background: #f8fafc; border: 1px solid #e2e8f0; font-weight: 700; font-size: 0.93rem; transition: all 0.2s ease;">
+        <span style="width: 32px; height: 32px; border-radius: 8px; background: rgba(245, 158, 11, 0.12); display: flex; align-items: center; justify-content: center; font-size: 1.05rem;">🏆</span>
+        <span>Leagues</span>
       </a>
 
       <!-- Item: Match Previews -->
-      <a href="#predictions" onclick="toggleMobileDrawer()" class="mobile-drawer-item" style="display: flex; align-items: center; gap: 10px; padding: 10px 12px; border-radius: 10px; text-decoration: none; color: #1e293b; font-weight: 700; font-size: 0.92rem;">
-        📝 Match Previews
+      <a href="#predictions" onclick="toggleMobileDrawer()" class="mobile-drawer-item" style="display: flex; align-items: center; gap: 12px; padding: 10px 14px; border-radius: 12px; text-decoration: none; color: #0f172a; background: #f8fafc; border: 1px solid #e2e8f0; font-weight: 700; font-size: 0.93rem; transition: all 0.2s ease;">
+        <span style="width: 32px; height: 32px; border-radius: 8px; background: rgba(59, 130, 246, 0.12); display: flex; align-items: center; justify-content: center; font-size: 1.05rem;">📝</span>
+        <span>Match Previews</span>
       </a>
 
       <!-- Item: Advanced Filters -->
-      <a href="#toptips" onclick="toggleMobileDrawer()" class="mobile-drawer-item" style="display: flex; align-items: center; gap: 10px; padding: 10px 12px; border-radius: 10px; text-decoration: none; color: #1e293b; font-weight: 700; font-size: 0.92rem;">
-        🎯 Advanced Filters
+      <a href="#toptips" onclick="toggleMobileDrawer()" class="mobile-drawer-item" style="display: flex; align-items: center; gap: 12px; padding: 10px 14px; border-radius: 12px; text-decoration: none; color: #0f172a; background: #f8fafc; border: 1px solid #e2e8f0; font-weight: 700; font-size: 0.93rem; transition: all 0.2s ease;">
+        <span style="width: 32px; height: 32px; border-radius: 8px; background: rgba(239, 68, 68, 0.12); display: flex; align-items: center; justify-content: center; font-size: 1.05rem;">🎯</span>
+        <span>Advanced Filters</span>
       </a>
 
       <!-- Item: DeepPredict Machine -->
-      <a href="#generator" onclick="toggleMobileDrawer()" class="mobile-drawer-item" style="display: flex; align-items: center; gap: 10px; padding: 10px 12px; border-radius: 10px; text-decoration: none; color: #1e293b; font-weight: 700; font-size: 0.92rem;">
-        🎰 DeepPredict Machine
+      <a href="#generator" onclick="toggleMobileDrawer()" class="mobile-drawer-item" style="display: flex; align-items: center; gap: 12px; padding: 10px 14px; border-radius: 12px; text-decoration: none; color: #0f172a; background: #f8fafc; border: 1px solid #e2e8f0; font-weight: 700; font-size: 0.93rem; transition: all 0.2s ease;">
+        <span style="width: 32px; height: 32px; border-radius: 8px; background: rgba(168, 85, 247, 0.12); display: flex; align-items: center; justify-content: center; font-size: 1.05rem;">🎰</span>
+        <span>DeepPredict Machine</span>
       </a>
 
+      <!-- Section Header 2: AI Tools & Analytics -->
+      <div style="display: flex; align-items: center; justify-content: space-between; margin: 12px 0 4px;">
+        <span style="font-size: 0.72rem; font-weight: 900; color: #475569; text-transform: uppercase; letter-spacing: 0.8px; background: #f1f5f9; border-left: 3px solid #64748b; padding: 4px 8px; border-radius: 0 6px 6px 0;">🛠️ AI Suite & Analytics</span>
+      </div>
+
       <!-- Item: Leagues Stats -->
-      <a href="#analytics" onclick="toggleMobileDrawer()" class="mobile-drawer-item" style="display: flex; align-items: center; gap: 10px; padding: 10px 12px; border-radius: 10px; text-decoration: none; color: #1e293b; font-weight: 700; font-size: 0.92rem;">
-        📈 Leagues Stats
+      <a href="#analytics" onclick="toggleMobileDrawer()" class="mobile-drawer-item" style="display: flex; align-items: center; gap: 12px; padding: 10px 14px; border-radius: 12px; text-decoration: none; color: #0f172a; background: #f8fafc; border: 1px solid #e2e8f0; font-weight: 700; font-size: 0.93rem; transition: all 0.2s ease;">
+        <span style="width: 32px; height: 32px; border-radius: 8px; background: rgba(16, 185, 129, 0.12); display: flex; align-items: center; justify-content: center; font-size: 1.05rem;">📈</span>
+        <span>Leagues Stats</span>
       </a>
 
       <!-- Item: Daily Bets -->
-      <a href="#predictions" onclick="toggleMobileDrawer()" class="mobile-drawer-item" style="display: flex; align-items: center; gap: 10px; padding: 10px 12px; border-radius: 10px; text-decoration: none; color: #1e293b; font-weight: 700; font-size: 0.92rem;">
-        🃏 Daily Bets
+      <a href="#predictions" onclick="toggleMobileDrawer()" class="mobile-drawer-item" style="display: flex; align-items: center; gap: 12px; padding: 10px 14px; border-radius: 12px; text-decoration: none; color: #0f172a; background: #f8fafc; border: 1px solid #e2e8f0; font-weight: 700; font-size: 0.93rem; transition: all 0.2s ease;">
+        <span style="width: 32px; height: 32px; border-radius: 8px; background: rgba(236, 72, 153, 0.12); display: flex; align-items: center; justify-content: center; font-size: 1.05rem;">🃏</span>
+        <span>Daily Bets</span>
       </a>
 
       <!-- ACCORDION 1: Predictions -->
-      <div style="display: flex; flex-direction: column;">
-        <div onclick="toggleMobileAccordion('mobile-acc-predictions')" style="display: flex; align-items: center; justify-content: space-between; padding: 10px 12px; border-radius: 10px; cursor: pointer; color: #1e293b; font-weight: 700; font-size: 0.92rem;">
-          <span style="display: flex; align-items: center; gap: 10px;">🎯 Predictions</span>
-          <span id="mobile-acc-predictions-icon" style="font-size: 0.7rem; transition: transform 0.2s;">▼</span>
+      <div style="display: flex; flex-direction: column; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 12px; overflow: hidden;">
+        <div onclick="toggleMobileAccordion('mobile-acc-predictions')" style="display: flex; align-items: center; justify-content: space-between; padding: 10px 14px; cursor: pointer; color: #0f172a; font-weight: 800; font-size: 0.93rem;">
+          <span style="display: flex; align-items: center; gap: 12px;">
+            <span style="width: 32px; height: 32px; border-radius: 8px; background: rgba(37, 99, 235, 0.12); display: flex; align-items: center; justify-content: center; font-size: 1.05rem;">🔮</span>
+            <span>Predictions</span>
+          </span>
+          <span id="mobile-acc-predictions-icon" style="font-size: 0.7rem; color: #64748b; transition: transform 0.2s;">▼</span>
         </div>
-        <div id="mobile-acc-predictions" style="display: none; flex-direction: column; padding-left: 28px; gap: 6px; margin: 4px 0 8px;">
-          <a href="#predictions" onclick="triggerQuickFilter('today', 'all'); toggleMobileDrawer();" style="color: #475569; font-size: 0.86rem; text-decoration: none; font-weight: 600; padding: 4px 0;">📅 Today's Predictions</a>
-          <a href="#predictions" onclick="triggerQuickFilter('tomorrow', 'all'); toggleMobileDrawer();" style="color: #475569; font-size: 0.86rem; text-decoration: none; font-weight: 600; padding: 4px 0;">📅 Tomorrow's Predictions</a>
-          <a href="#predictions" onclick="triggerQuickFilter('yesterday', 'all'); toggleMobileDrawer();" style="color: #475569; font-size: 0.86rem; text-decoration: none; font-weight: 600; padding: 4px 0;">📅 Yesterday's Results</a>
-          <a href="#predictions" onclick="triggerTopTipFilter('today', 'uo15'); toggleMobileDrawer();" style="color: #2563eb; font-size: 0.86rem; text-decoration: none; font-weight: 700; padding: 4px 0;">⭐ Top Tips: Under/Over 1.5</a>
-          <a href="#predictions" onclick="triggerTopTipFilter('today', 'uo35'); toggleMobileDrawer();" style="color: #2563eb; font-size: 0.86rem; text-decoration: none; font-weight: 700; padding: 4px 0;">⭐ Top Tips: Under/Over 3.5</a>
+        <div id="mobile-acc-predictions" style="display: none; flex-direction: column; border-top: 1px solid #e2e8f0; background: #ffffff; padding: 8px 12px 10px; gap: 6px;">
+          <a href="#predictions" onclick="triggerQuickFilter('today', 'all'); toggleMobileDrawer();" style="color: #334155; font-size: 0.86rem; text-decoration: none; font-weight: 700; padding: 6px 10px; border-radius: 8px; background: #f8fafc; display: flex; align-items: center; gap: 8px;">📅 Today's Predictions</a>
+          <a href="#predictions" onclick="triggerQuickFilter('tomorrow', 'all'); toggleMobileDrawer();" style="color: #334155; font-size: 0.86rem; text-decoration: none; font-weight: 700; padding: 6px 10px; border-radius: 8px; background: #f8fafc; display: flex; align-items: center; gap: 8px;">📅 Tomorrow's Predictions</a>
+          <a href="#predictions" onclick="triggerQuickFilter('yesterday', 'all'); toggleMobileDrawer();" style="color: #334155; font-size: 0.86rem; text-decoration: none; font-weight: 700; padding: 6px 10px; border-radius: 8px; background: #f8fafc; display: flex; align-items: center; gap: 8px;">📅 Yesterday's Results</a>
+          <a href="#predictions" onclick="triggerTopTipFilter('today', 'uo15'); toggleMobileDrawer();" style="color: #1d4ed8; font-size: 0.86rem; text-decoration: none; font-weight: 800; padding: 6px 10px; border-radius: 8px; background: rgba(59, 130, 246, 0.08); display: flex; align-items: center; gap: 8px;">⭐ Top Tips: Under/Over 1.5</a>
+          <a href="#predictions" onclick="triggerTopTipFilter('today', 'uo35'); toggleMobileDrawer();" style="color: #1d4ed8; font-size: 0.86rem; text-decoration: none; font-weight: 800; padding: 6px 10px; border-radius: 8px; background: rgba(59, 130, 246, 0.08); display: flex; align-items: center; gap: 8px;">⭐ Top Tips: Under/Over 3.5</a>
         </div>
       </div>
 
       <!-- ACCORDION 2: Betting Tools -->
-      <div style="display: flex; flex-direction: column;">
-        <div onclick="toggleMobileAccordion('mobile-acc-tools')" style="display: flex; align-items: center; justify-content: space-between; padding: 10px 12px; border-radius: 10px; cursor: pointer; color: #1e293b; font-weight: 700; font-size: 0.92rem;">
-          <span style="display: flex; align-items: center; gap: 10px;">🛠️ Betting Tools</span>
-          <span id="mobile-acc-tools-icon" style="font-size: 0.7rem; transition: transform 0.2s;">▼</span>
+      <div style="display: flex; flex-direction: column; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 12px; overflow: hidden;">
+        <div onclick="toggleMobileAccordion('mobile-acc-tools')" style="display: flex; align-items: center; justify-content: space-between; padding: 10px 14px; cursor: pointer; color: #0f172a; font-weight: 800; font-size: 0.93rem;">
+          <span style="display: flex; align-items: center; gap: 12px;">
+            <span style="width: 32px; height: 32px; border-radius: 8px; background: rgba(16, 185, 129, 0.12); display: flex; align-items: center; justify-content: center; font-size: 1.05rem;">🛠️</span>
+            <span>Betting Tools</span>
+          </span>
+          <span id="mobile-acc-tools-icon" style="font-size: 0.7rem; color: #64748b; transition: transform 0.2s;">▼</span>
         </div>
-        <div id="mobile-acc-tools" style="display: none; flex-direction: column; padding-left: 28px; gap: 6px; margin: 4px 0 8px;">
-          <a href="#doctor" onclick="toggleMobileDrawer()" style="color: #475569; font-size: 0.86rem; text-decoration: none; font-weight: 600; padding: 4px 0;">🩺 AI Bet Doctor</a>
-          <a href="#arbitrage" onclick="toggleMobileDrawer()" style="color: #475569; font-size: 0.86rem; text-decoration: none; font-weight: 600; padding: 4px 0;">🛡️ Arbitrage Finder</a>
-          <a href="#converter" onclick="toggleMobileDrawer()" style="color: #475569; font-size: 0.86rem; text-decoration: none; font-weight: 600; padding: 4px 0;">🎫 Bet Code Converter</a>
-          <a href="#backtester" onclick="toggleMobileDrawer()" style="color: #475569; font-size: 0.86rem; text-decoration: none; font-weight: 600; padding: 4px 0;">🧪 Strategy Backtester</a>
-          <a href="#valuebot" onclick="toggleMobileDrawer()" style="color: #475569; font-size: 0.86rem; text-decoration: none; font-weight: 600; padding: 4px 0;">💰 Value Bet Bot</a>
+        <div id="mobile-acc-tools" style="display: none; flex-direction: column; border-top: 1px solid #e2e8f0; background: #ffffff; padding: 8px 12px 10px; gap: 6px;">
+          <a href="#doctor" onclick="toggleMobileDrawer()" style="color: #334155; font-size: 0.86rem; text-decoration: none; font-weight: 700; padding: 6px 10px; border-radius: 8px; background: #f8fafc; display: flex; align-items: center; gap: 8px;">🩺 AI Bet Doctor</a>
+          <a href="#arbitrage" onclick="toggleMobileDrawer()" style="color: #334155; font-size: 0.86rem; text-decoration: none; font-weight: 700; padding: 6px 10px; border-radius: 8px; background: #f8fafc; display: flex; align-items: center; gap: 8px;">🛡️ Arbitrage Finder</a>
+          <a href="#converter" onclick="toggleMobileDrawer()" style="color: #334155; font-size: 0.86rem; text-decoration: none; font-weight: 700; padding: 6px 10px; border-radius: 8px; background: #f8fafc; display: flex; align-items: center; gap: 8px;">🎫 Bet Code Converter</a>
+          <a href="#backtester" onclick="toggleMobileDrawer()" style="color: #334155; font-size: 0.86rem; text-decoration: none; font-weight: 700; padding: 6px 10px; border-radius: 8px; background: #f8fafc; display: flex; align-items: center; gap: 8px;">🧪 Strategy Backtester</a>
+          <a href="#valuebot" onclick="toggleMobileDrawer()" style="color: #334155; font-size: 0.86rem; text-decoration: none; font-weight: 700; padding: 6px 10px; border-radius: 8px; background: #f8fafc; display: flex; align-items: center; gap: 8px;">💰 Value Bet Bot</a>
         </div>
       </div>
 
       <!-- ACCORDION 3: Analytics & VIP -->
-      <div style="display: flex; flex-direction: column;">
-        <div onclick="toggleMobileAccordion('mobile-acc-analytics')" style="display: flex; align-items: center; justify-content: space-between; padding: 10px 12px; border-radius: 10px; cursor: pointer; color: #1e293b; font-weight: 700; font-size: 0.92rem;">
-          <span style="display: flex; align-items: center; gap: 10px;">📊 Analytics & VIP</span>
-          <span id="mobile-acc-analytics-icon" style="font-size: 0.7rem; transition: transform 0.2s;">▼</span>
+      <div style="display: flex; flex-direction: column; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 12px; overflow: hidden;">
+        <div onclick="toggleMobileAccordion('mobile-acc-analytics')" style="display: flex; align-items: center; justify-content: space-between; padding: 10px 14px; cursor: pointer; color: #0f172a; font-weight: 800; font-size: 0.93rem;">
+          <span style="display: flex; align-items: center; gap: 12px;">
+            <span style="width: 32px; height: 32px; border-radius: 8px; background: rgba(99, 102, 241, 0.12); display: flex; align-items: center; justify-content: center; font-size: 1.05rem;">📊</span>
+            <span>Analytics & VIP</span>
+          </span>
+          <span id="mobile-acc-analytics-icon" style="font-size: 0.7rem; color: #64748b; transition: transform 0.2s;">▼</span>
         </div>
-        <div id="mobile-acc-analytics" style="display: none; flex-direction: column; padding-left: 28px; gap: 6px; margin: 4px 0 8px;">
-          <a href="#analytics" onclick="toggleMobileDrawer()" style="color: #475569; font-size: 0.86rem; text-decoration: none; font-weight: 600; padding: 4px 0;">📊 League Stats Ledger</a>
-          <a href="#predictions" onclick="openGeneralScout(); toggleMobileDrawer();" style="color: #475569; font-size: 0.86rem; text-decoration: none; font-weight: 600; padding: 4px 0;">🧠 Advanced Team Stats</a>
-          <a href="#telegram-vip-section" onclick="toggleMobileDrawer()" style="color: #2563eb; font-size: 0.86rem; text-decoration: none; font-weight: 700; padding: 4px 0;">💬 VIP Telegram Group</a>
+        <div id="mobile-acc-analytics" style="display: none; flex-direction: column; border-top: 1px solid #e2e8f0; background: #ffffff; padding: 8px 12px 10px; gap: 6px;">
+          <a href="#analytics" onclick="toggleMobileDrawer()" style="color: #334155; font-size: 0.86rem; text-decoration: none; font-weight: 700; padding: 6px 10px; border-radius: 8px; background: #f8fafc; display: flex; align-items: center; gap: 8px;">📊 League Stats Ledger</a>
+          <a href="#predictions" onclick="openGeneralScout(); toggleMobileDrawer();" style="color: #334155; font-size: 0.86rem; text-decoration: none; font-weight: 700; padding: 6px 10px; border-radius: 8px; background: #f8fafc; display: flex; align-items: center; gap: 8px;">🧠 Advanced Team Stats</a>
+          <a href="#telegram-vip-section" onclick="toggleMobileDrawer()" style="color: #1d4ed8; font-size: 0.86rem; text-decoration: none; font-weight: 800; padding: 6px 10px; border-radius: 8px; background: rgba(59, 130, 246, 0.08); display: flex; align-items: center; gap: 8px;">💬 VIP Telegram Group</a>
         </div>
       </div>
 
       <!-- Item: Leagues Directory -->
-      <a href="#predictions" onclick="toggleMobileDrawer()" class="mobile-drawer-item" style="display: flex; align-items: center; gap: 10px; padding: 10px 12px; border-radius: 10px; text-decoration: none; color: #1e293b; font-weight: 700; font-size: 0.92rem;">
-        🌍 Leagues Directory
+      <a href="#predictions" onclick="toggleMobileDrawer()" class="mobile-drawer-item" style="display: flex; align-items: center; gap: 12px; padding: 10px 14px; border-radius: 12px; text-decoration: none; color: #0f172a; background: #f8fafc; border: 1px solid #e2e8f0; font-weight: 700; font-size: 0.93rem; transition: all 0.2s ease;">
+        <span style="width: 32px; height: 32px; border-radius: 8px; background: rgba(14, 165, 233, 0.12); display: flex; align-items: center; justify-content: center; font-size: 1.05rem;">🌍</span>
+        <span>Leagues Directory</span>
       </a>
 
-      <!-- Pro Features Badges Items -->
-      <a href="#scanner" onclick="toggleMobileDrawer()" style="display: flex; align-items: center; justify-content: space-between; padding: 10px 12px; border-radius: 10px; text-decoration: none; color: #d97706; font-weight: 700; font-size: 0.92rem;">
-        <span style="display: flex; align-items: center; gap: 8px;">👑 Live Scanner</span>
-      </a>
+      <!-- Pro Features Gold Suite Container -->
+      <div style="margin-top: 10px; background: linear-gradient(135deg, rgba(245, 158, 11, 0.1) 0%, rgba(217, 119, 6, 0.04) 100%); border: 1px solid rgba(245, 158, 11, 0.3); border-radius: 14px; padding: 10px; display: flex; flex-direction: column; gap: 6px;">
+        <div style="font-size: 0.68rem; font-weight: 900; color: #d97706; text-transform: uppercase; letter-spacing: 0.8px; display: flex; align-items: center; gap: 6px; padding-left: 4px;">
+          <span>👑</span> PRO SCANNER SUITE
+        </div>
+        
+        <a href="#scanner" onclick="toggleMobileDrawer()" style="display: flex; align-items: center; justify-content: space-between; padding: 8px 10px; border-radius: 8px; text-decoration: none; color: #b45309; font-weight: 800; font-size: 0.88rem; background: rgba(255, 255, 255, 0.8);">
+          <span style="display: flex; align-items: center; gap: 8px;">📡 Live Scanner</span>
+        </a>
 
-      <a href="#scanner" onclick="toggleMobileDrawer()" style="display: flex; align-items: center; justify-content: space-between; padding: 10px 12px; border-radius: 10px; text-decoration: none; color: #d97706; font-weight: 700; font-size: 0.92rem;">
-        <span style="display: flex; align-items: center; gap: 8px;">👑 Pre-Match Scanner</span>
-      </a>
+        <a href="#scanner" onclick="toggleMobileDrawer()" style="display: flex; align-items: center; justify-content: space-between; padding: 8px 10px; border-radius: 8px; text-decoration: none; color: #b45309; font-weight: 800; font-size: 0.88rem; background: rgba(255, 255, 255, 0.8);">
+          <span style="display: flex; align-items: center; gap: 8px;">⚡ Pre-Match Scanner</span>
+        </a>
 
-      <a href="#scanner" onclick="toggleMobileDrawer()" style="display: flex; align-items: center; justify-content: space-between; padding: 10px 12px; border-radius: 10px; text-decoration: none; color: #d97706; font-weight: 700; font-size: 0.92rem;">
-        <span style="display: flex; align-items: center; gap: 8px;">👑 Monitoring</span>
-        <span style="background: #f97316; color: #fff; font-size: 0.65rem; font-weight: 900; padding: 2px 6px; border-radius: 10px; text-transform: uppercase;">NEW</span>
-      </a>
+        <a href="#scanner" onclick="toggleMobileDrawer()" style="display: flex; align-items: center; justify-content: space-between; padding: 8px 10px; border-radius: 8px; text-decoration: none; color: #b45309; font-weight: 800; font-size: 0.88rem; background: rgba(255, 255, 255, 0.8);">
+          <span style="display: flex; align-items: center; gap: 8px;">📊 Monitoring</span>
+          <span style="background: #f97316; color: #fff; font-size: 0.62rem; font-weight: 900; padding: 2px 6px; border-radius: 10px; text-transform: uppercase;">NEW</span>
+        </a>
+      </div>
 
       <!-- Bottom Controls: Favourites & Settings -->
-      <div style="display: flex; justify-content: space-between; align-items: center; border-top: 1px solid #e2e8f0; margin-top: 14px; padding-top: 14px;">
-        <button onclick="toggleMobileDrawer(); showToast('⭐ Favourites Saved');" style="background: transparent; border: none; font-weight: 700; font-size: 0.85rem; color: #475569; display: flex; align-items: center; gap: 6px; cursor: pointer;">
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px; border-top: 1px solid #e2e8f0; margin-top: 14px; padding-top: 14px;">
+        <button onclick="toggleMobileDrawer(); showToast('⭐ Favourites Saved');" style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 10px; padding: 10px; font-weight: 800; font-size: 0.84rem; color: #334155; display: flex; align-items: center; justify-content: center; gap: 6px; cursor: pointer;">
           ⭐ Favourites
         </button>
-        <button onclick="toggleMobileDrawer(); openSupportModal('faq');" style="background: transparent; border: none; font-weight: 700; font-size: 0.85rem; color: #475569; display: flex; align-items: center; gap: 6px; cursor: pointer;">
+        <button onclick="toggleMobileDrawer(); openSupportModal('faq');" style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 10px; padding: 10px; font-weight: 800; font-size: 0.84rem; color: #334155; display: flex; align-items: center; justify-content: center; gap: 6px; cursor: pointer;">
           ⚙️ Settings
         </button>
       </div>
 
       <!-- Bottom Sticky Go Premium Button -->
-      <a href="#premium" onclick="toggleMobileDrawer()" style="margin-top: 12px; background: linear-gradient(135deg, #f97316 0%, #ea580c 100%); color: #ffffff; font-weight: 900; border-radius: 12px; padding: 14px; text-align: center; text-decoration: none; font-family: var(--font-display); font-size: 0.98rem; box-shadow: 0 4px 14px rgba(234, 88, 12, 0.45); display: block;">
-        Go Premium
+      <a href="#premium" onclick="toggleMobileDrawer()" style="margin-top: 12px; background: linear-gradient(135deg, #ea580c 0%, #dc2626 100%); color: #ffffff; font-weight: 900; border-radius: 12px; padding: 14px; text-align: center; text-decoration: none; font-family: var(--font-display); font-size: 0.98rem; box-shadow: 0 4px 16px rgba(234, 88, 12, 0.45); display: flex; align-items: center; justify-content: center; gap: 8px; letter-spacing: 0.5px; text-transform: uppercase;">
+        <span>🚀</span> GO PREMIUM
       </a>
 
     </div>
