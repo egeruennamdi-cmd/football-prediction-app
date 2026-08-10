@@ -281,16 +281,16 @@
   <aside id="mobile-nav-drawer" style="position: fixed; top: 0; left: -320px; width: 300px; height: 100vh; background: #ffffff; color: #0f172a; z-index: 99999; display: flex; flex-direction: column; box-shadow: 4px 0 24px rgba(0,0,0,0.3); transition: left 0.3s cubic-bezier(0.4, 0, 0.2, 1); overflow-y: auto;">
     
     <!-- Drawer Header / User Profile with Royal Blue Background & DeepPredictBet Watermark Logo -->
-    <div style="position: relative; overflow: hidden; padding: 20px 18px; border-bottom: 1px solid rgba(255, 255, 255, 0.1); display: flex; align-items: center; justify-content: space-between; background: linear-gradient(135deg, #1d4ed8 0%, #1e40af 50%, #0f172a 100%); box-shadow: 0 4px 20px rgba(29, 78, 216, 0.4);">
+    <div style="position: relative; overflow: hidden; padding: 26px 18px; min-height: 86px; border-bottom: 1px solid rgba(255, 255, 255, 0.1); display: flex; align-items: center; justify-content: space-between; background: linear-gradient(135deg, #1d4ed8 0%, #1e40af 50%, #0f172a 100%); box-shadow: 0 4px 20px rgba(29, 78, 216, 0.4);">
       
       <!-- DeepPredictBet Background Watermark Logo -->
-      <div style="position: absolute; right: 20px; top: 50%; transform: translateY(-50%); font-family: var(--font-display); font-size: 1.45rem; font-weight: 900; color: rgba(255, 255, 255, 0.14); letter-spacing: -0.5px; pointer-events: none; white-space: nowrap; user-select: none; text-transform: uppercase;">
+      <div style="position: absolute; right: 15px; top: 50%; transform: translateY(-50%); font-family: var(--font-display); font-size: 1.45rem; font-weight: 900; color: rgba(255, 255, 255, 0.14); letter-spacing: -0.5px; pointer-events: none; white-space: nowrap; user-select: none; text-transform: uppercase;">
         DEEPPREDICT<span style="color: rgba(59, 130, 246, 0.3);">BET</span>
       </div>
 
       <!-- User Info Row -->
-      <div style="display: flex; align-items: center; gap: 12px; cursor: pointer; position: relative; z-index: 2;" onclick="openAuthModal('login')">
-        <div style="width: 44px; height: 44px; border-radius: 50%; background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%); border: 2px solid rgba(255, 255, 255, 0.3); display: flex; align-items: center; justify-content: center; font-size: 1.2rem; color: #ffffff; box-shadow: 0 0 14px rgba(59, 130, 246, 0.5);">
+      <div style="display: flex; align-items: center; gap: 12px; cursor: pointer; position: relative; z-index: 2; flex-shrink: 0;" onclick="openAuthModal('login')">
+        <div style="width: 44px; height: 44px; min-width: 44px; min-height: 44px; flex-shrink: 0; border-radius: 50%; background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%); border: 2px solid rgba(255, 255, 255, 0.4); display: flex; align-items: center; justify-content: center; font-size: 1.2rem; color: #ffffff; box-shadow: 0 0 14px rgba(59, 130, 246, 0.5); box-sizing: border-box;">
           👤
         </div>
         <div style="display: flex; flex-direction: column;">
@@ -303,7 +303,7 @@
       </div>
 
       <!-- Close Drawer Button -->
-      <button onclick="toggleMobileDrawer()" style="background: rgba(255, 255, 255, 0.12); border: 1px solid rgba(255, 255, 255, 0.2); border-radius: 50%; width: 32px; height: 32px; font-size: 1rem; color: #ffffff; cursor: pointer; display: flex; align-items: center; justify-content: center; position: relative; z-index: 2; transition: all 0.2s ease;">✕</button>
+      <button onclick="toggleMobileDrawer()" style="background: rgba(255, 255, 255, 0.12); border: 1px solid rgba(255, 255, 255, 0.2); border-radius: 50%; width: 32px; height: 32px; min-width: 32px; min-height: 32px; flex-shrink: 0; font-size: 1rem; color: #ffffff; cursor: pointer; display: flex; align-items: center; justify-content: center; position: relative; z-index: 2; transition: all 0.2s ease;">✕</button>
     </div>
 
     <!-- Tools & Navigation Section -->
