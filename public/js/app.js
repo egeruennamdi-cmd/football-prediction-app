@@ -3521,3 +3521,124 @@ function swapConverterBookmakers() {
   }
 }
 window.swapConverterBookmakers = swapConverterBookmakers;
+
+
+/* --- DEEPPREDICTBET AUTH / LOGIN MODAL CONTROLLERS --- */
+function openAuthModal(mode) {
+  const modal = document.getElementById("auth-modal");
+  if (!modal) return;
+
+  const isLoggedIn = localStorage.getItem("userLoggedIn") === "true";
+  if (isLoggedIn && typeof openProfileModal === 'function') {
+    openProfileModal('info');
+    return;
+  }
+
+  modal.classList.add("active");
+  document.body.style.overflow = "hidden";
+  if (typeof switchAuthTab === 'function') {
+    switchAuthTab(mode || 'login');
+  }
+}
+
+function closeAuthModal(event, force) {
+  if (force || (event && event.target && event.target.id === "auth-modal")) {
+    const modal = document.getElementById("auth-modal");
+    if (modal) modal.classList.remove("active");
+    document.body.style.overflow = "";
+  }
+}
+
+function switchAuthTab(tab) {
+  const loginBtn = document.getElementById("auth-tab-login");
+  const signupBtn = document.getElementById("auth-tab-signup");
+  const loginPane = document.getElementById("auth-pane-login");
+  const signupPane = document.getElementById("auth-pane-signup");
+
+  if (tab === 'login') {
+    if (loginBtn) {
+      loginBtn.style.borderBottom = "3px solid #3b82f6";
+      loginBtn.style.color = "#ffffff";
+    }
+    if (signupBtn) {
+      signupBtn.style.borderBottom = "3px solid transparent";
+      signupBtn.style.color = "#94a3b8";
+    }
+    if (loginPane) loginPane.style.display = "block";
+    if (signupPane) signupPane.style.display = "none";
+  } else {
+    if (signupBtn) {
+      signupBtn.style.borderBottom = "3px solid #10b981";
+      signupBtn.style.color = "#ffffff";
+    }
+    if (loginBtn) {
+      loginBtn.style.borderBottom = "3px solid transparent";
+      loginBtn.style.color = "#94a3b8";
+    }
+    if (signupPane) signupPane.style.display = "block";
+    if (loginPane) loginPane.style.display = "none";
+  }
+}
+
+function handleAuthLogin(e) {
+  if (e) e.preventDefault();
+  const input = document.getElementById("login-identifier");
+  const username = (input && input.value.trim()) ? input.value.trim().split('@')[0] : "Egeruennamdi78";
+
+  localStorage.setItem("userLoggedIn", "true");
+  localStorage.setItem("currentUsername", username);
+
+  if (typeof updateAuthUIState === 'function') updateAuthUIState();
+  closeAuthModal(null, true);
+
+  if (typeof showAppNotification === 'function') {
+    showAppNotification(`🔓 Welcome back, ${username}! Login successful.`);
+  } else if (typeof showToast === 'function') {
+    showToast(`🔓 Welcome back, ${username}!`);
+  }
+}
+
+function handleAuthSignup(e) {
+  if (e) e.preventDefault();
+  const input = document.getElementById("signup-username");
+  const username = (input && input.value.trim()) ? input.value.trim() : "Egeruennamdi78";
+
+  localStorage.setItem("userLoggedIn", "true");
+  localStorage.setItem("currentUsername", username);
+
+  if (typeof updateAuthUIState === 'function') updateAuthUIState();
+  closeAuthModal(null, true);
+
+  if (typeof showAppNotification === 'function') {
+    showAppNotification(`🎉 Welcome to DeepPredictBet, ${username}! +500 Coins added.`);
+  } else if (typeof showToast === 'function') {
+    showToast(`🎉 Welcome to DeepPredictBet, ${username}!`);
+  }
+}
+
+function updateAuthUIState() {
+  const isLoggedIn = localStorage.getItem("userLoggedIn") === "true";
+  const username = localStorage.getItem("currentUsername") || "Egeruennamdi78";
+
+  const navLabel = document.getElementById("nav-user-label");
+  const drawerUsername = document.getElementById("mobile-drawer-username");
+
+  if (navLabel) {
+    navLabel.innerText = isLoggedIn ? username : "Login";
+  }
+  if (drawerUsername) {
+    drawerUsername.innerText = username;
+  }
+}
+
+window.openAuthModal = openAuthModal;
+window.closeAuthModal = closeAuthModal;
+window.switchAuthTab = switchAuthTab;
+window.handleAuthLogin = handleAuthLogin;
+window.handleAuthSignup = handleAuthSignup;
+window.updateAuthUIState = updateAuthUIState;
+
+// Auto-run state sync on load
+document.addEventListener("DOMContentLoaded", function() {
+  updateAuthUIState();
+});

@@ -3241,6 +3241,91 @@
     </div>
   </div>
 
+  <!-- --- DEEPPREDICTBET AUTH / LOGIN MODAL --- -->
+  <div class="modal-overlay" id="auth-modal" onclick="closeAuthModal(event)">
+    <div class="modal-content" onclick="event.stopPropagation()" style="max-width: 440px; background: #0f172a; border: 1px solid rgba(59, 130, 246, 0.3); border-radius: 16px; box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5); overflow: hidden; padding: 0;">
+      
+      <!-- Modal Header -->
+      <div style="background: linear-gradient(135deg, #1d4ed8 0%, #1e40af 50%, #0f172a 100%); padding: 22px 20px; display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid rgba(255, 255, 255, 0.1); position: relative;">
+        
+        <div style="display: flex; align-items: center; gap: 12px; position: relative; z-index: 2;">
+          <div style="width: 42px; height: 42px; border-radius: 50%; background: rgba(255, 255, 255, 0.15); border: 1.5px solid rgba(255, 255, 255, 0.3); display: flex; align-items: center; justify-content: center; font-size: 1.2rem; color: #ffffff;">
+            🔐
+          </div>
+          <div>
+            <h3 style="font-family: var(--font-display); font-size: 1.15rem; font-weight: 900; color: #ffffff; margin: 0;">DeepPredictBet Access</h3>
+            <span style="font-size: 0.73rem; color: #93c5fd; font-weight: 600;">Sign in or create your account</span>
+          </div>
+        </div>
+
+        <button onclick="closeAuthModal(event, true)" style="background: rgba(255, 255, 255, 0.12); border: 1px solid rgba(255, 255, 255, 0.2); border-radius: 50%; width: 32px; height: 32px; font-size: 1rem; color: #ffffff; cursor: pointer; display: flex; align-items: center; justify-content: center; z-index: 2;">&times;</button>
+      </div>
+
+      <!-- Tab Buttons -->
+      <div style="display: grid; grid-template-columns: 1fr 1fr; background: #1e293b; border-bottom: 1px solid rgba(255,255,255,0.08);">
+        <button id="auth-tab-login" onclick="switchAuthTab('login')" style="padding: 12px; background: transparent; border: none; border-bottom: 3px solid #3b82f6; color: #ffffff; font-weight: 800; font-size: 0.9rem; cursor: pointer; transition: all 0.2s;">
+          Login
+        </button>
+        <button id="auth-tab-signup" onclick="switchAuthTab('signup')" style="padding: 12px; background: transparent; border: none; border-bottom: 3px solid transparent; color: #94a3b8; font-weight: 700; font-size: 0.9rem; cursor: pointer; transition: all 0.2s;">
+          Create Account
+        </button>
+      </div>
+
+      <!-- Login Form Pane -->
+      <div id="auth-pane-login" style="padding: 22px; display: block;">
+        <form onsubmit="handleAuthLogin(event)" style="display: flex; flex-direction: column; gap: 16px;">
+          <div>
+            <label style="display: block; font-size: 0.8rem; font-weight: 700; color: #cbd5e1; margin-bottom: 6px;">Email address or Username</label>
+            <input type="text" id="login-identifier" required placeholder="e.g. punter@deeppredictbet.com" style="width: 100%; background: #1e293b; border: 1px solid #334155; border-radius: 10px; padding: 12px 14px; color: #ffffff; font-size: 0.9rem; outline: none; box-sizing: border-box;">
+          </div>
+          <div>
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
+              <label style="font-size: 0.8rem; font-weight: 700; color: #cbd5e1;">Password</label>
+              <a href="#" onclick="if (typeof showAppNotification === 'function') showAppNotification('🔑 Password reset link sent to your email.'); else alert('Password reset link sent to your email.'); return false;" style="font-size: 0.74rem; color: #3b82f6; text-decoration: none; font-weight: 700;">Forgot Password?</a>
+            </div>
+            <input type="password" id="login-password" required placeholder="••••••••" style="width: 100%; background: #1e293b; border: 1px solid #334155; border-radius: 10px; padding: 12px 14px; color: #ffffff; font-size: 0.9rem; outline: none; box-sizing: border-box;">
+          </div>
+
+          <div style="display: flex; align-items: center; gap: 8px;">
+            <input type="checkbox" id="login-remember" checked style="accent-color: #3b82f6; width: 16px; height: 16px;">
+            <label for="login-remember" style="font-size: 0.8rem; color: #94a3b8; cursor: pointer;">Remember me on this device</label>
+          </div>
+
+          <button type="submit" style="width: 100%; background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%); color: #ffffff; font-weight: 900; font-size: 0.95rem; padding: 12px; border: none; border-radius: 10px; cursor: pointer; box-shadow: 0 4px 14px rgba(37, 99, 235, 0.4); margin-top: 4px;">
+            Sign In to DeepPredictBet
+          </button>
+        </form>
+      </div>
+
+      <!-- Sign Up Form Pane -->
+      <div id="auth-pane-signup" style="padding: 22px; display: none;">
+        <form onsubmit="handleAuthSignup(event)" style="display: flex; flex-direction: column; gap: 14px;">
+          <div>
+            <label style="display: block; font-size: 0.8rem; font-weight: 700; color: #cbd5e1; margin-bottom: 6px;">Full Name</label>
+            <input type="text" id="signup-fullname" required placeholder="e.g. Alex Nnamdi" style="width: 100%; background: #1e293b; border: 1px solid #334155; border-radius: 10px; padding: 10px 14px; color: #ffffff; font-size: 0.88rem; outline: none; box-sizing: border-box;">
+          </div>
+          <div>
+            <label style="display: block; font-size: 0.8rem; font-weight: 700; color: #cbd5e1; margin-bottom: 6px;">Email Address</label>
+            <input type="email" id="signup-email" required placeholder="alex@domain.com" style="width: 100%; background: #1e293b; border: 1px solid #334155; border-radius: 10px; padding: 10px 14px; color: #ffffff; font-size: 0.88rem; outline: none; box-sizing: border-box;">
+          </div>
+          <div>
+            <label style="display: block; font-size: 0.8rem; font-weight: 700; color: #cbd5e1; margin-bottom: 6px;">Choose Username</label>
+            <input type="text" id="signup-username" required placeholder="e.g. DeepPunter77" style="width: 100%; background: #1e293b; border: 1px solid #334155; border-radius: 10px; padding: 10px 14px; color: #ffffff; font-size: 0.88rem; outline: none; box-sizing: border-box;">
+          </div>
+          <div>
+            <label style="display: block; font-size: 0.8rem; font-weight: 700; color: #cbd5e1; margin-bottom: 6px;">Password</label>
+            <input type="password" id="signup-password" required placeholder="Min 6 characters" style="width: 100%; background: #1e293b; border: 1px solid #334155; border-radius: 10px; padding: 10px 14px; color: #ffffff; font-size: 0.88rem; outline: none; box-sizing: border-box;">
+          </div>
+
+          <button type="submit" style="width: 100%; background: linear-gradient(135deg, #10b981 0%, #059669 100%); color: #ffffff; font-weight: 900; font-size: 0.95rem; padding: 12px; border: none; border-radius: 10px; cursor: pointer; box-shadow: 0 4px 14px rgba(16, 185, 129, 0.4); margin-top: 6px;">
+            Create Free Account & Claim 500 Coins
+          </button>
+        </form>
+      </div>
+
+    </div>
+  </div>
+
   <!-- --- HELP & SUPPORT MODAL --- -->
   <div class="modal-overlay" id="support-modal" onclick="closeSupportModal(event)">
     <div class="modal-content" onclick="event.stopPropagation()" style="max-width: 650px;">
