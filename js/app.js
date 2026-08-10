@@ -3531,16 +3531,11 @@ window.swapConverterBookmakers = swapConverterBookmakers;
 
 
 
-/* --- COMPLETE MOBILE PHONE TOUCH & DESKTOP AUTH / LOGIN CONTROLLERS --- */
-function openAuthModal(mode) {
-  // Prevent dual-triggering on fast touch + click on smartphones
-  const now = Date.now();
-  if (window._lastAuthModalOpenTime && (now - window._lastAuthModalOpenTime < 350)) {
-    return;
-  }
-  window._lastAuthModalOpenTime = now;
 
-  // 1. Automatically close Mobile Drawer on phones if open
+
+/* --- INSTANT 0MS TAP & CLICK AUTH / LOGIN CONTROLLERS FOR ALL DEVICES --- */
+function openAuthModal(mode) {
+  // 1. Automatically close Mobile Drawer on phones/tablets if open
   const drawer = document.getElementById("mobile-nav-drawer");
   const overlay = document.getElementById("mobile-drawer-overlay");
   if (drawer) {
@@ -3562,7 +3557,7 @@ function openAuthModal(mode) {
     return;
   }
 
-  // 3. Open Auth Modal
+  // 3. Open Auth Modal instantly
   const modal = document.getElementById("auth-modal");
   if (!modal) return;
 
