@@ -3527,7 +3527,9 @@ window.swapConverterBookmakers = swapConverterBookmakers;
 
 
 
-/* --- MOBILE PHONE & TOUCH COMPATIBLE AUTH CONTROLLERS --- */
+
+
+/* --- COMPLETE MOBILE & DESKTOP AUTH / LOGIN CONTROLLERS --- */
 function openAuthModal(mode) {
   // 1. Automatically close Mobile Drawer on phones if open
   const drawer = document.getElementById("mobile-nav-drawer");
@@ -3564,8 +3566,172 @@ function openAuthModal(mode) {
   }
 }
 
+function closeAuthModal(event, force) {
+  if (force || (event && event.target && event.target.id === "auth-modal")) {
+    const modal = document.getElementById("auth-modal");
+    if (modal) modal.classList.remove("active");
+    document.body.style.overflow = "";
+  }
+}
+
+function switchAuthTab(tab) {
+  const loginBtn = document.getElementById("auth-tab-login");
+  const signupBtn = document.getElementById("auth-tab-signup");
+  const loginPane = document.getElementById("auth-pane-login");
+  const signupPane = document.getElementById("auth-pane-signup");
+
+  if (tab === 'login') {
+    if (loginBtn) {
+      loginBtn.style.borderBottom = "3px solid #3b82f6";
+      loginBtn.style.color = "#ffffff";
+    }
+    if (signupBtn) {
+      signupBtn.style.borderBottom = "3px solid transparent";
+      signupBtn.style.color = "#94a3b8";
+    }
+    if (loginPane) loginPane.style.display = "block";
+    if (signupPane) signupPane.style.display = "none";
+  } else {
+    if (signupBtn) {
+      signupBtn.style.borderBottom = "3px solid #10b981";
+      signupBtn.style.color = "#ffffff";
+    }
+    if (loginBtn) {
+      loginBtn.style.borderBottom = "3px solid transparent";
+      loginBtn.style.color = "#94a3b8";
+    }
+    if (signupPane) signupPane.style.display = "block";
+    if (loginPane) loginPane.style.display = "none";
+  }
+}
+
+function handleAuthLogin(e) {
+  if (e) {
+    if (typeof e.preventDefault === 'function') e.preventDefault();
+    if (typeof e.stopPropagation === 'function') e.stopPropagation();
+  }
+
+  const input = document.getElementById("login-identifier");
+  let username = "Egeruennamdi78";
+  if (input && input.value && input.value.trim().length > 0) {
+    username = input.value.trim().split('@')[0];
+  }
+
+  try {
+    localStorage.setItem("userLoggedIn", "true");
+    localStorage.setItem("currentUsername", username);
+  } catch(err) {}
+
+  if (typeof updateAuthUIState === 'function') updateAuthUIState();
+  closeAuthModal(null, true);
+
+  const msg = `🔓 Welcome back, ${username}! Login successful.`;
+  if (typeof showAppNotification === 'function') {
+    showAppNotification(msg);
+  } else if (typeof showToast === 'function') {
+    showToast(msg);
+  } else {
+    alert(msg);
+  }
+  return false;
+}
+
+function handleAuthSignup(e) {
+  if (e) {
+    if (typeof e.preventDefault === 'function') e.preventDefault();
+    if (typeof e.stopPropagation === 'function') e.stopPropagation();
+  }
+
+  const input = document.getElementById("signup-username");
+  let username = "Egeruennamdi78";
+  if (input && input.value && input.value.trim().length > 0) {
+    username = input.value.trim();
+  }
+
+  try {
+    localStorage.setItem("userLoggedIn", "true");
+    localStorage.setItem("currentUsername", username);
+  } catch(err) {}
+
+  if (typeof updateAuthUIState === 'function') updateAuthUIState();
+  closeAuthModal(null, true);
+
+  const msg = `🎉 Welcome to DeepPredictBet, ${username}! +500 Coins claimed.`;
+  if (typeof showAppNotification === 'function') {
+    showAppNotification(msg);
+  } else if (typeof showToast === 'function') {
+    showToast(msg);
+  } else {
+    alert(msg);
+  }
+  return false;
+}
+
+function updateAuthUIState() {
+  const isLoggedIn = localStorage.getItem("userLoggedIn") === "true";
+  const username = localStorage.getItem("currentUsername") || "Guest User";
+
+  const navLabel = document.getElementById("nav-user-label");
+  const drawerUsername = document.getElementById("mobile-drawer-username");
+  const profileUsernameDisplay = document.getElementById("profile-username-display");
+  const profileAvatarInitial = document.getElementById("profile-avatar-initial");
+
+  if (navLabel) {
+    navLabel.innerText = isLoggedIn ? username : "Login";
+  }
+  if (drawerUsername) {
+    drawerUsername.innerText = isLoggedIn ? username : "Guest User";
+  }
+  if (profileUsernameDisplay) {
+    profileUsernameDisplay.innerText = isLoggedIn ? username : "Guest User";
+  }
+  if (profileAvatarInitial) {
+    profileAvatarInitial.innerText = isLoggedIn ? username.charAt(0).toUpperCase() : "👤";
+  }
+}
+
+function logoutUser(e) {
+  if (e && e.preventDefault) e.preventDefault();
+
+  try {
+    localStorage.removeItem("userLoggedIn");
+    localStorage.removeItem("currentUsername");
+    localStorage.clear();
+  } catch (err) {}
+
+  updateAuthUIState();
+
+  const profModal = document.getElementById("profile-modal");
+  if (profModal) profModal.classList.remove("active");
+
+  const authModal = document.getElementById("auth-modal");
+  if (authModal) authModal.classList.remove("active");
+
+  const drawer = document.getElementById("mobile-nav-drawer");
+  const overlay = document.getElementById("mobile-drawer-overlay");
+  if (drawer) {
+    drawer.classList.remove("open");
+    drawer.classList.remove("active");
+    drawer.style.left = "-340px";
+  }
+  if (overlay) {
+    overlay.style.opacity = "0";
+    overlay.style.display = "none";
+  }
+
+  document.body.style.overflow = "";
+
+  const msg = "🚪 You have been logged out successfully.";
+  if (typeof showAppNotification === 'function') {
+    showAppNotification(msg);
+  } else if (typeof showToast === 'function') {
+    showToast(msg);
+  } else {
+    alert(msg);
+  }
+}
+
 function openProfileModal(activeTab) {
-  // Close drawer on phones if open
   const drawer = document.getElementById("mobile-nav-drawer");
   const overlay = document.getElementById("mobile-drawer-overlay");
   if (drawer) {
@@ -3581,9 +3747,7 @@ function openProfileModal(activeTab) {
   const modal = document.getElementById("profile-modal");
   if (!modal) return;
 
-  if (typeof updateAuthUIState === 'function') {
-    updateAuthUIState();
-  }
+  updateAuthUIState();
 
   modal.classList.add("active");
   modal.style.zIndex = "1000000";
@@ -3594,5 +3758,53 @@ function openProfileModal(activeTab) {
   }
 }
 
+function closeProfileModal(event, force) {
+  if (force || (event && event.target && event.target.id === "profile-modal")) {
+    const modal = document.getElementById("profile-modal");
+    if (modal) modal.classList.remove("active");
+    document.body.style.overflow = "";
+  }
+}
+
+function switchProfileTab(tab) {
+  const infoBtn = document.getElementById("prof-tab-info");
+  const alertsBtn = document.getElementById("prof-tab-alerts");
+  const historyBtn = document.getElementById("prof-tab-history");
+
+  const infoPane = document.getElementById("prof-pane-info");
+  const alertsPane = document.getElementById("prof-pane-alerts");
+  const historyPane = document.getElementById("prof-pane-history");
+
+  const btns = [infoBtn, alertsBtn, historyBtn];
+  const panes = [infoPane, alertsPane, historyPane];
+
+  btns.forEach(b => { if (b) b.classList.remove("active"); });
+  panes.forEach(p => { if (p) p.style.display = "none"; });
+
+  if (tab === 'info') {
+    if (infoBtn) infoBtn.classList.add("active");
+    if (infoPane) infoPane.style.display = "block";
+  } else if (tab === 'alerts') {
+    if (alertsBtn) alertsBtn.classList.add("active");
+    if (alertsPane) alertsPane.style.display = "block";
+  } else if (tab === 'history') {
+    if (historyBtn) historyBtn.classList.add("active");
+    if (historyPane) historyPane.style.display = "block";
+  }
+}
+
+// Global Bindings
 window.openAuthModal = openAuthModal;
+window.closeAuthModal = closeAuthModal;
+window.switchAuthTab = switchAuthTab;
+window.handleAuthLogin = handleAuthLogin;
+window.handleAuthSignup = handleAuthSignup;
+window.updateAuthUIState = updateAuthUIState;
+window.logoutUser = logoutUser;
 window.openProfileModal = openProfileModal;
+window.closeProfileModal = closeProfileModal;
+window.switchProfileTab = switchProfileTab;
+
+document.addEventListener("DOMContentLoaded", function() {
+  updateAuthUIState();
+});
