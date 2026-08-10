@@ -3616,27 +3616,7 @@ function handleAuthSignup(e) {
   }
 }
 
-function updateAuthUIState() {
-  const isLoggedIn = localStorage.getItem("userLoggedIn") === "true";
-  const username = localStorage.getItem("currentUsername") || "Egeruennamdi78";
 
-  const navLabel = document.getElementById("nav-user-label");
-  const drawerUsername = document.getElementById("mobile-drawer-username");
-
-  if (navLabel) {
-    navLabel.innerText = isLoggedIn ? username : "Login";
-  }
-  if (drawerUsername) {
-    drawerUsername.innerText = username;
-  }
-}
-
-window.openAuthModal = openAuthModal;
-window.closeAuthModal = closeAuthModal;
-window.switchAuthTab = switchAuthTab;
-window.handleAuthLogin = handleAuthLogin;
-window.handleAuthSignup = handleAuthSignup;
-window.updateAuthUIState = updateAuthUIState;
 
 // Auto-run state sync on load
 document.addEventListener("DOMContentLoaded", function() {
@@ -3644,18 +3624,89 @@ document.addEventListener("DOMContentLoaded", function() {
 });
 
 
-/* --- USER LOGOUT & PROFILE DYNAMIC SYNC CONTROLLERS --- */
-function logoutUser() {
-  localStorage.removeItem("userLoggedIn");
-  localStorage.removeItem("currentUsername");
 
-  if (typeof updateAuthUIState === 'function') updateAuthUIState();
-  if (typeof closeProfileModal === 'function') closeProfileModal(null, true);
 
+
+
+/* --- FOOLPROOF DEEPPREDICTBET LOGOUT CONTROLLER --- */
+function logoutUser(e) {
+  if (e && e.preventDefault) e.preventDefault();
+
+  try {
+    localStorage.removeItem("userLoggedIn");
+    localStorage.removeItem("currentUsername");
+    localStorage.clear();
+  } catch (err) {}
+
+  // 1. Reset UI Labels across devices
+  const navLabel = document.getElementById("nav-user-label");
+  const drawerUsername = document.getElementById("mobile-drawer-username");
+  const profileUsernameDisplay = document.getElementById("profile-username-display");
+  const profileAvatarInitial = document.getElementById("profile-avatar-initial");
+
+  if (navLabel) navLabel.innerText = "Login";
+  if (drawerUsername) drawerUsername.innerText = "Guest User";
+  if (profileUsernameDisplay) profileUsernameDisplay.innerText = "Guest User";
+  if (profileAvatarInitial) profileAvatarInitial.innerText = "👤";
+
+  // 2. Hide User Profile Modal
+  const profModal = document.getElementById("profile-modal");
+  if (profModal) profModal.classList.remove("active");
+
+  // 3. Hide Auth Modal
+  const authModal = document.getElementById("auth-modal");
+  if (authModal) authModal.classList.remove("active");
+
+  // 4. Close Mobile Drawer
+  const drawer = document.getElementById("mobile-nav-drawer");
+  const overlay = document.getElementById("mobile-drawer-overlay");
+  if (drawer) {
+    drawer.classList.remove("open");
+    drawer.classList.remove("active");
+    drawer.style.left = "-340px";
+  }
+  if (overlay) {
+    overlay.style.opacity = "0";
+    overlay.style.display = "none";
+  }
+
+  document.body.style.overflow = "";
+
+  // 5. Trigger Toast Notification
   if (typeof showAppNotification === 'function') {
-    showAppNotification("🚪 Logged out successfully.");
+    showAppNotification("🚪 You have been logged out successfully.");
   } else if (typeof showToast === 'function') {
-    showToast("🚪 Logged out successfully.");
+    showToast("🚪 You have been logged out successfully.");
+  } else {
+    alert("🚪 You have been logged out successfully.");
   }
 }
 
+function updateAuthUIState() {
+  const isLoggedIn = localStorage.getItem("userLoggedIn") === "true";
+  const username = localStorage.getItem("currentUsername") || "Guest User";
+
+  const navLabel = document.getElementById("nav-user-label");
+  const drawerUsername = document.getElementById("mobile-drawer-username");
+  const profileUsernameDisplay = document.getElementById("profile-username-display");
+  const profileAvatarInitial = document.getElementById("profile-avatar-initial");
+
+  if (navLabel) {
+    navLabel.innerText = isLoggedIn ? username : "Login";
+  }
+  if (drawerUsername) {
+    drawerUsername.innerText = isLoggedIn ? username : "Guest User";
+  }
+  if (profileUsernameDisplay) {
+    profileUsernameDisplay.innerText = isLoggedIn ? username : "Guest User";
+  }
+  if (profileAvatarInitial) {
+    profileAvatarInitial.innerText = isLoggedIn ? username.charAt(0).toUpperCase() : "👤";
+  }
+}
+
+
+
+window.logoutUser = logoutUser;
+window.updateAuthUIState = updateAuthUIState;
+window.openAuthModal = openAuthModal;
