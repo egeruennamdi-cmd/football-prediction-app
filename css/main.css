@@ -1336,7 +1336,7 @@ header {
   background: rgba(8, 11, 17, 0.85);
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
-  z-index: 1000;
+  z-index: 1000000;
   display: flex;
   align-items: center;
   justify-content: center;

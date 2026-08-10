@@ -3524,140 +3524,12 @@ window.swapConverterBookmakers = swapConverterBookmakers;
 
 
 /* --- DEEPPREDICTBET AUTH / LOGIN MODAL CONTROLLERS --- */
+
+
+
+/* --- MOBILE PHONE & TOUCH COMPATIBLE AUTH CONTROLLERS --- */
 function openAuthModal(mode) {
-  const modal = document.getElementById("auth-modal");
-  if (!modal) return;
-
-  const isLoggedIn = localStorage.getItem("userLoggedIn") === "true";
-  if (isLoggedIn && typeof openProfileModal === 'function') {
-    openProfileModal('info');
-    return;
-  }
-
-  modal.classList.add("active");
-  document.body.style.overflow = "hidden";
-  if (typeof switchAuthTab === 'function') {
-    switchAuthTab(mode || 'login');
-  }
-}
-
-function closeAuthModal(event, force) {
-  if (force || (event && event.target && event.target.id === "auth-modal")) {
-    const modal = document.getElementById("auth-modal");
-    if (modal) modal.classList.remove("active");
-    document.body.style.overflow = "";
-  }
-}
-
-function switchAuthTab(tab) {
-  const loginBtn = document.getElementById("auth-tab-login");
-  const signupBtn = document.getElementById("auth-tab-signup");
-  const loginPane = document.getElementById("auth-pane-login");
-  const signupPane = document.getElementById("auth-pane-signup");
-
-  if (tab === 'login') {
-    if (loginBtn) {
-      loginBtn.style.borderBottom = "3px solid #3b82f6";
-      loginBtn.style.color = "#ffffff";
-    }
-    if (signupBtn) {
-      signupBtn.style.borderBottom = "3px solid transparent";
-      signupBtn.style.color = "#94a3b8";
-    }
-    if (loginPane) loginPane.style.display = "block";
-    if (signupPane) signupPane.style.display = "none";
-  } else {
-    if (signupBtn) {
-      signupBtn.style.borderBottom = "3px solid #10b981";
-      signupBtn.style.color = "#ffffff";
-    }
-    if (loginBtn) {
-      loginBtn.style.borderBottom = "3px solid transparent";
-      loginBtn.style.color = "#94a3b8";
-    }
-    if (signupPane) signupPane.style.display = "block";
-    if (loginPane) loginPane.style.display = "none";
-  }
-}
-
-function handleAuthLogin(e) {
-  if (e) e.preventDefault();
-  const input = document.getElementById("login-identifier");
-  const username = (input && input.value.trim()) ? input.value.trim().split('@')[0] : "Egeruennamdi78";
-
-  localStorage.setItem("userLoggedIn", "true");
-  localStorage.setItem("currentUsername", username);
-
-  if (typeof updateAuthUIState === 'function') updateAuthUIState();
-  closeAuthModal(null, true);
-
-  if (typeof showAppNotification === 'function') {
-    showAppNotification(`🔓 Welcome back, ${username}! Login successful.`);
-  } else if (typeof showToast === 'function') {
-    showToast(`🔓 Welcome back, ${username}!`);
-  }
-}
-
-function handleAuthSignup(e) {
-  if (e) e.preventDefault();
-  const input = document.getElementById("signup-username");
-  const username = (input && input.value.trim()) ? input.value.trim() : "Egeruennamdi78";
-
-  localStorage.setItem("userLoggedIn", "true");
-  localStorage.setItem("currentUsername", username);
-
-  if (typeof updateAuthUIState === 'function') updateAuthUIState();
-  closeAuthModal(null, true);
-
-  if (typeof showAppNotification === 'function') {
-    showAppNotification(`🎉 Welcome to DeepPredictBet, ${username}! +500 Coins added.`);
-  } else if (typeof showToast === 'function') {
-    showToast(`🎉 Welcome to DeepPredictBet, ${username}!`);
-  }
-}
-
-
-
-// Auto-run state sync on load
-document.addEventListener("DOMContentLoaded", function() {
-  updateAuthUIState();
-});
-
-
-
-
-
-
-/* --- FOOLPROOF DEEPPREDICTBET LOGOUT CONTROLLER --- */
-function logoutUser(e) {
-  if (e && e.preventDefault) e.preventDefault();
-
-  try {
-    localStorage.removeItem("userLoggedIn");
-    localStorage.removeItem("currentUsername");
-    localStorage.clear();
-  } catch (err) {}
-
-  // 1. Reset UI Labels across devices
-  const navLabel = document.getElementById("nav-user-label");
-  const drawerUsername = document.getElementById("mobile-drawer-username");
-  const profileUsernameDisplay = document.getElementById("profile-username-display");
-  const profileAvatarInitial = document.getElementById("profile-avatar-initial");
-
-  if (navLabel) navLabel.innerText = "Login";
-  if (drawerUsername) drawerUsername.innerText = "Guest User";
-  if (profileUsernameDisplay) profileUsernameDisplay.innerText = "Guest User";
-  if (profileAvatarInitial) profileAvatarInitial.innerText = "👤";
-
-  // 2. Hide User Profile Modal
-  const profModal = document.getElementById("profile-modal");
-  if (profModal) profModal.classList.remove("active");
-
-  // 3. Hide Auth Modal
-  const authModal = document.getElementById("auth-modal");
-  if (authModal) authModal.classList.remove("active");
-
-  // 4. Close Mobile Drawer
+  // 1. Automatically close Mobile Drawer on phones if open
   const drawer = document.getElementById("mobile-nav-drawer");
   const overlay = document.getElementById("mobile-drawer-overlay");
   if (drawer) {
@@ -3670,43 +3542,57 @@ function logoutUser(e) {
     overlay.style.display = "none";
   }
 
-  document.body.style.overflow = "";
-
-  // 5. Trigger Toast Notification
-  if (typeof showAppNotification === 'function') {
-    showAppNotification("🚪 You have been logged out successfully.");
-  } else if (typeof showToast === 'function') {
-    showToast("🚪 You have been logged out successfully.");
-  } else {
-    alert("🚪 You have been logged out successfully.");
-  }
-}
-
-function updateAuthUIState() {
+  // 2. Check login state
   const isLoggedIn = localStorage.getItem("userLoggedIn") === "true";
-  const username = localStorage.getItem("currentUsername") || "Guest User";
+  if (isLoggedIn) {
+    if (typeof openProfileModal === 'function') {
+      openProfileModal('info');
+    }
+    return;
+  }
 
-  const navLabel = document.getElementById("nav-user-label");
-  const drawerUsername = document.getElementById("mobile-drawer-username");
-  const profileUsernameDisplay = document.getElementById("profile-username-display");
-  const profileAvatarInitial = document.getElementById("profile-avatar-initial");
+  // 3. Open Auth Modal
+  const modal = document.getElementById("auth-modal");
+  if (!modal) return;
 
-  if (navLabel) {
-    navLabel.innerText = isLoggedIn ? username : "Login";
-  }
-  if (drawerUsername) {
-    drawerUsername.innerText = isLoggedIn ? username : "Guest User";
-  }
-  if (profileUsernameDisplay) {
-    profileUsernameDisplay.innerText = isLoggedIn ? username : "Guest User";
-  }
-  if (profileAvatarInitial) {
-    profileAvatarInitial.innerText = isLoggedIn ? username.charAt(0).toUpperCase() : "👤";
+  modal.classList.add("active");
+  modal.style.zIndex = "1000000";
+  document.body.style.overflow = "hidden";
+  
+  if (typeof switchAuthTab === 'function') {
+    switchAuthTab(mode || 'login');
   }
 }
 
+function openProfileModal(activeTab) {
+  // Close drawer on phones if open
+  const drawer = document.getElementById("mobile-nav-drawer");
+  const overlay = document.getElementById("mobile-drawer-overlay");
+  if (drawer) {
+    drawer.classList.remove("open");
+    drawer.classList.remove("active");
+    drawer.style.left = "-340px";
+  }
+  if (overlay) {
+    overlay.style.opacity = "0";
+    overlay.style.display = "none";
+  }
 
+  const modal = document.getElementById("profile-modal");
+  if (!modal) return;
 
-window.logoutUser = logoutUser;
-window.updateAuthUIState = updateAuthUIState;
+  if (typeof updateAuthUIState === 'function') {
+    updateAuthUIState();
+  }
+
+  modal.classList.add("active");
+  modal.style.zIndex = "1000000";
+  document.body.style.overflow = "hidden";
+
+  if (typeof switchProfileTab === 'function') {
+    switchProfileTab(activeTab || 'info');
+  }
+}
+
 window.openAuthModal = openAuthModal;
+window.openProfileModal = openProfileModal;
