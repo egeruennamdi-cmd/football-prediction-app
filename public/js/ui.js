@@ -3872,3 +3872,20 @@ window.updateAuthUIState = updateAuthUIState;
 document.addEventListener("DOMContentLoaded", function() {
   updateAuthUIState();
 });
+
+
+/* --- USER LOGOUT & PROFILE DYNAMIC SYNC CONTROLLERS --- */
+function logoutUser() {
+  localStorage.removeItem("userLoggedIn");
+  localStorage.removeItem("currentUsername");
+
+  if (typeof updateAuthUIState === 'function') updateAuthUIState();
+  if (typeof closeProfileModal === 'function') closeProfileModal(null, true);
+
+  if (typeof showAppNotification === 'function') {
+    showAppNotification("🚪 Logged out successfully.");
+  } else if (typeof showToast === 'function') {
+    showToast("🚪 Logged out successfully.");
+  }
+}
+

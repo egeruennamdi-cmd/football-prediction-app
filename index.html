@@ -3170,44 +3170,61 @@
 
   <!-- --- USER PROFILE MODAL --- -->
   <div class="modal-overlay" id="profile-modal" onclick="closeProfileModal(event)">
-    <div class="modal-content" onclick="event.stopPropagation()" style="max-width: 600px;">
-      <div class="modal-header">
-        <div class="modal-title-wrapper">
-          <div class="modal-scout-avatar">👤</div>
+    <div class="modal-content" onclick="event.stopPropagation()" style="max-width: 600px; background: #0f172a; border: 1px solid rgba(59, 130, 246, 0.3); border-radius: 16px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); overflow: hidden; padding: 0;">
+      
+      <!-- Modal Header -->
+      <div style="background: linear-gradient(135deg, #1d4ed8 0%, #1e40af 50%, #0f172a 100%); padding: 22px 20px; display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid rgba(255, 255, 255, 0.1);">
+        <div style="display: flex; align-items: center; gap: 12px;">
+          <div style="width: 42px; height: 42px; border-radius: 50%; background: rgba(255, 255, 255, 0.15); border: 1.5px solid rgba(255, 255, 255, 0.3); display: flex; align-items: center; justify-content: center; font-size: 1.2rem; color: #ffffff;">
+            👤
+          </div>
           <div>
-            <h3 class="modal-title">User Hub Portal</h3>
-            <span class="modal-subtitle">Manage your account profile, alerts, and saved predictions</span>
+            <h3 style="font-family: var(--font-display); font-size: 1.15rem; font-weight: 900; color: #ffffff; margin: 0;">User Account Hub</h3>
+            <span style="font-size: 0.73rem; color: #93c5fd; font-weight: 600;">Manage profile, alerts, saved tickets & account session</span>
           </div>
         </div>
-        <button class="modal-close" onclick="closeProfileModal(event, true)">&times;</button>
+        <button class="modal-close" onclick="closeProfileModal(event, true)" style="background: rgba(255, 255, 255, 0.12); border: 1px solid rgba(255, 255, 255, 0.2); border-radius: 50%; width: 32px; height: 32px; font-size: 1rem; color: #ffffff; cursor: pointer; display: flex; align-items: center; justify-content: center;">&times;</button>
       </div>
 
-      <div style="display: flex; gap: 8px; margin: 0 20px 12px; border-bottom: 1px solid var(--border-color); padding-bottom: 8px;">
-        <button class="tab-btn active" id="prof-tab-info" onclick="switchProfileTab('info')" style="padding: 6px 12px; font-size: 0.8rem;">Profile Stats</button>
-        <button class="tab-btn" id="prof-tab-alerts" onclick="switchProfileTab('alerts')" style="padding: 6px 12px; font-size: 0.8rem;">Custom Alerts</button>
-        <button class="tab-btn" id="prof-tab-history" onclick="switchProfileTab('history')" style="padding: 6px 12px; font-size: 0.8rem;">Saved Tickets</button>
+      <!-- Tab Buttons -->
+      <div style="display: flex; gap: 8px; margin: 16px 20px 0; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 8px;">
+        <button class="tab-btn active" id="prof-tab-info" onclick="switchProfileTab('info')" style="padding: 8px 14px; font-size: 0.82rem; font-weight: 800; border-radius: 8px;">Profile Stats</button>
+        <button class="tab-btn" id="prof-tab-alerts" onclick="switchProfileTab('alerts')" style="padding: 8px 14px; font-size: 0.82rem; font-weight: 800; border-radius: 8px;">Custom Alerts</button>
+        <button class="tab-btn" id="prof-tab-history" onclick="switchProfileTab('history')" style="padding: 8px 14px; font-size: 0.82rem; font-weight: 800; border-radius: 8px;">Saved Tickets</button>
       </div>
 
       <!-- Info Pane -->
       <div id="prof-pane-info" class="modal-tab-pane" style="display: block; padding: 20px; max-height: 380px; overflow-y: auto;">
-        <div style="display: flex; align-items: center; gap: 16px; margin-bottom: 24px;">
-          <div style="width: 60px; height: 60px; border-radius: 50%; background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%); display: flex; align-items: center; justify-content: center; font-size: 1.8rem; font-weight: 700; color: #fff; font-family: var(--font-display);">U</div>
-          <div>
-            <h4 style="font-family: var(--font-display); font-size: 1.15rem; color: var(--text-primary); margin-bottom: 4px;">User_Punter_892</h4>
-            <span style="font-size: 0.75rem; color: var(--accent-gold); font-weight: 700; background: rgba(245, 158, 11, 0.08); padding: 2px 8px; border-radius: var(--radius-full); text-transform: uppercase;">Level 3 Analyst</span>
+        <div style="display: flex; align-items: center; justify-content: space-between; background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.08); padding: 16px; border-radius: 12px; margin-bottom: 20px;">
+          <div style="display: flex; align-items: center; gap: 16px;">
+            <div id="profile-avatar-initial" style="width: 54px; height: 54px; border-radius: 50%; background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%); border: 2px solid rgba(255,255,255,0.4); display: flex; align-items: center; justify-content: center; font-size: 1.5rem; font-weight: 900; color: #fff; font-family: var(--font-display); box-shadow: 0 0 14px rgba(59,130,246,0.4);">
+              E
+            </div>
+            <div>
+              <h4 id="profile-username-display" style="font-family: var(--font-display); font-size: 1.2rem; font-weight: 900; color: #ffffff; margin: 0 0 4px;">Egeruennamdi78</h4>
+              <div style="display: flex; align-items: center; gap: 8px;">
+                <span style="font-size: 0.7rem; color: #34d399; font-weight: 800; background: rgba(16, 185, 129, 0.2); border: 1px solid #10b981; padding: 2px 8px; border-radius: 4px; text-transform: uppercase;">PRO ANALYST</span>
+                <span style="font-size: 0.75rem; color: #fbbf24; font-weight: 700;">🪙 500 Coins</span>
+              </div>
+            </div>
           </div>
         </div>
 
-        <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 16px; margin-bottom: 20px;">
-          <div class="glass-card" style="padding: 12px; border: 1px solid var(--border-color);">
-            <span style="font-size: 0.75rem; color: var(--text-secondary); display: block; margin-bottom: 4px;">Challenge Win Rate</span>
-            <span style="font-family: var(--font-display); font-size: 1.25rem; font-weight: 800; color: var(--secondary);">64.2%</span>
+        <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 14px; margin-bottom: 20px;">
+          <div class="glass-card" style="padding: 14px; border: 1px solid rgba(255,255,255,0.08); background: rgba(255,255,255,0.02); border-radius: 12px;">
+            <span style="font-size: 0.75rem; color: #94a3b8; display: block; margin-bottom: 4px;">Prediction Accuracy</span>
+            <span style="font-family: var(--font-display); font-size: 1.3rem; font-weight: 900; color: #34d399;">78.4%</span>
           </div>
-          <div class="glass-card" style="padding: 12px; border: 1px solid var(--border-color);">
-            <span style="font-size: 0.75rem; color: var(--text-secondary); display: block; margin-bottom: 4px;">Global Rank</span>
-            <span style="font-family: var(--font-display); font-size: 1.25rem; font-weight: 800; color: var(--primary);">#142</span>
+          <div class="glass-card" style="padding: 14px; border: 1px solid rgba(255,255,255,0.08); background: rgba(255,255,255,0.02); border-radius: 12px;">
+            <span style="font-size: 0.75rem; color: #94a3b8; display: block; margin-bottom: 4px;">Global Leaderboard</span>
+            <span style="font-family: var(--font-display); font-size: 1.3rem; font-weight: 900; color: #60a5fa;">#42 Rank</span>
           </div>
         </div>
+
+        <!-- Logout Action Button -->
+        <button onclick="logoutUser()" style="width: 100%; background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%); color: #ffffff; font-weight: 900; font-size: 0.95rem; padding: 12px; border: none; border-radius: 10px; cursor: pointer; box-shadow: 0 4px 14px rgba(239, 68, 68, 0.4); display: flex; align-items: center; justify-content: center; gap: 8px; text-transform: uppercase; letter-spacing: 0.5px;">
+          🚪 Logout of Account
+        </button>
       </div>
 
       <!-- Alerts Pane -->
