@@ -28,4 +28,4 @@ if (typeof document !== 'undefined') {
   }
 }
 
-console.log('🚀 BetMines Main Bundle Initialized Successfully with getImageUrl Dynamic Helper!');
+console.log('🚀 DeepPredictBet Main Bundle Initialized Successfully with getImageUrl Dynamic Helper!');

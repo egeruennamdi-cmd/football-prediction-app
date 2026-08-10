@@ -1,6 +1,6 @@
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@400;500;600;700;800&display=swap');
 
-/* --- DESIGN SYSTEM & CSS VARIABLES (BETMINES STYLE) --- */
+/* --- DESIGN SYSTEM & CSS VARIABLES (DEEPPREDICTBET STYLE) --- */
 :root {
   /* Colors */
   --bg-dark: #080b11;
@@ -11,11 +11,11 @@
   --border-color-hover: rgba(255, 255, 255, 0.12);
   
   --brand-royal-blue: #1a68db;
-  --primary: var(--brand-royal-blue); /* BetMines Royal Blue */
+  --primary: var(--brand-royal-blue); /* DeepPredictBet Royal Blue */
   --primary-hover: #2f7beb;
   --primary-glow: rgba(26, 104, 219, 0.25);
   
-  --secondary: #10b981; /* BetMines Emerald Green for tips & wins */
+  --secondary: #10b981; /* DeepPredictBet Emerald Green for tips & wins */
   --secondary-glow: rgba(16, 185, 129, 0.25);
   
   --accent-gold: #f59e0b; /* Pro Picks Gold */
@@ -331,7 +331,7 @@ header {
   margin-top: 2px;
 }
 
-/* --- DASHBOARD & FIXTURE ROWS (BETMINES DENSE LAYOUT) --- */
+/* --- DASHBOARD & FIXTURE ROWS (DEEPPREDICTBET DENSE LAYOUT) --- */
 .dashboard-section {
   padding: 30px 0 60px;
 }
@@ -568,7 +568,7 @@ header {
 }
 
 .prediction-lbl-row {
-  display: none; /* Hide labels to save vertical space like BetMines */
+  display: none; /* Hide labels to save vertical space like DeepPredictBet */
 }
 
 .prediction-bar {
@@ -616,7 +616,7 @@ header {
 .pct-val.draw { color: var(--text-secondary); }
 .pct-val.away { color: var(--secondary); }
 
-/* BetMines Tip column */
+/* DeepPredictBet Tip column */
 .insight-row {
   display: flex;
   align-items: center;
@@ -1056,14 +1056,14 @@ header {
 }
 
 /* --- FOOTER --- */
-.betmines-footer {
+.deeppredictbet-footer {
   background: #060b13;
   border-top: 2px solid var(--brand-royal-blue);
   padding: 60px 0 30px;
   margin-top: 80px;
 }
 
-.betmines-footer .footer-top-row {
+.deeppredictbet-footer .footer-top-row {
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -1075,22 +1075,22 @@ header {
 }
 
 @media (min-width: 768px) {
-  .betmines-footer .footer-top-row {
+  .deeppredictbet-footer .footer-top-row {
     flex-direction: row;
   }
 }
 
-.betmines-footer .footer-logo-wrap {
+.deeppredictbet-footer .footer-logo-wrap {
   display: flex;
   align-items: center;
   gap: 12px;
 }
 
-.betmines-footer .footer-diamond-logo {
+.deeppredictbet-footer .footer-diamond-logo {
   flex-shrink: 0;
 }
 
-.betmines-footer .footer-brand-name {
+.deeppredictbet-footer .footer-brand-name {
   font-family: var(--font-display);
   font-size: 1.6rem;
   font-weight: 800;
@@ -1098,7 +1098,7 @@ header {
   letter-spacing: 0.5px;
 }
 
-.betmines-footer .responsible-badges {
+.deeppredictbet-footer .responsible-badges {
   display: flex;
   align-items: center;
   gap: 24px;
@@ -1106,7 +1106,7 @@ header {
   justify-content: center;
 }
 
-.betmines-footer .gt-badge {
+.deeppredictbet-footer .gt-badge {
   display: flex;
   flex-direction: column;
   line-height: 1;
@@ -1114,21 +1114,21 @@ header {
   text-align: left;
 }
 
-.betmines-footer .gt-badge .gt-main {
+.deeppredictbet-footer .gt-badge .gt-main {
   font-size: 1.1rem;
   font-weight: 800;
   color: #ffffff;
   letter-spacing: -0.5px;
 }
 
-.betmines-footer .gt-badge .gt-sub {
+.deeppredictbet-footer .gt-badge .gt-sub {
   font-size: 0.95rem;
   font-weight: 600;
   color: rgba(255, 255, 255, 0.85);
   margin-top: -1px;
 }
 
-.betmines-footer .gamstop-badge {
+.deeppredictbet-footer .gamstop-badge {
   display: flex;
   align-items: center;
   background: #ffffff;
@@ -1142,25 +1142,25 @@ header {
   border: 1px solid rgba(255, 255, 255, 0.2);
 }
 
-.betmines-footer .gamstop-badge .gs-gam {
+.deeppredictbet-footer .gamstop-badge .gs-gam {
   margin-right: 4px;
 }
 
-.betmines-footer .gamstop-badge .gs-stop {
+.deeppredictbet-footer .gamstop-badge .gs-stop {
   background: #000000;
   color: #ffffff;
   padding: 1px 6px;
   border-radius: 2px;
 }
 
-.betmines-footer .gambleaware-badge {
+.deeppredictbet-footer .gambleaware-badge {
   display: flex;
   align-items: center;
   gap: 8px;
   font-family: var(--font-display), sans-serif;
 }
 
-.betmines-footer .gambleaware-badge .ga-icon {
+.deeppredictbet-footer .gambleaware-badge .ga-icon {
   width: 22px;
   height: 22px;
   border-radius: 50%;
@@ -1173,13 +1173,13 @@ header {
   color: rgba(255, 255, 255, 0.6);
 }
 
-.betmines-footer .gambleaware-badge .ga-text {
+.deeppredictbet-footer .gambleaware-badge .ga-text {
   font-size: 0.8rem;
   font-weight: 600;
   color: rgba(255, 255, 255, 0.65);
 }
 
-.betmines-footer .footer-grid {
+.deeppredictbet-footer .footer-grid {
   display: grid;
   grid-template-columns: 1fr;
   gap: 40px;
@@ -1187,24 +1187,24 @@ header {
 }
 
 @media (min-width: 576px) {
-  .betmines-footer .footer-grid {
+  .deeppredictbet-footer .footer-grid {
     grid-template-columns: repeat(2, 1fr);
   }
 }
 
 @media (min-width: 992px) {
-  .betmines-footer .footer-grid {
+  .deeppredictbet-footer .footer-grid {
     grid-template-columns: repeat(4, 1fr);
   }
 }
 
-.betmines-footer .footer-col {
+.deeppredictbet-footer .footer-col {
   display: flex;
   flex-direction: column;
   gap: 16px;
 }
 
-.betmines-footer .footer-col-title {
+.deeppredictbet-footer .footer-col-title {
   font-family: var(--font-display);
   font-size: 0.95rem;
   font-weight: 800;
@@ -1213,7 +1213,7 @@ header {
   color: #ffffff;
 }
 
-.betmines-footer .footer-links {
+.deeppredictbet-footer .footer-links {
   list-style: none;
   display: flex;
   flex-direction: column;
@@ -1222,7 +1222,7 @@ header {
   margin: 0;
 }
 
-.betmines-footer .footer-link {
+.deeppredictbet-footer .footer-link {
   color: #b4c6e7;
   font-size: 0.88rem;
   text-decoration: none;
@@ -1230,12 +1230,12 @@ header {
   display: inline-block;
 }
 
-.betmines-footer .footer-link:hover {
+.deeppredictbet-footer .footer-link:hover {
   color: var(--brand-royal-blue);
   transform: translateX(3px);
 }
 
-.betmines-footer .footer-bottom-row {
+.deeppredictbet-footer .footer-bottom-row {
   border-top: 1px solid rgba(255, 255, 255, 0.06);
   padding-top: 30px;
   display: flex;
@@ -1246,19 +1246,19 @@ header {
 }
 
 @media (min-width: 768px) {
-  .betmines-footer .footer-bottom-row {
+  .deeppredictbet-footer .footer-bottom-row {
     flex-direction: row;
   }
 }
 
 /* Store Badges */
-.betmines-footer .store-badges {
+.deeppredictbet-footer .store-badges {
   display: flex;
   gap: 12px;
   flex-wrap: wrap;
 }
 
-.betmines-footer .store-badge-btn {
+.deeppredictbet-footer .store-badge-btn {
   display: flex;
   align-items: center;
   gap: 10px;
@@ -1271,24 +1271,24 @@ header {
   transition: all 0.2s ease;
 }
 
-.betmines-footer .store-badge-btn:hover {
+.deeppredictbet-footer .store-badge-btn:hover {
   background: #1e293b;
   border-color: var(--brand-royal-blue);
   transform: translateY(-2px);
 }
 
-.betmines-footer .store-badge-icon {
+.deeppredictbet-footer .store-badge-icon {
   color: #ffffff;
   flex-shrink: 0;
 }
 
-.betmines-footer .store-badge-text {
+.deeppredictbet-footer .store-badge-text {
   display: flex;
   flex-direction: column;
   line-height: 1.2;
 }
 
-.betmines-footer .store-badge-sub {
+.deeppredictbet-footer .store-badge-sub {
   font-size: 0.65rem;
   color: #94a3b8;
   text-transform: uppercase;
@@ -1296,18 +1296,18 @@ header {
   letter-spacing: 0.05em;
 }
 
-.betmines-footer .store-badge-main {
+.deeppredictbet-footer .store-badge-main {
   font-size: 0.9rem;
   font-weight: 700;
 }
 
 /* Social Icons */
-.betmines-footer .footer-socials {
+.deeppredictbet-footer .footer-socials {
   display: flex;
   gap: 16px;
 }
 
-.betmines-footer .social-icon-link {
+.deeppredictbet-footer .social-icon-link {
   display: flex;
   align-items: center;
   justify-content: center;
@@ -1320,7 +1320,7 @@ header {
   border: 1px solid rgba(255, 255, 255, 0.05);
 }
 
-.betmines-footer .social-icon-link:hover {
+.deeppredictbet-footer .social-icon-link:hover {
   background: var(--brand-royal-blue);
   color: #ffffff;
   transform: scale(1.1);
@@ -1620,7 +1620,7 @@ header {
 .form-badge.D { background: var(--text-muted); color: var(--text-primary); }
 .form-badge.L { background: var(--danger); color: var(--text-primary); }
 
-/* --- BETMINES TOOLS PANEL STYLES --- */
+/* --- DEEPPREDICTBET TOOLS PANEL STYLES --- */
 .tool-content-pane {
   display: none;
 }
@@ -2100,7 +2100,7 @@ header {
   border: none;
 }
 
-.betmines-date-bar {
+.deeppredictbet-date-bar {
   display: inline-flex;
   align-items: center;
   border: 2.5px solid var(--brand-royal-blue);
@@ -2114,11 +2114,11 @@ header {
   box-shadow: 0 4px 16px rgba(0, 0, 0, 0.25);
 }
 
-.betmines-date-bar::-webkit-scrollbar {
+.deeppredictbet-date-bar::-webkit-scrollbar {
   display: none;
 }
 
-.betmines-date-bar .live-btn {
+.deeppredictbet-date-bar .live-btn {
   background: #f1f5f9;
   border: 1px solid #cbd5e1;
   border-radius: 10px;
@@ -2134,7 +2134,7 @@ header {
   gap: 6px;
 }
 
-.betmines-date-bar .live-btn .live-badge-count {
+.deeppredictbet-date-bar .live-btn .live-badge-count {
   background: #e11d48;
   color: #ffffff;
   border-radius: 10px;
@@ -2144,31 +2144,31 @@ header {
   line-height: 1;
 }
 
-.betmines-date-bar .live-btn.active {
+.deeppredictbet-date-bar .live-btn.active {
   background: var(--brand-royal-blue);
   color: #ffffff;
   border-color: var(--brand-royal-blue);
 }
 
-.betmines-date-bar .live-btn.active .live-badge-count {
+.deeppredictbet-date-bar .live-btn.active .live-badge-count {
   background: #ffffff;
   color: #e11d48;
 }
 
-.betmines-date-bar .divider {
+.deeppredictbet-date-bar .divider {
   width: 1.5px;
   height: 28px;
   background: #cbd5e1;
   flex-shrink: 0;
 }
 
-.betmines-date-bar .date-list {
+.deeppredictbet-date-bar .date-list {
   display: flex;
   align-items: center;
   gap: 14px;
 }
 
-.betmines-date-bar .date-item {
+.deeppredictbet-date-bar .date-item {
   display: flex;
   align-items: center;
   justify-content: center;
@@ -2183,12 +2183,12 @@ header {
   white-space: nowrap;
 }
 
-.betmines-date-bar .date-item:hover {
+.deeppredictbet-date-bar .date-item:hover {
   color: var(--brand-royal-blue);
   background: #eff6ff;
 }
 
-.betmines-date-bar .date-item.active {
+.deeppredictbet-date-bar .date-item.active {
   background: #eff6ff;
   color: var(--brand-royal-blue);
   border: 1px solid #bfdbfe;
@@ -2199,14 +2199,14 @@ header {
   box-shadow: inset 0 0 0 1px rgba(37, 99, 235, 0.35);
 }
 
-.betmines-date-bar .date-item.active .day-num {
+.deeppredictbet-date-bar .date-item.active .day-num {
   font-size: 1.18rem;
   font-weight: 900;
   color: var(--brand-royal-blue);
   line-height: 1.1;
 }
 
-.betmines-date-bar .date-item.active .day-name {
+.deeppredictbet-date-bar .date-item.active .day-name {
   font-size: 0.62rem;
   font-weight: 800;
   color: var(--brand-royal-blue);
@@ -2841,7 +2841,7 @@ header {
     top: 50px !important;
   }
   
-  .betmines-date-bar {
+  .deeppredictbet-date-bar {
     padding: 4px 8px !important;
     gap: 6px !important;
     border-radius: 12px !important;
@@ -2851,34 +2851,34 @@ header {
     justify-content: flex-start !important;
   }
 
-  .betmines-date-bar .live-btn {
+  .deeppredictbet-date-bar .live-btn {
     padding: 4px 8px !important;
     font-size: 0.8rem !important;
     flex-shrink: 0 !important;
     border-radius: 8px !important;
   }
 
-  .betmines-date-bar .date-list {
+  .deeppredictbet-date-bar .date-list {
     gap: 4px !important;
     flex-shrink: 0 !important;
   }
 
-  .betmines-date-bar .date-item {
+  .deeppredictbet-date-bar .date-item {
     padding: 4px 7px !important;
     font-size: 0.82rem !important;
     flex-shrink: 0 !important;
   }
 
-  .betmines-date-bar .date-item.active {
+  .deeppredictbet-date-bar .date-item.active {
     padding: 3px 9px !important;
     border-radius: 8px !important;
   }
 
-  .betmines-date-bar .date-item.active .day-num {
+  .deeppredictbet-date-bar .date-item.active .day-num {
     font-size: 1.05rem !important;
   }
 
-  .betmines-date-bar .date-item.active .day-name {
+  .deeppredictbet-date-bar .date-item.active .day-name {
     font-size: 0.58rem !important;
   }
 }

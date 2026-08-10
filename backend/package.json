@@ -1,7 +1,7 @@
 {
-  "name": "betmines-backend-service",
+  "name": "deeppredictbet-backend-service",
   "version": "1.0.0",
-  "description": "Production-ready Node.js/TypeScript backend API service for BetMines, including Option C 50-Bookmaker Converter Engine, AI Bet Doctor, and Arbitrage Finder.",
+  "description": "Production-ready Node.js/TypeScript backend API service for DeepPredictBet, including Option C 50-Bookmaker Converter Engine, AI Bet Doctor, and Arbitrage Finder.",
   "main": "dist/server.js",
   "scripts": {
     "dev": "ts-node-dev --respawn --transpile-only src/server.ts",
@@ -12,7 +12,7 @@
     "prisma:studio": "prisma studio"
   },
   "keywords": [
-    "betmines",
+    "deeppredictbet",
     "converter",
     "sports-betting",
     "predictions",
@@ -21,7 +21,7 @@
     "typescript",
     "prisma"
   ],
-  "author": "BetMines Engineering Team",
+  "author": "DeepPredictBet Engineering Team",
   "license": "MIT",
   "dependencies": {
     "@prisma/client": "^5.19.1",

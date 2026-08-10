@@ -7,7 +7,7 @@ const port = config.port;
 const server = app.listen(port, host, () => {
   console.log(`
   🚀 =================================================== 🚀
-     BETMINES BACKEND SERVICE IS LIVE & LISTENING
+     DEEPPREDICTBET BACKEND SERVICE IS LIVE & LISTENING
      - Server Host: ${host}
      - Server Port: ${port}
      - Environment: ${config.nodeEnv}

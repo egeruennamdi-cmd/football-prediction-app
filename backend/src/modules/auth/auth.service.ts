@@ -16,11 +16,11 @@ export interface LoginDTO {
 const mockUserDb: Map<string, { id: string; email: string; passwordHash: string; fullName: string; role: string; coinsBalance: number; createdAt: string }> = new Map();
 
 // Seed initial admin/demo accounts
-mockUserDb.set('demo@betmines.com', {
+mockUserDb.set('demo@deeppredictbet.com', {
   id: 'usr_demo123',
-  email: 'demo@betmines.com',
+  email: 'demo@deeppredictbet.com',
   passwordHash: 'password123',
-  fullName: 'BetMines Punters',
+  fullName: 'DeepPredictBet Punters',
   role: 'PRO',
   coinsBalance: 500,
   createdAt: new Date().toISOString()

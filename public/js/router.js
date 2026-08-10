@@ -1,5 +1,5 @@
 /**
- * BetMines Multi-Page Application Router
+ * DeepPredictBet Multi-Page Application Router
  * Enables clean, instant client-side page view routing across dedicated tool pages.
  */
 
@@ -59,7 +59,7 @@
     // Trigger tool-specific initializers if opening generator tools
     if (targetViewId === 'view-generator') {
       const toolSubRoute = ['machine', 'doctor', 'arbitrage', 'backtester', 'toptips', 'filters', 'valuebot'].includes(route) ? route : 'machine';
-      const suiteSec = document.getElementById("betmines-tools");
+      const suiteSec = document.getElementById("deeppredictbet-tools");
       if (suiteSec) {
         const btn = Array.from(suiteSec.querySelectorAll(".tabs-container > .tab-btn")).find(b => {
           const attr = b.getAttribute("onclick");

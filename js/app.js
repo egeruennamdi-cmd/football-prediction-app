@@ -416,7 +416,7 @@ function getBookiePrefix(bookieId) {
   const cleanId = bookieId.split(":")[0].toLowerCase();
   const prefixMap = {
     sportybet: 'SB', bet9ja: 'B9J', '1xbet': '1XB', betking: 'BK', msport: 'MS', betano: 'BT', betway: 'BW',
-    melbet: 'ML', megapari: 'MP', betwinner: 'BWN', paripesa: 'PP', betmines: 'BM', merrybet: 'MB', nairabet: 'NB',
+    melbet: 'ML', megapari: 'MP', betwinner: 'BWN', paripesa: 'PP', deeppredictbet: 'BM', merrybet: 'MB', nairabet: 'NB',
     bangbet: 'BB', betika: 'BI', easybet: 'EB', hollywoodbet: 'HB', mozzart: 'MZ', premierbet: 'PB', supersport: 'SS',
     odibets: 'ODI', galsport: 'GSB', bet365: 'B365', unibet: 'UNI', williamhill: 'WH', bwin: 'BWN', paddypower: 'PP',
     betfair: 'BF', skybet: 'SKY', '888sport': '888', draftkings: 'DK', fanduel: 'FD', betmgm: 'MGM', caesars: 'CZR',
@@ -430,64 +430,64 @@ function getBookiePrefix(bookieId) {
 // --- BOOKMAKER AFFILIATE REFERRAL REGISTRY & MONETIZATION ENGINE (50 GLOBAL BOOKMAKERS) ---
 const BOOKMAKER_AFFILIATE_LINKS = {
   // Africa & Regional Powerhouses
-  'sportybet': { name: 'SportyBet', url: 'https://www.sportybet.com/?referralCode=BETMINES', bonus: '100% Welcome Gift' },
-  'bet9ja': { name: 'Bet9ja', url: 'https://register.bet9ja.com/?promocode=BETMINES', bonus: '100% Deposit Bonus' },
-  '1xbet': { name: '1xBet', url: 'https://1xbet.com/?tag=betmines', bonus: '200% First Deposit Bonus' },
-  'betking': { name: 'BetKing', url: 'https://www.betking.com/register?code=BETMINES', bonus: '100% FreeBet Bonus' },
-  'betway': { name: 'Betway', url: 'https://www.betway.com/register?btag=BETMINES', bonus: '100% Welcome Bonus' },
-  '22bet': { name: '22Bet', url: 'https://22bet.com/?tag=betmines', bonus: '100% Welcome Bonus' },
-  'msport': { name: 'MSport', url: 'https://www.msport.com/?referral=BETMINES', bonus: '300% Welcome Voucher' },
-  'betano': { name: 'Betano', url: 'https://www.betano.com/?promo=BETMINES', bonus: '100% Welcome Bonus' },
-  'melbet': { name: 'Melbet', url: 'https://melbet.com/?tag=betmines', bonus: '200% Welcome Bonus' },
-  'megapari': { name: 'Megapari', url: 'https://megapari.com/?tag=betmines', bonus: '200% Welcome Bonus' },
-  'betwinner': { name: 'BetWinner', url: 'https://betwinner.com/?tag=betmines', bonus: '100% Welcome Bonus' },
-  'paripesa': { name: 'Paripesa', url: 'https://paripesa.com/?tag=betmines', bonus: '100% Welcome Bonus' },
-  'merrybet': { name: 'Merrybet', url: 'https://www.merrybet.com/?ref=BETMINES', bonus: '100% Deposit Match' },
-  'nairabet': { name: 'NairaBET', url: 'https://www.nairabet.com/?ref=BETMINES', bonus: '100% Welcome Bonus' },
-  'bangbet': { name: 'Bangbet', url: 'https://www.bangbet.com/?ref=BETMINES', bonus: '200% Welcome Voucher' },
-  'betika': { name: 'Betika', url: 'https://www.betika.com/?ref=BETMINES', bonus: 'First Deposit Bonus' },
-  'easybet': { name: 'Easybet', url: 'https://www.easybet.co.za/?ref=BETMINES', bonus: 'R50 Sign-Up Bonus' },
-  'hollywoodbet': { name: 'Hollywoodbets', url: 'https://www.hollywoodbets.net/?ref=BETMINES', bonus: 'R25 Sign-Up Bonus' },
-  'mozzart': { name: 'Mozzart Bet', url: 'https://www.mozzartbet.com/?ref=BETMINES', bonus: '100% Triple Bonus' },
-  'premierbet': { name: 'Premier Bet', url: 'https://www.premierbet.com/?ref=BETMINES', bonus: '150% Welcome Bonus' },
-  'supersport': { name: 'SuperSportBet', class: 'supersport', url: 'https://www.supersportbet.com/?ref=BETMINES', bonus: '100% Deposit Match' },
-  'odibets': { name: 'Odibets', url: 'https://www.odibets.com/?ref=BETMINES', bonus: 'KSh 30 Free Bet' },
-  'galsport': { name: 'Gal Sport Betting', url: 'https://www.gsb.ug/?ref=BETMINES', bonus: '100% First Deposit Bonus' },
+  'sportybet': { name: 'SportyBet', url: 'https://www.sportybet.com/?referralCode=DEEPPREDICTBET', bonus: '100% Welcome Gift' },
+  'bet9ja': { name: 'Bet9ja', url: 'https://register.bet9ja.com/?promocode=DEEPPREDICTBET', bonus: '100% Deposit Bonus' },
+  '1xbet': { name: '1xBet', url: 'https://1xbet.com/?tag=deeppredictbet', bonus: '200% First Deposit Bonus' },
+  'betking': { name: 'BetKing', url: 'https://www.betking.com/register?code=DEEPPREDICTBET', bonus: '100% FreeBet Bonus' },
+  'betway': { name: 'Betway', url: 'https://www.betway.com/register?btag=DEEPPREDICTBET', bonus: '100% Welcome Bonus' },
+  '22bet': { name: '22Bet', url: 'https://22bet.com/?tag=deeppredictbet', bonus: '100% Welcome Bonus' },
+  'msport': { name: 'MSport', url: 'https://www.msport.com/?referral=DEEPPREDICTBET', bonus: '300% Welcome Voucher' },
+  'betano': { name: 'Betano', url: 'https://www.betano.com/?promo=DEEPPREDICTBET', bonus: '100% Welcome Bonus' },
+  'melbet': { name: 'Melbet', url: 'https://melbet.com/?tag=deeppredictbet', bonus: '200% Welcome Bonus' },
+  'megapari': { name: 'Megapari', url: 'https://megapari.com/?tag=deeppredictbet', bonus: '200% Welcome Bonus' },
+  'betwinner': { name: 'BetWinner', url: 'https://betwinner.com/?tag=deeppredictbet', bonus: '100% Welcome Bonus' },
+  'paripesa': { name: 'Paripesa', url: 'https://paripesa.com/?tag=deeppredictbet', bonus: '100% Welcome Bonus' },
+  'merrybet': { name: 'Merrybet', url: 'https://www.merrybet.com/?ref=DEEPPREDICTBET', bonus: '100% Deposit Match' },
+  'nairabet': { name: 'NairaBET', url: 'https://www.nairabet.com/?ref=DEEPPREDICTBET', bonus: '100% Welcome Bonus' },
+  'bangbet': { name: 'Bangbet', url: 'https://www.bangbet.com/?ref=DEEPPREDICTBET', bonus: '200% Welcome Voucher' },
+  'betika': { name: 'Betika', url: 'https://www.betika.com/?ref=DEEPPREDICTBET', bonus: 'First Deposit Bonus' },
+  'easybet': { name: 'Easybet', url: 'https://www.easybet.co.za/?ref=DEEPPREDICTBET', bonus: 'R50 Sign-Up Bonus' },
+  'hollywoodbet': { name: 'Hollywoodbets', url: 'https://www.hollywoodbets.net/?ref=DEEPPREDICTBET', bonus: 'R25 Sign-Up Bonus' },
+  'mozzart': { name: 'Mozzart Bet', url: 'https://www.mozzartbet.com/?ref=DEEPPREDICTBET', bonus: '100% Triple Bonus' },
+  'premierbet': { name: 'Premier Bet', url: 'https://www.premierbet.com/?ref=DEEPPREDICTBET', bonus: '150% Welcome Bonus' },
+  'supersport': { name: 'SuperSportBet', class: 'supersport', url: 'https://www.supersportbet.com/?ref=DEEPPREDICTBET', bonus: '100% Deposit Match' },
+  'odibets': { name: 'Odibets', url: 'https://www.odibets.com/?ref=DEEPPREDICTBET', bonus: 'KSh 30 Free Bet' },
+  'galsport': { name: 'Gal Sport Betting', url: 'https://www.gsb.ug/?ref=DEEPPREDICTBET', bonus: '100% First Deposit Bonus' },
 
   // Europe & UK Heavyweights
-  'bet365': { name: 'Bet365', url: 'https://www.bet365.com/?affiliate=BETMINES', bonus: 'Bet $5 Get $150 in Bonus Bets' },
-  'unibet': { name: 'Unibet', url: 'https://www.unibet.com/?ref=BETMINES', bonus: '100% Risk-Free Bet' },
-  'williamhill': { name: 'William Hill', url: 'https://www.williamhill.com/?ref=BETMINES', bonus: 'Bet $10 Get $30' },
-  'bwin': { name: 'bwin', url: 'https://www.bwin.com/?ref=BETMINES', bonus: '100% Backup Bet' },
-  'paddypower': { name: 'Paddy Power', url: 'https://www.paddypower.com/?ref=BETMINES', bonus: 'Money Back as Cash' },
-  'betfair': { name: 'Betfair', url: 'https://www.betfair.com/?ref=BETMINES', bonus: 'Exchange Bonus' },
-  'skybet': { name: 'SkyBet', url: 'https://www.skybet.com/?ref=BETMINES', bonus: 'Bet 5p Get $30' },
-  '888sport': { name: '888sport', url: 'https://www.888sport.com/?ref=BETMINES', bonus: '300% Bonus Pack' },
+  'bet365': { name: 'Bet365', url: 'https://www.bet365.com/?affiliate=DEEPPREDICTBET', bonus: 'Bet $5 Get $150 in Bonus Bets' },
+  'unibet': { name: 'Unibet', url: 'https://www.unibet.com/?ref=DEEPPREDICTBET', bonus: '100% Risk-Free Bet' },
+  'williamhill': { name: 'William Hill', url: 'https://www.williamhill.com/?ref=DEEPPREDICTBET', bonus: 'Bet $10 Get $30' },
+  'bwin': { name: 'bwin', url: 'https://www.bwin.com/?ref=DEEPPREDICTBET', bonus: '100% Backup Bet' },
+  'paddypower': { name: 'Paddy Power', url: 'https://www.paddypower.com/?ref=DEEPPREDICTBET', bonus: 'Money Back as Cash' },
+  'betfair': { name: 'Betfair', url: 'https://www.betfair.com/?ref=DEEPPREDICTBET', bonus: 'Exchange Bonus' },
+  'skybet': { name: 'SkyBet', url: 'https://www.skybet.com/?ref=DEEPPREDICTBET', bonus: 'Bet 5p Get $30' },
+  '888sport': { name: '888sport', url: 'https://www.888sport.com/?ref=DEEPPREDICTBET', bonus: '300% Bonus Pack' },
 
   // North America (US & Canada)
-  'draftkings': { name: 'DraftKings', url: 'https://www.draftkings.com/?ref=BETMINES', bonus: 'Up to $1,200 Bonus' },
-  'fanduel': { name: 'FanDuel', url: 'https://www.fanduel.com/?ref=BETMINES', bonus: 'Bet $5 Get $200' },
-  'betmgm': { name: 'BetMGM', url: 'https://www.betmgm.com/?ref=BETMINES', bonus: 'First Bet Offer up to $1,500' },
-  'caesars': { name: 'Caesars Sportsbook', url: 'https://www.caesars.com/?ref=BETMINES', bonus: 'Up to $1,000 First Bet' },
-  'pointsbet': { name: 'PointsBet', url: 'https://www.pointsbet.com/?ref=BETMINES', bonus: '5x Second Chance Bets' },
+  'draftkings': { name: 'DraftKings', url: 'https://www.draftkings.com/?ref=DEEPPREDICTBET', bonus: 'Up to $1,200 Bonus' },
+  'fanduel': { name: 'FanDuel', url: 'https://www.fanduel.com/?ref=DEEPPREDICTBET', bonus: 'Bet $5 Get $200' },
+  'betmgm': { name: 'BetMGM', url: 'https://www.betmgm.com/?ref=DEEPPREDICTBET', bonus: 'First Bet Offer up to $1,500' },
+  'caesars': { name: 'Caesars Sportsbook', url: 'https://www.caesars.com/?ref=DEEPPREDICTBET', bonus: 'Up to $1,000 First Bet' },
+  'pointsbet': { name: 'PointsBet', url: 'https://www.pointsbet.com/?ref=DEEPPREDICTBET', bonus: '5x Second Chance Bets' },
 
   // Latin America & Brazil
-  'pixbet': { name: 'Pixbet', url: 'https://www.pixbet.com/?ref=BETMINES', bonus: 'Saque Rápido via Pix' },
-  'caliente': { name: 'Caliente', url: 'https://www.caliente.mx/?ref=BETMINES', bonus: '$1,000 MXN Sin Depósito' },
-  'codere': { name: 'Codere', url: 'https://www.codere.com/?ref=BETMINES', bonus: '100% Bônus Boas-Vindas' },
-  'estrelabet': { name: 'EstrelaBet', url: 'https://www.estrelabet.com/?ref=BETMINES', bonus: '100% Bônus de Depósito' },
-  'betnacional': { name: 'Betnacional', url: 'https://www.betnacional.com/?ref=BETMINES', bonus: 'A bet dos Brasileiros' },
+  'pixbet': { name: 'Pixbet', url: 'https://www.pixbet.com/?ref=DEEPPREDICTBET', bonus: 'Saque Rápido via Pix' },
+  'caliente': { name: 'Caliente', url: 'https://www.caliente.mx/?ref=DEEPPREDICTBET', bonus: '$1,000 MXN Sin Depósito' },
+  'codere': { name: 'Codere', url: 'https://www.codere.com/?ref=DEEPPREDICTBET', bonus: '100% Bônus Boas-Vindas' },
+  'estrelabet': { name: 'EstrelaBet', url: 'https://www.estrelabet.com/?ref=DEEPPREDICTBET', bonus: '100% Bônus de Depósito' },
+  'betnacional': { name: 'Betnacional', url: 'https://www.betnacional.com/?ref=DEEPPREDICTBET', bonus: 'A bet dos Brasileiros' },
 
   // Asia, Oceania & Global Crypto Pioneers
-  'stake': { name: 'Stake.com', url: 'https://stake.com/?c=BETMINES', bonus: '200% Rakeback & Crypto VIP' },
-  'sportsbetau': { name: 'Sportsbet.com.au', url: 'https://www.sportsbet.com.au/?ref=BETMINES', bonus: 'Top Australian Odds' },
-  'sbobet': { name: 'SBOBET', url: 'https://www.sbobet.com/?ref=BETMINES', bonus: '100% Asian Handicap Bonus' },
-  '188bet': { name: '188BET', url: 'https://www.188bet.com/?ref=BETMINES', bonus: '100% Deposit Bonus' },
-  'dafabet': { name: 'Dafabet', url: 'https://www.dafabet.com/?ref=BETMINES', bonus: '160% Welcome Bonus' },
-  'bk8': { name: 'BK8', url: 'https://www.bk8.com/?ref=BETMINES', bonus: '288% Have You BK8 Bonus' },
-  'bcgame': { name: 'BC.Game', url: 'https://bc.game/?i=BETMINES', bonus: '360% Crypto Deposit Bonus' },
-  'cloudbet': { name: 'Cloudbet', url: 'https://www.cloudbet.com/?af_token=BETMINES', bonus: '100% Crypto Welcome Bonus' },
-  'default': { name: 'Bookmaker', url: 'https://www.sportybet.com/?referralCode=BETMINES', bonus: 'Welcome Bonus' }
+  'stake': { name: 'Stake.com', url: 'https://stake.com/?c=DEEPPREDICTBET', bonus: '200% Rakeback & Crypto VIP' },
+  'sportsbetau': { name: 'Sportsbet.com.au', url: 'https://www.sportsbet.com.au/?ref=DEEPPREDICTBET', bonus: 'Top Australian Odds' },
+  'sbobet': { name: 'SBOBET', url: 'https://www.sbobet.com/?ref=DEEPPREDICTBET', bonus: '100% Asian Handicap Bonus' },
+  '188bet': { name: '188BET', url: 'https://www.188bet.com/?ref=DEEPPREDICTBET', bonus: '100% Deposit Bonus' },
+  'dafabet': { name: 'Dafabet', url: 'https://www.dafabet.com/?ref=DEEPPREDICTBET', bonus: '160% Welcome Bonus' },
+  'bk8': { name: 'BK8', url: 'https://www.bk8.com/?ref=DEEPPREDICTBET', bonus: '288% Have You BK8 Bonus' },
+  'bcgame': { name: 'BC.Game', url: 'https://bc.game/?i=DEEPPREDICTBET', bonus: '360% Crypto Deposit Bonus' },
+  'cloudbet': { name: 'Cloudbet', url: 'https://www.cloudbet.com/?af_token=DEEPPREDICTBET', bonus: '100% Crypto Welcome Bonus' },
+  'default': { name: 'Bookmaker', url: 'https://www.sportybet.com/?referralCode=DEEPPREDICTBET', bonus: 'Welcome Bonus' }
 };
 
 function getBookieAffiliateInfo(bookieId) {
@@ -495,7 +495,7 @@ function getBookieAffiliateInfo(bookieId) {
   const cleanId = bookieId.split(":")[0].toLowerCase();
   return BOOKMAKER_AFFILIATE_LINKS[cleanId] || {
     name: cleanId.charAt(0).toUpperCase() + cleanId.slice(1),
-    url: `https://www.${cleanId}.com/?ref=BETMINES`,
+    url: `https://www.${cleanId}.com/?ref=DEEPPREDICTBET`,
     bonus: 'Welcome Bonus'
   };
 }
@@ -1123,10 +1123,10 @@ function saveGeneratedTicket() {
   }
 }
 
-// Render BetMines Style Date Picker Bar
-// Render BetMines Style Dynamic Date & Live Selector Bar
-function renderBetMinesDateBar() {
-  const container = document.getElementById("betmines-date-bar-container");
+// Render DeepPredictBet Style Date Picker Bar
+// Render DeepPredictBet Style Dynamic Date & Live Selector Bar
+function renderDeepPredictBetDateBar() {
+  const container = document.getElementById("deeppredictbet-date-bar-container");
   if (!container) return;
 
   const baseDate = new Date();
@@ -1169,14 +1169,14 @@ function renderBetMinesDateBar() {
 
     if (isActive) {
       return `
-        <div class="date-item active" onclick="selectBetMinesDate('${d.id}')">
+        <div class="date-item active" onclick="selectDeepPredictBetDate('${d.id}')">
           <span class="day-num">${dayNum}</span>
           <span class="day-name">${labelText}</span>
         </div>
       `;
     } else {
       return `
-        <div class="date-item" onclick="selectBetMinesDate('${d.id}')">
+        <div class="date-item" onclick="selectDeepPredictBetDate('${d.id}')">
           <span class="day-num">${dayNum}</span>
         </div>
       `;
@@ -1184,8 +1184,8 @@ function renderBetMinesDateBar() {
   }).join("");
 
   container.innerHTML = `
-    <div class="betmines-date-bar">
-      <div class="live-btn ${isLiveActive ? 'active' : ''}" onclick="selectBetMinesLive()">
+    <div class="deeppredictbet-date-bar">
+      <div class="live-btn ${isLiveActive ? 'active' : ''}" onclick="selectDeepPredictBetLive()">
         <span>Live</span>
         <span class="live-badge-count">${liveCount}</span>
       </div>
@@ -1198,7 +1198,7 @@ function renderBetMinesDateBar() {
 }
 
 // Select specific date from date bar
-function selectBetMinesDate(dateId) {
+function selectDeepPredictBetDate(dateId) {
   window.appState.currentFilter = 'all';
 
   if (window.location.hash !== "#predictions" && window.location.hash !== "") {
@@ -1247,12 +1247,12 @@ function selectBetMinesDate(dateId) {
     window.appState.activePredictionDate = dateId;
   }
 
-  renderBetMinesDateBar();
+  renderDeepPredictBetDateBar();
   updateFixturesDisplay();
 }
 
 // Select "Live" option from date bar
-function selectBetMinesLive() {
+function selectDeepPredictBetLive() {
   window.appState.currentFilter = 'live';
   window.appState.activePredictionDate = 'today';
 
@@ -1295,7 +1295,7 @@ function initAppEngine() {
   if (typeof renderSidebarDirectory === 'function') renderSidebarDirectory();
 
   // Render universal date & live bar
-  if (typeof renderBetMinesDateBar === 'function') renderBetMinesDateBar();
+  if (typeof renderDeepPredictBetDateBar === 'function') renderDeepPredictBetDateBar();
 
   // Render top leagues sidebar list
   if (typeof renderSidebarTopLeagues === 'function') renderSidebarTopLeagues();
@@ -1313,7 +1313,7 @@ function initAppEngine() {
 runOnReady(initAppEngine);
 window.addEventListener("load", initAppEngine);
 
-  renderBetMinesDateBar();
+  renderDeepPredictBetDateBar();
   updateFixturesDisplay();
 }
 
@@ -1330,7 +1330,7 @@ runOnReady(() => {
   if (typeof window.renderSidebarDirectory === 'function') window.renderSidebarDirectory();
 
   // Render universal date & live bar
-  if (typeof window.renderBetMinesDateBar === 'function') window.renderBetMinesDateBar();
+  if (typeof window.renderDeepPredictBetDateBar === 'function') window.renderDeepPredictBetDateBar();
 
   // Render top leagues sidebar list
   if (typeof window.renderSidebarTopLeagues === 'function') window.renderSidebarTopLeagues();
@@ -1395,7 +1395,7 @@ runOnReady(() => {
 
   // Programmatically trigger the default active tool tab to ensure layout sync
   if (typeof switchTool === 'function') {
-    const defaultTab = document.querySelector(`#betmines-tools .tabs-container > .tab-btn[onclick*="machine"]`);
+    const defaultTab = document.querySelector(`#deeppredictbet-tools .tabs-container > .tab-btn[onclick*="machine"]`);
     if (defaultTab) {
       switchTool('machine', defaultTab);
     }
@@ -1480,7 +1480,7 @@ window.triggerToolRoute = function triggerToolRoute(toolId, scannerMode) {
 
   // Delegate to switchTool for suite tools
   if (typeof switchTool === 'function') {
-    const suiteSec = document.getElementById("betmines-tools");
+    const suiteSec = document.getElementById("deeppredictbet-tools");
     const targetBtn = suiteSec ? Array.from(suiteSec.querySelectorAll(".tabs-container .tab-btn")).find(b => {
       const attr = b.getAttribute("onclick");
       return attr && attr.includes(`'${toolId}'`);
@@ -1523,7 +1523,7 @@ function unlockPremiumPlanLigue2(leagueName, btn) {
 }
 
 // -------------------------------------------------------------
-// BETMINES ADVANCED FEATURE SYSTEM (COMPLETING THE OS ROADMAP)
+// DEEPPREDICTBET ADVANCED FEATURE SYSTEM (COMPLETING THE OS ROADMAP)
 // -------------------------------------------------------------
 
 // 1. Toast Notification Helper
@@ -1576,7 +1576,7 @@ const TRANSLATIONS = {
     scoutBtn: 'Demander à Scout',
     proBtn: 'Rejoindre Pro',
     dashboardTitle: 'Tableau des Matchs',
-    suiteTitle: 'Suite de Paris BetMines',
+    suiteTitle: 'Suite de Paris DeepPredictBet',
     scoutChatTitle: 'Briefing IA de Match',
   },
   it: {
@@ -1584,7 +1584,7 @@ const TRANSLATIONS = {
     scoutBtn: 'Chiedi a Scout',
     proBtn: 'Entra in Pro',
     dashboardTitle: 'Pannello Partite',
-    suiteTitle: 'Suite Scommesse BetMines',
+    suiteTitle: 'Suite Scommesse DeepPredictBet',
     scoutChatTitle: 'Briefing Match Scout IA',
   },
   es: {
@@ -1592,7 +1592,7 @@ const TRANSLATIONS = {
     scoutBtn: 'Preguntar a Scout',
     proBtn: 'Unirse a Pro',
     dashboardTitle: 'Panel de Partidos',
-    suiteTitle: 'Suite de Apuestas BetMines',
+    suiteTitle: 'Suite de Apuestas DeepPredictBet',
     scoutChatTitle: 'Informe de Partido con IA',
   }
 };
@@ -1626,7 +1626,7 @@ function changeAppLanguage(lang) {
     dashTitleEl.innerText = trans.dashboardTitle;
   }
 
-  const suiteTitleEl = document.querySelector("#betmines-tools h3");
+  const suiteTitleEl = document.querySelector("#deeppredictbet-tools h3");
   if (suiteTitleEl) {
     suiteTitleEl.innerText = trans.suiteTitle;
   }
@@ -2153,8 +2153,8 @@ function triggerTopTipFilter(dateVal, topTipVal) {
   });
 
   // Sync date buttons in DOM
-  if (typeof renderBetMinesDateBar === 'function') {
-    renderBetMinesDateBar();
+  if (typeof renderDeepPredictBetDateBar === 'function') {
+    renderDeepPredictBetDateBar();
   }
 
   // Update title
@@ -2252,8 +2252,8 @@ function triggerMatchPreview(leagueName, btn) {
     window.appState.activePredictionDate = dateVal;
     
     // Sync timeline date selectors
-    if (typeof renderBetMinesDateBar === 'function') {
-      renderBetMinesDateBar();
+    if (typeof renderDeepPredictBetDateBar === 'function') {
+      renderDeepPredictBetDateBar();
     }
 
     const matchesTitle = document.getElementById("matches-section-title");
@@ -2384,8 +2384,8 @@ function handleSearchSelect(val) {
     window.appState.activePredictionDate = matchedMatch.date;
     
     // Update timeline date cards styling
-    if (typeof renderBetMinesDateBar === 'function') {
-      renderBetMinesDateBar();
+    if (typeof renderDeepPredictBetDateBar === 'function') {
+      renderDeepPredictBetDateBar();
     }
   }
 
@@ -2528,8 +2528,8 @@ function runCalFilter() {
   window.appState.calTeam = teamVal;
 
   // Sync date buttons in DOM
-  if (typeof renderBetMinesDateBar === 'function') {
-    renderBetMinesDateBar();
+  if (typeof renderDeepPredictBetDateBar === 'function') {
+    renderDeepPredictBetDateBar();
   }
 
   // Update the fixtures display
@@ -2559,8 +2559,8 @@ function triggerQuickFilter(dateVal, marketVal) {
   });
 
   // Sync date selector buttons in DOM
-  if (typeof renderBetMinesDateBar === 'function') {
-    renderBetMinesDateBar();
+  if (typeof renderDeepPredictBetDateBar === 'function') {
+    renderDeepPredictBetDateBar();
   }
 
   // Update title
@@ -2949,13 +2949,13 @@ window.arbitrageDeals = [
       bookieKey: "sportybet",
       selection: "Over 2.5 Goals",
       odds: 2.15,
-      link: "https://www.sportybet.com/?tag=betmines"
+      link: "https://www.sportybet.com/?tag=deeppredictbet"
     },
     leg2: {
       bookieKey: "bet365",
       selection: "Under 2.5 Goals",
       odds: 2.05,
-      link: "https://www.bet365.com/?affiliate=betmines"
+      link: "https://www.bet365.com/?affiliate=deeppredictbet"
     }
   },
   {
@@ -2969,13 +2969,13 @@ window.arbitrageDeals = [
       bookieKey: "1xbet",
       selection: "Real Madrid Win (1)",
       odds: 2.45,
-      link: "https://1xbet.com/?tag=betmines"
+      link: "https://1xbet.com/?tag=deeppredictbet"
     },
     leg2: {
       bookieKey: "bet9ja",
       selection: "Draw or Barcelona (X2)",
       odds: 1.85,
-      link: "https://www.bet9ja.com/?affiliate=betmines"
+      link: "https://www.bet9ja.com/?affiliate=deeppredictbet"
     }
   },
   {
@@ -2989,13 +2989,13 @@ window.arbitrageDeals = [
       bookieKey: "stake",
       selection: "BTTS Yes",
       odds: 1.95,
-      link: "https://stake.com/?c=betmines"
+      link: "https://stake.com/?c=deeppredictbet"
     },
     leg2: {
       bookieKey: "betking",
       selection: "BTTS No",
       odds: 2.20,
-      link: "https://www.betking.com/?affiliate=betmines"
+      link: "https://www.betking.com/?affiliate=deeppredictbet"
     }
   }
 ];
@@ -3141,9 +3141,9 @@ try { if (typeof convertBookingCode === 'function') window.convertBookingCode = 
 try { if (typeof copyConvertedCode === 'function') window.copyConvertedCode = copyConvertedCode; } catch (e) {}
 try { if (typeof saveConvertedTicketToProfile === 'function') window.saveConvertedTicketToProfile = saveConvertedTicketToProfile; } catch (e) {}
 try { if (typeof saveGeneratedTicket === 'function') window.saveGeneratedTicket = saveGeneratedTicket; } catch (e) {}
-try { if (typeof renderBetMinesDateBar === 'function') window.renderBetMinesDateBar = renderBetMinesDateBar; } catch (e) {}
-try { if (typeof selectBetMinesDate === 'function') window.selectBetMinesDate = selectBetMinesDate; } catch (e) {}
-try { if (typeof selectBetMinesLive === 'function') window.selectBetMinesLive = selectBetMinesLive; } catch (e) {}
+try { if (typeof renderDeepPredictBetDateBar === 'function') window.renderDeepPredictBetDateBar = renderDeepPredictBetDateBar; } catch (e) {}
+try { if (typeof selectDeepPredictBetDate === 'function') window.selectDeepPredictBetDate = selectDeepPredictBetDate; } catch (e) {}
+try { if (typeof selectDeepPredictBetLive === 'function') window.selectDeepPredictBetLive = selectDeepPredictBetLive; } catch (e) {}
 try { if (typeof filterMatches === 'function') window.filterMatches = filterMatches; } catch (e) {}
 try { if (typeof triggerToolRoute === 'function') window.triggerToolRoute = triggerToolRoute; } catch (e) {}
 try { if (typeof triggerWatchlistFilter === 'function') window.triggerWatchlistFilter = triggerWatchlistFilter; } catch (e) {}
@@ -3232,7 +3232,7 @@ try { if (typeof quickPromptScout === 'function') window.quickPromptScout = quic
 try { if (typeof removeBetslipItem === 'function') window.removeBetslipItem = removeBetslipItem; } catch (e) {}
 try { if (typeof removeScannerRule === 'function') window.removeScannerRule = removeScannerRule; } catch (e) {}
 try { if (typeof renderBacktestSVGChart === 'function') window.renderBacktestSVGChart = renderBacktestSVGChart; } catch (e) {}
-try { if (typeof renderBetMinesDateBar === 'function') window.renderBetMinesDateBar = renderBetMinesDateBar; } catch (e) {}
+try { if (typeof renderDeepPredictBetDateBar === 'function') window.renderDeepPredictBetDateBar = renderDeepPredictBetDateBar; } catch (e) {}
 try { if (typeof renderBetslip === 'function') window.renderBetslip = renderBetslip; } catch (e) {}
 try { if (typeof renderRecentConvertedSlips === 'function') window.renderRecentConvertedSlips = renderRecentConvertedSlips; } catch (e) {}
 try { if (typeof renderScannerRules === 'function') window.renderScannerRules = renderScannerRules; } catch (e) {}
@@ -3242,8 +3242,8 @@ try { if (typeof runCalFilter === 'function') window.runCalFilter = runCalFilter
 try { if (typeof runOnReady === 'function') window.runOnReady = runOnReady; } catch (e) {}
 try { if (typeof saveConvertedTicketToProfile === 'function') window.saveConvertedTicketToProfile = saveConvertedTicketToProfile; } catch (e) {}
 try { if (typeof saveGeneratedTicket === 'function') window.saveGeneratedTicket = saveGeneratedTicket; } catch (e) {}
-try { if (typeof selectBetMinesDate === 'function') window.selectBetMinesDate = selectBetMinesDate; } catch (e) {}
-try { if (typeof selectBetMinesLive === 'function') window.selectBetMinesLive = selectBetMinesLive; } catch (e) {}
+try { if (typeof selectDeepPredictBetDate === 'function') window.selectDeepPredictBetDate = selectDeepPredictBetDate; } catch (e) {}
+try { if (typeof selectDeepPredictBetLive === 'function') window.selectDeepPredictBetLive = selectDeepPredictBetLive; } catch (e) {}
 try { if (typeof selectConverterBookmaker === 'function') window.selectConverterBookmaker = selectConverterBookmaker; } catch (e) {}
 try { if (typeof selectPaddiBookmaker === 'function') window.selectPaddiBookmaker = selectPaddiBookmaker; } catch (e) {}
 try { if (typeof sendBetslipToConverter === 'function') window.sendBetslipToConverter = sendBetslipToConverter; } catch (e) {}

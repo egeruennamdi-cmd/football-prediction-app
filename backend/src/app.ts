@@ -21,7 +21,7 @@ app.use(morgan('dev'));
 const apiIndexHandler = (req: Request, res: Response) => {
   res.status(200).json({
     status: 'online',
-    name: 'BetMines Enterprise API Gateway',
+    name: 'DeepPredictBet Enterprise API Gateway',
     version: 'v1.0.0',
     description: 'Option C 50-Bookmaker Converter Engine, AI Bet Doctor & API-Football Live Gateway',
     endpoints: {
@@ -47,7 +47,7 @@ app.get('/api/v1', apiIndexHandler);
 app.get('/api/v1/health', (req: Request, res: Response) => {
   res.status(200).json({
     status: 'online',
-    service: 'BetMines Backend Service',
+    service: 'DeepPredictBet Backend Service',
     timestamp: new Date().toISOString()
   });
 });
@@ -61,7 +61,7 @@ app.use('/api/v1/live', liveDataRouter);
 
 // Global Error Handler
 app.use((err: Error, req: Request, res: Response, next: NextFunction) => {
-  console.error('[BetMines API Error]:', err.stack);
+  console.error('[DeepPredictBet API Error]:', err.stack);
   res.status(500).json({
     success: false,
     error: err.message || 'Internal Server Error'

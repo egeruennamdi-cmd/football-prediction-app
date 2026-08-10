@@ -1,6 +1,6 @@
 // UI Controller for KickAI
 
-// Helper to calculate BetMines-style tips dynamically based on selected market
+// Helper to calculate DeepPredictBet-style tips dynamically based on selected market
 function getMatchTip(match) {
   const market = window.appState.activeMarketSubmenu || 'all';
   const topTip = window.appState.activeTopTip || 'all';
@@ -503,7 +503,7 @@ window.switchTool = function switchTool(toolId, btn) {
     genView.classList.add("active");
   }
 
-  const suiteSec = document.getElementById("betmines-tools");
+  const suiteSec = document.getElementById("deeppredictbet-tools");
   if (!suiteSec) return;
   
   const buttons = suiteSec.querySelectorAll(".tabs-container > .tab-btn");
