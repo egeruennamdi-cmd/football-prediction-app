@@ -3370,3 +3370,203 @@ window.addEventListener('load', function() {
 // Global Exports
 window.renderSidebarTopLeagues = renderSidebarTopLeagues;
 window.filterSidebarTopLeagues = filterSidebarTopLeagues;
+
+
+/* --- BULLETPROOF COUNTRY DIRECTORY ACCORDION POPULATOR --- */
+function renderSidebarCountries() {
+  const container = document.getElementById("sidebar-accordion-list");
+  if (!container) return;
+
+  try {
+    const defaultCountries = [
+      {
+        country: "England",
+        emoji: "🏴󠁧󠁢󠁥󠁮󠁧󠁿",
+        leagues: ["Premier League", "Championship", "League One", "FA Cup", "EFL Cup"]
+      },
+      {
+        country: "Spain",
+        emoji: "🇪🇸",
+        leagues: ["La Liga", "Segunda Division", "Copa del Rey"]
+      },
+      {
+        country: "Italy",
+        emoji: "🇮🇹",
+        leagues: ["Serie A", "Serie B", "Coppa Italia"]
+      },
+      {
+        country: "Germany",
+        emoji: "🇩🇪",
+        leagues: ["Bundesliga", "2. Bundesliga", "DFB Pokal"]
+      },
+      {
+        country: "France",
+        emoji: "🇫🇷",
+        leagues: ["Ligue 1", "Ligue 2", "Coupe de France"]
+      },
+      {
+        country: "Netherlands",
+        emoji: "🇳🇱",
+        leagues: ["Eredivisie", "Eerste Divisie"]
+      },
+      {
+        country: "Portugal",
+        emoji: "🇵🇹",
+        leagues: ["Primeira Liga", "Liga Portugal 2"]
+      },
+      {
+        country: "Turkey",
+        emoji: "🇹🇷",
+        leagues: ["Süper Lig", "1. Lig"]
+      },
+      {
+        country: "Europe / UEFA",
+        emoji: "🇪🇺",
+        leagues: ["Champions League", "Europa League", "Conference League"]
+      },
+      {
+        country: "Brazil",
+        emoji: "🇧🇷",
+        leagues: ["Brasileirão", "Serie B", "Copa do Brasil"]
+      },
+      {
+        country: "Argentina",
+        emoji: "🇦🇷",
+        leagues: ["Liga Profesional", "Copa Argentina"]
+      },
+      {
+        country: "Mexico",
+        emoji: "🇲🇽",
+        leagues: ["Liga MX"]
+      },
+      {
+        country: "USA",
+        emoji: "🇺🇸",
+        leagues: ["MLS", "USL Championship"]
+      },
+      {
+        country: "Saudi Arabia",
+        emoji: "🇸🇦",
+        leagues: ["Saudi Pro League"]
+      },
+      {
+        country: "Nigeria",
+        emoji: "🇳🇬",
+        leagues: ["NPFL Nigeria"]
+      },
+      {
+        country: "South Africa",
+        emoji: "🇿🇦",
+        leagues: ["DStv Premiership"]
+      },
+      {
+        country: "Egypt",
+        emoji: "🇪🇬",
+        leagues: ["Egyptian Premier League"]
+      },
+      {
+        country: "Scotland",
+        emoji: "🏴󠁧󠁢󠁳󠁣󠁴󠁿",
+        leagues: ["Scottish Premiership"]
+      },
+      {
+        country: "Belgium",
+        emoji: "🇧🇪",
+        leagues: ["Belgian Pro League"]
+      }
+    ];
+
+    let countryData = defaultCountries;
+    if (typeof COUNTRY_LEAGUES_DATA !== 'undefined' && Array.isArray(COUNTRY_LEAGUES_DATA) && COUNTRY_LEAGUES_DATA.length > 0) {
+      countryData = COUNTRY_LEAGUES_DATA;
+    } else if (typeof window.COUNTRY_LEAGUES_DATA !== 'undefined' && Array.isArray(window.COUNTRY_LEAGUES_DATA) && window.COUNTRY_LEAGUES_DATA.length > 0) {
+      countryData = window.COUNTRY_LEAGUES_DATA;
+    }
+
+    const query = (document.getElementById("sidebar-search-input")?.value || "").toLowerCase().trim();
+    container.innerHTML = "";
+
+    countryData.forEach((cItem, index) => {
+      const countryName = cItem.country || "Country";
+      const leagues = cItem.leagues || ["National League"];
+      
+      const matchesCountry = countryName.toLowerCase().includes(query) || leagues.some(l => l.toLowerCase().includes(query));
+      if (query && !matchesCountry) return;
+
+      const accordion = document.createElement("div");
+      accordion.className = "country-accordion-item";
+      accordion.style.marginBottom = "4px";
+
+      const isExpanded = query ? true : false;
+      const safeCountry = countryName.replace(/'/g, "\\'");
+
+      let leaguesHtml = "";
+      leagues.forEach(lName => {
+        const safeLeague = lName.replace(/'/g, "\\'");
+        leaguesHtml += `
+          <button class="sidebar-league-btn" onclick="selectSidebarLeague('${safeLeague}', this)" style="padding: 6px 10px; font-size: 0.76rem; text-align: left; background: rgba(15,23,42,0.8); border: 1px solid rgba(255,255,255,0.05); color: #60a5fa; border-radius: 6px; cursor: pointer; margin-bottom: 2px; display: flex; align-items: center; justify-content: space-between;">
+            <span>⚽ ${lName}</span>
+            <span style="font-size: 0.65rem; color: #94a3b8; background: rgba(255,255,255,0.06); padding: 1px 5px; border-radius: 4px;">Picks</span>
+          </button>
+        `;
+      });
+
+      accordion.innerHTML = `
+        <button class="country-accordion-header" onclick="toggleSidebarCountryAccordion(${index}, this)" style="width: 100%; display: flex; align-items: center; justify-content: space-between; padding: 10px 12px; background: rgba(30, 41, 59, 0.7); border: 1px solid rgba(255,255,255,0.08); border-radius: 8px; color: #ffffff; font-weight: 700; font-size: 0.83rem; cursor: pointer; transition: background 0.15s ease;" onmouseover="this.style.background='rgba(59, 130, 246, 0.2)'" onmouseout="this.style.background='rgba(30, 41, 59, 0.7)'">
+          <span style="display: flex; align-items: center; gap: 8px;">
+            <span style="font-size: 1.1rem;">${cItem.emoji || '🌐'}</span>
+            <span>${countryName}</span>
+          </span>
+          <span class="caret" style="transition: transform 0.2s ease; font-size: 0.65rem; color: #94a3b8; transform: ${isExpanded ? 'rotate(180deg)' : 'rotate(0)'};">▼</span>
+        </button>
+        <div class="country-accordion-content" style="max-height: ${isExpanded ? '600px' : '0'}; overflow: hidden; transition: max-height 0.25s ease-in-out; padding-left: 8px; display: flex; flex-direction: column; gap: 3px; margin-top: 4px;">
+          ${leaguesHtml}
+        </div>
+      `;
+
+      container.appendChild(accordion);
+    });
+  } catch(e) {
+    console.error("Country directory render error:", e);
+  }
+}
+
+function filterSidebarCountries() {
+  renderSidebarCountries();
+}
+
+function toggleSidebarCountryAccordion(idx, btn) {
+  const content = btn.nextElementSibling;
+  const caret = btn.querySelector('.caret');
+  if (content) {
+    if (content.style.maxHeight && content.style.maxHeight !== '0px') {
+      content.style.maxHeight = '0px';
+      if (caret) caret.style.transform = 'rotate(0deg)';
+    } else {
+      content.style.maxHeight = '600px';
+      if (caret) caret.style.transform = 'rotate(180deg)';
+    }
+  }
+}
+
+// Auto-run on load with retries
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', function() {
+    renderSidebarCountries();
+    setTimeout(renderSidebarCountries, 300);
+    setTimeout(renderSidebarCountries, 1000);
+  });
+} else {
+  renderSidebarCountries();
+  setTimeout(renderSidebarCountries, 300);
+  setTimeout(renderSidebarCountries, 1000);
+}
+
+window.addEventListener('load', function() {
+  renderSidebarCountries();
+});
+
+// Global Exports
+window.renderSidebarCountries = renderSidebarCountries;
+window.filterSidebarCountries = filterSidebarCountries;
+window.toggleSidebarCountryAccordion = toggleSidebarCountryAccordion;
