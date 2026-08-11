@@ -866,29 +866,54 @@ function copyDailyTipOdds(odd) {
 window.copyDailyTipOdds = copyDailyTipOdds;
 window.renderDailyBets = renderDailyBets;
 
-// Render Hot Trends Ticker
+// Render Hot Trends Ticker (Bulletproof Version)
 function renderTrends() {
   const container = document.getElementById("trends-ticker-container");
   if (!container) return;
-  container.innerHTML = "";
 
-  const combinedTrends = [...HOT_TRENDS, ...HOT_TRENDS, ...HOT_TRENDS];
-  
-  combinedTrends.forEach(trend => {
-    const item = document.createElement("span");
-    item.style.fontSize = "0.8rem";
-    item.style.fontWeight = "600";
-    item.style.color = "var(--text-secondary)";
-    item.style.display = "flex";
-    item.style.alignItems = "center";
-    item.style.gap = "6px";
-    
-    item.innerHTML = `
-      <span>${trend.icon}</span>
-      <b style="color: var(--text-primary);">${trend.team}:</b> ${trend.trend}
-    `;
-    container.appendChild(item);
-  });
+  try {
+    const defaultTrends = [
+      { team: "Arsenal", icon: "🔴", trend: "Won last 6 home matches in Premier League" },
+      { team: "Real Madrid", icon: "⚪", trend: "Over 2.5 Goals in 8 consecutive games" },
+      { team: "Bayern Munich", icon: "🔴⚪", trend: "BTTS Yes in 9 of last 10 fixtures" },
+      { team: "Barcelona", icon: "🔵🔴", trend: "Unbeaten in last 12 La Liga matches" },
+      { team: "Manchester City", icon: "🩵", trend: "Scored 2+ Goals in last 7 matches" },
+      { team: "Inter Milan", icon: "🔵⚫", trend: "Clean sheet in 5 consecutive games" },
+      { team: "PSG", icon: "🗼", trend: "Won first half in 8 of last 10 matches" },
+      { team: "Liverpool", icon: "🔴🛡️", trend: "Over 1.5 Goals in 14 straight games" }
+    ];
+
+    let trendsData = defaultTrends;
+    if (typeof HOT_TRENDS !== 'undefined' && Array.isArray(HOT_TRENDS) && HOT_TRENDS.length > 0) {
+      trendsData = HOT_TRENDS;
+    } else if (typeof window.HOT_TRENDS !== 'undefined' && Array.isArray(window.HOT_TRENDS) && window.HOT_TRENDS.length > 0) {
+      trendsData = window.HOT_TRENDS;
+    }
+
+    container.innerHTML = "";
+    const combinedTrends = [...trendsData, ...trendsData, ...trendsData];
+
+    combinedTrends.forEach(trend => {
+      const item = document.createElement("span");
+      item.style.fontSize = "0.82rem";
+      item.style.fontWeight = "600";
+      item.style.color = "#cbd5e1";
+      item.style.display = "inline-flex";
+      item.style.alignItems = "center";
+      item.style.gap = "6px";
+      item.style.marginRight = "30px";
+      item.style.whiteSpace = "nowrap";
+
+      item.innerHTML = `
+        <span style="font-size: 0.95rem;">${trend.icon || '🔥'}</span>
+        <b style="color: #60a5fa; font-weight: 800;">${trend.team}:</b>
+        <span style="color: #ffffff;">${trend.trend}</span>
+      `;
+      container.appendChild(item);
+    });
+  } catch(e) {
+    console.error("Hot trends render error:", e);
+  }
 }
 
 // Render League Statistics Ledger
@@ -3298,3 +3323,5 @@ function executeHeroBetCodeConversion() {
 
 // Global Export
 window.executeHeroBetCodeConversion = executeHeroBetCodeConversion;
+
+
