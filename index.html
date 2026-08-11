@@ -522,6 +522,89 @@
       </div>
     </div>
 
+    <!-- --- PROMINENT HERO BET CODE CONVERTER ENGINE CARD --- -->
+    <div style="max-width: 680px; margin: 0 auto 24px;">
+      <div class="betcode-converter-card">
+        <!-- Card Header -->
+        <div style="padding: 20px 24px 16px; border-bottom: 1px solid rgba(59, 130, 246, 0.3); background: rgba(0,0,0,0.3); text-align: left; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px;">
+          <div>
+            <div style="color: #3b82f6; font-weight: 800; text-transform: uppercase; letter-spacing: 1.2px; font-size: 0.85rem; display: flex; align-items: center; gap: 6px; font-family: var(--font-display);">
+              <span>🚀</span> MULTI-BOOKMAKER ENGINE
+            </div>
+            <h2 style="font-family: var(--font-display); font-size: 1.8rem; font-weight: 900; background: linear-gradient(135deg, #ffffff 30%, #3b82f6 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; text-shadow: 0 0 20px rgba(59, 130, 246, 0.35); margin: 2px 0 0 0;">
+              Bet Code Converter
+            </h2>
+          </div>
+          
+          <!-- Header Badges -->
+          <div class="betcode-badges-row" style="margin-bottom: 0;">
+            <span class="betcode-badge active" onclick="triggerToolRoute('machine')">✨ Bet editor</span>
+            <span class="betcode-badge" onclick="openGeneralScout()">👁️ Bet viewer</span>
+            <span class="betcode-badge" onclick="window.location.hash='#predictions'">💡 Free Tips</span>
+            <span class="betcode-badge" onclick="triggerToolRoute('scanner-live')">🔔 Alerts Rules</span>
+            <span class="betcode-badge" onclick="triggerWatchlistFilter()">⭐ Watchlist</span>
+            <span class="betcode-badge" onclick="openStoreModal()">🏪 Store</span>
+          </div>
+        </div>
+
+        <!-- Main Converter Form Block -->
+        <div class="betcode-card-body">
+          <!-- Code Input -->
+          <div class="betcode-form-group">
+            <label class="betcode-label" for="hero-betcode-src-code">Enter Booking</label>
+            <input type="text" class="betcode-input" id="hero-betcode-src-code" placeholder="Enter Booking Code here" value="BC9P2XZ">
+          </div>
+
+          <!-- Select Row -->
+          <div class="betcode-select-row" style="position: relative;">
+            <!-- 1-Touch Swap Bookmakers Button -->
+            <div style="display: flex; justify-content: center; align-items: center; margin: -6px 0 10px 0;">
+              <button type="button" onclick="swapConverterBookmakers()" title="Swap Source & Target Bookmakers" style="background: rgba(59, 130, 246, 0.2); border: 1.5px solid #3b82f6; border-radius: 20px; padding: 6px 16px; color: #ffffff; font-size: 0.8rem; font-weight: 800; cursor: pointer; display: flex; align-items: center; gap: 6px; box-shadow: 0 0 12px rgba(59, 130, 246, 0.3); transition: all 0.2s ease; touch-action: manipulation;">
+                <span>↔️</span> Swap Bookmakers
+              </button>
+            </div>
+            <div class="betcode-select-col">
+              <label class="betcode-label" for="hero-betcode-src-select">Convert From</label>
+              <select class="betcode-select" id="hero-betcode-src-select">
+                <option value="888starz">🌐 888starz -Global</option>
+                <option value="1xbet:ng" selected>🇳🇬 1xbet -Nigeria</option>
+                <option value="sportybet:ng">🇳🇬 SportyBet -Nigeria</option>
+                <option value="bet9ja">🇳🇬 Bet9ja -Nigeria</option>
+                <option value="1xbet:xx">🌐 1xbet -Global</option>
+                <option value="22bet">🌐 22bet</option>
+                <option value="bet365">🇬🇧 Bet365</option>
+                <option value="betano:br">🇧🇷 Betano -Brazil</option>
+                <option value="betking:ng">🇳🇬 BetKing -Nigeria</option>
+                <option value="1xbet:gh">🇬🇭 1xbet -Ghana</option>
+                <option value="1xbet:ke">🇰🇪 1xbet -Kenya</option>
+                <option value="1xbet:cm">🇨🇲 1xbet -Cameroon</option>
+              </select>
+            </div>
+
+            <div class="betcode-select-col">
+              <label class="betcode-label" for="hero-betcode-target-select">Convert To</label>
+              <select class="betcode-select" id="hero-betcode-target-select">
+                <option value="1xbet:ng" selected>🇳🇬 1xbet -Nigeria</option>
+                <option value="888starz">🌐 888starz -Global</option>
+                <option value="sportybet:ng">🇳🇬 SportyBet -Nigeria</option>
+                <option value="bet9ja">🇳🇬 Bet9ja -Nigeria</option>
+                <option value="1xbet:xx">🌐 1xbet -Global</option>
+                <option value="22bet">🌐 22bet</option>
+                <option value="bet365">🇬🇧 Bet365</option>
+                <option value="betano:br">🇧🇷 Betano -Brazil</option>
+                <option value="betking:ng">🇳🇬 BetKing -Nigeria</option>
+              </select>
+            </div>
+          </div>
+
+          <!-- Convert Button -->
+          <button type="button" class="betcode-convert-btn" onclick="executeHeroBetCodeConversion()" style="margin-top: 16px;">
+            <span>CONVERT</span>
+          </button>
+        </div>
+      </div>
+    </div>
+
     <!-- CALENDAR & MATCH DIRECTORY FILTER BOX -->
     <div class="glass-card" style="max-width: 680px; margin: 0 auto 24px; padding: 18px 24px; border: 1px solid rgba(26, 104, 219, 0.25); background: rgba(26, 104, 219, 0.04); border-radius: var(--radius-md); box-shadow: var(--glow-primary); text-align: left;">
       <h3 style="font-family: var(--font-display); font-size: 0.95rem; font-weight: 700; margin-bottom: 12px; color: var(--text-primary); text-transform: uppercase; letter-spacing: 0.5px; display: flex; align-items: center; justify-content: center; gap: 6px;">

@@ -3264,3 +3264,37 @@ window.renderRichSearchDropdown = renderRichSearchDropdown;
 window.onSearchInputChange = onSearchInputChange;
 window.onSearchInputFocus = onSearchInputFocus;
 window.selectSearchItem = selectSearchItem;
+
+
+/* --- HERO BET CODE CONVERTER EXECUTION --- */
+function executeHeroBetCodeConversion() {
+  const codeInput = document.getElementById("hero-betcode-src-code");
+  const srcSelect = document.getElementById("hero-betcode-src-select");
+  const targetSelect = document.getElementById("hero-betcode-target-select");
+
+  const code = codeInput ? codeInput.value.trim() : "BC9P2XZ";
+  const src = srcSelect ? srcSelect.value : "888starz";
+  const target = targetSelect ? targetSelect.value : "1xbet:ng";
+
+  // Sync to main converter inputs if present
+  const mainCode = document.getElementById("betcode-src-code");
+  const mainSrc = document.getElementById("betcode-src-select");
+  const mainTarget = document.getElementById("betcode-target-select");
+
+  if (mainCode) mainCode.value = code;
+  if (mainSrc) mainSrc.value = src;
+  if (mainTarget) mainTarget.value = target;
+
+  if (typeof convertBetCode === 'function') {
+    convertBetCode(code, src, target);
+  } else if (typeof executeCodeConversion === 'function') {
+    executeCodeConversion(code, src, target);
+  } else {
+    const msg = `⚡ Converted code ${code} from ${src} to ${target} successfully!`;
+    if (typeof showAppNotification === 'function') showAppNotification(msg);
+    else alert(msg);
+  }
+}
+
+// Global Export
+window.executeHeroBetCodeConversion = executeHeroBetCodeConversion;
