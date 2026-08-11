@@ -733,11 +733,14 @@
           </div>
         </div>
 
-        <!-- Right: Search Box -->
-        <div style="display: flex; align-items: center; gap: 8px; min-width: 260px; flex-grow: 0.5;">
+        <!-- Right: Search Box with Rich Autocomplete & Logos -->
+        <div style="display: flex; align-items: center; gap: 8px; min-width: 260px; flex-grow: 0.5; position: relative;">
           <span style="font-size: 0.9rem; color: var(--text-secondary);">🔍</span>
-          <input type="text" id="timeline-search-input" list="search-suggestions" placeholder="Search Team, League, Country..." oninput="handleSearchSelect(this.value)" style="background: var(--bg-dark); border: 1px solid var(--border-color); border-radius: var(--radius-sm); padding: 8px 12px; color: var(--text-primary); font-size: 0.75rem; outline: none; width: 100%; font-family: var(--font-body); transition: var(--transition-fast);" onfocus="this.style.borderColor='var(--primary)'" onblur="this.style.borderColor='var(--border-color)'">
-          <datalist id="search-suggestions"></datalist>
+          <input type="text" id="timeline-search-input" placeholder="Search Team, League, Country..." oninput="onSearchInputChange(this.value)" onfocus="onSearchInputFocus(this.value)" autocomplete="off" style="background: var(--bg-dark); border: 1px solid var(--border-color); border-radius: var(--radius-sm); padding: 8px 12px; color: var(--text-primary); font-size: 0.75rem; outline: none; width: 100%; font-family: var(--font-body); transition: var(--transition-fast);">
+          
+          <!-- Rich Autocomplete Menu Container -->
+          <div id="search-autocomplete-dropdown" style="display: none; position: absolute; top: calc(100% + 6px); left: 0; right: 0; background: #0f172a; border: 1px solid rgba(59, 130, 246, 0.5); border-radius: 12px; box-shadow: 0 12px 30px rgba(0,0,0,0.85); z-index: 999999; max-height: 360px; overflow-y: auto; touch-action: pan-y; -webkit-overflow-scrolling: touch; padding: 6px 0;">
+          </div>
         </div>
       </div>
     </div>
