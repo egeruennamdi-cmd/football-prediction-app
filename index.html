@@ -1152,7 +1152,7 @@
           
           <!-- Sidebar Search Bar -->
           <div style="position: relative; margin-bottom: 4px;">
-            <input type="text" id="sidebar-topleagues-search-input" placeholder="Search top leagues..." style="background: var(--bg-dark-accent); border: 1px solid var(--border-color); border-radius: var(--radius-sm); padding: 8px 12px 8px 34px; color: var(--text-primary); font-size: 0.8rem; width: 100%; font-family: var(--font-body);" oninput="filterSidebarTopLeagues()">
+            <input type="text" id="sidebar-topleagues-search-input" placeholder="Search top leagues..." style="background: var(--bg-dark-accent); border: 1px solid var(--border-color); border-radius: var(--radius-sm); padding: 8px 12px 8px 34px; color: var(--text-primary); font-size: 0.8rem; width: 100%; font-family: var(--font-body);" oninput="filterSidebarTopLeagues()" onfocus="renderSidebarTopLeagues()" onclick="renderSidebarTopLeagues()">
             <span style="position: absolute; left: 10px; top: 50%; transform: translateY(-50%); font-size: 0.85rem; color: var(--text-muted);">🔍</span>
           </div>
 

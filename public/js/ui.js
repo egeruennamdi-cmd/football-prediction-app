@@ -1511,66 +1511,7 @@ function switchTopTipsToolMarket(marketVal, btn) {
 }
 
 // Render Sidebar Top Leagues Accordion List
-function renderSidebarTopLeagues() {
-  const container = document.getElementById("sidebar-topleagues-accordion-list");
-  if (!container) return;
-  container.innerHTML = "";
-
-  const query = (document.getElementById("sidebar-topleagues-search-input")?.value || "").toLowerCase().trim();
-
-  const leaguesData = (typeof TOP_LEAGUES_DATA !== 'undefined' ? TOP_LEAGUES_DATA : window.TOP_LEAGUES_DATA) || [
-    { name: "Premier League", emoji: "🏴󠁧󠁢󠁥󠁮󠁧󠁿", country: "England" },
-    { name: "La Liga", emoji: "🇪🇸", country: "Spain" },
-    { name: "Bundesliga", emoji: "🇩🇪", country: "Germany" },
-    { name: "Serie A", emoji: "🇮🇹", country: "Italy" },
-    { name: "Ligue 1", emoji: "🇫🇷", country: "France" },
-    { name: "Eredivisie", emoji: "🇳🇱", country: "Netherlands" },
-    { name: "Primeira Liga", emoji: "🇵🇹", country: "Portugal" },
-    { name: "Süper Lig", emoji: "🇹🇷", country: "Turkey" },
-    { name: "Champions League", emoji: "🇪🇺", country: "Europe" },
-    { name: "Europa League", emoji: "🇪🇺", country: "Europe" }
-  ];
-
-  leaguesData.forEach((league, index) => {
-    // Filter by search query if present
-    const matchesLeague = league.name.toLowerCase().includes(query) || league.country.toLowerCase().includes(query);
-
-    if (query && !matchesLeague) {
-      return; // Skip if no match
-    }
-
-    const accordion = document.createElement("div");
-    accordion.className = "country-accordion-item";
-
-    const isExpanded = query ? true : false; // Auto expand if searching
-
-    accordion.innerHTML = `
-      <button class="country-accordion-header" onclick="toggleSidebarTopLeaguesAccordion(${index}, this)">
-        <span style="display: flex; align-items: center; gap: 8px;">
-          <span>${league.emoji}</span>
-          <span>${league.name}</span>
-        </span>
-        <span class="caret" style="transition: transform 0.2s; font-size: 0.6rem; transform: ${isExpanded ? 'rotate(180deg)' : 'rotate(0)'};">▼</span>
-      </button>
-      <div class="country-accordion-content" style="max-height: ${isExpanded ? '500px' : '0'};">
-        <button class="sidebar-league-btn" onclick="selectSidebarLeague('${league.name.replace(/'/g, "\\'")}', this)">
-          ⚽ Match Predictions
-        </button>
-        <button class="sidebar-league-btn" onclick="scoutLeagueClubs('${league.name.replace(/'/g, "\\'")}', this)">
-          🏟️ Scouting Clubs
-        </button>
-        <button class="sidebar-league-btn" onclick="viewLeagueStatisticsLedger('${league.name.replace(/'/g, "\\'")}', this)">
-          📊 League Averages
-        </button>
-        <button class="sidebar-league-btn" onclick="showMockTableStandings('${league.name.replace(/'/g, "\\'")}', this)">
-          🏆 Table Standings
-        </button>
-      </div>
-    `;
-
-    container.appendChild(accordion);
-  });
-}
+// old renderSidebarTopLeagues replaced
 
 // Toggle Top Leagues accordion inside the left sidebar
 function toggleSidebarTopLeaguesAccordion(index, header) {
@@ -1725,9 +1666,7 @@ function showMockTableStandings(leagueName, btn) {
 }
 
 // Search filter for Top Leagues sidebar
-function filterSidebarTopLeagues() {
-  renderSidebarTopLeagues();
-}
+// old filterSidebarTopLeagues replaced
 
 // Punters Challenge Leaderboard Data & Controllers
 const LEADERBOARD_DATA = {
@@ -3325,3 +3264,109 @@ function executeHeroBetCodeConversion() {
 window.executeHeroBetCodeConversion = executeHeroBetCodeConversion;
 
 
+
+
+/* --- BULLETPROOF SIDEBAR TOP LEAGUES POPULATOR --- */
+function renderSidebarTopLeagues() {
+  const container = document.getElementById("sidebar-topleagues-accordion-list");
+  if (!container) return;
+
+  try {
+    const defaultLeagues = [
+      { name: "Premier League", emoji: "🏴󠁧󠁢󠁥󠁮󠁧󠁿", country: "England" },
+      { name: "La Liga", emoji: "🇪🇸", country: "Spain" },
+      { name: "Serie A", emoji: "🇮🇹", country: "Italy" },
+      { name: "Bundesliga", emoji: "🇩🇪", country: "Germany" },
+      { name: "Ligue 1", emoji: "🇫🇷", country: "France" },
+      { name: "Champions League", emoji: "🇪🇺", country: "Europe" },
+      { name: "Europa League", emoji: "🇪🇺", country: "Europe" },
+      { name: "Conference League", emoji: "🇪🇺", country: "Europe" },
+      { name: "Eredivisie", emoji: "🇳🇱", country: "Netherlands" },
+      { name: "Primeira Liga", emoji: "🇵🇹", country: "Portugal" },
+      { name: "Süper Lig", emoji: "🇹🇷", country: "Turkey" },
+      { name: "Championship", emoji: "🏴󠁧󠁢󠁥󠁮󠁧󠁿", country: "England" },
+      { name: "Brasileirão", emoji: "🇧🇷", country: "Brazil" },
+      { name: "Liga Profesional", emoji: "🇦🇷", country: "Argentina" },
+      { name: "MLS", emoji: "🇺🇸", country: "USA" },
+      { name: "Saudi Pro League", emoji: "🇸🇦", country: "Saudi Arabia" },
+      { name: "NPFL Nigeria", emoji: "🇳🇬", country: "Nigeria" }
+    ];
+
+    let leaguesData = defaultLeagues;
+    if (typeof TOP_LEAGUES_DATA !== 'undefined' && Array.isArray(TOP_LEAGUES_DATA) && TOP_LEAGUES_DATA.length > 0) {
+      leaguesData = TOP_LEAGUES_DATA;
+    } else if (typeof window.TOP_LEAGUES_DATA !== 'undefined' && Array.isArray(window.TOP_LEAGUES_DATA) && window.TOP_LEAGUES_DATA.length > 0) {
+      leaguesData = window.TOP_LEAGUES_DATA;
+    }
+
+    const query = (document.getElementById("sidebar-topleagues-search-input")?.value || "").toLowerCase().trim();
+
+    container.innerHTML = "";
+
+    leaguesData.forEach((league, index) => {
+      const leagueName = league.name || "League";
+      const leagueCountry = league.country || "Global";
+      const matchesLeague = leagueName.toLowerCase().includes(query) || leagueCountry.toLowerCase().includes(query);
+
+      if (query && !matchesLeague) return;
+
+      const accordion = document.createElement("div");
+      accordion.className = "country-accordion-item";
+      accordion.style.marginBottom = "4px";
+
+      const isExpanded = query ? true : false;
+      const safeName = leagueName.replace(/'/g, "\\'");
+
+      accordion.innerHTML = `
+        <button class="country-accordion-header" onclick="toggleSidebarTopLeaguesAccordion(${index}, this)" style="width: 100%; display: flex; align-items: center; justify-content: space-between; padding: 10px 12px; background: rgba(30, 41, 59, 0.7); border: 1px solid rgba(255,255,255,0.08); border-radius: 8px; color: #ffffff; font-weight: 700; font-size: 0.83rem; cursor: pointer; transition: background 0.15s ease;" onmouseover="this.style.background='rgba(59, 130, 246, 0.2)'" onmouseout="this.style.background='rgba(30, 41, 59, 0.7)'">
+          <span style="display: flex; align-items: center; gap: 8px;">
+            <span style="font-size: 1.1rem;">${league.emoji || '🏆'}</span>
+            <span>${leagueName}</span>
+          </span>
+          <span class="caret" style="transition: transform 0.2s ease; font-size: 0.65rem; color: #94a3b8; transform: ${isExpanded ? 'rotate(180deg)' : 'rotate(0)'};">▼</span>
+        </button>
+        <div class="country-accordion-content" style="max-height: ${isExpanded ? '500px' : '0'}; overflow: hidden; transition: max-height 0.25s ease-in-out; padding-left: 8px; display: flex; flex-direction: column; gap: 4px; margin-top: 4px;">
+          <button class="sidebar-league-btn" onclick="selectSidebarLeague('${safeName}', this)" style="padding: 7px 10px; font-size: 0.76rem; text-align: left; background: rgba(15,23,42,0.8); border: 1px solid rgba(255,255,255,0.05); color: #60a5fa; border-radius: 6px; cursor: pointer;">
+            ⚽ Match Predictions
+          </button>
+          <button class="sidebar-league-btn" onclick="scoutLeagueClubs('${safeName}', this)" style="padding: 7px 10px; font-size: 0.76rem; text-align: left; background: rgba(15,23,42,0.8); border: 1px solid rgba(255,255,255,0.05); color: #cbd5e1; border-radius: 6px; cursor: pointer;">
+            🏟️ Scouting Clubs
+          </button>
+          <button class="sidebar-league-btn" onclick="viewLeagueStatisticsLedger('${safeName}', this)" style="padding: 7px 10px; font-size: 0.76rem; text-align: left; background: rgba(15,23,42,0.8); border: 1px solid rgba(255,255,255,0.05); color: #cbd5e1; border-radius: 6px; cursor: pointer;">
+            📊 League Averages
+          </button>
+          <button class="sidebar-league-btn" onclick="showMockTableStandings('${safeName}', this)" style="padding: 7px 10px; font-size: 0.76rem; text-align: left; background: rgba(15,23,42,0.8); border: 1px solid rgba(255,255,255,0.05); color: #cbd5e1; border-radius: 6px; cursor: pointer;">
+            🏆 Table Standings
+          </button>
+        </div>
+      `;
+
+      container.appendChild(accordion);
+    });
+  } catch(e) {
+    console.error("Top leagues render error:", e);
+  }
+}
+
+// old filterSidebarTopLeagues replaced
+
+// Auto-run on load with retries
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', function() {
+    renderSidebarTopLeagues();
+    setTimeout(renderSidebarTopLeagues, 300);
+    setTimeout(renderSidebarTopLeagues, 1000);
+  });
+} else {
+  renderSidebarTopLeagues();
+  setTimeout(renderSidebarTopLeagues, 300);
+  setTimeout(renderSidebarTopLeagues, 1000);
+}
+
+window.addEventListener('load', function() {
+  renderSidebarTopLeagues();
+});
+
+// Global Exports
+window.renderSidebarTopLeagues = renderSidebarTopLeagues;
+window.filterSidebarTopLeagues = filterSidebarTopLeagues;
