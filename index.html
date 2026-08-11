@@ -3008,7 +3008,7 @@
             <span class="modal-subtitle">DeepPredict Deep Diagnostic Hub</span>
           </div>
         </div>
-        <button class="modal-close" onclick="triggerCloseScoutModal()">&times;</button>
+        <button class="modal-close" onclick="closeCurrentModal(this); triggerCloseScoutModal();">&times;</button>
       </div>
 
       <!-- Modal Sub-Tabs & Action Toolbar -->
@@ -3090,7 +3090,7 @@
     <div class="modal-content" onclick="event.stopPropagation()" style="max-width: 420px; background: var(--bg-dark-accent); border: 1px solid var(--border-color); border-radius: var(--radius-md); box-shadow: var(--shadow-lg);">
       <div class="modal-header" style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border-color); padding: 16px 20px;">
         <h3 class="modal-title" style="font-family: var(--font-display); font-size: 1.1rem; font-weight: 700; color: var(--text-primary);">Post Simulated Tip</h3>
-        <button class="modal-close" onclick="closeSubmitTipModal(event, true)" style="background: none; border: none; font-size: 1.5rem; color: var(--text-muted); cursor: pointer;">&times;</button>
+        <button class="modal-close" onclick="closeCurrentModal(this); closeSubmitTipModal(event, true);" style="background: none; border: none; font-size: 1.5rem; color: var(--text-muted); cursor: pointer;">&times;</button>
       </div>
       <div style="padding: 20px;">
         <div id="tip-modal-match-details" style="text-align: center; margin-bottom: 16px; font-weight: 700; color: var(--primary); font-size: 0.95rem;">
@@ -3130,7 +3130,7 @@
             <span class="modal-subtitle">DeepPredict Global Leaderboard Rankings</span>
           </div>
         </div>
-        <button class="modal-close" onclick="closeLeaderboardModal(event, true)">&times;</button>
+        <button class="modal-close" onclick="closeCurrentModal(this); closeLeaderboardModal(event, true);">&times;</button>
       </div>
 
       <div style="display: flex; gap: 8px; margin: 0 20px 12px; border-bottom: 1px solid var(--border-color); padding-bottom: 8px;">
@@ -3180,7 +3180,7 @@
             <span class="modal-subtitle">Acquire virtual coins to unlock premium statistical tools</span>
           </div>
         </div>
-        <button class="modal-close" onclick="closeStoreModal(event, true)">&times;</button>
+        <button class="modal-close" onclick="closeCurrentModal(this); closeStoreModal(event, true);">&times;</button>
       </div>
 
       <div style="display: flex; gap: 8px; margin: 0 20px 12px; border-bottom: 1px solid var(--border-color); padding-bottom: 8px;">
@@ -3254,7 +3254,7 @@
             <span style="font-size: 0.73rem; color: #93c5fd; font-weight: 600;">Manage profile, alerts, saved tickets & account session</span>
           </div>
         </div>
-        <button class="modal-close" onclick="closeProfileModal(event, true)" style="background: rgba(255, 255, 255, 0.12); border: 1px solid rgba(255, 255, 255, 0.2); border-radius: 50%; width: 32px; height: 32px; font-size: 1rem; color: #ffffff; cursor: pointer; display: flex; align-items: center; justify-content: center;">&times;</button>
+        <button class="modal-close" onclick="closeCurrentModal(this); closeProfileModal(event, true);" style="background: rgba(255, 255, 255, 0.12); border: 1px solid rgba(255, 255, 255, 0.2); border-radius: 50%; width: 32px; height: 32px; font-size: 1rem; color: #ffffff; cursor: pointer; display: flex; align-items: center; justify-content: center;">&times;</button>
       </div>
 
       <!-- Tab Buttons -->
@@ -3346,7 +3346,7 @@
           </div>
         </div>
 
-        <button onclick="closeAuthModal(event, true)" style="background: rgba(255, 255, 255, 0.12); border: 1px solid rgba(255, 255, 255, 0.2); border-radius: 50%; width: 32px; height: 32px; font-size: 1rem; color: #ffffff; cursor: pointer; display: flex; align-items: center; justify-content: center; z-index: 2;">&times;</button>
+        <button onclick="closeCurrentModal(this); closeAuthModal(event, true);" style="background: rgba(255, 255, 255, 0.12); border: 1px solid rgba(255, 255, 255, 0.2); border-radius: 50%; width: 32px; height: 32px; font-size: 1rem; color: #ffffff; cursor: pointer; display: flex; align-items: center; justify-content: center; z-index: 2;">&times;</button>
       </div>
 
       <!-- Tab Buttons -->
@@ -3425,7 +3425,7 @@
             <span class="modal-subtitle">Resolving issues and explanations of the AI form forecasting</span>
           </div>
         </div>
-        <button class="modal-close" onclick="closeSupportModal(event, true)">&times;</button>
+        <button class="modal-close" onclick="closeCurrentModal(this); closeSupportModal(event, true);">&times;</button>
       </div>
 
       <div style="display: flex; gap: 8px; margin: 0 20px 12px; border-bottom: 1px solid var(--border-color); padding-bottom: 8px; flex-wrap: wrap;">
@@ -3550,50 +3550,6 @@
     </div>
   </div>
 
-  <!-- --- LOGIN & REGISTER AUTHENTICATION MODAL (MATCHING IMAGE 1) --- -->
-  <div class="modal-overlay" id="auth-modal" onclick="closeAuthModal(event)">
-    <div class="modal-content" onclick="event.stopPropagation()" style="max-width: 420px; padding: 32px 28px; background: #ffffff; color: #111111; border-radius: 18px; box-shadow: 0 20px 60px rgba(0,0,0,0.6); position: relative; font-family: var(--font-body);">
-      
-      <!-- Close Button -->
-      <button onclick="closeAuthModal(event, true)" style="position: absolute; top: 16px; right: 16px; background: transparent; border: none; font-size: 1.6rem; color: #777777; cursor: pointer; line-height: 1; padding: 4px 8px;">&times;</button>
-      
-      <!-- Header -->
-      <div style="margin-bottom: 24px; text-align: left;">
-        <h2 id="auth-modal-title" style="font-size: 2rem; font-weight: 800; color: #111111; font-family: var(--font-display); margin: 0 0 6px 0; tracking: -0.5px;">Login</h2>
-        <p id="auth-modal-subtitle" style="font-size: 0.88rem; color: #777777; margin: 0;">Login to access your DeepPredictBet account</p>
-      </div>
-
-      <!-- Auth Form -->
-      <form onsubmit="handleAuthSubmit(event)" style="display: flex; flex-direction: column; gap: 16px;">
-        
-        <!-- Full Name Field (Only for Registration) -->
-        <div id="auth-fullname-group" style="display: none; flex-direction: column; gap: 4px;">
-          <label style="font-size: 0.8rem; font-weight: 700; color: #333333; margin-left: 12px;">Full Name</label>
-          <input type="text" id="auth-fullname-input" placeholder="Full Name" style="background: #ffffff; border: 1px solid #e2e8f0; border-radius: 28px; padding: 14px 20px; color: #111111; font-size: 0.92rem; outline: none; transition: all 0.2s ease;">
-        </div>
-
-        <!-- Email Address Field -->
-        <div style="display: flex; flex-direction: column; gap: 4px; position: relative;">
-          <label style="font-size: 0.8rem; font-weight: 700; color: #333333; margin-left: 12px;">Email address</label>
-          <input type="email" id="auth-email-input" placeholder="Email address" value="demo@deeppredictbet.com" required style="background: #ffffff; border: 1px solid #e2e8f0; border-radius: 28px; padding: 14px 20px; color: #111111; font-size: 0.92rem; outline: none; transition: all 0.2s ease;">
-        </div>
-
-        <!-- Password Field -->
-        <div style="display: flex; flex-direction: column; gap: 4px; position: relative;">
-          <label style="font-size: 0.8rem; font-weight: 700; color: #333333; margin-left: 12px;">Password</label>
-          <input type="password" id="auth-password-input" placeholder="Password" value="password123" required style="background: #ffffff; border: 1px solid #e2e8f0; border-radius: 28px; padding: 14px 20px; color: #111111; font-size: 0.92rem; outline: none; transition: all 0.2s ease;">
-        </div>
-
-        <!-- Remember Me & Forgot Password Row -->
-        <div id="auth-options-row" style="display: flex; align-items: center; justify-content: space-between; font-size: 0.85rem; margin: 4px 4px 8px;">
-          <label style="display: flex; align-items: center; gap: 8px; cursor: pointer; color: #222222; font-weight: 600;">
-            <input type="checkbox" id="auth-remember-checkbox" checked style="accent-color: #f97316; width: 16px; height: 16px;">
-            Remember me
-          </label>
-          <a href="#" onclick="showAppNotification('🔒 Password reset instructions sent to your email!'); return false;" style="color: #222222; font-weight: 700; text-decoration: underline;">Forgot password?</a>
-        </div>
-
-        <!-- Submit Button -->
         <button type="submit" id="auth-submit-btn" style="background: linear-gradient(135deg, #f97316 0%, #ea580c 100%); border: none; border-radius: 12px; height: 48px; color: #ffffff; font-size: 1.05rem; font-weight: 800; cursor: pointer; box-shadow: 0 4px 16px rgba(249, 115, 22, 0.4); transition: all 0.2s ease;">
           Login
         </button>

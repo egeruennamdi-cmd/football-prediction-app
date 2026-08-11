@@ -3943,3 +3943,42 @@ window.populateCalSelectors = populateCalSelectors;
 window.populateLeagueDropdown = populateLeagueDropdown;
 window.populateTeamDropdown = populateTeamDropdown;
 window.runCalFilter = runCalFilter;
+
+
+/* --- UNIVERSAL FOOLPROOF MODAL CLOSER ENGINE --- */
+function closeCurrentModal(target) {
+  let modal = null;
+  
+  if (target) {
+    if (target.target && target.target.closest) {
+      modal = target.target.closest('.modal-overlay');
+    } else if (target.closest) {
+      modal = target.closest('.modal-overlay');
+    } else if (typeof target === 'string') {
+      modal = document.getElementById(target);
+    }
+  }
+
+  if (modal) {
+    modal.classList.remove("active");
+    modal.style.display = "none";
+    modal.style.opacity = "0";
+    modal.style.pointerEvents = "none";
+    modal.style.visibility = "hidden";
+  }
+
+  // Close ALL open modal-overlays on screen to guarantee instant closing
+  const overlays = document.querySelectorAll(".modal-overlay");
+  overlays.forEach(m => {
+    m.classList.remove("active");
+    m.style.display = "none";
+    m.style.opacity = "0";
+    m.style.pointerEvents = "none";
+    m.style.visibility = "hidden";
+  });
+
+  document.body.style.overflow = "";
+}
+
+// Global Exports
+window.closeCurrentModal = closeCurrentModal;
