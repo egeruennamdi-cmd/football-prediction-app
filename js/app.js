@@ -3982,3 +3982,202 @@ function closeCurrentModal(target) {
 
 // Global Exports
 window.closeCurrentModal = closeCurrentModal;
+
+
+/* --- WORLD-CLASS RICH SEARCH AUTOCOMPLETE ENGINE WITH LOGOS & FLAGS --- */
+function getTeamLogo(teamName) {
+  if (!teamName) return "⚽";
+  let logo = "⚽";
+  
+  if (typeof MATCH_DATA !== 'undefined' && Array.isArray(MATCH_DATA)) {
+    const match = MATCH_DATA.find(m => (m.homeTeam && m.homeTeam.name.toLowerCase() === teamName.toLowerCase()) || (m.awayTeam && m.awayTeam.name.toLowerCase() === teamName.toLowerCase()));
+    if (match) {
+      if (match.homeTeam && match.homeTeam.name.toLowerCase() === teamName.toLowerCase() && match.homeTeam.logo) {
+        logo = match.homeTeam.logo;
+      } else if (match.awayTeam && match.awayTeam.name.toLowerCase() === teamName.toLowerCase() && match.awayTeam.logo) {
+        logo = match.awayTeam.logo;
+      }
+    }
+  }
+
+  if (logo === "⚽" && typeof TEAM_STATS_DATA !== 'undefined' && Array.isArray(TEAM_STATS_DATA)) {
+    const tStat = TEAM_STATS_DATA.find(t => t.name.toLowerCase() === teamName.toLowerCase());
+    if (tStat && tStat.logo) logo = tStat.logo;
+  }
+
+  // Famous team logo fallbacks
+  if (logo === "⚽") {
+    const lower = teamName.toLowerCase();
+    if (lower.includes("arsenal")) logo = "🔴";
+    else if (lower.includes("chelsea")) logo = "🔵";
+    else if (lower.includes("liverpool")) logo = "🔴🛡️";
+    else if (lower.includes("manchester city") || lower.includes("man city")) logo = "🩵";
+    else if (lower.includes("manchester united") || lower.includes("man united")) logo = "👿";
+    else if (lower.includes("tottenham")) logo = "⚪🐓";
+    else if (lower.includes("real madrid")) logo = "⚪";
+    else if (lower.includes("barcelona")) logo = "🔵🔴";
+    else if (lower.includes("atletico")) logo = "🔴⚪🐻";
+    else if (lower.includes("bayern")) logo = "🔴⚪";
+    else if (lower.includes("dortmund")) logo = "🟡⚫";
+    else if (lower.includes("leverkusen")) logo = "🔴🦁";
+    else if (lower.includes("inter")) logo = "🔵⚫🐍";
+    else if (lower.includes("ac milan")) logo = "🔴⚫👿";
+    else if (lower.includes("juventus")) logo = "⚫⚪🦓";
+    else if (lower.includes("paris") || lower.includes("psg")) logo = "🗼";
+    else if (lower.includes("napoli")) logo = "🔵👑";
+  }
+
+  return logo;
+}
+
+function renderRichSearchDropdown(queryStr) {
+  const dropdown = document.getElementById("search-autocomplete-dropdown");
+  if (!dropdown) return;
+
+  const query = (queryStr || "").trim().toLowerCase();
+  const items = [];
+  const addedNames = new Set();
+
+  // 1. Extract Teams from MATCH_DATA & TEAM_STATS_DATA
+  if (typeof MATCH_DATA !== 'undefined' && Array.isArray(MATCH_DATA)) {
+    MATCH_DATA.forEach(m => {
+      if (m.homeTeam && m.homeTeam.name && !addedNames.has(m.homeTeam.name.toLowerCase())) {
+        if (!query || m.homeTeam.name.toLowerCase().includes(query)) {
+          addedNames.add(m.homeTeam.name.toLowerCase());
+          items.push({
+            name: m.homeTeam.name,
+            logo: getTeamLogo(m.homeTeam.name),
+            subtitle: `${m.flag || '🌐'} ${m.league || 'Football'}`,
+            type: 'TEAM',
+            badgeBg: 'rgba(59, 130, 246, 0.25)',
+            badgeColor: '#60a5fa'
+          });
+        }
+      }
+      if (m.awayTeam && m.awayTeam.name && !addedNames.has(m.awayTeam.name.toLowerCase())) {
+        if (!query || m.awayTeam.name.toLowerCase().includes(query)) {
+          addedNames.add(m.awayTeam.name.toLowerCase());
+          items.push({
+            name: m.awayTeam.name,
+            logo: getTeamLogo(m.awayTeam.name),
+            subtitle: `${m.flag || '🌐'} ${m.league || 'Football'}`,
+            type: 'TEAM',
+            badgeBg: 'rgba(59, 130, 246, 0.25)',
+            badgeColor: '#60a5fa'
+          });
+        }
+      }
+    });
+  }
+
+  // 2. Extract Leagues from TOP_LEAGUES_DATA & MATCH_DATA
+  if (typeof TOP_LEAGUES_DATA !== 'undefined' && Array.isArray(TOP_LEAGUES_DATA)) {
+    TOP_LEAGUES_DATA.forEach(l => {
+      if (!addedNames.has(l.name.toLowerCase())) {
+        if (!query || l.name.toLowerCase().includes(query) || (l.country && l.country.toLowerCase().includes(query))) {
+          addedNames.add(l.name.toLowerCase());
+          items.push({
+            name: l.name,
+            logo: l.emoji || '🏆',
+            subtitle: `${l.country || 'International'} League`,
+            type: 'LEAGUE',
+            badgeBg: 'rgba(16, 185, 129, 0.25)',
+            badgeColor: '#34d399'
+          });
+        }
+      }
+    });
+  }
+
+  // 3. Extract Countries from COUNTRY_LEAGUES_DATA & MATCH_DATA
+  if (typeof COUNTRY_LEAGUES_DATA !== 'undefined' && Array.isArray(COUNTRY_LEAGUES_DATA)) {
+    COUNTRY_LEAGUES_DATA.forEach(c => {
+      if (!addedNames.has(c.country.toLowerCase())) {
+        if (!query || c.country.toLowerCase().includes(query)) {
+          addedNames.add(c.country.toLowerCase());
+          items.push({
+            name: c.country,
+            logo: c.emoji || '🏳️',
+            subtitle: `National Competitions`,
+            type: 'COUNTRY',
+            badgeBg: 'rgba(245, 158, 11, 0.25)',
+            badgeColor: '#fbbf24'
+          });
+        }
+      }
+    });
+  }
+
+  if (items.length === 0) {
+    dropdown.innerHTML = `<div style="padding: 14px; text-align: center; color: #94a3b8; font-size: 0.8rem;">No results found for "${queryStr}"</div>`;
+    dropdown.style.display = "block";
+    return;
+  }
+
+  // Render top 15 results
+  let html = "";
+  items.slice(0, 15).forEach(item => {
+    const isImage = item.logo.startsWith('http') || item.logo.startsWith('/');
+    const logoHtml = isImage 
+      ? `<img src="${item.logo}" alt="${item.name}" style="width: 22px; height: 22px; object-fit: contain;">`
+      : `<span style="font-size: 1.15rem; line-height: 1;">${item.logo}</span>`;
+
+    html += `
+      <div onclick="selectSearchItem('${item.name.replace(/'/g, "\\'")}')" style="display: flex; align-items: center; justify-content: space-between; padding: 10px 14px; cursor: pointer; border-bottom: 1px solid rgba(255,255,255,0.05); transition: background 0.15s ease;" onmouseover="this.style.background='rgba(59,130,246,0.18)'" onmouseout="this.style.background='transparent'">
+        <div style="display: flex; align-items: center; gap: 12px;">
+          ${logoHtml}
+          <div style="display: flex; flex-direction: column;">
+            <span style="font-weight: 700; color: #ffffff; font-size: 0.84rem; line-height: 1.2;">${item.name}</span>
+            <span style="font-size: 0.7rem; color: #94a3b8; line-height: 1.2; margin-top: 2px;">${item.subtitle}</span>
+          </div>
+        </div>
+        <span style="font-size: 0.62rem; background: ${item.badgeBg}; color: ${item.badgeColor}; padding: 2px 7px; border-radius: 4px; font-weight: 800; letter-spacing: 0.5px;">${item.type}</span>
+      </div>
+    `;
+  });
+
+  dropdown.innerHTML = html;
+  dropdown.style.display = "block";
+}
+
+function onSearchInputChange(val) {
+  renderRichSearchDropdown(val);
+  handleSearchSelect(val);
+}
+
+function onSearchInputFocus(val) {
+  renderRichSearchDropdown(val);
+}
+
+function selectSearchItem(val) {
+  const input = document.getElementById("timeline-search-input");
+  if (input) input.value = val;
+
+  const dropdown = document.getElementById("search-autocomplete-dropdown");
+  if (dropdown) dropdown.style.display = "none";
+
+  handleSearchSelect(val);
+
+  const target = document.getElementById("predictions");
+  if (target) {
+    target.scrollIntoView({ behavior: 'smooth' });
+  }
+}
+
+// Close search dropdown when clicking outside
+document.addEventListener("click", function(e) {
+  const searchInput = document.getElementById("timeline-search-input");
+  const dropdown = document.getElementById("search-autocomplete-dropdown");
+  if (dropdown && searchInput) {
+    if (!searchInput.contains(e.target) && !dropdown.contains(e.target)) {
+      dropdown.style.display = "none";
+    }
+  }
+});
+
+// Global Exports
+window.getTeamLogo = getTeamLogo;
+window.renderRichSearchDropdown = renderRichSearchDropdown;
+window.onSearchInputChange = onSearchInputChange;
+window.onSearchInputFocus = onSearchInputFocus;
+window.selectSearchItem = selectSearchItem;
