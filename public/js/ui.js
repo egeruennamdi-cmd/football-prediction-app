@@ -2739,7 +2739,9 @@ document.addEventListener("DOMContentLoaded", function() {
 
 
 
-/* --- COMPLETE MATCH FINDER & CALENDAR HUB DYNAMIC POPULATOR --- */
+
+
+/* --- FOOLPROOF MULTI-LAYER MATCH FINDER & CALENDAR HUB POPULATOR --- */
 function populateCalSelectors() {
   const dateSelect = document.getElementById("cal-date-select");
   const countrySelect = document.getElementById("cal-country-select");
@@ -2755,9 +2757,9 @@ function populateCalSelectors() {
   // 1. Date Selector
   if (dateSelect) {
     dateSelect.innerHTML = `
-      <option value="today">${getOrdinalDate(0)} (Today)</option>
-      <option value="tomorrow">${getOrdinalDate(1)} (Tomorrow)</option>
-      <option value="yesterday">${getOrdinalDate(-1)} (Yesterday)</option>
+      <option value="today">${typeof getOrdinalDate === 'function' ? getOrdinalDate(0) : 'Today'} (Today)</option>
+      <option value="tomorrow">${typeof getOrdinalDate === 'function' ? getOrdinalDate(1) : 'Tomorrow'} (Tomorrow)</option>
+      <option value="yesterday">${typeof getOrdinalDate === 'function' ? getOrdinalDate(-1) : 'Yesterday'} (Yesterday)</option>
       <option value="all">📅 All Dates</option>
     `;
     dateSelect.value = prevDate || 'today';
@@ -2776,10 +2778,21 @@ function populateCalSelectors() {
 
   if (typeof MATCH_DATA !== 'undefined' && Array.isArray(MATCH_DATA)) {
     MATCH_DATA.forEach(m => {
-      if (m.country && !countriesMap.has(m.country)) {
+      if (m && m.country && !countriesMap.has(m.country)) {
         countriesMap.set(m.country, m.flag || '⚽');
       }
     });
+  }
+
+  // Always include major football nations fallback if map is empty
+  if (countriesMap.size === 0) {
+    const fallbackCountries = [
+      ["England", "🏴󠁧󠁢󠁥󠁮󠁧󠁿"], ["Spain", "🇪🇸"], ["Italy", "🇮🇹"], ["Germany", "🇩🇪"],
+      ["France", "🇫🇷"], ["Argentina", "🇦🇷"], ["Brazil", "🇧🇷"], ["Portugal", "🇵🇹"],
+      ["Netherlands", "🇳🇱"], ["Belgium", "🇧🇪"], ["Turkey", "🇹🇷"], ["Nigeria", "🇳🇬"],
+      ["Saudi Arabia", "🇸🇦"], ["USA", "🇺🇸"], ["Europe", "🇪🇺"]
+    ];
+    fallbackCountries.forEach(([cn, em]) => countriesMap.set(cn, em));
   }
 
   let countryHtml = `<option value="all">🌐 All Countries (${countriesMap.size})</option>`;
@@ -2787,7 +2800,8 @@ function populateCalSelectors() {
     countryHtml += `<option value="${cName}">${emoji} ${cName}</option>`;
   });
   countrySelect.innerHTML = countryHtml;
-  if (prevCountry && Array.from(countriesMap.keys()).includes(prevCountry)) {
+
+  if (prevCountry && (prevCountry === 'all' || Array.from(countriesMap.keys()).includes(prevCountry))) {
     countrySelect.value = prevCountry;
   } else {
     countrySelect.value = 'all';
@@ -2824,7 +2838,7 @@ function populateLeagueDropdown(selectedCountry, targetLeagueVal) {
 
   if (typeof MATCH_DATA !== 'undefined' && Array.isArray(MATCH_DATA)) {
     MATCH_DATA.forEach(m => {
-      if (m.league) {
+      if (m && m.league) {
         if (!selectedCountry || selectedCountry === 'all' || (m.country && m.country.toLowerCase() === selectedCountry.toLowerCase())) {
           if (!leaguesMap.has(m.league)) leaguesMap.set(m.league, m.leagueEmoji || '⚽');
         }
@@ -2841,7 +2855,7 @@ function populateLeagueDropdown(selectedCountry, targetLeagueVal) {
   if (filtLeagueSelect) filtLeagueSelect.innerHTML = leagueHtml;
 
   const currentVal = targetLeagueVal || leagueSelect.value || 'all';
-  if (Array.from(leaguesMap.keys()).includes(currentVal)) {
+  if (currentVal === 'all' || Array.from(leaguesMap.keys()).includes(currentVal)) {
     leagueSelect.value = currentVal;
   } else {
     leagueSelect.value = 'all';
@@ -2856,6 +2870,7 @@ function populateTeamDropdown(selectedCountry, selectedLeague, targetTeamVal) {
 
   if (typeof MATCH_DATA !== 'undefined' && Array.isArray(MATCH_DATA)) {
     MATCH_DATA.forEach(m => {
+      if (!m) return;
       const matchCountry = m.country ? m.country.toLowerCase() : '';
       const matchLeague = m.league ? m.league.toLowerCase() : '';
 
@@ -2883,7 +2898,7 @@ function populateTeamDropdown(selectedCountry, selectedLeague, targetTeamVal) {
 
   teamSelect.innerHTML = teamHtml;
   const currentVal = targetTeamVal || teamSelect.value || 'all';
-  if (Array.from(teams).includes(currentVal)) {
+  if (currentVal === 'all' || Array.from(teams).includes(currentVal)) {
     teamSelect.value = currentVal;
   } else {
     teamSelect.value = 'all';
@@ -2914,13 +2929,28 @@ function runCalFilter(changedId) {
     renderDeepPredictBetDateBar();
   }
 
-  updateFixturesDisplay();
+  if (typeof updateFixturesDisplay === 'function') {
+    updateFixturesDisplay();
+  }
 
   const target = document.getElementById("predictions");
   if (target && changedId) {
     target.scrollIntoView({ behavior: 'smooth' });
   }
 }
+
+// Multi-Layer Auto-Run Execution
+function initCalSelectorsAutoRun() {
+  populateCalSelectors();
+  if (document.readyState === 'loading') {
+    window.addEventListener('DOMContentLoaded', populateCalSelectors);
+  }
+  window.addEventListener('load', populateCalSelectors);
+  window.addEventListener('pageshow', populateCalSelectors);
+}
+
+// Immediate Execution
+initCalSelectorsAutoRun();
 
 // Global Exports
 window.populateCalSelectors = populateCalSelectors;

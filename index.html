@@ -542,24 +542,95 @@
         <!-- Country Selector -->
         <div style="display: flex; flex-direction: column; gap: 4px;">
           <label style="font-size: 0.7rem; color: var(--text-secondary); font-weight: 700; text-transform: uppercase;">2. Country</label>
-          <select id="cal-country-select" onchange="runCalFilter(this.id)" style="background: var(--bg-dark); border: 1px solid var(--border-color); border-radius: var(--radius-sm); padding: 8px; color: var(--text-primary); font-size: 0.75rem; cursor: pointer; outline: none; width: 100%;">
-            <option value="all">All Countries</option>
+          <select id="cal-country-select" onchange="runCalFilter(this.id)" onfocus="if(this.options.length<=2&&typeof populateCalSelectors==='function')populateCalSelectors()" onclick="if(this.options.length<=2&&typeof populateCalSelectors==='function')populateCalSelectors()" style="background: var(--bg-dark); border: 1px solid var(--border-color); border-radius: var(--radius-sm); padding: 8px; color: var(--text-primary); font-size: 0.75rem; cursor: pointer; outline: none; width: 100%;">
+            <option value="all">🌐 All Countries</option>
+            <option value="England">🏴󠁧󠁢󠁥󠁮󠁧󠁿 England</option>
+            <option value="Spain">🇪🇸 Spain</option>
+            <option value="Italy">🇮🇹 Italy</option>
+            <option value="Germany">🇩🇪 Germany</option>
+            <option value="France">🇫🇷 France</option>
+            <option value="Argentina">🇦🇷 Argentina</option>
+            <option value="Brazil">🇧🇷 Brazil</option>
+            <option value="Portugal">🇵🇹 Portugal</option>
+            <option value="Netherlands">🇳🇱 Netherlands</option>
+            <option value="Belgium">🇧🇪 Belgium</option>
+            <option value="Turkey">🇹🇷 Turkey</option>
+            <option value="Nigeria">🇳🇬 Nigeria</option>
+            <option value="Saudi Arabia">🇸🇦 Saudi Arabia</option>
+            <option value="USA">🇺🇸 USA</option>
+            <option value="Europe">🇪🇺 Europe (UEFA)</option>
+            <option value="World">🌍 World</option>
+            <option value="Africa">🌍 Africa</option>
+            <option value="Albania">🇦🇱 Albania</option>
+            <option value="Algeria">🇩🇿 Algeria</option>
+            <option value="Australia">🇦🇺 Australia</option>
+            <option value="Austria">🇦🇹 Austria</option>
+            <option value="Chile">🇨🇱 Chile</option>
+            <option value="China">🇨🇳 China</option>
+            <option value="Colombia">🇨🇴 Colombia</option>
+            <option value="Croatia">🇭🇷 Croatia</option>
+            <option value="Czech Republic">🇨🇿 Czech Republic</option>
+            <option value="Denmark">🇩🇰 Denmark</option>
+            <option value="Egypt">🇪🇬 Egypt</option>
+            <option value="Greece">🇬🇷 Greece</option>
+            <option value="Japan">🇯🇵 Japan</option>
+            <option value="Mexico">🇲🇽 Mexico</option>
+            <option value="Norway">🇳🇴 Norway</option>
+            <option value="Poland">🇵🇱 Poland</option>
+            <option value="Scotland">🏴󠁧󠁢󠁳󠁣󠁴󠁿 Scotland</option>
+            <option value="South Korea">🇰🇷 South Korea</option>
+            <option value="Sweden">🇸🇪 Sweden</option>
+            <option value="Switzerland">🇨🇭 Switzerland</option>
+            <option value="Uruguay">🇺🇾 Uruguay</option>
           </select>
         </div>
 
         <!-- League Selector -->
         <div style="display: flex; flex-direction: column; gap: 4px;">
           <label style="font-size: 0.7rem; color: var(--text-secondary); font-weight: 700; text-transform: uppercase;">3. League</label>
-          <select id="cal-league-select" onchange="runCalFilter(this.id)" style="background: var(--bg-dark); border: 1px solid var(--border-color); border-radius: var(--radius-sm); padding: 8px; color: var(--text-primary); font-size: 0.75rem; cursor: pointer; outline: none; width: 100%;">
-            <option value="all">All Leagues</option>
+          <select id="cal-league-select" onchange="runCalFilter(this.id)" onfocus="if(this.options.length<=2&&typeof populateCalSelectors==='function')populateCalSelectors()" onclick="if(this.options.length<=2&&typeof populateCalSelectors==='function')populateCalSelectors()" style="background: var(--bg-dark); border: 1px solid var(--border-color); border-radius: var(--radius-sm); padding: 8px; color: var(--text-primary); font-size: 0.75rem; cursor: pointer; outline: none; width: 100%;">
+            <option value="all">🏆 All Leagues</option>
+            <option value="Premier League">🏴󠁧󠁢󠁥󠁮󠁧󠁿 Premier League</option>
+            <option value="La Liga">🇪🇸 La Liga</option>
+            <option value="Serie A">🇮🇹 Serie A</option>
+            <option value="Bundesliga">🇩🇪 Bundesliga</option>
+            <option value="Ligue 1">🇫🇷 Ligue 1</option>
+            <option value="UEFA Champions League">🇪🇺 UEFA Champions League</option>
+            <option value="UEFA Europa League">🇪🇺 UEFA Europa League</option>
+            <option value="Championship">🏴󠁧󠁢󠁥󠁮󠁧󠁿 Championship</option>
+            <option value="Primeira Liga">🇵🇹 Primeira Liga</option>
+            <option value="Eredivisie">🇳🇱 Eredivisie</option>
+            <option value="Pro League">🇧🇪 Pro League</option>
+            <option value="Süper Lig">🇹🇷 Süper Lig</option>
+            <option value="MLS">🇺🇸 MLS</option>
+            <option value="Saudi Pro League">🇸🇦 Saudi Pro League</option>
+            <option value="Série A">🇧🇷 Série A (Brazil)</option>
+            <option value="Primera División">🇦🇷 Primera División (Argentina)</option>
           </select>
         </div>
 
         <!-- Team Selector -->
         <div style="display: flex; flex-direction: column; gap: 4px;">
           <label style="font-size: 0.7rem; color: var(--text-secondary); font-weight: 700; text-transform: uppercase;">4. Team</label>
-          <select id="cal-team-select" onchange="runCalFilter(this.id)" style="background: var(--bg-dark); border: 1px solid var(--border-color); border-radius: var(--radius-sm); padding: 8px; color: var(--text-primary); font-size: 0.75rem; cursor: pointer; outline: none; width: 100%;">
-            <option value="all">All Teams</option>
+          <select id="cal-team-select" onchange="runCalFilter(this.id)" onfocus="if(this.options.length<=2&&typeof populateCalSelectors==='function')populateCalSelectors()" onclick="if(this.options.length<=2&&typeof populateCalSelectors==='function')populateCalSelectors()" style="background: var(--bg-dark); border: 1px solid var(--border-color); border-radius: var(--radius-sm); padding: 8px; color: var(--text-primary); font-size: 0.75rem; cursor: pointer; outline: none; width: 100%;">
+            <option value="all">⚽ All Teams</option>
+            <option value="Arsenal">🔴 Arsenal</option>
+            <option value="Aston Villa">🦁 Aston Villa</option>
+            <option value="Barcelona">🔵 Barcelona</option>
+            <option value="Bayern Munich">🔴 Bayern Munich</option>
+            <option value="Chelsea">🔵 Chelsea</option>
+            <option value="Inter Milan">🔵 Inter Milan</option>
+            <option value="Juventus">⚪ Juventus</option>
+            <option value="Liverpool">🔴 Liverpool</option>
+            <option value="Manchester City">🩵 Manchester City</option>
+            <option value="Manchester United">🔴 Manchester United</option>
+            <option value="AC Milan">🔴 AC Milan</option>
+            <option value="Napoli">🩵 Napoli</option>
+            <option value="PSG">🔵 PSG</option>
+            <option value="Real Madrid">⚪ Real Madrid</option>
+            <option value="Tottenham">⚪ Tottenham</option>
+            <option value="Borussia Dortmund">🟡 Bortmund (BVB)</option>
+            <option value="Atletico Madrid">🔴 Atletico Madrid</option>
           </select>
         </div>
 
