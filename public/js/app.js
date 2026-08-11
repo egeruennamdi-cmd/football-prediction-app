@@ -3986,7 +3986,11 @@ window.closeCurrentModal = closeCurrentModal;
 
 
 
-/* --- WORLD-CLASS RICH SEARCH AUTOCOMPLETE ENGINE WITH LOGOS & FLAGS --- */
+
+
+/* --- FOOLPROOF MOBILE & SMARTPHONE RICH SEARCH ENGINE --- */
+let lastSearchFocusTime = 0;
+
 function getTeamLogo(teamName) {
   if (!teamName) return "⚽";
   let logo = "⚽";
@@ -4077,8 +4081,8 @@ function renderRichSearchDropdown(queryStr) {
       });
     }
 
-    // Fallback Teams if dataset empty
-    if (items.length === 0 && !query) {
+    // Fallback Teams if dataset empty or general tap
+    if (items.length < 5) {
       const popularTeams = [
         ["Arsenal", "🔴", "🏴󠁧󠁢󠁥󠁮󠁧󠁿 Premier League"],
         ["Real Madrid", "⚪", "🇪🇸 La Liga"],
@@ -4092,14 +4096,19 @@ function renderRichSearchDropdown(queryStr) {
         ["Juventus", "⚫⚪🦓", "🇮🇹 Serie A"]
       ];
       popularTeams.forEach(([tName, tLogo, tSub]) => {
-        items.push({
-          name: tName,
-          logo: tLogo,
-          subtitle: tSub,
-          type: 'TEAM',
-          badgeBg: 'rgba(59, 130, 246, 0.25)',
-          badgeColor: '#60a5fa'
-        });
+        if (!addedNames.has(tName.toLowerCase())) {
+          if (!query || tName.toLowerCase().includes(query)) {
+            addedNames.add(tName.toLowerCase());
+            items.push({
+              name: tName,
+              logo: tLogo,
+              subtitle: tSub,
+              type: 'TEAM',
+              badgeBg: 'rgba(59, 130, 246, 0.25)',
+              badgeColor: '#60a5fa'
+            });
+          }
+        }
       });
     }
 
@@ -4147,27 +4156,27 @@ function renderRichSearchDropdown(queryStr) {
       return;
     }
 
-    // Render top 20 results
+    // Render top 25 results
     let html = "";
-    items.slice(0, 20).forEach(item => {
+    items.slice(0, 25).forEach(item => {
       const logoStr = (item.logo || "⚽").toString();
       const isImage = logoStr.startsWith('http') || logoStr.startsWith('/') || logoStr.startsWith('data:');
       const logoHtml = isImage 
-        ? `<img src="${logoStr}" alt="${item.name}" style="width: 22px; height: 22px; object-fit: contain;">`
-        : `<span style="font-size: 1.15rem; line-height: 1;">${logoStr}</span>`;
+        ? `<img src="${logoStr}" alt="${item.name}" style="width: 24px; height: 24px; object-fit: contain;">`
+        : `<span style="font-size: 1.2rem; line-height: 1;">${logoStr}</span>`;
 
       const safeName = (item.name || "").replace(/'/g, "\\'");
 
       html += `
-        <div onclick="selectSearchItem('${safeName}')" style="display: flex; align-items: center; justify-content: space-between; padding: 10px 14px; cursor: pointer; border-bottom: 1px solid rgba(255,255,255,0.05); transition: background 0.15s ease;" onmouseover="this.style.background='rgba(59,130,246,0.18)'" onmouseout="this.style.background='transparent'">
+        <div onclick="selectSearchItem('${safeName}')" ontouchstart="selectSearchItem('${safeName}')" style="display: flex; align-items: center; justify-content: space-between; padding: 12px 16px; cursor: pointer; border-bottom: 1px solid rgba(255,255,255,0.06); transition: background 0.15s ease; touch-action: manipulation;" onmouseover="this.style.background='rgba(59,130,246,0.18)'" onmouseout="this.style.background='transparent'">
           <div style="display: flex; align-items: center; gap: 12px;">
             ${logoHtml}
             <div style="display: flex; flex-direction: column;">
-              <span style="font-weight: 700; color: #ffffff; font-size: 0.84rem; line-height: 1.2;">${item.name}</span>
-              <span style="font-size: 0.7rem; color: #94a3b8; line-height: 1.2; margin-top: 2px;">${item.subtitle}</span>
+              <span style="font-weight: 700; color: #ffffff; font-size: 0.88rem; line-height: 1.2;">${item.name}</span>
+              <span style="font-size: 0.72rem; color: #94a3b8; line-height: 1.2; margin-top: 3px;">${item.subtitle}</span>
             </div>
           </div>
-          <span style="font-size: 0.62rem; background: ${item.badgeBg}; color: ${item.badgeColor}; padding: 2px 7px; border-radius: 4px; font-weight: 800; letter-spacing: 0.5px;">${item.type}</span>
+          <span style="font-size: 0.65rem; background: ${item.badgeBg}; color: ${item.badgeColor}; padding: 3px 8px; border-radius: 4px; font-weight: 800; letter-spacing: 0.5px;">${item.type}</span>
         </div>
       `;
     });
@@ -4180,6 +4189,7 @@ function renderRichSearchDropdown(queryStr) {
 }
 
 function onSearchInputChange(val) {
+  lastSearchFocusTime = Date.now();
   renderRichSearchDropdown(val);
   if (typeof handleSearchSelect === 'function') {
     handleSearchSelect(val);
@@ -4187,6 +4197,7 @@ function onSearchInputChange(val) {
 }
 
 function onSearchInputFocus(val) {
+  lastSearchFocusTime = Date.now();
   renderRichSearchDropdown(val);
 }
 
@@ -4207,8 +4218,11 @@ function selectSearchItem(val) {
   }
 }
 
-// Close search dropdown when clicking outside
+// Close search dropdown when clicking outside with Mobile Touch Failsafe
 document.addEventListener("click", function(e) {
+  // Ignore clicks triggered within 500ms of input focus (fixes smartphone synthetic touch click issue)
+  if (Date.now() - lastSearchFocusTime < 500) return;
+
   const searchInput = document.getElementById("timeline-search-input");
   const dropdown = document.getElementById("search-autocomplete-dropdown");
   if (dropdown && searchInput) {
@@ -4217,6 +4231,18 @@ document.addEventListener("click", function(e) {
     }
   }
 });
+
+document.addEventListener("touchstart", function(e) {
+  if (Date.now() - lastSearchFocusTime < 500) return;
+
+  const searchInput = document.getElementById("timeline-search-input");
+  const dropdown = document.getElementById("search-autocomplete-dropdown");
+  if (dropdown && searchInput) {
+    if (!searchInput.contains(e.target) && !dropdown.contains(e.target)) {
+      dropdown.style.display = "none";
+    }
+  }
+}, { passive: true });
 
 // Global Exports
 window.getTeamLogo = getTeamLogo;
