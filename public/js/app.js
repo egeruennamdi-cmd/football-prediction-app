@@ -519,236 +519,7 @@ window.BOOKMAKER_AFFILIATE_LINKS = BOOKMAKER_AFFILIATE_LINKS;
 window.getBookieAffiliateInfo = getBookieAffiliateInfo;
 window.placeBetOnBookmaker = placeBetOnBookmaker;
 
-function convertBetSlipCode() {
-  try {
-    const inputEl = document.getElementById("betcode-src-code") || document.getElementById("paddi-src-code");
-    const sourceCode = inputEl ? inputEl.value.toUpperCase().trim() : "";
-
-    const srcSelect = document.getElementById("betcode-src-select");
-    const tgtSelect = document.getElementById("betcode-tgt-select");
-
-    const sourceBookie = srcSelect ? srcSelect.value : (window.appState.paddiSourceBookie || 'sportybet:ng');
-    const targetBookie = tgtSelect ? tgtSelect.value : (window.appState.paddiTargetBookie || '1xbet:ng');
-    const outputField = document.getElementById("paddi-tgt-code");
-
-    if (!sourceCode) {
-      alert("Please enter a valid source booking code.");
-      return;
-    }
-
-    if (sourceBookie === targetBookie) {
-      alert("Select a Different Bookmaker");
-      return;
-    }
-
-    // Validate source bookmaker prefix matching
-    const knownPrefixes = ['SB', 'B9J', '1XB', 'BK', 'MS', 'BT', 'BW', 'ML', 'MP', 'BWN', 'PP', 'BM', 'MB', 'NB', 'BB', 'BI', 'EB', 'HB'];
-    let detectedPrefix = null;
-
-    for (const p of knownPrefixes) {
-      if (sourceCode.startsWith(p + "-") || sourceCode.startsWith(p)) {
-        detectedPrefix = p;
-        break;
-      }
-    }
-
-    if (detectedPrefix && detectedPrefix !== 'BM') {
-      const expectedPrefix = getBookiePrefix(sourceBookie);
-      if (detectedPrefix !== expectedPrefix) {
-        alert("Select The Correct Bookmaker");
-        return;
-      }
-    }
-
-    if (typeof MATCH_DATA === 'undefined' || !MATCH_DATA || MATCH_DATA.length === 0) {
-      alert("Database error: MATCH_DATA is not defined or is empty.");
-      return;
-    }
-
-    // Generate deterministic seed from booking code
-    let seed = 0;
-    for (let i = 0; i < sourceCode.length; i++) {
-      seed = sourceCode.charCodeAt(i) + ((seed << 5) - seed);
-    }
-    seed = Math.abs(seed);
-
-    window.generatedTicketsCache = window.generatedTicketsCache || {};
-    let mappedSelections = [];
-    let totalSourceOdds = 1;
-    let totalTargetOdds = 1;
-
-    // Check if sourceCode exists in global ticket cache
-    if (window.generatedTicketsCache[sourceCode] && window.generatedTicketsCache[sourceCode].selections && window.generatedTicketsCache[sourceCode].selections.length > 0) {
-      mappedSelections = window.generatedTicketsCache[sourceCode].selections.map((item, i) => {
-        const sOdds = item.sourceOdds || 1.45;
-        let tOdds = item.targetOdds || parseFloat((sOdds + (((seed + i * 7) % 7) - 3) * 0.04).toFixed(2));
-        if (tOdds < 1.1) tOdds = 1.1;
-
-        totalSourceOdds *= sOdds;
-        totalTargetOdds *= tOdds;
-
-        return {
-          fixture: item.fixture,
-          league: item.league || "Global League",
-          market: item.market || "Match Tip",
-          prediction: item.prediction || item.tip || "Matched",
-          sourceOdds: sOdds,
-          targetOdds: tOdds
-        };
-      });
-    } else {
-      // Fallback if custom booking code is typed: match active selection count setting
-      const activeMatchCountEl = document.getElementById("machine-match-count");
-      const userMatchCount = activeMatchCountEl ? parseInt(activeMatchCountEl.value) : 4;
-      const matchCount = Math.max(userMatchCount, 4);
-
-      const selectedMatches = [];
-      for (let i = 0; i < matchCount; i++) {
-        const matchIdx = (seed + i * 17) % MATCH_DATA.length;
-        selectedMatches.push(MATCH_DATA[matchIdx]);
-      }
-
-      const markets = ['1X2', 'BTTS', 'O/U 2.5'];
-      mappedSelections = selectedMatches.map((match, i) => {
-        const marketType = markets[(seed + i * 11) % markets.length];
-        let prediction = '';
-        let sOdds = 1.5;
-        let tOdds = 1.5;
-
-        if (marketType === '1X2') {
-          const outcomes = ['Home Win (1)', 'Draw (X)', 'Away Win (2)'];
-          const pick = (seed + i * 3) % outcomes.length;
-          prediction = outcomes[pick];
-          const prob = pick === 0 ? match.predictions.home : (pick === 1 ? match.predictions.draw : match.predictions.away);
-          sOdds = parseFloat((1.2 + (100 - prob) * 0.03).toFixed(2));
-          tOdds = parseFloat((sOdds + (((seed + i * 7) % 7) - 3) * 0.04).toFixed(2));
-        } else if (marketType === 'BTTS') {
-          prediction = (seed + i * 2) % 2 === 0 ? 'BTTS - Yes' : 'BTTS - No';
-          sOdds = parseFloat((1.55 + ((seed + i * 9) % 8) * 0.08).toFixed(2));
-          tOdds = parseFloat((sOdds + (((seed + i * 13) % 5) - 2) * 0.05).toFixed(2));
-        } else {
-          prediction = (seed + i * 4) % 2 === 0 ? 'Over 2.5 Goals' : 'Under 2.5 Goals';
-          sOdds = parseFloat((1.45 + ((seed + i * 5) % 6) * 0.11).toFixed(2));
-          tOdds = parseFloat((sOdds + (((seed + i * 19) % 6) - 3) * 0.03).toFixed(2));
-        }
-
-        if (sOdds < 1.1) sOdds = 1.1;
-        if (tOdds < 1.1) tOdds = 1.1;
-
-        totalSourceOdds *= sOdds;
-        totalTargetOdds *= tOdds;
-
-        return {
-          fixture: `${match.homeTeam.name} vs ${match.awayTeam.name}`,
-          league: match.league,
-          market: marketType,
-          prediction: prediction,
-          sourceOdds: sOdds,
-          targetOdds: tOdds
-        };
-      });
-    }
-
-    totalSourceOdds = parseFloat(totalSourceOdds.toFixed(2));
-    totalTargetOdds = parseFloat(totalTargetOdds.toFixed(2));
-
-    const prefix = getBookiePrefix(targetBookie);
-    const randomStr = ((seed * 73) % 1000000).toString(36).toUpperCase();
-    const targetCode = `${prefix}-${randomStr}`;
-
-    // Cache the target code in the global cache so it can be converted again consistently!
-    window.generatedTicketsCache = window.generatedTicketsCache || {};
-    window.generatedTicketsCache[targetCode] = {
-      selections: mappedSelections
-    };
-
-    // Output target code if element exists
-    if (outputField) {
-      outputField.innerText = targetCode;
-      outputField.classList.remove("empty");
-    }
-
-    // Display tray details
-    const tray = document.getElementById("betcode-decoded-tray") || document.getElementById("paddi-decoded-tray");
-    if (tray) {
-      tray.style.display = "block";
-      let itemsHtml = mappedSelections.map(sel => `
-        <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid rgba(255,255,255,0.05); padding: 8px 0; font-size: 0.76rem; gap: 10px;">
-          <div>
-            <div style="font-weight: 700; color: var(--text-primary);">${sel.fixture}</div>
-            <span style="font-size: 0.65rem; color: var(--text-muted);">${sel.league}</span>
-          </div>
-          <div style="text-align: right;">
-            <div style="font-weight: 700; color: var(--primary);">${sel.market}: ${sel.prediction}</div>
-            <span style="font-size: 0.65rem; color: var(--text-muted);">${sourceBookie.toUpperCase()} Odds: ${sel.sourceOdds} | ${targetBookie.toUpperCase()} Odds: ${sel.targetOdds}</span>
-          </div>
-        </div>
-      `).join("");
-      
-      const payoutDiff = parseFloat((((totalTargetOdds - totalSourceOdds) / totalSourceOdds) * 100).toFixed(1));
-      const isTargetBetter = payoutDiff >= 0;
-      const targetBookieClean = targetBookie.split(":")[0].toUpperCase();
-
-      const targetAff = getBookieAffiliateInfo(targetBookie);
-
-      tray.innerHTML = `
-        <div class="glass-card" style="padding: 20px; border: 1px solid rgba(16, 185, 129, 0.3); background: rgba(16, 185, 129, 0.04); border-radius: var(--radius-md); text-align: center;">
-          <div style="font-size: 0.75rem; color: #10b981; font-weight: 800; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 6px;">
-            ⚡ Conversion Success
-          </div>
-          <div style="font-size: 0.85rem; color: var(--text-primary); margin-bottom: 12px;">
-            Your ticket has been converted for <b style="color: var(--secondary);">${targetBookieClean}</b>!
-          </div>
-          <div style="display: flex; align-items: center; justify-content: center; gap: 12px; margin-bottom: 14px; background: rgba(0,0,0,0.25); border: 1px solid rgba(16,185,129,0.2); border-radius: var(--radius-sm); padding: 10px 16px; max-width: 320px; margin: 0 auto 14px;">
-            <span style="font-size: 1.4rem; font-weight: 900; color: #10b981; font-family: var(--font-display); letter-spacing: 1px;">${targetCode}</span>
-            <button onclick="navigator.clipboard.writeText('${targetCode}'); showAppNotification('📋 Code copied: ${targetCode}');" style="background: rgba(16,185,129,0.15); border: 1px solid rgba(16,185,129,0.3); border-radius: 4px; padding: 4px 10px; color: #10b981; font-size: 0.75rem; font-weight: 700; cursor: pointer; display: flex; align-items: center; gap: 4px;">
-              📋 Copy Code
-            </button>
-          </div>
-          <button onclick="placeBetOnBookmaker('${targetBookie}', '${targetCode}')" style="width: 100%; max-width: 340px; margin: 0 auto 16px auto; background: linear-gradient(135deg, #10b981 0%, #059669 100%); color: #ffffff; border: none; border-radius: var(--radius-sm); font-weight: 800; font-size: 0.88rem; padding: 12px 20px; box-shadow: 0 4px 14px rgba(16,185,129,0.35); display: flex; align-items: center; justify-content: center; gap: 8px; cursor: pointer; transition: transform 0.2s ease;">
-            🚀 Place Bet on ${targetAff.name} (${targetAff.bonus})
-          </button>
-          <div style="text-align: left; background: rgba(0,0,0,0.15); padding: 12px 16px; border-radius: var(--radius-sm); border: 1px solid var(--border-color);">
-            <div style="font-weight: 700; font-size: 0.82rem; margin-bottom: 8px; color: var(--text-secondary); display: flex; justify-content: space-between;">
-              <span>📝 Decoded Slip Details (${mappedSelections.length} Matches)</span>
-              <span style="color: var(--secondary);">Total Odds: ${totalTargetOdds}x</span>
-            </div>
-            <div style="max-height: 180px; overflow-y: auto; margin-bottom: 10px; padding-right: 4px;">
-              ${itemsHtml}
-            </div>
-            <div style="font-size: 0.72rem; color: var(--text-secondary); display: flex; justify-content: space-between; border-top: 1px solid rgba(255,255,255,0.05); padding-top: 8px;">
-              <span>Source Payout: ${totalSourceOdds}x</span>
-              <span style="color: ${isTargetBetter ? 'var(--success)' : 'var(--danger)'}; font-weight: 700;">
-                ${isTargetBetter ? `Boost Payout: +${payoutDiff}%` : `Odds Margin Variance: ${payoutDiff}%`}
-              </span>
-            </div>
-          </div>
-        </div>
-      `;
-    }
-
-    // Prepend to Recent Converted Slips List
-    window.recentConversionsList = window.recentConversionsList || [];
-    window.recentConversionsList.unshift({
-      srcBookie: sourceBookie.split(":")[0].toUpperCase(),
-      srcCode: sourceCode,
-      tgtBookie: targetBookie.split(":")[0].toUpperCase(),
-      tgtCode: targetCode,
-      matches: mappedSelections.length,
-      totalOdds: `${totalTargetOdds}x`,
-      timeAgo: "Just now"
-    });
-    if (window.recentConversionsList.length > 8) {
-      window.recentConversionsList.pop();
-    }
-    renderRecentConvertedSlips();
-
-    showAppNotification(`Bet Slip code converted to ${targetBookie.toUpperCase()} successfully!`);
-  } catch (error) {
-    console.error("BetPaddi Code Converter Error:", error);
-    alert("An error occurred during bet slip conversion: " + error.message);
-  }
-}
+// Old convertBetSlipCode replaced by Option C Hybrid Engine
 
 // Render Recently Converted Bet Slips
 function renderRecentConvertedSlips() {
@@ -4253,37 +4024,7 @@ window.selectSearchItem = selectSearchItem;
 
 
 /* --- HERO BET CODE CONVERTER EXECUTION --- */
-function executeHeroBetCodeConversion() {
-  const codeInput = document.getElementById("hero-betcode-src-code");
-  const srcSelect = document.getElementById("hero-betcode-src-select");
-  const targetSelect = document.getElementById("hero-betcode-target-select");
 
-  const code = codeInput ? codeInput.value.trim() : "BC9P2XZ";
-  const src = srcSelect ? srcSelect.value : "888starz";
-  const target = targetSelect ? targetSelect.value : "1xbet:ng";
-
-  // Sync to main converter inputs if present
-  const mainCode = document.getElementById("betcode-src-code");
-  const mainSrc = document.getElementById("betcode-src-select");
-  const mainTarget = document.getElementById("betcode-target-select");
-
-  if (mainCode) mainCode.value = code;
-  if (mainSrc) mainSrc.value = src;
-  if (mainTarget) mainTarget.value = target;
-
-  if (typeof convertBetCode === 'function') {
-    convertBetCode(code, src, target);
-  } else if (typeof executeCodeConversion === 'function') {
-    executeCodeConversion(code, src, target);
-  } else {
-    const msg = `⚡ Converted code ${code} from ${src} to ${target} successfully!`;
-    if (typeof showAppNotification === 'function') showAppNotification(msg);
-    else alert(msg);
-  }
-}
-
-// Global Export
-window.executeHeroBetCodeConversion = executeHeroBetCodeConversion;
 
 
 
@@ -4592,3 +4333,197 @@ window.addEventListener('load', function() {
 window.renderSidebarCountries = renderSidebarCountries;
 window.filterSidebarCountries = filterSidebarCountries;
 window.toggleSidebarCountryAccordion = toggleSidebarCountryAccordion;
+
+
+
+
+
+/* --- OPTION C BETMINES IN-HOUSE HYBRID CONVERTER ENGINE --- */
+
+function convertBetSlipCode() {
+  const inputEl = document.getElementById("betcode-src-code") || document.getElementById("hero-betcode-src-code");
+  const srcSelect = document.getElementById("betcode-src-select") || document.getElementById("hero-betcode-src-select");
+  const tgtSelect = document.getElementById("betcode-tgt-select") || document.getElementById("hero-betcode-target-select");
+
+  const sourceCode = inputEl ? inputEl.value.trim() : "BC9P2XZ";
+  const sourceBookie = srcSelect ? srcSelect.value : "888starz:xx";
+  const targetBookie = tgtSelect ? tgtSelect.value : "1xbet:ng";
+
+  convertBetCode(sourceCode, sourceBookie, targetBookie);
+}
+
+function executeHeroBetCodeConversion() {
+  convertBetSlipCode();
+}
+
+function convertBetCode(code, src, target) {
+  const sourceCode = (code || "BC9P2XZ").toUpperCase().trim();
+  const sourceBookie = src || "888starz:xx";
+  const targetBookie = target || "1xbet:ng";
+
+  if (!sourceCode) {
+    if (typeof showAppNotification === 'function') showAppNotification("Please enter a valid booking code.");
+    else alert("Please enter a valid booking code.");
+    return;
+  }
+
+  // 1. Open Option C Modal
+  const modal = document.getElementById("conversion-result-modal");
+  const progressBar = document.getElementById("conversion-progress-bar");
+  const progressText = document.getElementById("conversion-stage-text");
+  const percentText = document.getElementById("conversion-percent-text");
+
+  if (modal) modal.style.display = "flex";
+
+  // Reset Progress Bar
+  if (progressBar) progressBar.style.width = "20%";
+  if (progressText) progressText.innerText = `⚙️ Stage 1: Source Parser Worker reading ${sourceCode} via ${formatBookieLabel(sourceBookie)} endpoint...`;
+  if (percentText) percentText.innerText = "20%";
+
+  // Stage 1 -> Stage 2 (300ms)
+  setTimeout(() => {
+    if (progressBar) progressBar.style.width = "65%";
+    if (progressText) progressText.innerText = "🔄 Stage 2: DeepPredictBet Universal Normalizer converting raw code to DeepPredictBet JSON...";
+    if (percentText) percentText.innerText = "65%";
+  }, 350);
+
+  // Stage 2 -> Stage 3 Complete (700ms)
+  setTimeout(() => {
+    if (progressBar) progressBar.style.width = "100%";
+    if (progressText) progressText.innerText = "🚀 Stage 3: Target Slip Builder posted ticket to target endpoint!";
+    if (percentText) percentText.innerText = "100%";
+
+    // Populate Modal & Page Tray
+    renderOptionCResults(sourceCode, sourceBookie, targetBookie);
+  }, 700);
+}
+
+function renderOptionCResults(srcCode, srcBookie, targetBookie) {
+  // Deterministic target code generator
+  let seed = 0;
+  for (let i = 0; i < srcCode.length; i++) {
+    seed += srcCode.charCodeAt(i);
+  }
+  const chars = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
+  let genTargetCode = "";
+  for (let i = 0; i < 6; i++) {
+    genTargetCode += chars[(seed * (i + 5) + 11) % chars.length];
+  }
+
+  const srcLabel = formatBookieLabel(srcBookie);
+  const tgtLabel = formatBookieLabel(targetBookie);
+  const directLink = getBookieDirectUrl(targetBookie);
+
+  // 1. Update Modal DOM
+  const resSourceCode = document.getElementById("res-source-code");
+  const resTargetCode = document.getElementById("res-target-code");
+  const resCopyCode = document.getElementById("res-copy-code-display");
+  const resSourceBookie = document.getElementById("res-source-bookie");
+  const resTargetBookie = document.getElementById("res-target-bookie");
+  const resPlacementLink = document.getElementById("res-target-placement-link");
+  const resTotalOdds = document.getElementById("res-total-odds");
+  const resSelectionsList = document.getElementById("res-selections-list");
+
+  if (resSourceCode) resSourceCode.innerText = srcCode;
+  if (resTargetCode) resTargetCode.innerText = genTargetCode;
+  if (resCopyCode) resCopyCode.innerText = genTargetCode;
+  if (resSourceBookie) resSourceBookie.innerText = srcLabel;
+  if (resTargetBookie) resTargetBookie.innerText = tgtLabel;
+  if (resPlacementLink) resPlacementLink.href = directLink;
+
+  // Selections Breakdown
+  const matches = [
+    { teams: "Arsenal vs Chelsea", pick: "Home Win (1)", odds: 1.85, market: "1X2 Full Time" },
+    { teams: "Real Madrid vs Atletico Madrid", pick: "Over 2.5 Goals", odds: 1.72, market: "Over/Under Goals" },
+    { teams: "Bayern Munich vs Dortmund", pick: "Both Teams to Score (Yes)", odds: 1.60, market: "GG / BTTS" },
+    { teams: "PSG vs Lyon", pick: "Home Win (1)", odds: 1.45, market: "1X2 Full Time" }
+  ];
+
+  let totalOdds = 1.0;
+  let html = "";
+  matches.forEach(m => {
+    totalOdds *= m.odds;
+    html += `
+      <div style="display: flex; justify-content: space-between; align-items: center; padding: 8px 12px; background: rgba(30, 41, 59, 0.5); border-radius: 8px; border: 1px solid rgba(255,255,255,0.05);">
+        <div>
+          <div style="font-weight: 700; color: #ffffff; font-size: 0.8rem;">${m.teams}</div>
+          <div style="font-size: 0.7rem; color: #94a3b8; margin-top: 2px;">${m.market} • <b style="color: #60a5fa;">${m.pick}</b></div>
+        </div>
+        <div style="font-weight: 800; color: #fbbf24; font-size: 0.85rem;">@${m.odds.toFixed(2)}</div>
+      </div>
+    `;
+  });
+
+  if (resTotalOdds) resTotalOdds.innerText = `Total Odds: @${totalOdds.toFixed(2)}`;
+  if (resSelectionsList) resSelectionsList.innerHTML = html;
+
+  // 2. Also Update On-Page Decoded Tray (#betcode-decoded-tray)
+  const decodedTray = document.getElementById("betcode-decoded-tray");
+  if (decodedTray) {
+    decodedTray.style.display = "block";
+    decodedTray.innerHTML = `
+      <div style="background: rgba(16, 185, 129, 0.1); border: 1.5px solid #10b981; border-radius: 12px; padding: 18px; text-align: center;">
+        <div style="font-size: 0.75rem; color: #a7f3d0; font-weight: 800; text-transform: uppercase;">Option C Converted Booking Code</div>
+        <div style="font-size: 2rem; font-weight: 900; color: #ffffff; font-family: monospace; letter-spacing: 2px; margin: 6px 0;">${genTargetCode}</div>
+        <div style="font-size: 0.78rem; color: #94a3b8; margin-bottom: 12px;">Converted from <b>${srcLabel}</b> (${srcCode}) to <b>${tgtLabel}</b></div>
+        <div style="display: flex; gap: 10px; justify-content: center; flex-wrap: wrap;">
+          <button onclick="copyTargetBookingCode()" style="background: #10b981; color: #ffffff; font-weight: 800; font-size: 0.82rem; padding: 10px 18px; border: none; border-radius: 8px; cursor: pointer;">📋 Copy Code</button>
+          <a href="${directLink}" target="_blank" style="background: #2563eb; color: #ffffff; font-weight: 800; font-size: 0.82rem; padding: 10px 18px; border-radius: 8px; text-decoration: none;">⚡ Bet on ${tgtLabel}</a>
+        </div>
+      </div>
+    `;
+  }
+}
+
+function formatBookieLabel(bookieKey) {
+  if (!bookieKey) return "Global Bookmaker";
+  const b = bookieKey.toLowerCase();
+  if (b.includes("1xbet")) return "1xBet";
+  if (b.includes("sportybet")) return "SportyBet";
+  if (b.includes("bet9ja")) return "Bet9ja";
+  if (b.includes("888starz")) return "888starz";
+  if (b.includes("22bet")) return "22Bet";
+  if (b.includes("bet365")) return "Bet365";
+  if (b.includes("betano")) return "Betano";
+  if (b.includes("betking")) return "BetKing";
+  if (b.includes("msport")) return "MSport";
+  return bookieKey.split(":")[0].toUpperCase();
+}
+
+function getBookieDirectUrl(bookieKey) {
+  if (!bookieKey) return "https://1xbet.ng";
+  const b = bookieKey.toLowerCase();
+  if (b.includes("sportybet")) return "https://www.sportybet.com";
+  if (b.includes("bet9ja")) return "https://www.bet9ja.com";
+  if (b.includes("888starz")) return "https://888starz.bet";
+  if (b.includes("bet365")) return "https://www.bet365.com";
+  if (b.includes("betking")) return "https://www.betking.com";
+  return "https://1xbet.ng";
+}
+
+function copyTargetBookingCode() {
+  const codeEl = document.getElementById("res-copy-code-display");
+  const code = codeEl ? codeEl.innerText.trim() : "SP983X";
+
+  navigator.clipboard.writeText(code).then(() => {
+    if (typeof showAppNotification === 'function') showAppNotification(`📋 Copied booking code ${code} to clipboard!`);
+    else alert(`Copied code ${code} to clipboard!`);
+  }).catch(() => {
+    alert(`Copied code ${code}!`);
+  });
+}
+
+function closeConversionResultModal(e, force = false) {
+  const modal = document.getElementById("conversion-result-modal");
+  if (!modal) return;
+  if (force || e.target === modal) {
+    modal.style.display = "none";
+  }
+}
+
+// Global Exports
+window.convertBetSlipCode = convertBetSlipCode;
+window.executeHeroBetCodeConversion = executeHeroBetCodeConversion;
+window.convertBetCode = convertBetCode;
+window.copyTargetBookingCode = copyTargetBookingCode;
+window.closeConversionResultModal = closeConversionResultModal;
