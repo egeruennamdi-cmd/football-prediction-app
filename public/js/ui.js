@@ -1922,9 +1922,19 @@ window.switchTool = switchTool;
 function quickPromptScout(promptText) {
   const text = (promptText || "Generate 40 selections").trim();
 
-  const heroInput = document.getElementById("hero-scout-input");
-  if (heroInput) heroInput.value = text;
+  // 1. Determine requested football selection count
+  let count = 40;
+  const lower = text.toLowerCase();
+  if (lower.includes("30")) count = 30;
+  else if (lower.includes("20")) count = 20;
+  else if (lower.includes("tactic") || lower.includes("angle")) count = 10;
 
+  // 2. Directly generate football event selections
+  if (typeof generateScoutAccumulator === 'function') {
+    generateScoutAccumulator(count);
+  }
+
+  // 3. Open AI Scout modal & pass briefing message
   if (typeof openGeneralScout === 'function') openGeneralScout();
 
   const scoutInput = document.getElementById("scout-chat-input");
@@ -1932,16 +1942,6 @@ function quickPromptScout(promptText) {
 
   if (typeof sendScoutMessage === 'function') {
     sendScoutMessage();
-  } else {
-    let count = 40;
-    const lower = text.toLowerCase();
-    if (lower.includes("30")) count = 30;
-    else if (lower.includes("20")) count = 20;
-    else if (lower.includes("tactic") || lower.includes("angle")) count = 10;
-
-    if (typeof generateScoutAccumulator === 'function') {
-      generateScoutAccumulator(count);
-    }
   }
 
   const chatBody = document.getElementById("scout-chat-body");
