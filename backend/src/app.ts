@@ -23,7 +23,7 @@ const apiIndexHandler = (req: Request, res: Response) => {
     status: 'online',
     name: 'DeepPredictBet Enterprise API Gateway',
     version: 'v1.0.0',
-    description: 'Option C 50-Bookmaker Converter Engine, AI Bet Doctor & API-Football Live Gateway',
+    description: '50-Bookmaker Converter Engine, AI Bet Doctor & API-Football Live Gateway',
     endpoints: {
       healthCheck: 'GET /api/v1/health',
       authRegister: 'POST /api/v1/auth/register',

@@ -2358,7 +2358,7 @@ window.copyGeneratedTicketCode = copyGeneratedTicketCode;
 window.saveGeneratedTicket = saveGeneratedTicket;
 
 
-/* --- DEEPPREDICTBET OPTION C CONVERTER ENGINE HELPERS --- */
+/* --- DEEPPREDICTBET CONVERTER ENGINE HELPERS --- */
 function swapConverterBookmakers() {
   const srcSelect = document.getElementById("betcode-src-select");
   const tgtSelect = document.getElementById("betcode-tgt-select");
@@ -3545,7 +3545,7 @@ window.toggleSidebarCountryAccordion = toggleSidebarCountryAccordion;
 
 
 
-/* --- OPTION C BETMINES IN-HOUSE HYBRID CONVERTER ENGINE --- */
+/* --- BETMINES IN-HOUSE HYBRID CONVERTER ENGINE --- */
 
 function convertBetSlipCode() {
   const inputEl = document.getElementById("betcode-src-code") || document.getElementById("hero-betcode-src-code");
@@ -3574,7 +3574,7 @@ function convertBetCode(code, src, target) {
     return;
   }
 
-  // 1. Open Option C Modal
+  // 1. Open Modal
   const modal = document.getElementById("conversion-result-modal");
   const progressBar = document.getElementById("conversion-progress-bar");
   const progressText = document.getElementById("conversion-stage-text");
@@ -3670,7 +3670,7 @@ function renderOptionCResults(srcCode, srcBookie, targetBookie) {
     decodedTray.style.display = "block";
     decodedTray.innerHTML = `
       <div style="background: rgba(16, 185, 129, 0.1); border: 1.5px solid #10b981; border-radius: 12px; padding: 18px; text-align: center;">
-        <div style="font-size: 0.75rem; color: #a7f3d0; font-weight: 800; text-transform: uppercase;">Option C Converted Booking Code</div>
+        <div style="font-size: 0.75rem; color: #a7f3d0; font-weight: 800; text-transform: uppercase;">Converted Booking Code</div>
         <div style="font-size: 2rem; font-weight: 900; color: #ffffff; font-family: monospace; letter-spacing: 2px; margin: 6px 0;">${genTargetCode}</div>
         <div style="font-size: 0.78rem; color: #94a3b8; margin-bottom: 12px;">Converted from <b>${srcLabel}</b> (${srcCode}) to <b>${tgtLabel}</b></div>
         <div style="display: flex; gap: 10px; justify-content: center; flex-wrap: wrap;">
