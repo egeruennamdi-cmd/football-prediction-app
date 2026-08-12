@@ -522,111 +522,7 @@ window.placeBetOnBookmaker = placeBetOnBookmaker;
 // Old convertBetSlipCode replaced by Hybrid Engine
 
 // Render Recently Converted Bet Slips
-function renderRecentConvertedSlips() {
-  const grid = document.getElementById("recent-conversions-grid");
-  if (!grid) return;
-
-  const defaultConversions = [
-    {
-      srcBookie: "SPORTYBET",
-      srcCode: "SB-89A4E",
-      tgtBookie: "1XBET",
-      tgtCode: "1XB-92F71",
-      matches: 4,
-      totalOdds: "6.85x",
-      timeAgo: "12 mins ago"
-    },
-    {
-      srcBookie: "BET9JA",
-      srcCode: "B9J-F4012",
-      tgtBookie: "BETKING",
-      tgtCode: "BK-47A1B",
-      matches: 3,
-      totalOdds: "4.20x",
-      timeAgo: "25 mins ago"
-    },
-    {
-      srcBookie: "BETANO",
-      srcCode: "BT-33D81",
-      tgtBookie: "MSPORT",
-      tgtCode: "MS-88190",
-      matches: 5,
-      totalOdds: "12.40x",
-      timeAgo: "41 mins ago"
-    },
-    {
-      srcBookie: "1XBET",
-      srcCode: "1XB-7729C",
-      tgtBookie: "SPORTYBET",
-      tgtCode: "SB-10294",
-      matches: 3,
-      totalOdds: "3.95x",
-      timeAgo: "1 hour ago"
-    },
-    {
-      srcBookie: "MELBET",
-      srcCode: "ML-6510A",
-      tgtBookie: "PARIPESA",
-      tgtCode: "PP-33984",
-      matches: 6,
-      totalOdds: "18.50x",
-      timeAgo: "2 hours ago"
-    },
-    {
-      srcBookie: "BETKING",
-      srcCode: "BK-99120",
-      tgtBookie: "BET9JA",
-      tgtCode: "B9J-22849",
-      matches: 4,
-      totalOdds: "5.70x",
-      timeAgo: "3 hours ago"
-    }
-  ];
-
-  if (!window.recentConversionsList || window.recentConversionsList.length === 0) {
-    window.recentConversionsList = defaultConversions;
-  }
-
-  grid.innerHTML = window.recentConversionsList.map(item => `
-    <div class="recent-card">
-      <div class="recent-card-row">
-        <span>⚡ Converted Ticket</span>
-        <span style="color: var(--text-muted);">${item.timeAgo}</span>
-      </div>
-      <div class="recent-card-code-flow">
-        <div class="recent-card-code-block">
-          <span class="recent-card-bookie">${item.srcBookie}</span>
-          <span class="recent-card-code">${item.srcCode}</span>
-        </div>
-        <div class="recent-card-arrow">➔</div>
-        <div class="recent-card-code-block" style="text-align: right;">
-          <span class="recent-card-bookie" style="color: var(--secondary); border-color: rgba(16,185,129,0.3);">${item.tgtBookie}</span>
-          <span class="recent-card-code" style="color: #10b981;">${item.tgtCode}</span>
-        </div>
-      </div>
-      <div class="recent-card-footer">
-        <span>${item.matches} Matches (${item.totalOdds})</span>
-        <div style="display: flex; gap: 6px;">
-          <button class="recent-card-load-btn" onclick="loadRecentConversion('${item.srcCode}')">Load</button>
-          <button class="recent-card-load-btn" style="color: #10b981; font-weight: 700;" onclick="placeBetOnBookmaker('${item.tgtBookie}', '${item.tgtCode}')">🚀 Bet</button>
-          <button class="recent-card-load-btn" style="color: var(--text-muted);" onclick="navigator.clipboard.writeText('${item.tgtCode}'); showAppNotification('📋 Code copied: ${item.tgtCode}');">Copy</button>
-        </div>
-      </div>
-    </div>
-  `).join("");
-}
-
-function loadRecentConversion(srcCode) {
-  const inputEl = document.getElementById("betcode-src-code") || document.getElementById("paddi-src-code");
-  if (inputEl) {
-    inputEl.value = srcCode;
-    inputEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
-    convertBetSlipCode();
-  }
-}
-
-window.renderRecentConvertedSlips = renderRecentConvertedSlips;
-window.loadRecentConversion = loadRecentConversion;
+// old renderRecentConvertedSlips replaced
 
 // Smart Bet Slip & Booking Code Converter
 window.tempConvertedTicket = null;
@@ -4527,3 +4423,151 @@ window.executeHeroBetCodeConversion = executeHeroBetCodeConversion;
 window.convertBetCode = convertBetCode;
 window.copyTargetBookingCode = copyTargetBookingCode;
 window.closeConversionResultModal = closeConversionResultModal;
+
+
+/* --- BULLETPROOF RECENT CONVERTED BET CODES POPULATOR --- */
+function renderRecentConvertedSlips() {
+  const grid = document.getElementById("recent-conversions-grid");
+  if (!grid) return;
+
+  const defaultConversions = [
+    {
+      srcBookie: "888STARZ",
+      srcCode: "BC9P2XZ",
+      tgtBookie: "1XBET",
+      tgtCode: "SP983X",
+      matches: 4,
+      totalOdds: "7.58x",
+      timeAgo: "2 mins ago"
+    },
+    {
+      srcBookie: "SPORTYBET",
+      srcCode: "SB-89A4E",
+      tgtBookie: "BET9JA",
+      tgtCode: "B9J-9921",
+      matches: 5,
+      totalOdds: "12.40x",
+      timeAgo: "8 mins ago"
+    },
+    {
+      srcBookie: "BET365",
+      srcCode: "B365-K11",
+      tgtBookie: "BETKING",
+      tgtCode: "BK-4421",
+      matches: 3,
+      totalOdds: "4.85x",
+      timeAgo: "15 mins ago"
+    },
+    {
+      srcBookie: "1XBET",
+      srcCode: "1XB-7729C",
+      tgtBookie: "SPORTYBET",
+      tgtCode: "SB-10294",
+      matches: 6,
+      totalOdds: "18.50x",
+      timeAgo: "24 mins ago"
+    },
+    {
+      srcBookie: "BETANO",
+      srcCode: "BT-33D81",
+      tgtBookie: "22BET",
+      tgtCode: "22B-5519",
+      matches: 4,
+      totalOdds: "6.90x",
+      timeAgo: "35 mins ago"
+    },
+    {
+      srcBookie: "NAIRABET",
+      srcCode: "NB-8812",
+      tgtBookie: "MSPORT",
+      tgtCode: "MS-88190",
+      matches: 3,
+      totalOdds: "3.75x",
+      timeAgo: "48 mins ago"
+    }
+  ];
+
+  if (!window.recentConversionsList || window.recentConversionsList.length === 0) {
+    window.recentConversionsList = defaultConversions;
+  }
+
+  grid.innerHTML = "";
+  grid.style.display = "grid";
+  grid.style.gridTemplateColumns = "repeat(auto-fit, minmax(280px, 1fr))";
+  grid.style.gap = "16px";
+  grid.style.marginTop = "16px";
+
+  window.recentConversionsList.forEach(item => {
+    const card = document.createElement("div");
+    card.className = "recent-card glass-card";
+    card.style.padding = "16px";
+    card.style.border = "1.5px solid rgba(59, 130, 246, 0.3)";
+    card.style.borderRadius = "14px";
+    card.style.background = "linear-gradient(135deg, rgba(15, 23, 42, 0.9) 0%, rgba(30, 58, 138, 0.35) 100%)";
+    card.style.boxShadow = "0 8px 24px rgba(0, 0, 0, 0.5)";
+    card.style.display = "flex";
+    card.style.flexDirection = "column";
+    card.style.gap = "12px";
+
+    card.innerHTML = `
+      <div style="display: flex; justify-content: space-between; align-items: center; font-size: 0.76rem; color: #94a3b8; font-weight: 700;">
+        <span style="display: flex; align-items: center; gap: 6px; color: #38bdf8;">⚡ Converted Ticket</span>
+        <span style="color: #34d399; font-size: 0.72rem; font-weight: 800;">${item.timeAgo}</span>
+      </div>
+
+      <div style="display: flex; align-items: center; justify-content: space-between; background: rgba(0, 0, 0, 0.3); border: 1px solid rgba(255,255,255,0.06); padding: 10px 14px; border-radius: 10px;">
+        <div>
+          <div style="font-size: 0.68rem; color: #94a3b8; font-weight: 700; text-transform: uppercase;">From ${item.srcBookie}</div>
+          <div style="font-size: 1rem; font-weight: 900; color: #ffffff; font-family: monospace;">${item.srcCode}</div>
+        </div>
+        <div style="font-size: 1.2rem; color: #3b82f6;">➔</div>
+        <div style="text-align: right;">
+          <div style="font-size: 0.68rem; color: #34d399; font-weight: 800; text-transform: uppercase;">To ${item.tgtBookie}</div>
+          <div style="font-size: 1.15rem; font-weight: 900; color: #34d399; font-family: monospace;">${item.tgtCode}</div>
+        </div>
+      </div>
+
+      <div style="display: flex; justify-content: space-between; align-items: center; font-size: 0.8rem; font-weight: 700; color: #e2e8f0; border-top: 1px solid rgba(255,255,255,0.06); padding-top: 8px;">
+        <span>📋 ${item.matches} Matches</span>
+        <span style="color: #fbbf24; font-weight: 900;">Odds: ${item.totalOdds}</span>
+      </div>
+
+      <div style="display: flex; gap: 8px; margin-top: 2px;">
+        <button onclick="navigator.clipboard.writeText('${item.tgtCode}'); if (typeof showAppNotification === 'function') showAppNotification('📋 Code copied: ${item.tgtCode}'); else alert('Copied code: ${item.tgtCode}');" style="flex: 1; padding: 8px; font-size: 0.76rem; font-weight: 800; background: rgba(59, 130, 246, 0.18); border: 1px solid #3b82f6; color: #60a5fa; border-radius: 8px; cursor: pointer; transition: all 0.15s ease;">📋 Copy</button>
+        <button onclick="convertBetCode('${item.srcCode}', '${item.srcBookie.toLowerCase()}', '${item.tgtBookie.toLowerCase()}')" style="flex: 1; padding: 8px; font-size: 0.76rem; font-weight: 800; background: rgba(16, 185, 129, 0.18); border: 1px solid #10b981; color: #34d399; border-radius: 8px; cursor: pointer; transition: all 0.15s ease;">⚡ View Slip</button>
+      </div>
+    `;
+
+    grid.appendChild(card);
+  });
+}
+
+function loadRecentConversion(srcCode) {
+  const inputEl = document.getElementById("betcode-src-code") || document.getElementById("hero-betcode-src-code");
+  if (inputEl) {
+    inputEl.value = srcCode;
+    inputEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    convertBetSlipCode();
+  }
+}
+
+// Auto-run on load with retries
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', function() {
+    renderRecentConvertedSlips();
+    setTimeout(renderRecentConvertedSlips, 300);
+    setTimeout(renderRecentConvertedSlips, 1000);
+  });
+} else {
+  renderRecentConvertedSlips();
+  setTimeout(renderRecentConvertedSlips, 300);
+  setTimeout(renderRecentConvertedSlips, 1000);
+}
+
+window.addEventListener('load', function() {
+  renderRecentConvertedSlips();
+});
+
+// Global Exports
+window.renderRecentConvertedSlips = renderRecentConvertedSlips;
+window.loadRecentConversion = loadRecentConversion;
