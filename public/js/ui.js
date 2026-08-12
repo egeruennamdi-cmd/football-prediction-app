@@ -466,6 +466,7 @@ function openGeneralScout() {
     `;
   }
 
+  modal.style.display = "flex";
   modal.classList.add("active");
   document.body.style.overflow = "hidden";
 }
@@ -1918,34 +1919,42 @@ window.switchStoreTab = switchStoreTab;
 window.switchSupportTab = switchSupportTab;
 window.switchTool = switchTool;
 
-function triggerHeroScoutPrompt() {
-  const heroInput = document.getElementById("hero-scout-input");
-  if (!heroInput || !heroInput.value.trim()) return;
+function quickPromptScout(promptText) {
+  const text = (promptText || "Generate 40 selections").trim();
 
-  const text = heroInput.value.trim();
-  heroInput.value = "";
+  const heroInput = document.getElementById("hero-scout-input");
+  if (heroInput) heroInput.value = text;
 
   if (typeof openGeneralScout === 'function') openGeneralScout();
 
-  setTimeout(() => {
+  const runSend = () => {
     const scoutInput = document.getElementById("scout-chat-input");
     if (scoutInput) {
       scoutInput.value = text;
-      if (typeof sendScoutMessage === 'function') sendScoutMessage();
+      if (typeof sendScoutMessage === 'function') {
+        sendScoutMessage();
+        return true;
+      }
     }
-  }, 350);
+    return false;
+  };
+
+  if (!runSend()) {
+    setTimeout(runSend, 50);
+    setTimeout(runSend, 200);
+    setTimeout(runSend, 400);
+  }
 }
 
-function quickPromptScout(promptText) {
-  if (typeof openGeneralScout === 'function') openGeneralScout();
+function triggerHeroScoutPrompt() {
+  const heroInput = document.getElementById("hero-scout-input");
+  let text = heroInput ? heroInput.value.trim() : "";
+  if (!text) {
+    text = "Generate 40 selections";
+  }
+  if (heroInput) heroInput.value = "";
 
-  setTimeout(() => {
-    const scoutInput = document.getElementById("scout-chat-input");
-    if (scoutInput) {
-      scoutInput.value = promptText;
-      if (typeof sendScoutMessage === 'function') sendScoutMessage();
-    }
-  }, 350);
+  quickPromptScout(text);
 }
 
 window.triggerHeroScoutPrompt = triggerHeroScoutPrompt;

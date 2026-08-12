@@ -1732,37 +1732,44 @@ function handleChatKeyPress(event) {
 }
 
 function quickPromptScout(text) {
-  const modal = document.getElementById("scout-modal");
-  if (!modal || !modal.classList.contains("active")) {
-    openGeneralScout();
-  }
-  setTimeout(() => {
+  const promptText = (text || "Generate 40 selections").trim();
+
+  const heroInput = document.getElementById("hero-scout-input");
+  if (heroInput) heroInput.value = promptText;
+
+  if (typeof openGeneralScout === 'function') openGeneralScout();
+
+  const runSend = () => {
     const el = document.getElementById("scout-chat-input");
     if (el) {
-      el.value = text;
-      sendScoutMessage();
+      el.value = promptText;
+      if (typeof sendScoutMessage === 'function') {
+        sendScoutMessage();
+        return true;
+      }
     }
-  }, 300);
+    return false;
+  };
+
+  if (!runSend()) {
+    setTimeout(runSend, 50);
+    setTimeout(runSend, 200);
+    setTimeout(runSend, 400);
+  }
 }
 
 function triggerHeroScoutPrompt() {
   const heroInput = document.getElementById("hero-scout-input");
-  if (!heroInput || !heroInput.value.trim()) return;
+  let text = heroInput ? heroInput.value.trim() : "";
+  if (!text) {
+    text = "Generate 40 selections";
+  }
+  if (heroInput) heroInput.value = "";
 
-  const text = heroInput.value.trim();
-  heroInput.value = "";
-
-  if (typeof openGeneralScout === 'function') openGeneralScout();
-
-  setTimeout(() => {
-    const scoutInput = document.getElementById("scout-chat-input");
-    if (scoutInput) {
-      scoutInput.value = text;
-      if (typeof sendScoutMessage === 'function') sendScoutMessage();
-    }
-  }, 350);
+  quickPromptScout(text);
 }
 window.triggerHeroScoutPrompt = triggerHeroScoutPrompt;
+window.quickPromptScout = quickPromptScout;
 
 function filterMarketSubmenu(marketVal, btn) {
   window.appState.activeMarketSubmenu = marketVal;
