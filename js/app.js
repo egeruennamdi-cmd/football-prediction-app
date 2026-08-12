@@ -1608,7 +1608,7 @@ function sendScoutMessage() {
   chatBody.appendChild(typingIndicator);
   chatBody.scrollTop = chatBody.scrollHeight;
 
-  // Delay simulation (1.2s)
+  // Delay simulation (100ms instant response)
   setTimeout(() => {
     typingIndicator.remove();
 
@@ -1739,22 +1739,28 @@ function quickPromptScout(text) {
 
   if (typeof openGeneralScout === 'function') openGeneralScout();
 
-  const runSend = () => {
-    const el = document.getElementById("scout-chat-input");
-    if (el) {
-      el.value = promptText;
-      if (typeof sendScoutMessage === 'function') {
-        sendScoutMessage();
-        return true;
-      }
-    }
-    return false;
-  };
+  const scoutInput = document.getElementById("scout-chat-input");
+  if (scoutInput) scoutInput.value = promptText;
 
-  if (!runSend()) {
-    setTimeout(runSend, 50);
-    setTimeout(runSend, 200);
-    setTimeout(runSend, 400);
+  if (typeof sendScoutMessage === 'function') {
+    sendScoutMessage();
+  } else {
+    let count = 40;
+    const lower = promptText.toLowerCase();
+    if (lower.includes("30")) count = 30;
+    else if (lower.includes("20")) count = 20;
+    else if (lower.includes("tactic") || lower.includes("angle")) count = 10;
+
+    if (typeof generateScoutAccumulator === 'function') {
+      generateScoutAccumulator(count);
+    }
+  }
+
+  const chatBody = document.getElementById("scout-chat-body");
+  if (chatBody) {
+    setTimeout(() => {
+      chatBody.scrollTop = chatBody.scrollHeight;
+    }, 120);
   }
 }
 
