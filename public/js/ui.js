@@ -11,43 +11,6 @@ function getMatchTip(match) {
     return 'Draw (X)';
   }
 
-// Expose ui.js functions globally
-window.closeLeaderboardModal = closeLeaderboardModal;
-window.closeProfileModal = closeProfileModal;
-window.closeScoutModal = closeScoutModal;
-window.closeStoreModal = closeStoreModal;
-window.closeSupportModal = closeSupportModal;
-window.openGeneralScout = openGeneralScout;
-window.openLeaderboardModal = openLeaderboardModal;
-window.openProfileModal = openProfileModal;
-window.openScoutModal = openScoutModal;
-window.openStoreModal = openStoreModal;
-window.openSupportModal = openSupportModal;
-window.switchInlineLeadTab = switchInlineLeadTab;
-window.switchInlineStoreTab = switchInlineStoreTab;
-window.switchInlineUserTab = switchInlineUserTab;
-window.switchLeadTab = switchLeadTab;
-window.switchModalTab = switchModalTab;
-window.switchProfileTab = switchProfileTab;
-window.switchScannerMode = switchScannerMode;
-window.switchStoreTab = switchStoreTab;
-window.switchSupportTab = switchSupportTab;
-window.switchTool = switchTool;
-window.switchTopTipsToolMarket = switchTopTipsToolMarket;
-window.toggleCheckboxCard = toggleCheckboxCard;
-window.toggleFAQCollapse = toggleFAQCollapse;
-window.triggerCloseScoutModal = triggerCloseScoutModal;
-window.buyCoinsInline = buyCoinsInline;
-window.claimDailyRewardInline = claimDailyRewardInline;
-window.claimDailyRewardNav = claimDailyRewardNav;
-window.purchaseCoins = purchaseCoins;
-window.redeemVoucherInline = redeemVoucherInline;
-window.redeemVoucherCode = redeemVoucherCode;
-window.submitSupportTicket = submitSupportTicket;
-window.submitSupportTicketInline = submitSupportTicketInline;
-window.renderLiveScanner = renderLiveScanner;
-window.renderPrematchScanner = renderPrematchScanner;
-window.openLiveScannerHub = openLiveScannerHub;
 
   if (market === 'overunder') {
     return match.predictions.home > 40 ? 'Over 2.5 Goals' : 'Under 2.5 Goals';
@@ -892,6 +855,16 @@ function renderTrends() {
     }
 
     container.innerHTML = "";
+    // Remove any old CSS animation so we control it via JS
+    container.style.animation = "none";
+    container.style.display = "flex";
+    container.style.position = "absolute";
+    container.style.whiteSpace = "nowrap";
+    container.style.left = "0";
+    container.style.top = "0";
+    container.style.gap = "0px";
+
+    // We duplicate the trends 3x for seamless looping
     const combinedTrends = [...trendsData, ...trendsData, ...trendsData];
 
     combinedTrends.forEach(trend => {
@@ -902,8 +875,9 @@ function renderTrends() {
       item.style.display = "inline-flex";
       item.style.alignItems = "center";
       item.style.gap = "6px";
-      item.style.marginRight = "30px";
+      item.style.marginRight = "40px";
       item.style.whiteSpace = "nowrap";
+      item.style.flexShrink = "0";
 
       item.innerHTML = `
         <span style="font-size: 0.95rem;">${trend.icon || '🔥'}</span>
@@ -911,6 +885,30 @@ function renderTrends() {
         <span style="color: #ffffff;">${trend.trend}</span>
       `;
       container.appendChild(item);
+    });
+
+    // After rendering, measure the width of one set of trends and create a pixel-based keyframe animation
+    requestAnimationFrame(() => {
+      const totalWidth = container.scrollWidth;
+      const oneSetWidth = Math.round(totalWidth / 3);
+      if (oneSetWidth <= 0) return;
+
+      // Create or replace a dynamic keyframe rule for the ticker
+      const styleId = "trends-ticker-dynamic-style";
+      let styleEl = document.getElementById(styleId);
+      if (!styleEl) {
+        styleEl = document.createElement("style");
+        styleEl.id = styleId;
+        document.head.appendChild(styleEl);
+      }
+      styleEl.textContent = `
+        @keyframes tickerScrollDynamic {
+          0% { transform: translateX(0); }
+          100% { transform: translateX(-${oneSetWidth}px); }
+        }
+      `;
+
+      container.style.animation = `tickerScrollDynamic ${Math.max(20, oneSetWidth / 50)}s linear infinite`;
     });
   } catch(e) {
     console.error("Hot trends render error:", e);
@@ -1905,19 +1903,19 @@ function claimDailyRewardNav() {
 
 // User Profile Modal Controllers
 
-window.openScoutModal = openScoutModal;
-window.openStoreModal = openStoreModal;
-window.openSupportModal = openSupportModal;
-window.switchInlineLeadTab = switchInlineLeadTab;
-window.switchInlineStoreTab = switchInlineStoreTab;
-window.switchInlineUserTab = switchInlineUserTab;
-window.switchLeadTab = switchLeadTab;
-window.switchModalTab = switchModalTab;
-window.switchProfileTab = switchProfileTab;
-window.switchScannerMode = switchScannerMode;
-window.switchStoreTab = switchStoreTab;
-window.switchSupportTab = switchSupportTab;
-window.switchTool = switchTool;
+try { if (typeof openScoutModal === 'function') window.openScoutModal = openScoutModal; } catch (e) {}
+try { if (typeof openStoreModal === 'function') window.openStoreModal = openStoreModal; } catch (e) {}
+try { if (typeof openSupportModal === 'function') window.openSupportModal = openSupportModal; } catch (e) {}
+try { if (typeof switchInlineLeadTab === 'function') window.switchInlineLeadTab = switchInlineLeadTab; } catch (e) {}
+try { if (typeof switchInlineStoreTab === 'function') window.switchInlineStoreTab = switchInlineStoreTab; } catch (e) {}
+try { if (typeof switchInlineUserTab === 'function') window.switchInlineUserTab = switchInlineUserTab; } catch (e) {}
+try { if (typeof switchLeadTab === 'function') window.switchLeadTab = switchLeadTab; } catch (e) {}
+try { if (typeof switchModalTab === 'function') window.switchModalTab = switchModalTab; } catch (e) {}
+try { if (typeof switchProfileTab === 'function') window.switchProfileTab = switchProfileTab; } catch (e) {}
+try { if (typeof switchScannerMode === 'function') window.switchScannerMode = switchScannerMode; } catch (e) {}
+try { if (typeof switchStoreTab === 'function') window.switchStoreTab = switchStoreTab; } catch (e) {}
+try { if (typeof switchSupportTab === 'function') window.switchSupportTab = switchSupportTab; } catch (e) {}
+try { if (typeof switchTool === 'function') window.switchTool = switchTool; } catch (e) {}
 
 function quickPromptScout(promptText) {
   const text = (promptText || "").toLowerCase();
@@ -1996,9 +1994,9 @@ function triggerHeroScoutPrompt() {
   quickPromptScout(text);
 }
 
-window.triggerHeroScoutPrompt = triggerHeroScoutPrompt;
-window.quickPromptScout = quickPromptScout;
-window.smoothScrollToPremium = smoothScrollToPremium;
+try { if (typeof triggerHeroScoutPrompt === 'function') window.triggerHeroScoutPrompt = triggerHeroScoutPrompt; } catch (e) {}
+try { if (typeof quickPromptScout === 'function') window.quickPromptScout = quickPromptScout; } catch (e) {}
+try { if (typeof smoothScrollToPremium === 'function') window.smoothScrollToPremium = smoothScrollToPremium; } catch (e) {}
 
 function showAppNotification(msg, type = 'info') {
   if (window.showAppNotificationImpl && typeof window.showAppNotificationImpl === 'function') {
