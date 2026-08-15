@@ -1917,68 +1917,77 @@ try { if (typeof switchStoreTab === 'function') window.switchStoreTab = switchSt
 try { if (typeof switchSupportTab === 'function') window.switchSupportTab = switchSupportTab; } catch (e) {}
 try { if (typeof switchTool === 'function') window.switchTool = switchTool; } catch (e) {}
 
-function quickPromptScout(promptText) {
-  const text = (promptText || "").toLowerCase();
+function quickPromptScout(text) {
+  const promptText = (text || "").trim();
+  const lowerText = promptText.toLowerCase();
 
-  // 1. Ensure prompt input boxes are NEVER populated with text strings
+  // 1. Clear input fields
   const heroInput = document.getElementById("hero-scout-input");
   if (heroInput) heroInput.value = "";
   const scoutInput = document.getElementById("scout-chat-input");
   if (scoutInput) scoutInput.value = "";
 
-  // 2. Calculate requested football selection count & title
-  let count = 40;
-  let title = "🎯 AI Scout Generated 40-Match Football Event Selections";
+  // 2. Open AI Scout Modal in general mode
+  openGeneralScout();
 
-  if (text.includes("30")) {
-    count = 30;
-    title = "🎯 AI Scout Generated 30-Match Football Event Selections";
-  } else if (text.includes("20")) {
-    count = 20;
-    title = "🎯 AI Scout Generated 20-Match Football Event Selections";
-  } else if (text.includes("tactic") || text.includes("angle")) {
-    count = 10;
-    title = "🎯 AI Tactical Angle Briefing & 10-Match Football Selections";
-  }
+  // 3. Check prompt intent
+  if (lowerText.includes("40") || lowerText.includes("30") || lowerText.includes("20") || lowerText.includes("tactic") || lowerText.includes("angle") || lowerText.includes("select") || lowerText.includes("acc") || lowerText.includes("pick") || lowerText.includes("slip") || lowerText.includes("build") || lowerText.includes("ev") || lowerText.includes("value") || lowerText === "generate 40 selections" || !promptText) {
+    let count = 40;
+    let title = "🎯 AI Scout Generated 40-Match Football Event Selections";
 
-  // 3. Directly generate football event selections
-  if (typeof generateScoutAccumulator === 'function') {
-    generateScoutAccumulator(count);
-  }
+    if (lowerText.includes("30")) {
+      count = 30;
+      title = "🎯 AI Scout Generated 30-Match Football Event Selections";
+    } else if (lowerText.includes("20")) {
+      count = 20;
+      title = "🎯 AI Scout Generated 20-Match Football Event Selections";
+    } else if (lowerText.includes("tactic") || lowerText.includes("angle")) {
+      count = 10;
+      title = "🎯 AI Tactical Angle Briefing & 10-Match Football Selections";
+    } else if (lowerText.includes("ev") || lowerText.includes("value")) {
+      count = 8;
+      title = "📊 High EV Algorithmic Value Picks";
+    }
 
-  // 4. Open AI Scout Modal
-  if (typeof openGeneralScout === 'function') openGeneralScout();
+    if (typeof generateScoutAccumulator === 'function') {
+      generateScoutAccumulator(count);
+    }
 
-  // 5. Directly render Football Event Selections inside Scout Chat Body
-  const chatBody = document.getElementById("scout-chat-body");
-  if (chatBody) {
-    const selections = window.appState.betslip || [];
-    const totalOdds = selections.reduce((acc, curr) => acc * curr.odds, 1).toFixed(2);
+    const chatBody = document.getElementById("scout-chat-body");
+    if (chatBody) {
+      const selections = (window.appState && window.appState.betslip) ? window.appState.betslip : [];
+      const totalOdds = selections.reduce((acc, curr) => acc * curr.odds, 1).toFixed(2);
 
-    const selectionsList = selections.map((s, idx) => `
-      <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid rgba(255,255,255,0.08); padding: 6px 0; font-size:0.78rem;">
-        <span style="font-weight:700; color:#ffffff;">#${idx+1} ${s.match.homeTeam.name} vs ${s.match.awayTeam.name}</span>
-        <span style="color:#34d399; font-weight:800; background:rgba(16,185,129,0.15); border: 1px solid rgba(16,185,129,0.35); padding: 2px 8px; border-radius:4px;">${s.tip} (@${s.odds.toFixed(2)})</span>
-      </div>
-    `).join("");
+      const selectionsList = selections.map((s, idx) => `
+        <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid rgba(255,255,255,0.08); padding: 6px 0; font-size:0.78rem;">
+          <span style="font-weight:700; color:#ffffff;">#${idx+1} ${s.match.homeTeam.name} vs ${s.match.awayTeam.name}</span>
+          <span style="color:#34d399; font-weight:800; background:rgba(16,185,129,0.15); border: 1px solid rgba(16,185,129,0.35); padding: 2px 8px; border-radius:4px;">${s.tip} (@${s.odds.toFixed(2)})</span>
+        </div>
+      `).join("");
 
-    chatBody.innerHTML = `
-      <div class="chat-bubble scout" style="background: rgba(15, 23, 42, 0.95); border: 1.5px solid rgba(59, 130, 246, 0.55); box-shadow: 0 0 20px rgba(37, 99, 235, 0.3);">
-        <div style="display:flex; flex-direction:column; gap:10px;">
-          <div style="font-weight:900; color:#38bdf8; font-size:0.95rem; font-family: var(--font-display); text-transform: uppercase; letter-spacing: 0.5px;">${title} (@${totalOdds} Total Odds)</div>
-          <div style="font-size:0.82rem; color:#94a3b8;">Here are your <b>${count} high-probability football event selections</b> evaluated by AI Scout algorithms:</div>
-          <div style="max-height: 240px; overflow-y: auto; background: rgba(0,0,0,0.5); border: 1px solid rgba(59, 130, 246, 0.4); border-radius: 8px; padding: 10px 14px; margin: 4px 0;">
-            ${selectionsList}
-          </div>
-          <div style="display:flex; gap:10px; flex-wrap:wrap; margin-top:6px;">
-            <button class="btn btn-primary" onclick="sendBetslipToConverter()" style="font-size:0.8rem; padding:9px 16px; background:linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%); font-weight:800; border-radius: 8px;">⚡ Convert & Place Bet Now</button>
-            <button class="btn btn-secondary" onclick="toggleBetslipDrawer()" style="font-size:0.8rem; padding:9px 16px; border-radius: 8px;">🎫 Open Betslip Drawer</button>
+      chatBody.innerHTML = `
+        <div class="chat-bubble scout" style="background: rgba(15, 23, 42, 0.95); border: 1.5px solid rgba(59, 130, 246, 0.55); box-shadow: 0 0 20px rgba(37, 99, 235, 0.3);">
+          <div style="display:flex; flex-direction:column; gap:10px;">
+            <div style="font-weight:900; color:#38bdf8; font-size:0.95rem; font-family: var(--font-display); text-transform: uppercase; letter-spacing: 0.5px;">${title} (@${totalOdds} Total Odds)</div>
+            <div style="font-size:0.82rem; color:#94a3b8;">Here are your <b>${count} high-probability football event selections</b> evaluated by AI Scout algorithms:</div>
+            <div style="max-height: 240px; overflow-y: auto; background: rgba(0,0,0,0.5); border: 1px solid rgba(59, 130, 246, 0.4); border-radius: 8px; padding: 10px 14px; margin: 4px 0;">
+              ${selectionsList}
+            </div>
+            <div style="display:flex; gap:10px; flex-wrap:wrap; margin-top:6px;">
+              <button class="btn btn-primary" onclick="sendBetslipToConverter()" style="font-size:0.8rem; padding:9px 16px; background:linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%); font-weight:800; border-radius: 8px;">⚡ Convert & Place Bet Now</button>
+              <button class="btn btn-secondary" onclick="toggleBetslipDrawer()" style="font-size:0.8rem; padding:9px 16px; border-radius: 8px;">🎫 Open Betslip Drawer</button>
+            </div>
           </div>
         </div>
-      </div>
-    `;
+      `;
 
-    chatBody.scrollTop = 0;
+      chatBody.scrollTop = 0;
+    }
+  } else {
+    // Custom user question
+    if (typeof sendScoutMessage === 'function') {
+      sendScoutMessage(promptText);
+    }
   }
 }
 
