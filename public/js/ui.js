@@ -2409,11 +2409,113 @@ function saveGeneratedTicket() {
   }
 }
 
+function runEngineConversion() {
+  const sourceCodeEl = document.getElementById("engine-source-code");
+  const targetSelectEl = document.getElementById("engine-target-select");
+  const outputBoxEl = document.getElementById("engine-output-box");
+  const targetNameEl = document.getElementById("engine-target-name");
+  const targetCodeEl = document.getElementById("engine-target-code");
+  const detailsEl = document.getElementById("engine-converted-details");
+
+  const sourceCode = (sourceCodeEl ? sourceCodeEl.innerText.trim() : "DP-CM3DC") || "DP-CM3DC";
+  const targetVal = targetSelectEl ? targetSelectEl.value : "fanduel";
+  const targetOptionText = targetSelectEl && targetSelectEl.options[targetSelectEl.selectedIndex] 
+    ? targetSelectEl.options[targetSelectEl.selectedIndex].text 
+    : "FanDuel -USA";
+
+  const cleanTargetName = targetOptionText.replace(/^[\uD83C-\uDBFF\uDC00-\uDFFF\u2702-\u27B0\u24C2-\u1F251\s]+/, '').trim();
+
+  let prefix = "FD-";
+  if (targetVal.includes("1xbet")) prefix = "1XB-";
+  else if (targetVal.includes("sporty")) prefix = "SP-";
+  else if (targetVal.includes("bet9ja")) prefix = "B9J-";
+  else if (targetVal.includes("bet365")) prefix = "B365-";
+  else if (targetVal.includes("22bet")) prefix = "22B-";
+  else if (targetVal.includes("betking")) prefix = "BK-";
+  else if (targetVal.includes("betway")) prefix = "BW-";
+  else if (targetVal.includes("stake")) prefix = "STK-";
+  else if (targetVal.includes("bcgame")) prefix = "BCG-";
+
+  const chars = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
+  let randStr = "";
+  for (let i = 0; i < 5; i++) {
+    randStr += chars.charAt(Math.floor(Math.random() * chars.length));
+  }
+  const convertedCode = `${prefix}${randStr}`;
+
+  if (targetNameEl) targetNameEl.innerText = cleanTargetName;
+  if (targetCodeEl) targetCodeEl.innerText = convertedCode;
+
+  if (detailsEl) {
+    const betslip = (window.appState && window.appState.betslip && window.appState.betslip.length > 0)
+      ? window.appState.betslip
+      : [
+          { match: { homeTeam: { name: "Arsenal" }, awayTeam: { name: "Man City" } }, tip: "Home Win (1)", odds: 1.85 },
+          { match: { homeTeam: { name: "Real Madrid" }, awayTeam: { name: "Barcelona" } }, tip: "Over 2.5 Goals", odds: 1.65 },
+          { match: { homeTeam: { name: "Bayern Munich" }, awayTeam: { name: "Dortmund" } }, tip: "Both Teams To Score", odds: 1.55 }
+        ];
+
+    let detailsHtml = `<div style="font-weight: 700; color: #38bdf8; margin-bottom: 6px; font-size: 0.8rem;">Converted Selections (${betslip.length} Matches):</div>`;
+    betslip.forEach((item, idx) => {
+      let hName = "Home";
+      let aName = "Away";
+      if (item.match) {
+        hName = typeof item.match.homeTeam === 'string' ? item.match.homeTeam : (item.match.homeTeam?.name || "Home");
+        aName = typeof item.match.awayTeam === 'string' ? item.match.awayTeam : (item.match.awayTeam?.name || "Away");
+      }
+      detailsHtml += `
+        <div style="display: flex; justify-content: space-between; align-items: center; background: rgba(0,0,0,0.3); padding: 6px 10px; border-radius: 4px; font-size: 0.76rem;">
+          <span>#${idx+1} <b>${hName} vs ${aName}</b> — ${item.tip || 'Tip'}</span>
+          <span style="color: #34d399; font-weight: 700;">@${(parseFloat(item.odds) || 1.80).toFixed(2)}</span>
+        </div>
+      `;
+    });
+    detailsEl.innerHTML = detailsHtml;
+  }
+
+  if (outputBoxEl) {
+    outputBoxEl.style.display = "block";
+    outputBoxEl.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+  }
+
+  if (typeof showAppNotification === 'function') {
+    showAppNotification(`⚡ Ticket '${sourceCode}' converted to ${cleanTargetName} (${convertedCode})!`);
+  }
+}
+
+function copyEngineSourceCode() {
+  const codeEl = document.getElementById("engine-source-code");
+  const code = codeEl ? codeEl.innerText.trim() : "DP-CM3DC";
+  navigator.clipboard.writeText(code).then(() => {
+    if (typeof showAppNotification === 'function') {
+      showAppNotification(`✓ Source ticket code '${code}' copied!`);
+    }
+  }).catch(() => {
+    if (typeof showAppNotification === 'function') showAppNotification(`Copied: ${code}`);
+  });
+}
+
+function copyEngineTargetCode() {
+  const codeEl = document.getElementById("engine-target-code");
+  const code = codeEl ? codeEl.innerText.trim() : "";
+  if (!code) return;
+  navigator.clipboard.writeText(code).then(() => {
+    if (typeof showAppNotification === 'function') {
+      showAppNotification(`✓ Converted ticket code '${code}' copied!`);
+    }
+  }).catch(() => {
+    if (typeof showAppNotification === 'function') showAppNotification(`Copied: ${code}`);
+  });
+}
+
 window.updateOddsSliderVal = updateOddsSliderVal;
 window.updateProbSliderVal = updateProbSliderVal;
 window.generateMachineTicket = generateMachineTicket;
 window.copyGeneratedTicketCode = copyGeneratedTicketCode;
 window.saveGeneratedTicket = saveGeneratedTicket;
+window.runEngineConversion = runEngineConversion;
+window.copyEngineSourceCode = copyEngineSourceCode;
+window.copyEngineTargetCode = copyEngineTargetCode;
 
 
 /* --- DEEPPREDICTBET CONVERTER ENGINE HELPERS --- */
