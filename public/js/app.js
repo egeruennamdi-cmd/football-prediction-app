@@ -123,7 +123,12 @@ function getMatchOdds(match) {
 }
 
 function addActiveMatchToBetslip() {
-  const matchId = window.appState.activeScoutMatchId;
+  let matchId = window.appState ? window.appState.activeScoutMatchId : null;
+  const matches = (typeof MATCH_DATA !== 'undefined' && MATCH_DATA) ? MATCH_DATA : (window.MATCH_DATA || []);
+  
+  if (!matchId && matches.length > 0) {
+    matchId = matches[0].id;
+  }
   if (!matchId) return;
 
   if (window.appState.betslip.length >= 40) {
@@ -131,19 +136,17 @@ function addActiveMatchToBetslip() {
     return;
   }
 
-  const match = MATCH_DATA.find(m => m.id === matchId);
+  const match = matches.find(m => m.id === matchId);
   if (!match) return;
 
-  const tip = getMatchTip(match);
-  const odds = getMatchOdds(match);
+  const tip = typeof getMatchTip === 'function' ? getMatchTip(match) : 'Home Win (1)';
+  const odds = typeof getMatchOdds === 'function' ? getMatchOdds(match) : 1.85;
 
-  // Check duplicate
   if (window.appState.betslip.some(item => item.matchId === matchId)) {
     alert("⚠️ This match is already in your active betslip.");
     return;
   }
 
-  // Add selection
   window.appState.betslip.push({
     matchId,
     match,
@@ -151,10 +154,7 @@ function addActiveMatchToBetslip() {
     odds
   });
 
-  // Close Scout Modal
-  triggerCloseScoutModal();
-
-  // Render slip and open drawer
+  if (typeof triggerCloseScoutModal === 'function') triggerCloseScoutModal();
   renderBetslip();
   
   const drawer = document.getElementById("floating-betslip-drawer");
@@ -162,6 +162,57 @@ function addActiveMatchToBetslip() {
     drawer.classList.add("open");
   }
 }
+
+function addMatchCardToBetslip(matchId, e) {
+  if (e && e.stopPropagation) e.stopPropagation();
+
+  if (!window.appState) window.appState = { betslip: [] };
+  if (!window.appState.betslip) window.appState.betslip = [];
+
+  if (window.appState.betslip.length >= 40) {
+    if (typeof showAppNotification === 'function') {
+      showAppNotification("⚠️ Maximum limit of 40 selections reached in your active betslip.");
+    } else {
+      alert("⚠️ Maximum limit of 40 selections reached in your active betslip.");
+    }
+    return;
+  }
+
+  const matches = (typeof MATCH_DATA !== 'undefined' && MATCH_DATA) ? MATCH_DATA : (window.MATCH_DATA || []);
+  const match = matches.find(m => m.id === matchId);
+  if (!match) return;
+
+  if (window.appState.betslip.some(item => item.matchId === matchId)) {
+    if (typeof showAppNotification === 'function') {
+      showAppNotification(`ℹ️ ${match.homeTeam.name} vs ${match.awayTeam.name} is already in your betslip.`);
+    } else {
+      alert(`ℹ️ ${match.homeTeam.name} vs ${match.awayTeam.name} is already in your betslip.`);
+    }
+    return;
+  }
+
+  const tip = typeof getMatchTip === 'function' ? getMatchTip(match) : 'Home Win (1)';
+  const odds = typeof getMatchOdds === 'function' ? getMatchOdds(match) : 1.85;
+
+  window.appState.betslip.push({
+    matchId,
+    match,
+    tip,
+    odds
+  });
+
+  renderBetslip();
+
+  const drawer = document.getElementById("floating-betslip-drawer");
+  if (drawer && !drawer.classList.contains("open")) {
+    drawer.classList.add("open");
+  }
+
+  if (typeof showAppNotification === 'function') {
+    showAppNotification(`✅ Added ${match.homeTeam.name} vs ${match.awayTeam.name} to active betslip!`);
+  }
+}
+window.addMatchCardToBetslip = addMatchCardToBetslip;
 
 function generateScoutAccumulator(count = 40) {
   if (typeof MATCH_DATA === 'undefined' || !MATCH_DATA || MATCH_DATA.length === 0) return;
@@ -1038,6 +1089,13 @@ runOnReady(() => {
 
   // Render inline user hub sidebar
   if (typeof window.switchInlineUserTab === 'function') window.switchInlineUserTab('profile');
+
+  // Initialize Active Betslip Builder with 4 curated top picks if empty
+  if (typeof window.generateScoutAccumulator === 'function' && (!window.appState.betslip || window.appState.betslip.length === 0)) {
+    window.generateScoutAccumulator(4);
+  } else if (typeof window.renderBetslip === 'function') {
+    window.renderBetslip();
+  }
 
   // Initialize advanced filter sub-markets options
   if (typeof window.onFilterMarketChange === 'function') window.onFilterMarketChange();
