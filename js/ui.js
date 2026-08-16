@@ -2,62 +2,168 @@
 
 // Helper to calculate DeepPredictBet-style tips dynamically based on selected market
 function getMatchTip(match) {
-  const market = window.appState.activeMarketSubmenu || 'all';
-  const topTip = window.appState.activeTopTip || 'all';
+  if (!match) return 'Home Win (1)';
+  const market = window.appState ? (window.appState.activeMarketSubmenu || 'all') : 'all';
+  const topTip = window.appState ? (window.appState.activeTopTip || 'all') : 'all';
 
+  const pHome = match.predictions ? match.predictions.home : 45;
+  const pDraw = match.predictions ? match.predictions.draw : 25;
+  const pAway = match.predictions ? match.predictions.away : 30;
+
+  const homeName = (match.homeTeam && match.homeTeam.name) ? match.homeTeam.name : 'Home';
+  const awayName = (match.awayTeam && match.awayTeam.name) ? match.awayTeam.name : 'Away';
+
+  // Compute a deterministic seed from match id / team names for rich market variety
+  const nameHash = (homeName + awayName + (match.id || '')).split('')
+    .reduce((acc, char) => acc + char.charCodeAt(0), 0);
+
+  // If specific Top Tip is chosen
+  if (market === 'toptips' && topTip !== 'all') {
+    switch (topTip) {
+      case 'win1': return 'Home Win (1)';
+      case 'draw': return 'Draw (X)';
+      case 'win2': return 'Away Win (2)';
+      case 'dc1x': return 'Double Chance: 1X';
+      case 'dc12': return 'Double Chance: 12';
+      case 'dcx2': return 'Double Chance: X2';
+      case 'dnb': return pHome >= pAway ? 'DNB: Home' : 'DNB: Away';
+      case 'uo05': return 'Over 0.5 Goals';
+      case 'uo15': return 'Over 1.5 Goals';
+      case 'uo25': return (pHome + pAway > 60 || nameHash % 2 === 0) ? 'Over 2.5 Goals' : 'Under 2.5 Goals';
+      case 'uo35': return (nameHash % 3 === 0) ? 'Over 3.5 Goals' : 'Under 3.5 Goals';
+      case 'uo45': return 'Under 4.5 Goals';
+      case 'uo55': return 'Under 5.5 Goals';
+      case 'uoht05': return 'Over 0.5 Goals HT';
+      case 'uoht15': return (nameHash % 2 === 0) ? 'Under 1.5 Goals HT' : 'Over 1.5 Goals HT';
+      case 'uoht25': return 'Under 2.5 Goals HT';
+      case 'uo2h05': return 'Over 0.5 Goals 2nd Half';
+      case 'uo2h15': return (nameHash % 2 === 0) ? 'Over 1.5 Goals 2nd Half' : 'Under 1.5 Goals 2nd Half';
+      case 'uo2h25': return 'Under 2.5 Goals 2nd Half';
+      case 'mg12': return 'Multi-Goals: 1-2 Goals';
+      case 'mg13': return 'Multi-Goals: 1-3 Goals';
+      case 'mg23': return 'Multi-Goals: 2-3 Goals';
+      case 'mg24': return 'Multi-Goals: 2-4 Goals';
+      case 'mg25': return 'Multi-Goals: 2-5 Goals';
+      case 'mg35': return 'Multi-Goals: 3-5 Goals';
+      case 'mg46': return 'Multi-Goals: 4-6 Goals';
+      case 'eg0': return 'Exact Goals: 0 Goals';
+      case 'eg1': return 'Exact Goals: 1 Goal';
+      case 'eg2': return 'Exact Goals: 2 Goals';
+      case 'eg3': return 'Exact Goals: 3 Goals';
+      case 'eg4': return 'Exact Goals: 4+ Goals';
+      case 'btts': return 'BTTS / GG (Yes)';
+      case 'btts_no': return 'BTTS No (NG)';
+      case 'bttsht': return (nameHash % 2 === 0) ? 'BTTS HT - Yes' : 'BTTS HT - No';
+      case 'btts2h': return 'BTTS 2nd Half - Yes';
+      case 'btts_both': return 'BTTS Both Halves - No';
+      case 'combo_1x2_uo': return pHome >= pAway ? '1 & Over 2.5 Goals' : '2 & Over 2.5 Goals';
+      case 'combo_1x2_under': return pHome >= pAway ? '1 & Under 2.5 Goals' : '2 & Under 2.5 Goals';
+      case 'combo_1x2_gg': return pHome >= pAway ? '1 & GG (BTTS)' : '2 & GG (BTTS)';
+      case 'combo_dc_uo': return pHome >= pAway ? '1X & Over 1.5 Goals' : 'X2 & Over 1.5 Goals';
+      case 'combo_dc_gg': return pHome >= pAway ? '1X & GG (BTTS)' : 'X2 & GG (BTTS)';
+      case 'htft_11': return 'HT/FT: 1/1 (Home/Home)';
+      case 'htft_x1': return 'HT/FT: X/1 (Draw/Home)';
+      case 'htft_21': return 'HT/FT: 2/1 (Away/Home)';
+      case 'htft_1x': return 'HT/FT: 1/X (Home/Draw)';
+      case 'htft_xx': return 'HT/FT: X/X (Draw/Draw)';
+      case 'htft_2x': return 'HT/FT: 2/X (Away/Draw)';
+      case 'htft_12': return 'HT/FT: 1/2 (Home/Away)';
+      case 'htft_x2': return 'HT/FT: X/2 (Draw/Away)';
+      case 'htft_22': return 'HT/FT: 2/2 (Away/Away)';
+      case 'wineither': return pHome >= pAway ? 'Home Win Either Half' : 'Away Win Either Half';
+      case 'winboth': return pHome >= pAway ? 'Home Win Both Halves' : 'Away Win Both Halves';
+      case 'huo05': return 'Home Over 0.5 Goals';
+      case 'huo15': return 'Home Over 1.5 Goals';
+      case 'auo05': return 'Away Over 0.5 Goals';
+      case 'auo15': return 'Away Over 1.5 Goals';
+      case 'hcs': return (pAway < 25 || nameHash % 2 === 0) ? 'Home Clean Sheet - Yes' : 'Home Clean Sheet - No';
+      case 'acs': return (pHome < 25 || nameHash % 3 === 0) ? 'Away Clean Sheet - Yes' : 'Away Clean Sheet - No';
+      case 'hw2n': return 'Home Win to Nil';
+      case 'aw2n': return 'Away Win to Nil';
+      case 'first_goal': return pHome >= pAway ? '1st Goal: Home Team' : '1st Goal: Away Team';
+      case 'c65': return 'Corners Over 6.5';
+      case 'c75': return 'Corners Over 7.5';
+      case 'c85': return 'Corners Over 8.5';
+      case 'c95': return 'Corners Over 9.5';
+      case 'c105': return 'Corners Over 10.5';
+      case 'c115': return 'Corners Over 11.5';
+      case 'c125': return 'Corners Under 12.5';
+      case 'c45ht': return '1st Half Corners Over 4.5';
+      case 'c1x2': return pHome >= pAway ? 'Most Corners: Home' : 'Most Corners: Away';
+      case 'cards35': return 'Total Cards Over 3.5';
+      case 'cards45': return 'Total Cards Over 4.5';
+      case 'cards55': return (nameHash % 2 === 0) ? 'Total Cards Under 5.5' : 'Total Cards Over 5.5';
+      case 'redcard': return (nameHash % 4 === 0) ? 'Red Card: Yes' : 'Red Card: No';
+      case 'penalty': return (nameHash % 3 === 0) ? 'Penalty Awarded: Yes' : 'Penalty Awarded: No';
+      case 'eh1': return pHome > 50 ? 'European Handicap (-1) Home' : 'European Handicap (+1) Away';
+      case 'ah05': return pHome >= pAway ? 'Asian Handicap: Home (-0.5)' : 'Asian Handicap: Away (+0.5)';
+      case 'ah15': return pHome >= 55 ? 'Asian Handicap: Home (-1.5)' : 'Asian Handicap: Away (+1.5)';
+      default: return 'Over 1.5 Goals';
+    }
+  }
+
+  // Category Markets
   if (market === '1x2') {
-    if (match.predictions.home > 45) return 'Home Win (1)';
-    if (match.predictions.away > 45) return 'Away Win (2)';
+    if (pHome > 45) return 'Home Win (1)';
+    if (pAway > 45) return 'Away Win (2)';
+    if (pHome >= pAway) return 'Home Win (1)';
     return 'Draw (X)';
   }
-
-
   if (market === 'overunder') {
-    return match.predictions.home > 40 ? 'Over 2.5 Goals' : 'Under 2.5 Goals';
+    return (pHome + pAway > 60 || nameHash % 2 === 0) ? 'Over 2.5 Goals' : 'Under 2.5 Goals';
   }
   if (market === 'btts') {
-    return match.predictions.home > 45 ? 'BTTS - Yes' : 'BTTS - No';
-  }
-  if (market === 'corners') {
-    return 'Corners Over 8.5';
+    return (pHome > 35 && pAway > 25) ? 'BTTS - Yes' : 'BTTS - No';
   }
   if (market === 'doublechance') {
-    if (match.predictions.home > 40) return '1X (Home/Draw)';
-    return 'X2 (Draw/Away)';
+    if (pHome > 40) return '1X (Home/Draw)';
+    if (pAway > 40) return 'X2 (Draw/Away)';
+    return '12 (Home/Away)';
   }
-  if (market === 'toptips') {
-    const tipMap = {
-      'uo15': 'Over 1.5 Goals',
-      'uo35': 'Under 3.5 Goals',
-      'uoht05': 'Over 0.5 Goals HT',
-      'uoht15': 'Under 1.5 Goals HT',
-      'uo2h05': 'Over 0.5 Goals 2nd Half',
-      'uo2h15': 'Under 1.5 Goals 2nd Half',
-      'bttsht': 'BTTS HT - No',
-      'btts2h': 'BTTS 2nd H - Yes',
-      'c75': 'Corners > 7.5',
-      'c85': 'Corners > 8.5',
-      'c95': 'Corners > 9.5',
-      'c105': 'Corners > 10.5'
-    };
-    if (topTip !== 'all' && tipMap[topTip]) {
-      return tipMap[topTip];
-    }
-    // If 'all', show the first matching top tip
-    if (match.topTips && match.topTips.length > 0) {
-      return tipMap[match.topTips[0]] || 'Over 1.5 Goals';
-    }
-    return 'Over 1.5 Goals';
+  if (market === 'dnb') {
+    return pHome >= pAway ? 'Draw No Bet (Home)' : 'Draw No Bet (Away)';
+  }
+  if (market === 'combo') {
+    if (pHome >= 50) return '1 & Over 2.5 Goals';
+    if (pAway >= 50) return '2 & Over 2.5 Goals';
+    return pHome >= pAway ? '1X & Over 1.5 Goals' : 'X2 & Over 1.5 Goals';
+  }
+  if (market === 'htft') {
+    if (pHome >= 50) return 'HT/FT: 1/1 (Home/Home)';
+    if (pAway >= 50) return 'HT/FT: 2/2 (Away/Away)';
+    return 'HT/FT: X/1 (Draw/Home)';
+  }
+  if (market === 'multigoals') {
+    const mgOptions = ['Multi-Goals: 2-4 Goals', 'Multi-Goals: 2-3 Goals', 'Multi-Goals: 1-3 Goals', 'Multi-Goals: 2-5 Goals'];
+    return mgOptions[nameHash % mgOptions.length];
+  }
+  if (market === 'teamspec') {
+    if (pHome >= 50) return 'Home Over 1.5 Goals';
+    if (pAway >= 50) return 'Away Over 1.5 Goals';
+    return pHome >= pAway ? 'Home Clean Sheet' : 'Away Clean Sheet';
+  }
+  if (market === 'corners') {
+    const cornerOpts = ['Corners Over 8.5', 'Corners Over 9.5', 'Corners Over 7.5', '1st Half Corners Over 4.5'];
+    return cornerOpts[nameHash % cornerOpts.length];
+  }
+  if (market === 'cards') {
+    const cardOpts = ['Total Cards Over 3.5', 'Total Cards Over 4.5', 'Total Cards Under 5.5', 'Red Card: No'];
+    return cardOpts[nameHash % cardOpts.length];
+  }
+  if (market === 'handicap') {
+    if (pHome >= 55) return 'Asian Handicap: Home (-1.0)';
+    if (pHome >= 45) return 'Asian Handicap: Home (-0.5)';
+    return 'Asian Handicap: Away (+0.5)';
   }
 
   // Fallback default tip mapping
-  if (match.id === 'match-1') return '1X';
-  if (match.id === 'match-2') return '1';
-  if (match.id === 'match-3') return 'Over 2.5';
+  if (match.id === 'match-1') return 'Home Win (1)';
+  if (match.id === 'match-2') return 'Home Win (1)';
+  if (match.id === 'match-3') return 'Over 2.5 Goals';
   if (match.id === 'match-4') return '1 & Over 2.5';
-  if (match.id === 'match-5') return '1';
-  if (match.id === 'match-6') return 'Under 2.5';
-  return '1X';
+  if (match.id === 'match-5') return 'Home Win (1)';
+  if (match.id === 'match-6') return 'Under 2.5 Goals';
+  return pHome >= pAway ? 'Home Win (1)' : 'Over 1.5 Goals';
 }
 
 // Render match cards dynamically
@@ -226,7 +332,7 @@ function renderMatchCards(fixtures) {
           <span style="color: var(--text-secondary); font-size: 0.75rem;">Conf: <b>${match.confidenceVal}%</b></span>
         </div>
         <div style="display: flex; align-items: center; gap: 8px; justify-content: flex-end; width: 100%;">
-          <span style="font-family: var(--font-display); font-weight: 700; font-size: 0.95rem; color: var(--text-primary);" class="desktop-only-odds">@1.82</span>
+          <span style="font-family: var(--font-display); font-weight: 700; font-size: 0.95rem; color: var(--text-primary);" class="desktop-only-odds">@${(typeof getMatchOdds === 'function' ? getMatchOdds(match) : 1.85).toFixed(2)}</span>
           <button class="btn btn-primary" onclick="addMatchCardToBetslip('${match.id}', event)" style="padding: 6px 10px; font-size: 0.75rem; height: 32px; font-weight: 700; background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%); border: none; border-radius: var(--radius-sm); color: #fff; cursor: pointer; white-space: nowrap;">
             ➕ Add to Slip
           </button>
@@ -4094,3 +4200,7 @@ window.executeHeroBetCodeConversion = executeHeroBetCodeConversion;
 window.convertBetCode = convertBetCode;
 window.copyTargetBookingCode = copyTargetBookingCode;
 window.closeConversionResultModal = closeConversionResultModal;
+window.getMatchTip = getMatchTip;
+window.renderMatchCards = renderMatchCards;
+if (typeof filterMarketSubmenu === 'function') window.filterMarketSubmenu = filterMarketSubmenu;
+if (typeof filterTopTip === 'function') window.filterTopTip = filterTopTip;

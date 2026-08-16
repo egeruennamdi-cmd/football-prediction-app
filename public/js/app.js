@@ -1918,15 +1918,15 @@ window.triggerHeroScoutPrompt = triggerHeroScoutPrompt;
 window.quickPromptScout = quickPromptScout;
 
 function filterMarketSubmenu(marketVal, btn) {
+  if (!window.appState) window.appState = {};
   window.appState.activeMarketSubmenu = marketVal;
   window.appState.activeTopTip = 'all';
 
-  if (btn && btn.parentElement) {
-    const parent = btn.parentElement;
-    const buttons = parent.querySelectorAll(".tab-btn");
-    buttons.forEach(b => b.classList.remove("active"));
-    btn.classList.add("active");
+  const container = document.getElementById("market-submenus-container");
+  if (container) {
+    container.querySelectorAll(".tab-btn").forEach(b => b.classList.remove("active"));
   }
+  if (btn) btn.classList.add("active");
 
   if (typeof updateFixturesDisplay === 'function') updateFixturesDisplay();
 }
@@ -1934,15 +1934,15 @@ window.filterMarketSubmenu = filterMarketSubmenu;
 
 // Filter matches by specific Top Tips markets
 function filterTopTip(topTipVal, btn) {
+  if (!window.appState) window.appState = {};
   window.appState.activeTopTip = topTipVal;
   window.appState.activeMarketSubmenu = 'toptips';
 
-  if (btn && btn.parentElement) {
-    const parent = btn.parentElement;
-    const buttons = parent.querySelectorAll(".tab-btn");
-    buttons.forEach(b => b.classList.remove("active"));
-    btn.classList.add("active");
+  const container = document.getElementById("market-submenus-container");
+  if (container) {
+    container.querySelectorAll(".tab-btn").forEach(b => b.classList.remove("active"));
   }
+  if (btn) btn.classList.add("active");
 
   if (typeof updateFixturesDisplay === 'function') updateFixturesDisplay();
 }
@@ -2320,58 +2320,29 @@ function updateFixturesDisplay() {
     filtered = filtered.filter(m => window.appState.watchlist.includes(m.id));
   }
 
-  // 3. Market Submenu Filter
+  // 3. Market Submenu & Top Tip Filter
   const marketVal = window.appState.activeMarketSubmenu || 'all';
-  if (marketVal === 'toptips') {
-    // Filter by Top Tips Classification
-    const targetTopTip = window.appState.activeTopTip || 'all';
-    if (targetTopTip !== 'all') {
-      filtered = filtered.filter(m => {
-        if (m.topTips && m.topTips.includes(targetTopTip)) return true;
-        const tip = getMatchTip(m).toLowerCase();
-        if (targetTopTip === 'dnb') return tip.includes("dnb") || tip.includes("draw no bet");
-        if (targetTopTip === 'bttsht') return tip.includes("btts") && tip.includes("ht");
-        if (targetTopTip === 'btts2h') return tip.includes("btts") && tip.includes("2h");
-        if (targetTopTip.startsWith('mg')) return tip.includes("goals") || tip.includes("multi");
-        if (targetTopTip.startsWith('eg')) return tip.includes("goal");
-        if (targetTopTip.startsWith('combo')) return tip.includes("+") || tip.includes("combo") || tip.includes("&");
-        if (targetTopTip.startsWith('htft')) return tip.includes("/") || tip.includes("ht/ft");
-        if (targetTopTip.startsWith('cards') || targetTopTip === 'redcard') return tip.includes("card") || tip.includes("yellow") || tip.includes("red");
-        if (targetTopTip === 'penalty') return tip.includes("penalty");
-        if (targetTopTip.startsWith('ah')) return tip.includes("handicap") || tip.includes("-") || tip.includes("+");
-        return true;
-      });
-    }
-  } else if (marketVal !== 'all') {
-    filtered = filtered.filter(match => {
-      const tip = getMatchTip(match).toLowerCase();
-      if (marketVal === '1x2') {
-        return tip.includes("win") || tip.includes("draw") || tip.includes("(1)") || tip.includes("(x)") || tip.includes("(2)");
-      } else if (marketVal === 'overunder') {
-        return tip.includes("over") || tip.includes("under") || tip.includes("goals");
-      } else if (marketVal === 'btts') {
-        return tip.includes("btts") || tip.includes("both") || tip.includes("score") || tip.includes("gg") || tip.includes("ng");
-      } else if (marketVal === 'corners') {
-        return tip.includes("corners") || tip.includes("corner");
-      } else if (marketVal === 'doublechance') {
-        return tip.includes("1x") || tip.includes("x2") || tip.includes("12") || tip.includes("double chance");
-      } else if (marketVal === 'dnb') {
-        return tip.includes("dnb") || tip.includes("draw no bet");
-      } else if (marketVal === 'combo') {
-        return tip.includes("combo") || tip.includes("&") || tip.includes("+") || (tip.includes("win") && tip.includes("over"));
-      } else if (marketVal === 'htft') {
-        return tip.includes("ht/ft") || tip.includes("/") || tip.includes("half time") || tip.includes("win either");
-      } else if (marketVal === 'multigoals') {
-        return tip.includes("goals") || tip.includes("multi") || tip.includes("exact");
-      } else if (marketVal === 'teamspec') {
-        return tip.includes("home") || tip.includes("away") || tip.includes("clean sheet") || tip.includes("nil");
-      } else if (marketVal === 'cards') {
-        return tip.includes("card") || tip.includes("yellow") || tip.includes("red") || tip.includes("booking");
-      } else if (marketVal === 'handicap') {
-        return tip.includes("handicap") || tip.includes("asian") || tip.includes("+") || tip.includes("-");
+  const targetTopTip = window.appState.activeTopTip || 'all';
+
+  if (marketVal === 'toptips' && targetTopTip !== 'all') {
+    const directionalFilters = {
+      'win1': m => (m.predictions ? m.predictions.home >= 38 : true),
+      'draw': m => (m.predictions ? m.predictions.draw >= 20 : true),
+      'win2': m => (m.predictions ? m.predictions.away >= 25 : true),
+      'dc1x': m => (m.predictions ? (m.predictions.home + m.predictions.draw) >= 60 : true),
+      'dc12': m => (m.predictions ? (m.predictions.home + m.predictions.away) >= 65 : true),
+      'dcx2': m => (m.predictions ? (m.predictions.draw + m.predictions.away) >= 50 : true),
+      'dnb': m => true,
+      'btts': m => (m.predictions ? m.predictions.home > 30 && m.predictions.away > 20 : true),
+      'btts_no': m => (m.predictions ? m.predictions.home <= 30 || m.predictions.away <= 20 : true)
+    };
+
+    if (directionalFilters[targetTopTip]) {
+      const specificFiltered = filtered.filter(directionalFilters[targetTopTip]);
+      if (specificFiltered.length > 0) {
+        filtered = specificFiltered;
       }
-      return true;
-    });
+    }
   }
 
   // 4. Search Filter
