@@ -2529,7 +2529,7 @@ function runEngineConversion() {
     ? targetSelectEl.options[targetSelectEl.selectedIndex].text 
     : "FanDuel -USA";
 
-  const cleanTargetName = targetOptionText.replace(/^[\uD83C-\uDBFF\uDC00-\uDFFF\u2702-\u27B0\u24C2-\u1F251\s]+/, '').trim();
+  const cleanTargetName = targetOptionText.replace(/^[^a-zA-Z0-9]+/, '').trim() || targetOptionText.trim();
 
   let prefix = "FD-";
   if (targetVal.includes("1xbet")) prefix = "1XB-";
@@ -3605,7 +3605,7 @@ window.addEventListener('load', function() {
 
 // Global Exports
 window.renderSidebarTopLeagues = renderSidebarTopLeagues;
-window.filterSidebarTopLeagues = filterSidebarTopLeagues;
+if (typeof filterSidebarTopLeagues === 'function') window.filterSidebarTopLeagues = filterSidebarTopLeagues;
 
 
 /* --- BULLETPROOF COUNTRY DIRECTORY ACCORDION POPULATOR --- */
