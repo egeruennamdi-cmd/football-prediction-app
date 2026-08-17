@@ -1459,7 +1459,7 @@ function renderTopTipsTool() {
   let matching = MATCH_DATA.filter(m => m.topTips && m.topTips.includes(activeMarket));
   
   if (matching.length === 0) {
-    // Dynamic fallback matching for extended Bet9ja markets
+    // Dynamic fallback matching for extended DeepPredictBet markets
     matching = MATCH_DATA.filter(m => {
       const tip = typeof getMatchTip === 'function' ? getMatchTip(m).toLowerCase() : '';
       if (activeMarket === 'dnb') return tip.includes("dnb") || tip.includes("draw no bet");
@@ -1483,7 +1483,7 @@ function renderTopTipsTool() {
     return;
   }
 
-  // Market label mapping (Complete Exhaustive Bet9ja Suite)
+  // Market label mapping (Complete Exhaustive DeepPredictBet Suite)
   const labels = {
     win1: "1X2: Home Win (1)",
     draw: "1X2: Draw (X)",
