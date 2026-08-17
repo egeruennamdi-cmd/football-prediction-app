@@ -4193,7 +4193,25 @@ function closeConversionResultModal(e, force = false) {
   }
 }
 
+function openBetDoctorModal() {
+  if (typeof triggerToolRoute === 'function') {
+    triggerToolRoute('doctor');
+  } else {
+    window.location.hash = '#tools-hub';
+  }
+}
+
+function toggleAdvanceFilters() {
+  if (typeof triggerToolRoute === 'function') {
+    triggerToolRoute('filters');
+  } else {
+    window.location.hash = '#predictions';
+  }
+}
+
 // Global Exports
+window.openBetDoctorModal = openBetDoctorModal;
+window.toggleAdvanceFilters = toggleAdvanceFilters;
 window.resolveConverterInputs = resolveConverterInputs;
 window.convertBetSlipCode = convertBetSlipCode;
 window.executeHeroBetCodeConversion = executeHeroBetCodeConversion;

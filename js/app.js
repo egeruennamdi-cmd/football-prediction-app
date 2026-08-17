@@ -2861,6 +2861,24 @@ try { if (typeof applyDoctorPrescription === 'function') window.applyDoctorPresc
 try { if (typeof convertAuditedTicket === 'function') window.convertAuditedTicket = convertAuditedTicket; } catch (e) {}
 try { if (typeof runArbitrageScanner === 'function') window.runArbitrageScanner = runArbitrageScanner; } catch (e) {}
 
+function openBetDoctorModal() {
+  if (typeof triggerToolRoute === 'function') {
+    triggerToolRoute('doctor');
+  } else {
+    window.location.hash = '#tools-hub';
+  }
+}
+
+function toggleAdvanceFilters() {
+  if (typeof triggerToolRoute === 'function') {
+    triggerToolRoute('filters');
+  } else {
+    window.location.hash = '#predictions';
+  }
+}
+window.openBetDoctorModal = openBetDoctorModal;
+window.toggleAdvanceFilters = toggleAdvanceFilters;
+
 // Auto-Export Window Bindings for app.js
 try { if (typeof addActiveMatchToBetslip === 'function') window.addActiveMatchToBetslip = addActiveMatchToBetslip; } catch (e) {}
 try { if (typeof applyBarTopTip === 'function') window.applyBarTopTip = applyBarTopTip; } catch (e) {}
