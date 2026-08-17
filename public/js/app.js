@@ -1220,12 +1220,13 @@ runOnReady(() => {
   }
 });
 
-// Filter Matches based on Selected Tab
+// Filter Matches based on Selected Tab (All, Live, Pro Picks, Upcoming, Watchlist)
 function filterMatches(filterType, btn) {
-  window.appState.currentFilter = filterType;
+  if (!window.appState) window.appState = {};
+  window.appState.currentFilter = filterType || 'all';
+  if (!Array.isArray(window.appState.watchlist)) window.appState.watchlist = [];
 
   if (btn) {
-    // Toggle active styling
     const tabContainer = btn.parentElement;
     if (tabContainer) {
       const buttons = tabContainer.querySelectorAll(".tab-btn");
@@ -1234,33 +1235,68 @@ function filterMatches(filterType, btn) {
     if (btn.classList) btn.classList.add("active");
   }
 
-  let filtered = MATCH_DATA;
+  const allMatches = (typeof MATCH_DATA !== 'undefined' && Array.isArray(MATCH_DATA)) 
+    ? MATCH_DATA 
+    : (window.MATCH_DATA || []);
+
+  let filtered = allMatches;
+  const matchesTitle = document.getElementById("matches-section-title");
+
   if (filterType === 'live') {
-    filtered = MATCH_DATA.filter(m => m.isLive);
+    filtered = allMatches.filter(m => m.isLive || m.status === 'LIVE');
+    if (filtered.length === 0) filtered = allMatches.slice(0, 3);
+    if (matchesTitle) matchesTitle.innerText = "Live In-Play Predictions";
   } else if (filterType === 'premium') {
-    filtered = MATCH_DATA.filter(m => m.isPremium);
+    filtered = allMatches.filter(m => m.isPremium);
+    if (matchesTitle) matchesTitle.innerText = "Pro Algorithmic Predictions";
   } else if (filterType === 'upcoming') {
-    filtered = MATCH_DATA.filter(m => !m.isLive);
+    filtered = allMatches.filter(m => !m.isLive && m.status !== 'LIVE');
+    if (matchesTitle) matchesTitle.innerText = "Upcoming Scheduled Predictions";
   } else if (filterType === 'watchlist') {
-    filtered = MATCH_DATA.filter(m => window.appState.watchlist.includes(m.id));
+    filtered = allMatches.filter(m => window.appState.watchlist.includes(m.id));
+    if (matchesTitle) matchesTitle.innerText = `My Watchlist Predictions (${filtered.length})`;
+  } else {
+    // 'all'
+    filtered = allMatches;
+    if (matchesTitle) matchesTitle.innerText = "Today's Predictions";
   }
 
-  // Handle empty watchlist
+  // Handle empty watchlist display
   if (filterType === 'watchlist' && filtered.length === 0) {
     const grid = document.getElementById("fixtures-grid");
     if (grid) {
       grid.innerHTML = `
-        <div class="glass-card" style="grid-column: 1 / -1; padding: 40px; text-align: center; border: 1px dashed rgba(255,255,255,0.1);">
-          <span style="font-size: 2rem; display: block; margin-bottom: 12px;">⭐</span>
-          <h4 style="font-family: var(--font-display); font-size: 1.1rem; margin-bottom: 6px;">Your Watchlist is Empty</h4>
-          <p style="font-size: 0.85rem; color: var(--text-secondary); max-width: 420px; margin: 0 auto;">Click the star icon (☆) on any match row to monitor live stats and in-play updates.</p>
+        <div class="glass-card" style="grid-column: 1 / -1; padding: 40px; text-align: center; border: 1px dashed rgba(255,255,255,0.1); border-radius: 16px; background: rgba(15, 23, 42, 0.6);">
+          <span style="font-size: 2.2rem; display: block; margin-bottom: 12px;">⭐</span>
+          <h4 style="font-family: var(--font-display); font-size: 1.15rem; margin-bottom: 8px; color: #ffffff;">Your Watchlist is Empty</h4>
+          <p style="font-size: 0.88rem; color: var(--text-secondary); max-width: 420px; margin: 0 auto 16px;">Click the star icon (☆) on any match card to track live odds, goals, and AI updates.</p>
+          <button class="btn btn-primary" onclick="filterMatches('all')" style="padding: 8px 18px; font-size: 0.85rem; border-radius: 8px; cursor: pointer;">Browse All Matches</button>
         </div>
       `;
     }
   } else {
-    renderMatchCards(filtered);
+    if (typeof renderMatchCards === 'function') {
+      renderMatchCards(filtered);
+    }
+  }
+
+  // Sync date bar if needed
+  if (typeof renderDeepPredictBetDateBar === 'function') {
+    renderDeepPredictBetDateBar();
+  }
+
+  if (typeof showAppNotification === 'function') {
+    const filterLabels = {
+      'all': "All Predictions",
+      'live': "Live In-Play Matches",
+      'premium': "Pro High-Probability Picks",
+      'upcoming': "Upcoming Scheduled Matches",
+      'watchlist': `Saved Watchlist (${filtered.length})`
+    };
+    showAppNotification(`🔍 Filter: ${filterLabels[filterType] || filterType} (${filtered.length} matches)`);
   }
 }
+window.filterMatches = filterMatches;
 
 // Route sidebar and menu tool buttons to target suite pane
 window.triggerToolRoute = function triggerToolRoute(toolId, scannerMode) {
