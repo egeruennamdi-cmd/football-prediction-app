@@ -2104,12 +2104,19 @@ function quickPromptScout(text) {
   const scoutInput = document.getElementById("scout-chat-input");
   if (scoutInput) scoutInput.value = "";
 
-  // 2. Resolve count and title
+  // 2. Intelligently extract requested number (e.g. 12, 15, 20, 30, 40, etc.)
   let count = 40;
   let title = "🎯 AI Scout Generated 40-Match Football Event Selections";
   let mode = "selections";
 
-  if (lowerText.includes("30")) {
+  const numMatches = lowerText.match(/\b([1-9]|[1-4][0-9]|50)\b/g);
+  if (numMatches && numMatches.length > 0) {
+    const nums = numMatches.map(n => parseInt(n)).filter(n => !isNaN(n) && n >= 3 && n <= 50);
+    if (nums.length > 0) {
+      count = Math.min(Math.max(nums[nums.length - 1], 3), 40);
+      title = `🎯 AI Scout Generated ${count}-Match Football Event Selections`;
+    }
+  } else if (lowerText.includes("30")) {
     count = 30;
     title = "🎯 AI Scout Generated 30-Match Football Event Selections";
   } else if (lowerText.includes("20")) {
@@ -2155,13 +2162,22 @@ function quickPromptScout(text) {
     `;
   }).join("");
 
+  let subtitleText = `Here are your <b>${count} high-probability football event selections</b> evaluated by AI Scout algorithms:`;
+  if (mode === 'tactics') {
+    subtitleText = `Tactical evaluation analyzing high pressing triggers & transition speed. Curated <b>${count} Positive EV picks</b>:`;
+  } else if (mode === 'value') {
+    subtitleText = `Algorithmic value models identified <b>${count} High Expected Value (EV) opportunities</b> today:`;
+  } else if (promptText && promptText.length > 2 && !promptText.startsWith("Generate")) {
+    subtitleText = `AI Scout analyzed your query <i>"${promptText}"</i> and curated <b>${count} high-probability selections</b>:`;
+  }
+
   const contentHtml = `
     <div style="display:flex; flex-direction:column; gap:10px;">
       <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:6px;">
         <div style="font-weight:900; color:#38bdf8; font-size:0.95rem; font-family: var(--font-display); text-transform: uppercase; letter-spacing: 0.5px;">${title}</div>
         <span style="color:#34d399; font-weight:800; font-size:0.88rem; background:rgba(16,185,129,0.2); border:1px solid #10b981; padding:2px 10px; border-radius:12px;">@${totalOdds} Total Odds</span>
       </div>
-      <div style="font-size:0.82rem; color:#94a3b8;">${mode === 'tactics' ? 'Tactical evaluation analyzing high pressing triggers & transition speed. Curated <b>10 Positive EV picks</b>:' : `Here are your <b>${count} high-probability football event selections</b> evaluated by AI Scout algorithms:`}</div>
+      <div style="font-size:0.82rem; color:#94a3b8;">${subtitleText}</div>
       <div style="max-height: 260px; overflow-y: auto; background: rgba(0,0,0,0.65); border: 1.5px solid rgba(59, 130, 246, 0.45); border-radius: 8px; padding: 10px 14px; margin: 4px 0;">
         ${selectionsList}
       </div>
@@ -2178,6 +2194,9 @@ function quickPromptScout(text) {
   if (heroResults) {
     heroResults.innerHTML = contentHtml;
     heroResults.style.display = "block";
+    try {
+      heroResults.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    } catch (e) {}
   }
 
   // 5. Also Render in Modal Chat Body
@@ -2191,8 +2210,7 @@ function quickPromptScout(text) {
     chatBody.scrollTop = 0;
   }
 
-  // 6. Open Scout Modal & show notification
-  openGeneralScout();
+  // 6. Show notification
   if (typeof showAppNotification === 'function') {
     showAppNotification(`🎯 AI Scout generated ${count} football event selections!`);
   }
@@ -2201,7 +2219,6 @@ function quickPromptScout(text) {
 function triggerHeroScoutPrompt() {
   const heroInput = document.getElementById("hero-scout-input");
   let text = heroInput ? heroInput.value.trim() : "";
-  if (heroInput) heroInput.value = "";
 
   if (!text) {
     text = "Generate 40 selections";
