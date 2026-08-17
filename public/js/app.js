@@ -2001,10 +2001,11 @@ function triggerHeroScoutPrompt() {
 window.triggerHeroScoutPrompt = triggerHeroScoutPrompt;
 window.quickPromptScout = quickPromptScout;
 
-// Auto-run AI Scout Selections on page load
+// Auto-run AI Scout Selections & Hot Trends on page load
 function initHeroScoutDynamicOutput() {
   setTimeout(() => {
     quickPromptScout("Generate 40 selections", false);
+    if (typeof renderTrends === 'function') renderTrends();
   }, 100);
 }
 if (document.readyState === 'loading') {
@@ -2013,6 +2014,53 @@ if (document.readyState === 'loading') {
   initHeroScoutDynamicOutput();
 }
 window.addEventListener('load', initHeroScoutDynamicOutput);
+
+function renderTrends() {
+  const container = document.getElementById("trends-ticker-container");
+  if (!container) return;
+
+  try {
+    const defaultTrends = [
+      { team: "Arsenal", icon: "🔴", trend: "Won last 6 home matches in Premier League" },
+      { team: "Real Madrid", icon: "⚪", trend: "Over 2.5 Goals in 8 consecutive games" },
+      { team: "Bayern Munich", icon: "🔴⚪", trend: "BTTS Yes in 9 of last 10 fixtures" },
+      { team: "Barcelona", icon: "🔵🔴", trend: "Unbeaten in last 12 La Liga matches" },
+      { team: "Manchester City", icon: "🩵", trend: "Scored 2+ Goals in last 7 matches" },
+      { team: "Inter Milan", icon: "🔵⚫", trend: "Clean sheet in 5 consecutive games" },
+      { team: "PSG", icon: "🗼", trend: "Won first half in 8 of last 10 matches" },
+      { team: "Liverpool", icon: "🔴🛡️", trend: "Over 1.5 Goals in 14 straight games" },
+      { team: "Bayer Leverkusen", icon: "🔴⚫", trend: "Unbeaten streak in 15 domestic games" },
+      { team: "Juventus", icon: "⚪⚫", trend: "Under 2.5 Goals in 7 of last 9 matches" }
+    ];
+
+    let trendsData = defaultTrends;
+    if (typeof HOT_TRENDS !== 'undefined' && Array.isArray(HOT_TRENDS) && HOT_TRENDS.length > 0) {
+      trendsData = HOT_TRENDS;
+    } else if (typeof window.HOT_TRENDS !== 'undefined' && Array.isArray(window.HOT_TRENDS) && window.HOT_TRENDS.length > 0) {
+      trendsData = window.HOT_TRENDS;
+    }
+
+    const combinedTrends = [...trendsData, ...trendsData, ...trendsData];
+
+    container.innerHTML = combinedTrends.map(trend => `
+      <span style="font-size: 0.82rem; font-weight: 600; color: #cbd5e1; display: inline-flex; align-items: center; gap: 6px; margin-right: 40px; white-space: nowrap; flex-shrink: 0;">
+        <span style="font-size: 0.95rem;">${trend.icon || '🔥'}</span>
+        <b style="color: #60a5fa; font-weight: 800;">${trend.team}:</b>
+        <span style="color: #ffffff;">${trend.trend}</span>
+      </span>
+    `).join("");
+
+    container.style.display = "flex";
+    container.style.position = "absolute";
+    container.style.whiteSpace = "nowrap";
+    container.style.left = "0";
+    container.style.top = "0";
+    container.style.animation = "tickerScroll 35s linear infinite";
+  } catch(e) {
+    console.error("Hot trends render error:", e);
+  }
+}
+window.renderTrends = renderTrends;
 window.triggerHeroScoutPrompt = triggerHeroScoutPrompt;
 window.quickPromptScout = quickPromptScout;
 

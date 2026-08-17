@@ -974,7 +974,9 @@ function renderTrends() {
       { team: "Manchester City", icon: "🩵", trend: "Scored 2+ Goals in last 7 matches" },
       { team: "Inter Milan", icon: "🔵⚫", trend: "Clean sheet in 5 consecutive games" },
       { team: "PSG", icon: "🗼", trend: "Won first half in 8 of last 10 matches" },
-      { team: "Liverpool", icon: "🔴🛡️", trend: "Over 1.5 Goals in 14 straight games" }
+      { team: "Liverpool", icon: "🔴🛡️", trend: "Over 1.5 Goals in 14 straight games" },
+      { team: "Bayer Leverkusen", icon: "🔴⚫", trend: "Unbeaten streak in 15 domestic games" },
+      { team: "Juventus", icon: "⚪⚫", trend: "Under 2.5 Goals in 7 of last 9 matches" }
     ];
 
     let trendsData = defaultTrends;
@@ -984,66 +986,35 @@ function renderTrends() {
       trendsData = window.HOT_TRENDS;
     }
 
-    container.innerHTML = "";
-    // Remove any old CSS animation so we control it via JS
-    container.style.animation = "none";
+    const combinedTrends = [...trendsData, ...trendsData, ...trendsData];
+
+    container.innerHTML = combinedTrends.map(trend => `
+      <span style="font-size: 0.82rem; font-weight: 600; color: #cbd5e1; display: inline-flex; align-items: center; gap: 6px; margin-right: 40px; white-space: nowrap; flex-shrink: 0;">
+        <span style="font-size: 0.95rem;">${trend.icon || '🔥'}</span>
+        <b style="color: #60a5fa; font-weight: 800;">${trend.team}:</b>
+        <span style="color: #ffffff;">${trend.trend}</span>
+      </span>
+    `).join("");
+
     container.style.display = "flex";
     container.style.position = "absolute";
     container.style.whiteSpace = "nowrap";
     container.style.left = "0";
     container.style.top = "0";
-    container.style.gap = "0px";
-
-    // We duplicate the trends 3x for seamless looping
-    const combinedTrends = [...trendsData, ...trendsData, ...trendsData];
-
-    combinedTrends.forEach(trend => {
-      const item = document.createElement("span");
-      item.style.fontSize = "0.82rem";
-      item.style.fontWeight = "600";
-      item.style.color = "#cbd5e1";
-      item.style.display = "inline-flex";
-      item.style.alignItems = "center";
-      item.style.gap = "6px";
-      item.style.marginRight = "40px";
-      item.style.whiteSpace = "nowrap";
-      item.style.flexShrink = "0";
-
-      item.innerHTML = `
-        <span style="font-size: 0.95rem;">${trend.icon || '🔥'}</span>
-        <b style="color: #60a5fa; font-weight: 800;">${trend.team}:</b>
-        <span style="color: #ffffff;">${trend.trend}</span>
-      `;
-      container.appendChild(item);
-    });
-
-    // After rendering, measure the width of one set of trends and create a pixel-based keyframe animation
-    requestAnimationFrame(() => {
-      const totalWidth = container.scrollWidth;
-      const oneSetWidth = Math.round(totalWidth / 3);
-      if (oneSetWidth <= 0) return;
-
-      // Create or replace a dynamic keyframe rule for the ticker
-      const styleId = "trends-ticker-dynamic-style";
-      let styleEl = document.getElementById(styleId);
-      if (!styleEl) {
-        styleEl = document.createElement("style");
-        styleEl.id = styleId;
-        document.head.appendChild(styleEl);
-      }
-      styleEl.textContent = `
-        @keyframes tickerScrollDynamic {
-          0% { transform: translateX(0); }
-          100% { transform: translateX(-${oneSetWidth}px); }
-        }
-      `;
-
-      container.style.animation = `tickerScrollDynamic ${Math.max(20, oneSetWidth / 50)}s linear infinite`;
-    });
+    container.style.animation = "tickerScroll 35s linear infinite";
   } catch(e) {
     console.error("Hot trends render error:", e);
   }
 }
+window.renderTrends = renderTrends;
+
+// Auto-run Hot Trends on site load
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', renderTrends);
+} else {
+  renderTrends();
+}
+window.addEventListener('load', renderTrends);
 
 // Render League Statistics Ledger
 function renderLeagueStatsLedger() {
