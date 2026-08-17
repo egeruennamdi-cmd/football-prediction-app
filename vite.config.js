@@ -29,12 +29,33 @@ function syncPublicPlugin() {
       if (fs.existsSync(jsDir)) copyDir(jsDir, path.join(root, 'public', 'js'));
       if (fs.existsSync(cssDir)) copyDir(cssDir, path.join(root, 'public', 'css'));
       console.log('✅ Vite plugin: Synchronized js/ and css/ into public/');
+    },
+    configureServer(server) {
+      const root = process.cwd();
+      const jsDir = path.join(root, 'js');
+      const cssDir = path.join(root, 'css');
+      if (fs.existsSync(jsDir)) copyDir(jsDir, path.join(root, 'public', 'js'));
+      if (fs.existsSync(cssDir)) copyDir(cssDir, path.join(root, 'public', 'css'));
+      console.log('✅ Vite dev server: Synchronized js/ and css/ into public/');
+
+      server.watcher.on('change', (filePath) => {
+        if (filePath.includes(path.sep + 'js' + path.sep) || filePath.endsWith(path.sep + 'js') || filePath.includes(path.sep + 'css' + path.sep)) {
+          if (fs.existsSync(jsDir)) copyDir(jsDir, path.join(root, 'public', 'js'));
+          if (fs.existsSync(cssDir)) copyDir(cssDir, path.join(root, 'public', 'css'));
+          server.ws.send({ type: 'full-reload' });
+        }
+      });
     }
   };
 }
 
 export default defineConfig({
   plugins: [syncPublicPlugin()],
+  server: {
+    port: 5173,
+    host: true,
+    hmr: true
+  },
   build: {
     outDir: 'dist',
     emptyOutDir: true,
