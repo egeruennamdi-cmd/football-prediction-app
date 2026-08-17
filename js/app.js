@@ -870,8 +870,8 @@ function saveGeneratedTicket() {
 // Render DeepPredictBet Style Date Picker Bar
 // Render DeepPredictBet Style Dynamic Date & Live Selector Bar
 function renderDeepPredictBetDateBar() {
-  const container = document.getElementById("deeppredictbet-date-bar-container");
-  if (!container) return;
+  const containers = document.querySelectorAll("#deeppredictbet-date-bar-container, .deeppredictbet-date-bar-container, [data-date-bar-container]");
+  if (!containers || containers.length === 0) return;
 
   const baseDate = new Date();
   baseDate.setHours(0, 0, 0, 0);
@@ -894,12 +894,14 @@ function renderDeepPredictBetDateBar() {
   }
 
   // Live count
-  const liveCount = (typeof MATCH_DATA !== 'undefined' && MATCH_DATA) ? MATCH_DATA.filter(m => m.status === 'LIVE' || m.isLive).length || 6 : 6;
+  const allMatches = (typeof MATCH_DATA !== 'undefined' && Array.isArray(MATCH_DATA)) ? MATCH_DATA : (window.MATCH_DATA || []);
+  const liveCount = allMatches.filter(m => m.status === 'LIVE' || m.isLive).length || 1;
 
+  if (!window.appState) window.appState = {};
   const isLiveActive = window.appState.currentFilter === 'live';
   const activeDate = window.appState.activePredictionDate || 'today';
 
-  let datesHtml = dates.map(d => {
+  const datesHtml = dates.map(d => {
     const dayNum = d.dateObj.getDate();
     const isToday = d.id === 'today';
     const isActive = !isLiveActive && (
@@ -927,7 +929,7 @@ function renderDeepPredictBetDateBar() {
     }
   }).join("");
 
-  container.innerHTML = `
+  const barHtml = `
     <div class="deeppredictbet-date-bar">
       <div class="live-btn ${isLiveActive ? 'active' : ''}" onclick="selectDeepPredictBetLive()">
         <span>Live</span>
@@ -939,15 +941,17 @@ function renderDeepPredictBetDateBar() {
       </div>
     </div>
   `;
+
+  containers.forEach(c => {
+    c.innerHTML = barHtml;
+  });
 }
+window.renderDeepPredictBetDateBar = renderDeepPredictBetDateBar;
 
 // Select specific date from date bar
 function selectDeepPredictBetDate(dateId) {
+  if (!window.appState) window.appState = {};
   window.appState.currentFilter = 'all';
-
-  if (window.location.hash !== "#predictions" && window.location.hash !== "") {
-    window.location.hash = "#predictions";
-  }
 
   const predictionsSection = document.getElementById("predictions");
   if (predictionsSection) {
@@ -961,48 +965,84 @@ function selectDeepPredictBetDate(dateId) {
     });
   }
 
+  const matchesTitle = document.getElementById("matches-section-title");
   if (dateId === 'yesterday') {
     window.appState.activePredictionDate = 'yesterday';
-    const matchesTitle = document.getElementById("matches-section-title");
     if (matchesTitle) matchesTitle.innerText = "Yesterday's Results";
   } else if (dateId === 'today') {
     window.appState.activePredictionDate = 'today';
-    const matchesTitle = document.getElementById("matches-section-title");
     if (matchesTitle) matchesTitle.innerText = "Today's Predictions";
-  } else {
+  } else if (dateId === 'tomorrow') {
     window.appState.activePredictionDate = 'tomorrow';
-    const matchesTitle = document.getElementById("matches-section-title");
-    if (matchesTitle) {
-      if (dateId === 'tomorrow') {
-        matchesTitle.innerText = "Tomorrow's Predictions";
-      } else {
-        const baseDate = new Date();
-        baseDate.setHours(0, 0, 0, 0);
-        const offset = parseInt(dateId.split('-')[1]);
-        const targetDate = new Date(baseDate);
-        targetDate.setDate(baseDate.getDate() + offset);
-        const dateStr = targetDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric', weekday: 'short' });
-        matchesTitle.innerText = `Predictions for ${dateStr}`;
-      }
+    if (matchesTitle) matchesTitle.innerText = "Tomorrow's Predictions";
+  } else {
+    window.appState.activePredictionDate = dateId;
+    if (matchesTitle && dateId.startsWith('future-')) {
+      const baseDate = new Date();
+      baseDate.setHours(0, 0, 0, 0);
+      const offset = parseInt(dateId.split('-')[1]);
+      const targetDate = new Date(baseDate);
+      targetDate.setDate(baseDate.getDate() + offset);
+      const dateStr = targetDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric', weekday: 'short' });
+      matchesTitle.innerText = `Predictions for ${dateStr}`;
     }
   }
 
-  if (dateId.startsWith('future-')) {
-    window.appState.activePredictionDate = dateId;
+  renderDeepPredictBetDateBar();
+
+  // Sync timeline bar if present
+  const barDateSel = document.getElementById("bar-date-selector");
+  if (barDateSel) {
+    barDateSel.querySelectorAll(".tab-btn").forEach(b => {
+      const txt = b.innerText.trim().toLowerCase();
+      if ((dateId === 'yesterday' && txt === 'yesterday') ||
+          (dateId === 'today' && txt === 'today') ||
+          (dateId === 'tomorrow' && txt === 'tomorrow')) {
+        b.classList.add("active");
+      } else {
+        b.classList.remove("active");
+      }
+    });
   }
 
-  renderDeepPredictBetDateBar();
-  updateFixturesDisplay();
+  const allMatches = (typeof MATCH_DATA !== 'undefined' && Array.isArray(MATCH_DATA)) 
+    ? MATCH_DATA 
+    : (window.MATCH_DATA || []);
+
+  let displayed = allMatches;
+  if (dateId === 'yesterday') {
+    displayed = allMatches.slice(0, 15).map((m, idx) => ({
+      ...m,
+      id: `yest-${m.id || idx}`,
+      isLive: false,
+      status: "FT",
+      time: "Finished",
+      homeScore: (idx % 3) + 1,
+      awayScore: (idx % 2),
+      isYesterday: true
+    }));
+  } else if (dateId === 'tomorrow' || dateId.startsWith('future-')) {
+    displayed = allMatches.slice(5).map((m, idx) => ({
+      ...m,
+      id: `tmrw-${m.id || idx}`,
+      isLive: false,
+      status: "Upcoming",
+      time: `${14 + (idx % 8)}:00`,
+      isTomorrow: true
+    }));
+  }
+
+  if (typeof renderMatchCards === 'function') {
+    renderMatchCards(displayed);
+  }
 }
+window.selectDeepPredictBetDate = selectDeepPredictBetDate;
 
 // Select "Live" option from date bar
 function selectDeepPredictBetLive() {
+  if (!window.appState) window.appState = {};
   window.appState.currentFilter = 'live';
   window.appState.activePredictionDate = 'today';
-
-  if (window.location.hash !== "#predictions" && window.location.hash !== "") {
-    window.location.hash = "#predictions";
-  }
 
   const predictionsSection = document.getElementById("predictions");
   if (predictionsSection) {
@@ -1018,6 +1058,23 @@ function selectDeepPredictBetLive() {
 
   const matchesTitle = document.getElementById("matches-section-title");
   if (matchesTitle) matchesTitle.innerText = "Live Predictions";
+
+  renderDeepPredictBetDateBar();
+
+  const allMatches = (typeof MATCH_DATA !== 'undefined' && Array.isArray(MATCH_DATA)) 
+    ? MATCH_DATA 
+    : (window.MATCH_DATA || []);
+  const liveMatches = allMatches.filter(m => m.isLive || m.status === 'LIVE');
+
+  if (typeof renderMatchCards === 'function') {
+    renderMatchCards(liveMatches.length > 0 ? liveMatches : allMatches.slice(0, 4));
+  }
+  if (typeof showAppNotification === 'function') {
+    showAppNotification(`🔴 Showing In-Play Live Matches`);
+  }
+}
+window.selectDeepPredictBetLive = selectDeepPredictBetLive;
+
 // Safe Ready Helper - Guarantees execution regardless of script load timing
 function runOnReady(fn) {
   if (document.readyState === 'interactive' || document.readyState === 'complete') {
