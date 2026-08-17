@@ -1425,22 +1425,27 @@ function changeAppLanguage(lang) {
 
 // 3. Interactive Punter Tip Submission Flow
 function openModalSubmitTip() {
-  const matchId = window.appState.activeScoutMatchId;
-  if (!matchId) {
-    showAppNotification("Please select a specific fixture card first.");
-    return;
+  let matchId = window.appState ? window.appState.activeScoutMatchId : null;
+  const matches = (typeof MATCH_DATA !== 'undefined' && MATCH_DATA) ? MATCH_DATA : (window.MATCH_DATA || []);
+  if (!matchId && matches.length > 0) {
+    matchId = matches[0].id;
+    if (window.appState) window.appState.activeScoutMatchId = matchId;
   }
   
-  const match = MATCH_DATA.find(m => m.id === matchId);
+  const match = matches.find(m => m.id === matchId) || matches[0];
   if (!match) return;
 
   const tipModal = document.getElementById("submit-tip-modal");
   const detailsEl = document.getElementById("tip-modal-match-details");
-  if (tipModal && detailsEl) {
-    detailsEl.innerText = `${match.homeTeam.name} vs ${match.awayTeam.name}`;
+  if (tipModal) {
+    if (detailsEl) {
+      detailsEl.innerText = `${match.homeTeam?.name || 'Home'} vs ${match.awayTeam?.name || 'Away'}`;
+    }
+    tipModal.style.display = "flex";
     tipModal.classList.add("active");
   }
 }
+window.openModalSubmitTip = openModalSubmitTip;
 
 function closeSubmitTipModal(event, force) {
   const modal = document.getElementById("submit-tip-modal");

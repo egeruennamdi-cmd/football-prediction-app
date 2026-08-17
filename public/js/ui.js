@@ -2240,6 +2240,130 @@ function sendBetslipToConverter() {
 }
 window.sendBetslipToConverter = sendBetslipToConverter;
 
+function addActiveMatchToBetslip() {
+  let matchId = window.appState ? window.appState.activeScoutMatchId : null;
+  const matches = (typeof MATCH_DATA !== 'undefined' && MATCH_DATA) ? MATCH_DATA : (window.MATCH_DATA || []);
+  
+  if (!matchId && matches.length > 0) {
+    matchId = matches[0].id;
+  }
+  if (!matchId) return;
+
+  if (!window.appState) window.appState = {};
+  if (!Array.isArray(window.appState.betslip)) window.appState.betslip = [];
+
+  if (window.appState.betslip.length >= 40) {
+    if (typeof showAppNotification === 'function') {
+      showAppNotification("⚠️ Maximum limit of 40 selections reached in your active betslip.");
+    } else {
+      alert("⚠️ Maximum limit of 40 selections reached in your active betslip.");
+    }
+    return;
+  }
+
+  const match = matches.find(m => m.id === matchId) || matches[0];
+  if (!match) return;
+
+  const tip = (match.prediction && match.prediction.tip) ? match.prediction.tip : 'Home Win (1)';
+  const odds = 1.85;
+
+  if (window.appState.betslip.some(item => item.matchId === matchId)) {
+    if (typeof showAppNotification === 'function') {
+      showAppNotification("⚠️ This match is already in your active betslip.");
+    } else {
+      alert("⚠️ This match is already in your active betslip.");
+    }
+    return;
+  }
+
+  window.appState.betslip.push({
+    matchId,
+    match,
+    tip,
+    odds
+  });
+
+  if (typeof renderBetslip === 'function') {
+    renderBetslip();
+  }
+  const drawer = document.getElementById("floating-betslip-drawer");
+  if (drawer && !drawer.classList.contains("open")) {
+    drawer.classList.add("open");
+  }
+
+  if (typeof showAppNotification === 'function') {
+    showAppNotification(`Added ${match.homeTeam.name} vs ${match.awayTeam.name} to Betslip!`);
+  }
+}
+window.addActiveMatchToBetslip = addActiveMatchToBetslip;
+
+function openModalSubmitTip() {
+  let matchId = window.appState ? window.appState.activeScoutMatchId : null;
+  const matches = (typeof MATCH_DATA !== 'undefined' && MATCH_DATA) ? MATCH_DATA : (window.MATCH_DATA || []);
+  if (!matchId && matches.length > 0) {
+    matchId = matches[0].id;
+    if (window.appState) window.appState.activeScoutMatchId = matchId;
+  }
+  
+  const match = matches.find(m => m.id === matchId) || matches[0];
+  if (!match) return;
+
+  const tipModal = document.getElementById("submit-tip-modal");
+  const detailsEl = document.getElementById("tip-modal-match-details");
+  if (tipModal) {
+    if (detailsEl) {
+      detailsEl.innerText = `${match.homeTeam?.name || 'Home'} vs ${match.awayTeam?.name || 'Away'}`;
+    }
+    tipModal.style.display = "flex";
+    tipModal.classList.add("active");
+  }
+}
+window.openModalSubmitTip = openModalSubmitTip;
+
+function closeSubmitTipModal(event, force) {
+  const modal = document.getElementById("submit-tip-modal");
+  if (!modal) return;
+  
+  if (force || (event && event.target === modal)) {
+    modal.classList.remove("active");
+    modal.style.display = "none";
+  }
+}
+window.closeSubmitTipModal = closeSubmitTipModal;
+
+function submitPunterTip() {
+  const matchId = window.appState ? window.appState.activeScoutMatchId : null;
+  const matches = (typeof MATCH_DATA !== 'undefined' && MATCH_DATA) ? MATCH_DATA : (window.MATCH_DATA || []);
+  const match = matches.find(m => m.id === matchId) || matches[0];
+  if (!match) return;
+
+  const marketSelect = document.getElementById("tip-market-select");
+  const market = marketSelect ? marketSelect.value : "Home Win";
+  const stakeInput = document.getElementById("tip-coins-stake");
+  const stake = stakeInput ? parseInt(stakeInput.value) : 50;
+
+  if (isNaN(stake) || stake < 10 || stake > 500) {
+    alert("Please input a valid stake between 10 and 500 Coins.");
+    return;
+  }
+
+  const currentCoins = window.appState.coinsBalance || 500;
+  if (currentCoins < stake) {
+    alert("Insufficient Mines Coins balance! Claim daily coins or buy packs.");
+    return;
+  }
+
+  window.appState.coinsBalance = currentCoins - stake;
+  const coinsDisplay = document.getElementById("modal-user-coins-display");
+  if (coinsDisplay) coinsDisplay.innerText = window.appState.coinsBalance;
+
+  closeSubmitTipModal(null, true);
+  if (typeof showAppNotification === 'function') {
+    showAppNotification(`🎉 Tip submitted for ${match.homeTeam.name} vs ${match.awayTeam.name}! Stake: ${stake} Coins.`);
+  }
+}
+window.submitPunterTip = submitPunterTip;
+
 function quickPromptScout(text) {
   const promptText = (text || "").trim();
   const lowerText = promptText.toLowerCase();
