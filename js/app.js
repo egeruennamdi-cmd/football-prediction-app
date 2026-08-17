@@ -293,36 +293,37 @@ function clearBetslip() {
 }
 
 function sendBetslipToConverter() {
-  if (window.appState.betslip.length === 0) return;
+  if (!window.appState || !Array.isArray(window.appState.betslip) || window.appState.betslip.length === 0) {
+    if (typeof generateScoutAccumulator === 'function') {
+      generateScoutAccumulator(40);
+    }
+  }
 
-  // Generate deterministic booking code
+  const selections = (window.appState && window.appState.betslip) ? window.appState.betslip : [];
   const code = "BM-" + Math.random().toString(36).substring(2, 8).toUpperCase();
-  
+
   if (!window.generatedTicketsCache) {
     window.generatedTicketsCache = {};
   }
 
-  // Populate conversion cache
   window.generatedTicketsCache[code] = {
-    selections: window.appState.betslip.map(item => ({
-      fixture: `${item.match.homeTeam.name} vs ${item.match.awayTeam.name}`,
-      league: item.match.league,
+    selections: selections.map(item => ({
+      fixture: `${item.match?.homeTeam?.name || 'Home'} vs ${item.match?.awayTeam?.name || 'Away'}`,
+      league: item.match?.league || "Top League",
       market: "Match Tip",
-      prediction: item.tip,
-      sourceOdds: item.odds,
-      targetOdds: parseFloat((item.odds * 1.06).toFixed(2)) // boost!
+      prediction: item.tip || "1X",
+      sourceOdds: item.odds || 1.45,
+      targetOdds: parseFloat(((item.odds || 1.45) * 1.06).toFixed(2))
     }))
   };
 
-  // Set code input field value
-  const inputField = document.getElementById("betcode-src-code");
-  if (inputField) {
-    inputField.value = code;
-  }
+  // Set input fields for both converter instances
+  const srcInput = document.getElementById("betcode-src-code") || document.getElementById("hero-betcode-src-code");
+  if (srcInput) srcInput.value = code;
 
   // Set default bookmakers SB -> 1XB
-  const srcSelect = document.getElementById("betcode-src-select");
-  const tgtSelect = document.getElementById("betcode-tgt-select");
+  const srcSelect = document.getElementById("betcode-src-select") || document.getElementById("hero-betcode-src-select");
+  const tgtSelect = document.getElementById("betcode-tgt-select") || document.getElementById("hero-betcode-tgt-select");
   if (srcSelect) srcSelect.value = 'sportybet:ng';
   if (tgtSelect) tgtSelect.value = '1xbet:ng';
 
@@ -332,17 +333,18 @@ function sendBetslipToConverter() {
     drawer.classList.remove("open");
   }
 
-  // Scroll to converter section
-  const converterSec = document.getElementById("betcode-converter");
-  if (converterSec) {
-    converterSec.scrollIntoView({ behavior: 'smooth' });
+  if (typeof showAppNotification === 'function') {
+    showAppNotification(`⚡ Converting ${selections.length}-match accumulator ticket ${code}...`);
   }
 
-  // Trigger conversion
-  setTimeout(() => {
+  // Trigger conversion dialog
+  if (typeof convertBetSlipCode === 'function') {
     convertBetSlipCode();
-  }, 600);
+  } else if (typeof executeHeroBetCodeConversion === 'function') {
+    executeHeroBetCodeConversion();
+  }
 }
+window.sendBetslipToConverter = sendBetslipToConverter;
 
 function renderBetslip() {
   const countBadge = document.getElementById("betslip-count-badge");

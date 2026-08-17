@@ -513,6 +513,7 @@ function openGeneralScout() {
   const modal = document.getElementById("scout-modal");
   if (!modal) return;
 
+  if (!window.appState) window.appState = {};
   window.appState.activeScoutMatchId = null;
 
   const paramBanner = document.getElementById("scout-modal-parameters-banner");
@@ -525,15 +526,34 @@ function openGeneralScout() {
     modalTitle.innerText = "DeepPredict Master Scout";
   }
 
+  const chatTabBtn = document.getElementById("modal-tab-btn-chat");
+  const statsTabBtn = document.getElementById("modal-tab-btn-stats");
+  const h2hTabBtn = document.getElementById("modal-tab-btn-h2h");
+  const oddsTabBtn = document.getElementById("modal-tab-btn-odds");
+  if (chatTabBtn) chatTabBtn.classList.add("active");
+  if (statsTabBtn) statsTabBtn.classList.remove("active");
+  if (h2hTabBtn) h2hTabBtn.classList.remove("active");
+  if (oddsTabBtn) oddsTabBtn.classList.remove("active");
+
+  const chatPane = document.getElementById("modal-pane-chat");
+  const statsPane = document.getElementById("modal-pane-stats");
+  const h2hPane = document.getElementById("modal-pane-h2h");
+  const oddsPane = document.getElementById("modal-pane-odds");
+  if (chatPane) chatPane.style.display = "block";
+  if (statsPane) statsPane.style.display = "none";
+  if (h2hPane) h2hPane.style.display = "none";
+  if (oddsPane) oddsPane.style.display = "none";
+
   const chatBody = document.getElementById("scout-chat-body");
-  if (chatBody) {
+  if (chatBody && (!chatBody.innerHTML || chatBody.innerHTML.trim() === "")) {
+    const matchCount = (typeof MATCH_DATA !== 'undefined' && Array.isArray(MATCH_DATA)) ? MATCH_DATA.length : 40;
     chatBody.innerHTML = `
       <div class="chat-bubble scout">
         Welcome to the <b>DeepPredict Master Briefing Center</b>. I analyze overall league trends, team forms, and algorithmic accuracy.
         <br><br>
-        Currently, my algorithms are monitoring <b>${MATCH_DATA.length} major fixtures</b> today. Our general weekly win-rate is resting at a solid <b>${HISTORICAL_PERFORMANCE.winRate}</b>.
+        Currently, my algorithms are monitoring <b>${matchCount} major fixtures</b> today.
         <br><br>
-        Ask me about league dynamics, match specific setups, or historical ledger stats!
+        Ask me about league dynamics, match specific setups, or ask me to generate accumulator selections!
       </div>
     `;
   }
@@ -542,6 +562,7 @@ function openGeneralScout() {
   modal.classList.add("active");
   document.body.style.overflow = "hidden";
 }
+window.openGeneralScout = openGeneralScout;
 
 // Toggle active checkboxes in DeepPredict Machine cards
 function toggleCheckboxCard(card, event) {
@@ -2093,6 +2114,131 @@ function generateScoutAccumulator(count = 40) {
   return window.appState.betslip;
 }
 window.generateScoutAccumulator = generateScoutAccumulator;
+
+function toggleBetslipDrawer() {
+  const drawer = document.getElementById("floating-betslip-drawer");
+  if (drawer) {
+    drawer.classList.toggle("open");
+    if (drawer.classList.contains("open") && typeof renderBetslip === 'function') {
+      renderBetslip();
+    }
+  }
+}
+window.toggleBetslipDrawer = toggleBetslipDrawer;
+
+function renderBetslip() {
+  const countBadge = document.getElementById("betslip-count-badge");
+  const headerOdds = document.getElementById("betslip-header-odds");
+  const emptyState = document.getElementById("betslip-empty-state");
+  const itemsContainer = document.getElementById("betslip-items-container");
+  const summaryActions = document.getElementById("betslip-summary-actions");
+  const totalOddsVal = document.getElementById("betslip-total-odds-val");
+
+  if (!countBadge) return;
+
+  const count = (window.appState && Array.isArray(window.appState.betslip)) ? window.appState.betslip.length : 0;
+  countBadge.innerText = count;
+
+  if (count === 0) {
+    if (emptyState) emptyState.style.display = "block";
+    if (itemsContainer) itemsContainer.style.display = "none";
+    if (summaryActions) summaryActions.style.display = "none";
+    if (headerOdds) headerOdds.style.display = "none";
+  } else {
+    if (emptyState) emptyState.style.display = "none";
+    if (itemsContainer) {
+      itemsContainer.style.display = "flex";
+      itemsContainer.innerHTML = "";
+      
+      let totalOdds = 1.0;
+
+      window.appState.betslip.forEach((item, index) => {
+        totalOdds *= (item.odds || 1.45);
+        
+        const row = document.createElement("div");
+        row.className = "betslip-item";
+        row.innerHTML = `
+          <div style="display: flex; flex-direction: column; gap: 2px; flex: 1; padding-right: 8px;">
+            <div style="font-weight: 700; color: var(--text-primary); font-size: 0.76rem; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">
+              ${item.match?.homeTeam?.name || 'Home'} vs ${item.match?.awayTeam?.name || 'Away'}
+            </div>
+            <div style="font-size: 0.7rem; color: var(--text-secondary);">
+              Tip: <b style="color: var(--accent-gold);">${item.tip || '1X'}</b>
+            </div>
+          </div>
+          <div style="display: flex; align-items: center; gap: 10px;">
+            <span style="font-weight: 700; color: var(--text-primary); font-size: 0.8rem;">@${(item.odds || 1.45).toFixed(2)}</span>
+            <button class="betslip-item-remove" onclick="removeBetslipItem(${index})">&times;</button>
+          </div>
+        `;
+        itemsContainer.appendChild(row);
+      });
+
+      const formattedOdds = (totalOdds > 99999 ? "99,999+" : totalOdds.toFixed(2));
+      if (totalOddsVal) totalOddsVal.innerText = `@${formattedOdds}`;
+      if (headerOdds) {
+        headerOdds.style.display = "block";
+        headerOdds.innerText = `Total Odds: @${formattedOdds}`;
+      }
+    }
+    if (summaryActions) summaryActions.style.display = "flex";
+  }
+}
+window.renderBetslip = renderBetslip;
+
+function sendBetslipToConverter() {
+  if (!window.appState || !Array.isArray(window.appState.betslip) || window.appState.betslip.length === 0) {
+    if (typeof generateScoutAccumulator === 'function') {
+      generateScoutAccumulator(40);
+    }
+  }
+
+  const selections = (window.appState && window.appState.betslip) ? window.appState.betslip : [];
+  const code = "BM-" + Math.random().toString(36).substring(2, 8).toUpperCase();
+
+  if (!window.generatedTicketsCache) {
+    window.generatedTicketsCache = {};
+  }
+
+  window.generatedTicketsCache[code] = {
+    selections: selections.map(item => ({
+      fixture: `${item.match?.homeTeam?.name || 'Home'} vs ${item.match?.awayTeam?.name || 'Away'}`,
+      league: item.match?.league || "Top League",
+      market: "Match Tip",
+      prediction: item.tip || "1X",
+      sourceOdds: item.odds || 1.45,
+      targetOdds: parseFloat(((item.odds || 1.45) * 1.06).toFixed(2))
+    }))
+  };
+
+  // Set input fields for both converter instances
+  const srcInput = document.getElementById("betcode-src-code") || document.getElementById("hero-betcode-src-code");
+  if (srcInput) srcInput.value = code;
+
+  // Set default bookmakers SB -> 1XB
+  const srcSelect = document.getElementById("betcode-src-select") || document.getElementById("hero-betcode-src-select");
+  const tgtSelect = document.getElementById("betcode-tgt-select") || document.getElementById("hero-betcode-tgt-select");
+  if (srcSelect) srcSelect.value = 'sportybet:ng';
+  if (tgtSelect) tgtSelect.value = '1xbet:ng';
+
+  // Collapse drawer
+  const drawer = document.getElementById("floating-betslip-drawer");
+  if (drawer) {
+    drawer.classList.remove("open");
+  }
+
+  if (typeof showAppNotification === 'function') {
+    showAppNotification(`⚡ Converting ${selections.length}-match accumulator ticket ${code}...`);
+  }
+
+  // Trigger conversion dialog
+  if (typeof convertBetSlipCode === 'function') {
+    convertBetSlipCode();
+  } else if (typeof executeHeroBetCodeConversion === 'function') {
+    executeHeroBetCodeConversion();
+  }
+}
+window.sendBetslipToConverter = sendBetslipToConverter;
 
 function quickPromptScout(text) {
   const promptText = (text || "").trim();
