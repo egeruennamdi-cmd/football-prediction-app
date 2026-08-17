@@ -5196,7 +5196,11 @@ function renderConversionResults(srcCode, srcBookie, targetBookie) {
 }
 
 function formatBookieLabel(bookieKey) {
-  if (!bookieKey) return "Global Bookmaker";
+  if (!bookieKey) return "1xBet";
+  const opt = document.querySelector(`select.betcode-select option[value="${bookieKey}"]`);
+  if (opt && opt.textContent) {
+    return opt.textContent.replace(/^[^\w\s\(\)]+/, '').trim();
+  }
   const b = bookieKey.toLowerCase();
   if (b.includes("1xbet")) return "1xBet";
   if (b.includes("sportybet")) return "SportyBet";
@@ -5207,6 +5211,15 @@ function formatBookieLabel(bookieKey) {
   if (b.includes("betano")) return "Betano";
   if (b.includes("betking")) return "BetKing";
   if (b.includes("msport")) return "MSport";
+  if (b.includes("bangbet")) return "Bangbet";
+  if (b.includes("betika")) return "Betika";
+  if (b.includes("betpawa")) return "Betpawa";
+  if (b.includes("betway")) return "Betway";
+  if (b.includes("betwinner")) return "BetWinner";
+  if (b.includes("megapari")) return "Megapari";
+  if (b.includes("melbet")) return "Melbet";
+  if (b.includes("paripesa")) return "Paripesa";
+  if (b.includes("premierbet")) return "Premier Bet";
   return bookieKey.split(":")[0].toUpperCase();
 }
 
