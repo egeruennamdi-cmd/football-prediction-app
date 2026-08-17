@@ -1862,15 +1862,15 @@ function handleChatKeyPress(event) {
   }
 }
 
-function quickPromptScout(text) {
+function quickPromptScout(text, autoOpenModal = true) {
   const promptText = (text || "").trim();
   const lowerText = promptText.toLowerCase();
 
   // 1. Clear input fields
   const heroInput = document.getElementById("hero-scout-input");
-  if (heroInput) heroInput.value = "";
+  if (heroInput && heroInput.value.trim() !== "") heroInput.value = "";
   const scoutInput = document.getElementById("scout-chat-input");
-  if (scoutInput) scoutInput.value = "";
+  if (scoutInput && scoutInput.value.trim() !== "") scoutInput.value = "";
 
   // 2. Intelligently extract requested number (e.g. 12, 15, 20, 30, 40, etc.)
   let count = 40;
@@ -1962,9 +1962,11 @@ function quickPromptScout(text) {
   if (heroResults) {
     heroResults.innerHTML = contentHtml;
     heroResults.style.display = "block";
-    try {
-      heroResults.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
-    } catch (e) {}
+    if (autoOpenModal) {
+      try {
+        heroResults.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+      } catch (e) {}
+    }
   }
 
   // 5. Also Render in Modal Chat Body
@@ -1978,9 +1980,11 @@ function quickPromptScout(text) {
     chatBody.scrollTop = 0;
   }
 
-  // 6. Show notification
-  if (typeof showAppNotification === 'function') {
-    showAppNotification(`🎯 AI Scout generated ${count} football event selections!`);
+  // 6. Show notification and modal if user triggered
+  if (autoOpenModal) {
+    if (typeof showAppNotification === 'function') {
+      showAppNotification(`🎯 AI Scout generated ${count} football event selections!`);
+    }
   }
 }
 
@@ -1992,8 +1996,23 @@ function triggerHeroScoutPrompt() {
     text = "Generate 40 selections";
   }
 
-  quickPromptScout(text);
+  quickPromptScout(text, true);
 }
+window.triggerHeroScoutPrompt = triggerHeroScoutPrompt;
+window.quickPromptScout = quickPromptScout;
+
+// Auto-run AI Scout Selections on page load
+function initHeroScoutDynamicOutput() {
+  setTimeout(() => {
+    quickPromptScout("Generate 40 selections", false);
+  }, 100);
+}
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', initHeroScoutDynamicOutput);
+} else {
+  initHeroScoutDynamicOutput();
+}
+window.addEventListener('load', initHeroScoutDynamicOutput);
 window.triggerHeroScoutPrompt = triggerHeroScoutPrompt;
 window.quickPromptScout = quickPromptScout;
 
