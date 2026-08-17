@@ -609,6 +609,19 @@
           <button type="button" class="betcode-convert-btn" onclick="executeHeroBetCodeConversion()" style="margin-top: 16px;">
             <span>CONVERT</span>
           </button>
+
+          <!-- Converted Booking Code Display Card (Matching attached user design) -->
+          <div id="hero-betcode-result-container" style="margin-top: 20px;">
+            <div style="background: rgba(15, 23, 42, 0.85); border: 1.5px solid #10b981; border-radius: 14px; padding: 20px 16px; text-align: center; box-shadow: 0 6px 24px rgba(16, 185, 129, 0.18);">
+              <div style="font-size: 0.8rem; color: #34d399; font-weight: 800; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 6px;">CONVERTED BOOKING CODE</div>
+              <div id="hero-converted-code" style="font-size: 2.3rem; font-weight: 900; color: #ffffff; font-family: monospace; letter-spacing: 3px; margin: 4px 0 8px;">FZK5P9</div>
+              <div id="hero-converted-subtext" style="font-size: 0.82rem; color: #94a3b8; margin-bottom: 16px;">Converted from <b>SportyBet</b> (BC9P2XZ) to <b>1xBet</b></div>
+              <div style="display: flex; gap: 12px; justify-content: center; flex-wrap: wrap;">
+                <button type="button" onclick="copyHeroConvertedCode()" style="background: #10b981; color: #ffffff; font-weight: 800; font-size: 0.85rem; padding: 10px 22px; border: none; border-radius: 8px; cursor: pointer; display: inline-flex; align-items: center; gap: 6px; transition: transform 0.15s ease, background 0.15s ease;">📋 Copy Code</button>
+                <a id="hero-converted-bet-btn" href="https://1xbet.ng" target="_blank" style="background: #2563eb; color: #ffffff; font-weight: 800; font-size: 0.85rem; padding: 10px 22px; border-radius: 8px; text-decoration: none; display: inline-flex; align-items: center; gap: 6px; transition: transform 0.15s ease, background 0.15s ease;">⚡ Bet on 1xBet</a>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
     </div>

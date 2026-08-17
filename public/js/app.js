@@ -5160,7 +5160,24 @@ function renderConversionResults(srcCode, srcBookie, targetBookie) {
   if (resTotalOdds) resTotalOdds.innerText = `Total Odds: @${totalOdds.toFixed(2)}`;
   if (resSelectionsList) resSelectionsList.innerHTML = html;
 
-  // 2. Also Update On-Page Decoded Tray (#betcode-decoded-tray)
+  // 2. Update Hero Section Converted Booking Code Output Card
+  const heroResultContainer = document.getElementById("hero-betcode-result-container");
+  if (heroResultContainer) {
+    heroResultContainer.style.display = "block";
+    heroResultContainer.innerHTML = `
+      <div style="background: rgba(15, 23, 42, 0.85); border: 1.5px solid #10b981; border-radius: 14px; padding: 20px 16px; text-align: center; box-shadow: 0 6px 24px rgba(16, 185, 129, 0.18);">
+        <div style="font-size: 0.8rem; color: #34d399; font-weight: 800; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 6px;">CONVERTED BOOKING CODE</div>
+        <div id="hero-converted-code" style="font-size: 2.3rem; font-weight: 900; color: #ffffff; font-family: monospace; letter-spacing: 3px; margin: 4px 0 8px;">${genTargetCode}</div>
+        <div id="hero-converted-subtext" style="font-size: 0.82rem; color: #94a3b8; margin-bottom: 16px;">Converted from <b>${srcLabel}</b> (${srcCode}) to <b>${tgtLabel}</b></div>
+        <div style="display: flex; gap: 12px; justify-content: center; flex-wrap: wrap;">
+          <button type="button" onclick="copyHeroConvertedCode()" style="background: #10b981; color: #ffffff; font-weight: 800; font-size: 0.85rem; padding: 10px 22px; border: none; border-radius: 8px; cursor: pointer; display: inline-flex; align-items: center; gap: 6px; transition: transform 0.15s ease, background 0.15s ease;">📋 Copy Code</button>
+          <a id="hero-converted-bet-btn" href="${directLink}" target="_blank" style="background: #2563eb; color: #ffffff; font-weight: 800; font-size: 0.85rem; padding: 10px 22px; border-radius: 8px; text-decoration: none; display: inline-flex; align-items: center; gap: 6px; transition: transform 0.15s ease, background 0.15s ease;">⚡ Bet on ${tgtLabel}</a>
+        </div>
+      </div>
+    `;
+  }
+
+  // 3. Also Update On-Page Decoded Tray (#betcode-decoded-tray)
   const decodedTray = document.getElementById("betcode-decoded-tray");
   if (decodedTray) {
     decodedTray.style.display = "block";
@@ -5204,6 +5221,28 @@ function getBookieDirectUrl(bookieKey) {
   return "https://1xbet.ng";
 }
 
+function copyHeroConvertedCode() {
+  const codeEl = document.getElementById("hero-converted-code");
+  const code = codeEl ? codeEl.innerText.trim() : "FZK5P9";
+
+  if (navigator.clipboard && navigator.clipboard.writeText) {
+    navigator.clipboard.writeText(code).then(() => {
+      if (typeof showAppNotification === 'function') {
+        showAppNotification(`📋 Copied converted booking code ${code} to clipboard!`);
+      }
+    }).catch(() => {
+      if (typeof showAppNotification === 'function') {
+        showAppNotification(`📋 Copied booking code ${code}!`);
+      }
+    });
+  } else {
+    if (typeof showAppNotification === 'function') {
+      showAppNotification(`📋 Copied booking code ${code}!`);
+    }
+  }
+}
+window.copyHeroConvertedCode = copyHeroConvertedCode;
+
 function copyTargetBookingCode() {
   const codeEl = document.getElementById("res-copy-code-display");
   const code = codeEl ? codeEl.innerText.trim() : "SP983X";
@@ -5230,4 +5269,5 @@ window.convertBetSlipCode = convertBetSlipCode;
 window.executeHeroBetCodeConversion = executeHeroBetCodeConversion;
 window.convertBetCode = convertBetCode;
 window.copyTargetBookingCode = copyTargetBookingCode;
+window.copyHeroConvertedCode = copyHeroConvertedCode;
 window.closeConversionResultModal = closeConversionResultModal;
