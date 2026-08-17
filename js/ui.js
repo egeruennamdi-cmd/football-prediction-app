@@ -2026,6 +2026,74 @@ try { if (typeof switchStoreTab === 'function') window.switchStoreTab = switchSt
 try { if (typeof switchSupportTab === 'function') window.switchSupportTab = switchSupportTab; } catch (e) {}
 try { if (typeof switchTool === 'function') window.switchTool = switchTool; } catch (e) {}
 
+function generateScoutAccumulator(count = 40) {
+  const fixtures = (typeof MATCH_DATA !== 'undefined' && Array.isArray(MATCH_DATA) && MATCH_DATA.length > 0)
+    ? MATCH_DATA
+    : (window.MATCH_DATA && Array.isArray(window.MATCH_DATA) && window.MATCH_DATA.length > 0)
+      ? window.MATCH_DATA
+      : [
+          { id: "m-1", homeTeam: { name: "Arsenal" }, awayTeam: { name: "Chelsea" }, league: "Premier League" },
+          { id: "m-2", homeTeam: { name: "Real Madrid" }, awayTeam: { name: "Barcelona" }, league: "La Liga" },
+          { id: "m-3", homeTeam: { name: "Bayern Munich" }, awayTeam: { name: "Dortmund" }, league: "Bundesliga" },
+          { id: "m-4", homeTeam: { name: "Inter Milan" }, awayTeam: { name: "Juventus" }, league: "Serie A" },
+          { id: "m-5", homeTeam: { name: "PSG" }, awayTeam: { name: "Marseille" }, league: "Ligue 1" },
+          { id: "m-6", homeTeam: { name: "Man City" }, awayTeam: { name: "Liverpool" }, league: "Premier League" },
+          { id: "m-7", homeTeam: { name: "Atletico Madrid" }, awayTeam: { name: "Sevilla" }, league: "La Liga" },
+          { id: "m-8", homeTeam: { name: "AC Milan" }, awayTeam: { name: "Napoli" }, league: "Serie A" }
+        ];
+
+  const reqCount = Math.min(Math.max(parseInt(count) || 40, 3), 40);
+  if (!window.appState) window.appState = {};
+  window.appState.betslip = [];
+
+  const marketOptions = [
+    "Home Win (1)", "Away Win (2)", "Over 1.5 Goals", "Over 2.5 Goals",
+    "Both Teams To Score (BTTS)", "Double Chance (1X)", "Double Chance (X2)",
+    "Under 3.5 Goals", "Home Win or Draw", "Draw (X)",
+    "Multi-Goals 2-4", "Over 0.5 HT Goals", "Corners Over 8.5"
+  ];
+
+  for (let i = 0; i < reqCount; i++) {
+    const match = fixtures[i % fixtures.length];
+    const tip = marketOptions[i % marketOptions.length];
+    const homeName = (match.homeTeam && match.homeTeam.name) ? match.homeTeam.name : "Home Team";
+    const awayName = (match.awayTeam && match.awayTeam.name) ? match.awayTeam.name : "Away Team";
+
+    const hash = (homeName + awayName + i);
+    let h = 0;
+    for (let j = 0; j < hash.length; j++) h = hash.charCodeAt(j) + ((h << 5) - h);
+    const odds = parseFloat((1.35 + (Math.abs(h) % 18) * 0.05).toFixed(2));
+
+    const cycle = Math.floor(i / fixtures.length);
+    const homeSuffix = cycle > 0 ? ` [R${cycle + 1}]` : '';
+    const awaySuffix = cycle > 0 ? ` [R${cycle + 1}]` : '';
+
+    window.appState.betslip.push({
+      matchId: `scout-acc-${i}-${match.id || i}`,
+      match: {
+        ...match,
+        homeTeam: { name: homeName + homeSuffix },
+        awayTeam: { name: awayName + awaySuffix }
+      },
+      tip,
+      odds
+    });
+  }
+
+  // Render betslip and update drawer
+  if (typeof renderBetslip === 'function') {
+    renderBetslip();
+  }
+  const drawer = document.getElementById("floating-betslip-drawer");
+  if (drawer) drawer.classList.add("open");
+
+  if (typeof showAppNotification === 'function') {
+    showAppNotification(`🎯 AI Scout generated a ${reqCount}-Match Accumulator Ticket!`);
+  }
+  return window.appState.betslip;
+}
+window.generateScoutAccumulator = generateScoutAccumulator;
+
 function quickPromptScout(text) {
   const promptText = (text || "").trim();
   const lowerText = promptText.toLowerCase();
@@ -2058,19 +2126,34 @@ function quickPromptScout(text) {
   }
 
   // 3. Generate Selections in Betslip
+  let selections = [];
   if (typeof generateScoutAccumulator === 'function') {
-    generateScoutAccumulator(count);
+    selections = generateScoutAccumulator(count) || [];
+  }
+  if (!selections || selections.length === 0) {
+    if (window.appState && Array.isArray(window.appState.betslip) && window.appState.betslip.length > 0) {
+      selections = window.appState.betslip;
+    }
   }
 
-  const selections = (window.appState && window.appState.betslip) ? window.appState.betslip : [];
-  const totalOdds = selections.reduce((acc, curr) => acc * (curr.odds || 1.8), 1).toFixed(2);
+  // Calculate total odds with realistic product
+  let calculatedOdds = 1.0;
+  selections.forEach(s => {
+    calculatedOdds *= (s.odds || 1.45);
+  });
+  const totalOdds = (calculatedOdds > 99999 ? "99,999+" : calculatedOdds.toFixed(2));
 
-  const selectionsList = selections.slice(0, count).map((s, idx) => `
-    <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid rgba(255,255,255,0.08); padding: 6px 0; font-size:0.78rem;">
-      <span style="font-weight:700; color:#ffffff;">#${idx+1} ${s.match?.homeTeam?.name || 'Home'} vs ${s.match?.awayTeam?.name || 'Away'}</span>
-      <span style="color:#34d399; font-weight:800; background:rgba(16,185,129,0.15); border: 1px solid rgba(16,185,129,0.35); padding: 2px 8px; border-radius:4px;">${s.tip} (@${(s.odds || 1.8).toFixed(2)})</span>
-    </div>
-  `).join("");
+  const selectionsList = selections.slice(0, count).map((s, idx) => {
+    const hName = s.match?.homeTeam?.name || 'Home Team';
+    const aName = s.match?.awayTeam?.name || 'Away Team';
+    const oddVal = (s.odds || 1.45).toFixed(2);
+    return `
+      <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid rgba(255,255,255,0.08); padding: 7px 0; font-size:0.8rem;">
+        <span style="font-weight:700; color:#ffffff;">#${idx+1} ${hName} vs ${aName}</span>
+        <span style="color:#34d399; font-weight:800; background:rgba(16,185,129,0.15); border: 1px solid rgba(16,185,129,0.35); padding: 2px 8px; border-radius:4px;">${s.tip} (@${oddVal})</span>
+      </div>
+    `;
+  }).join("");
 
   const contentHtml = `
     <div style="display:flex; flex-direction:column; gap:10px;">
@@ -2079,7 +2162,7 @@ function quickPromptScout(text) {
         <span style="color:#34d399; font-weight:800; font-size:0.88rem; background:rgba(16,185,129,0.2); border:1px solid #10b981; padding:2px 10px; border-radius:12px;">@${totalOdds} Total Odds</span>
       </div>
       <div style="font-size:0.82rem; color:#94a3b8;">${mode === 'tactics' ? 'Tactical evaluation analyzing high pressing triggers & transition speed. Curated <b>10 Positive EV picks</b>:' : `Here are your <b>${count} high-probability football event selections</b> evaluated by AI Scout algorithms:`}</div>
-      <div style="max-height: 220px; overflow-y: auto; background: rgba(0,0,0,0.55); border: 1px solid rgba(59, 130, 246, 0.4); border-radius: 8px; padding: 10px 14px; margin: 4px 0;">
+      <div style="max-height: 260px; overflow-y: auto; background: rgba(0,0,0,0.65); border: 1.5px solid rgba(59, 130, 246, 0.45); border-radius: 8px; padding: 10px 14px; margin: 4px 0;">
         ${selectionsList}
       </div>
       <div style="display:flex; gap:10px; flex-wrap:wrap; margin-top:6px;">
@@ -2126,6 +2209,8 @@ function triggerHeroScoutPrompt() {
 
   quickPromptScout(text);
 }
+window.triggerHeroScoutPrompt = triggerHeroScoutPrompt;
+window.quickPromptScout = quickPromptScout;
 
 try { if (typeof triggerHeroScoutPrompt === 'function') window.triggerHeroScoutPrompt = triggerHeroScoutPrompt; } catch (e) {}
 try { if (typeof quickPromptScout === 'function') window.quickPromptScout = quickPromptScout; } catch (e) {}
