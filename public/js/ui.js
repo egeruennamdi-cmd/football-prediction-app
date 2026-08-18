@@ -2856,16 +2856,79 @@ function selectDeepPredictBetLive() {
   if (typeof showAppNotification === 'function') {
     showAppNotification(`🔴 Showing In-Play Live Matches`);
   }
+
+  // Trigger instantaneous dynamic sync
+  if (typeof syncDynamicSeasonData === 'function') {
+    syncDynamicSeasonData(false);
+  }
 }
 window.selectDeepPredictBetLive = selectDeepPredictBetLive;
 
+// Dynamic API-Football Ingestion Function
+async function syncDynamicSeasonData(showToastNotification = false) {
+  const backendBaseUrl = (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1')
+    ? 'http://localhost:5000'
+    : (window.BACKEND_API_URL || 'http://localhost:5000');
+
+  try {
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 4000);
+
+    const response = await fetch(`${backendBaseUrl}/api/v1/live/matches`, {
+      signal: controller.signal
+    });
+    clearTimeout(timeoutId);
+
+    if (response.ok) {
+      const resData = await response.json();
+      if (resData && resData.success && Array.isArray(resData.matches) && resData.matches.length > 0) {
+        const dynamicMatches = resData.matches;
+        window.DYNAMIC_MATCH_DATA = dynamicMatches;
+        window.DYNAMIC_SYNC_STATUS = 'connected';
+
+        const baseMatches = (typeof MATCH_DATA !== 'undefined' && Array.isArray(MATCH_DATA)) ? MATCH_DATA : [];
+        const dynamicIds = new Set(dynamicMatches.map(m => m.id));
+        const nonDuplicateBase = baseMatches.filter(m => !dynamicIds.has(m.id));
+        
+        window.MATCH_DATA = [...dynamicMatches, ...nonDuplicateBase];
+
+        // Re-render UI components with fresh live match telemetry
+        if (typeof renderDeepPredictBetDateBar === 'function') renderDeepPredictBetDateBar();
+        if (typeof updateFixturesDisplay === 'function') updateFixturesDisplay();
+        if (typeof renderLiveScanner === 'function') renderLiveScanner();
+
+        // Update live sync indicator badge
+        const liveSyncBadge = document.getElementById("live-api-sync-indicator");
+        if (liveSyncBadge) {
+          liveSyncBadge.innerHTML = `<span style="color: var(--secondary); font-weight: 700; display: inline-flex; align-items: center; gap: 5px; font-size: 0.72rem; background: rgba(16, 185, 129, 0.1); border: 1px solid rgba(16, 185, 129, 0.25); padding: 3px 8px; border-radius: 9999px;"><span style="width: 6px; height: 6px; border-radius: 50%; background: var(--secondary); animation: pulse 1.5s infinite;"></span> Live API Stream (${dynamicMatches.length})</span>`;
+          liveSyncBadge.style.display = "inline-flex";
+        }
+
+        if (showToastNotification && typeof showAppNotification === 'function') {
+          showAppNotification(`🟢 Live Stream Active: ${dynamicMatches.length} in-play games synced from API-Football`);
+        }
+      }
+    }
+  } catch (err) {
+    console.debug('[DeepPredictBet] Live sync: operating on high-resiliency local fixture dataset.');
+  }
+}
+window.syncDynamicSeasonData = syncDynamicSeasonData;
+
 // Auto-run Date Bar on site load
 if (document.readyState === 'loading') {
-  document.addEventListener('DOMContentLoaded', renderDeepPredictBetDateBar);
+  document.addEventListener('DOMContentLoaded', () => {
+    renderDeepPredictBetDateBar();
+    syncDynamicSeasonData(false);
+  });
 } else {
   renderDeepPredictBetDateBar();
+  syncDynamicSeasonData(false);
 }
-window.addEventListener('load', renderDeepPredictBetDateBar);
+window.addEventListener('load', () => {
+  renderDeepPredictBetDateBar();
+  syncDynamicSeasonData(false);
+});
 
 function quickPromptScout(text, autoOpenModal = true) {
   const promptText = (text || "").trim();
