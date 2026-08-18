@@ -1,4 +1,5 @@
 const MATCH_DATA = [
+  // --- ACTIVE LIVE IN-PLAY MATCHES (8 Global In-Play Games) ---
   {
     id: "match-1",
     date: "today",
@@ -23,36 +24,194 @@ const MATCH_DATA = [
     insight: "Arsenal is dominating possession (58%) with high-pressing triggers.",
     isPremium: false,
     aiAnalysis: "This fixture is playing out exactly as the model projected. Arsenal's high block has disrupted City's buildup phase. Expect Man City to push aggressively in the final 15 minutes, making Over 3.5 total match goals a high-probability in-play angle. Arsenal's home advantage and 2-1 lead put them in a very strong position to secure all 3 points.",
-    topTips: ["uo15", "uo35", "uoht05", "uo2h15", "c75", "c85"]
+    topTips: ["win1", "uo15", "uo35", "uoht05", "uo2h15", "c75", "c85", "btts"]
   },
   {
     id: "match-2",
-    date: "tomorrow",
+    date: "today",
     league: "La Liga",
     leagueEmoji: "🇪🇸",
-    time: "Tomorrow, 20:00",
-    isLive: false,
+    time: "Live 61'",
+    isLive: true,
     homeTeam: {
-      name: "Real Madrid",
-      logo: "⚪",
-      form: ["W", "W", "W", "L", "W"]
-    },
-    awayTeam: {
       name: "Barcelona",
       logo: "🔵🔴",
       form: ["W", "W", "W", "W", "D"]
     },
-    scores: { home: null, away: null },
-    predictions: { home: 44, draw: 26, away: 30 },
-    confidence: "medium",
-    confidenceVal: 72,
-    insight: "El Clásico. Real Madrid is undefeated in their last 15 home fixtures.",
+    awayTeam: {
+      name: "Real Madrid",
+      logo: "⚪",
+      form: ["W", "W", "W", "L", "W"]
+    },
+    scores: { home: 1, away: 2 },
+    predictions: { home: 38, draw: 28, away: 34 },
+    confidence: "high",
+    confidenceVal: 85,
+    insight: "El Clásico in-play: Real Madrid transition index 9.1 xG producing sharp breakaways.",
     isPremium: true,
-    aiAnalysis: "PREMIUM SCOUT REPORT: Real Madrid is entering this Clásico with a slight tactical edge due to Barcelona's recent defensive vulnerabilities in wide areas against transitions. Real Madrid's transition efficiency index is 9.4/10 compared to Barcelona's transition defense rating of 6.2/10. Recommended Pick: Real Madrid to win (Draw No Bet) or BTTS (Both Teams To Score) as a banker option.",
-    topTips: ["uo15", "uoht05", "bttsht", "c75", "c85", "c95"]
+    aiAnalysis: "PREMIUM LIVE RADAR: Real Madrid has exploited Barcelona's high defensive line twice via rapid vertical wing transitions. Barcelona is overloading the right flank with 64% territory possession. Recommended in-play market: Over 3.5 Total Goals or Both Teams To Score (BTTS) Banker.",
+    topTips: ["uo25", "uo35", "btts", "uo2h05", "c85", "c95", "combo_1x2_gg"]
   },
   {
     id: "match-3",
+    date: "today",
+    league: "Bundesliga",
+    leagueEmoji: "🇩🇪",
+    time: "Live 34'",
+    isLive: true,
+    homeTeam: {
+      name: "Bayern Munich",
+      logo: "🔴⚪",
+      form: ["W", "W", "W", "W", "W"]
+    },
+    awayTeam: {
+      name: "RB Leipzig",
+      logo: "🔴🐂",
+      form: ["W", "D", "W", "L", "W"]
+    },
+    scores: { home: 2, away: 0 },
+    predictions: { home: 72, draw: 16, away: 12 },
+    confidence: "high",
+    confidenceVal: 92,
+    insight: "Bayern attacking tempo: 14 shots inside 30 mins with 2.45 xG created.",
+    isPremium: false,
+    aiAnalysis: "Bayern's central attacking overload is operating at maximum efficiency. Leipzig's 4-2-2-2 low block has collapsed against early diagonal crosses. Strong indicator for Home Clean Sheet or Over 2.5 1st Half Goals.",
+    topTips: ["win1", "uo25", "uo35", "uoht15", "hcs", "c75", "c95"]
+  },
+  {
+    id: "match-4",
+    date: "today",
+    league: "Serie A",
+    leagueEmoji: "🇮🇹",
+    time: "Live 83'",
+    isLive: true,
+    homeTeam: {
+      name: "Inter Milan",
+      logo: "🔵⚫🐍",
+      form: ["W", "D", "W", "W", "L"]
+    },
+    awayTeam: {
+      name: "Juventus",
+      logo: "⚫⚪🦓",
+      form: ["W", "W", "D", "D", "W"]
+    },
+    scores: { home: 1, away: 0 },
+    predictions: { home: 56, draw: 28, away: 16 },
+    confidence: "medium",
+    confidenceVal: 78,
+    insight: "Derby d'Italia: Inter 3-5-2 defensive block suffocating central passing lanes.",
+    isPremium: false,
+    aiAnalysis: "Inter has successfully stifled Juventus' wide counters with a disciplined 5-4-1 mid-block in the second half. Expected full-time scoreline: 1-0 or 2-0. Under 2.5 Total Goals locks in with high statistical certainty.",
+    topTips: ["win1", "dc1x", "uo15", "hcs", "c65", "c75"]
+  },
+  {
+    id: "match-5",
+    date: "today",
+    league: "Champions League",
+    leagueEmoji: "🇪🇺",
+    time: "Live 55'",
+    isLive: true,
+    homeTeam: {
+      name: "PSG",
+      logo: "🗼",
+      form: ["W", "W", "W", "W", "D"]
+    },
+    awayTeam: {
+      name: "Atletico Madrid",
+      logo: "🔴⚪🐻",
+      form: ["W", "D", "W", "L", "W"]
+    },
+    scores: { home: 2, away: 2 },
+    predictions: { home: 42, draw: 30, away: 28 },
+    confidence: "high",
+    confidenceVal: 84,
+    insight: "High-octane European clash: 4 goals from 3.1 combined xG.",
+    isPremium: true,
+    aiAnalysis: "PREMIUM LIVE SCOUT: Open tactical battlefield at Parc des Princes. Simeone's Atletico has shifted from 4-4-2 to an aggressive 3-4-3 press, forcing PSG into turnover vulnerabilities. Pick: Over 4.5 Goals or Both Teams To Score 2nd Half.",
+    topTips: ["uo35", "uo45", "btts", "btts2h", "uo2h15", "c85", "c105"]
+  },
+  {
+    id: "match-6",
+    date: "today",
+    league: "NPFL",
+    leagueEmoji: "🇳🇬",
+    time: "Live 78'",
+    isLive: true,
+    homeTeam: {
+      name: "Enyimba FC",
+      logo: "🐘🔵",
+      form: ["W", "W", "D", "W", "W"]
+    },
+    awayTeam: {
+      name: "Remo Stars",
+      logo: "🌟🔵",
+      form: ["W", "D", "W", "L", "W"]
+    },
+    scores: { home: 1, away: 0 },
+    predictions: { home: 62, draw: 26, away: 12 },
+    confidence: "high",
+    confidenceVal: 89,
+    insight: "Aba fortress: Enyimba undefeated in their last 18 home NPFL fixtures.",
+    isPremium: false,
+    aiAnalysis: "Enyimba's tactical command in Aba is dominant. Remo Stars has generated only 1 shot on target across 78 minutes. Backing Home Win (1) and Home Clean Sheet with high algorithmic confidence.",
+    topTips: ["win1", "dc1x", "uo15", "hcs", "hw2n"]
+  },
+  {
+    id: "match-7",
+    date: "today",
+    league: "Ligue 1",
+    leagueEmoji: "🇫🇷",
+    time: "Live 42'",
+    isLive: true,
+    homeTeam: {
+      name: "Monaco",
+      logo: "🔴⚪👑",
+      form: ["W", "D", "W", "L", "W"]
+    },
+    awayTeam: {
+      name: "Marseille",
+      logo: "🔵🗼",
+      form: ["L", "W", "W", "D", "W"]
+    },
+    scores: { home: 1, away: 2 },
+    predictions: { home: 40, draw: 25, away: 35 },
+    confidence: "medium",
+    confidenceVal: 76,
+    insight: "Derby de la Méditerranée: Marseille's counter-press yielding fast transition breaks.",
+    isPremium: false,
+    aiAnalysis: "Fascinating dynamic in southern France. Monaco's high defensive line was penetrated twice in quick succession. Look for Monaco to make double halftime substitutions to push for an equalizer in the second half.",
+    topTips: ["uo25", "uo35", "btts", "uo2h05", "c75", "c85"]
+  },
+  {
+    id: "match-8",
+    date: "today",
+    league: "Premier League",
+    leagueEmoji: "🏴󠁧󠁢󠁥󠁮󠁧󠁿",
+    time: "Live 19'",
+    isLive: true,
+    homeTeam: {
+      name: "Tottenham",
+      logo: "⚪🐓",
+      form: ["W", "L", "W", "W", "D"]
+    },
+    awayTeam: {
+      name: "Aston Villa",
+      logo: "🦁🟣",
+      form: ["W", "W", "D", "L", "W"]
+    },
+    scores: { home: 0, away: 0 },
+    predictions: { home: 46, draw: 26, away: 28 },
+    confidence: "medium",
+    confidenceVal: 79,
+    insight: "High line duel: Postecoglou vs Emery tactical press war in north London.",
+    isPremium: false,
+    aiAnalysis: "Early minutes show intense vertical pacing. Both teams have combined for 4 corners inside 18 minutes. Model projects high likelihood of Over 2.5 total match goals and Over 9.5 Corners.",
+    topTips: ["uo25", "btts", "c85", "c95", "c105", "uoht05"]
+  },
+
+  // --- TODAY'S SCHEDULED / UPCOMING MATCHES ---
+  {
+    id: "match-9",
     date: "today",
     league: "Premier League",
     leagueEmoji: "🏴󠁧󠁢󠁥󠁮󠁧󠁿",
@@ -72,95 +231,201 @@ const MATCH_DATA = [
     predictions: { home: 55, draw: 25, away: 20 },
     confidence: "high",
     confidenceVal: 82,
-    insight: "Liverpool has scored in 100% of their home games this season.",
+    insight: "Liverpool has scored in 100% of their home games this season at Anfield.",
     isPremium: false,
     aiAnalysis: "Liverpool's home form under the Anfield lights is formidable. Tactical analysis indicates Chelsea's midfield double pivot will struggle against Liverpool's counter-pressing intensity. Our algorithmic simulation estimates a 55% chance for a Home win, with Both Teams To Score (BTTS) checking out at 68% probability. Predicted score: 3-1.",
-    topTips: ["uo15", "uo35", "uoht05", "c75", "c85", "c95", "c105"]
+    topTips: ["win1", "uo15", "uo25", "uo35", "uoht05", "c75", "c85", "c95", "c105", "btts"]
   },
   {
-    id: "match-4",
+    id: "match-10",
     date: "today",
     league: "Bundesliga",
     leagueEmoji: "🇩🇪",
-    time: "Today, 15:30",
+    time: "Today, 18:30",
     isLive: false,
     homeTeam: {
-      name: "Bayern Munich",
-      logo: "🔴⚪",
-      form: ["W", "W", "W", "W", "W"]
-    },
-    awayTeam: {
-      name: "Dortmund",
+      name: "Borussia Dortmund",
       logo: "🟡⚫",
       form: ["W", "L", "W", "D", "W"]
     },
+    awayTeam: {
+      name: "Bayer Leverkusen",
+      logo: "🔴🦁",
+      form: ["W", "W", "W", "W", "D"]
+    },
     scores: { home: null, away: null },
-    predictions: { home: 68, draw: 18, away: 14 },
+    predictions: { home: 35, draw: 28, away: 37 },
     confidence: "high",
-    confidenceVal: 90,
-    insight: "Bayern is averaging 3.2 goals per game. Dortmund conceded in 4 away games.",
-    isPremium: false,
-    aiAnalysis: "Klassiker dynamics favor Bayern Munich. The model indicates Bayern's central attacking overload index is extremely high. Dortmund is likely to set up in a low block, but their recent struggles to defend crosses will be exploited by Bayern's active wing play. Take Bayern Win & Over 2.5 match goals.",
-    topTips: ["uo15", "uoht15", "btts2h", "c75", "c85"]
+    confidenceVal: 86,
+    insight: "Blockbuster at Signal Iduna Park: Leverkusen averages 2.8 goals per match.",
+    isPremium: true,
+    aiAnalysis: "PREMIUM SCOUT REPORT: Leverkusen's fluid 3-4-2-1 structure under Xabi Alonso creates numerical superiority in the half-spaces that Dortmund's flat midfield has traditionally struggled to close down. High value pick: Both Teams to Score + Over 2.5 Goals.",
+    topTips: ["uo25", "uo35", "btts", "combo_1x2_gg", "c85", "c95"]
   },
   {
-    id: "match-5",
-    date: "tomorrow",
+    id: "match-11",
+    date: "today",
     league: "Serie A",
     leagueEmoji: "🇮🇹",
-    time: "Tomorrow, 19:45",
+    time: "Today, 19:45",
     isLive: false,
     homeTeam: {
-      name: "Inter Milan",
-      logo: "🔵⚫🐍",
-      form: ["W", "D", "W", "W", "L"]
-    },
-    awayTeam: {
       name: "AC Milan",
       logo: "🔴⚫👿",
       form: ["L", "W", "W", "D", "W"]
     },
+    awayTeam: {
+      name: "AS Roma",
+      logo: "🐺🟡🔴",
+      form: ["W", "W", "D", "W", "L"]
+    },
     scores: { home: null, away: null },
-    predictions: { home: 52, draw: 28, away: 20 },
+    predictions: { home: 45, draw: 30, away: 25 },
     confidence: "medium",
-    confidenceVal: 75,
-    insight: "Derby della Madonnina. Inter won 4 of the last 5 derbies.",
-    isPremium: true,
-    aiAnalysis: "PREMIUM SCOUT REPORT: Inter's 3-5-2 system creates superior defensive stability compared to Milan's vulnerable 4-2-3-1 spacing. AC Milan's defensive line has been caught out repeatedly this season by vertical runs. We expect Inter to dominate the midfield battle. Recommended Premium Bet: Inter Milan Match Winner.",
-    topTips: ["uo15", "uo2h05", "c75", "c85", "c95"]
+    confidenceVal: 74,
+    insight: "San Siro showdown: AC Milan has won 3 consecutive head-to-head encounters.",
+    isPremium: false,
+    aiAnalysis: "Milan's wide pace via Leão will test Roma's back-three defensive discipline. Roma's set-piece xG is top-three in Serie A, making corners and set-piece goals high likelihood vectors. Recommended: Home Win (1) or Double Chance 1X.",
+    topTips: ["win1", "dc1x", "uo15", "uo25", "c75", "c85"]
   },
   {
-    id: "match-6",
-    date: "tomorrow",
-    league: "Champions League",
-    leagueEmoji: "🇪🇺",
-    time: "Tomorrow, 20:00",
+    id: "match-12",
+    date: "today",
+    league: "Primeira Liga",
+    leagueEmoji: "🇵🇹",
+    time: "Today, 20:30",
     isLive: false,
     homeTeam: {
-      name: "Juventus",
-      logo: "⚫⚪🦓",
-      form: ["W", "W", "D", "D", "W"]
+      name: "Sporting CP",
+      logo: "🟢⚪🦁",
+      form: ["W", "W", "W", "W", "W"]
     },
     awayTeam: {
-      name: "PSG",
-      logo: "🗼",
-      form: ["W", "W", "W", "W", "D"]
+      name: "Benfica",
+      logo: "🦅🔴",
+      form: ["W", "W", "D", "W", "W"]
     },
     scores: { home: null, away: null },
-    predictions: { home: 35, draw: 30, away: 35 },
-    confidence: "medium",
-    confidenceVal: 65,
-    insight: "Tactical deadlock expected. Both teams average low defensive lines.",
-    isPremium: false,
-    aiAnalysis: "This is a very evenly matched fixture. Juventus will likely sit deep and look to hit PSG on the counter. PSG's attacking firepower is superior, but their defensive discipline in away European fixtures remains questionable. A draw is highly probable here (30%), making 'Under 2.5 goals' the safest structural investment.",
-    topTips: ["uo15", "c75", "c85", "c95", "c105"]
+    predictions: { home: 48, draw: 28, away: 24 },
+    confidence: "high",
+    confidenceVal: 87,
+    insight: "Derby de Lisboa: Sporting has scored 2+ goals in 9 of their last 10 home matches.",
+    isPremium: true,
+    aiAnalysis: "PREMIUM SCOUT REPORT: Sporting's high attacking line has generated a league-best 2.95 xG at Alvalade. Benfica's midfield double-pivot will be pressed fiercely. Banker Pick: Sporting to Win (Draw No Bet) and Over 1.5 Team Goals.",
+    topTips: ["win1", "dc1x", "uo15", "uo25", "btts", "huo15", "c85"]
   },
   {
-    id: "match-7",
-    date: "yesterday",
+    id: "match-13",
+    date: "today",
+    league: "Eredivisie",
+    leagueEmoji: "🇳🇱",
+    time: "Today, 16:45",
+    isLive: false,
+    homeTeam: {
+      name: "PSV Eindhoven",
+      logo: "🔴⚪⚡",
+      form: ["W", "W", "W", "W", "W"]
+    },
+    awayTeam: {
+      name: "Ajax",
+      logo: "🔴⚪🛡️🦁",
+      form: ["W", "D", "W", "L", "W"]
+    },
+    scores: { home: null, away: null },
+    predictions: { home: 65, draw: 20, away: 15 },
+    confidence: "high",
+    confidenceVal: 91,
+    insight: "De Topper: PSV is unbeaten at home this season with a +38 goal differential.",
+    isPremium: false,
+    aiAnalysis: "PSV's transition speed is the highest in the Netherlands. Ajax's ongoing restructuring leaves them exposed in defensive transitions. Take PSV Win and Over 2.5 Goals.",
+    topTips: ["win1", "uo25", "uo35", "huo15", "c85", "c95"]
+  },
+  {
+    id: "match-14",
+    date: "today",
+    league: "Brasileirão",
+    leagueEmoji: "🇧🇷",
+    time: "Today, 21:00",
+    isLive: false,
+    homeTeam: {
+      name: "Flamengo",
+      logo: "🔴⚫🦅",
+      form: ["W", "W", "D", "W", "L"]
+    },
+    awayTeam: {
+      name: "Palmeiras",
+      logo: "🟢⚪🌴",
+      form: ["W", "W", "W", "D", "W"]
+    },
+    scores: { home: null, away: null },
+    predictions: { home: 44, draw: 32, away: 24 },
+    confidence: "medium",
+    confidenceVal: 77,
+    insight: "Maracanã classic: Tactical duel between two Brazilian powerhouses.",
+    isPremium: false,
+    aiAnalysis: "Expect an intense, cagey atmosphere at the Maracanã. Palmeiras operates with a compact defensive structure under Abel Ferreira, while Flamengo looks to dominate possession. Pick: Under 2.5 Goals or 1X Double Chance.",
+    topTips: ["dc1x", "uo15", "uo25", "c85", "c95"]
+  },
+  {
+    id: "match-15",
+    date: "today",
+    league: "Saudi Pro League",
+    leagueEmoji: "🇸🇦",
+    time: "Today, 19:00",
+    isLive: false,
+    homeTeam: {
+      name: "Al Hilal",
+      logo: "🔵🌙",
+      form: ["W", "W", "W", "W", "W"]
+    },
+    awayTeam: {
+      name: "Al Nassr",
+      logo: "🟡🔵👑",
+      form: ["W", "W", "W", "D", "W"]
+    },
+    scores: { home: null, away: null },
+    predictions: { home: 50, draw: 25, away: 25 },
+    confidence: "high",
+    confidenceVal: 85,
+    insight: "Riyadh Derby: Al Hilal on an unprecedented 28-match winning run.",
+    isPremium: true,
+    aiAnalysis: "PREMIUM SCOUT REPORT: Al Hilal's tactical balance across all thirds gives them a decisive edge in midfield transition against Al Nassr's star-studded frontline. Best Bet: Over 2.5 Total Match Goals and BTTS.",
+    topTips: ["win1", "uo25", "uo35", "btts", "combo_1x2_uo", "c85"]
+  },
+  {
+    id: "match-16",
+    date: "today",
+    league: "La Liga",
+    leagueEmoji: "🇪🇸",
+    time: "Today, 20:00",
+    isLive: false,
+    homeTeam: {
+      name: "Real Sociedad",
+      logo: "🔵⚪👑",
+      form: ["W", "D", "W", "L", "D"]
+    },
+    awayTeam: {
+      name: "Athletic Bilbao",
+      logo: "🦁🔴",
+      form: ["W", "W", "D", "W", "L"]
+    },
+    scores: { home: null, away: null },
+    predictions: { home: 40, draw: 35, away: 25 },
+    confidence: "medium",
+    confidenceVal: 73,
+    insight: "Basque Derby: 4 of the last 5 meetings finished with under 2.5 goals.",
+    isPremium: false,
+    aiAnalysis: "Both Basque sides boast structured mid-blocks and fierce pressing in wide zones. A tight tactical affair is anticipated with fewer than 3 goals.",
+    topTips: ["dc1x", "uo15", "uo25", "c75", "c85"]
+  },
+
+  // --- TOMORROW'S SCHEDULED MATCHES ---
+  {
+    id: "match-17",
+    date: "tomorrow",
     league: "Premier League",
     leagueEmoji: "🏴󠁧󠁢󠁥󠁮󠁧󠁿",
-    time: "FT",
+    time: "Tomorrow, 20:00",
     isLive: false,
     homeTeam: {
       name: "Manchester United",
@@ -172,43 +437,149 @@ const MATCH_DATA = [
       logo: "🦓",
       form: ["L", "W", "D", "L", "W"]
     },
-    scores: { home: 2, away: 0 },
-    predictions: { home: 45, draw: 30, away: 25 },
+    scores: { home: null, away: null },
+    predictions: { home: 48, draw: 26, away: 26 },
     confidence: "medium",
-    confidenceVal: 74,
-    insight: "Manchester United secured a clean sheet victory at Old Trafford.",
+    confidenceVal: 75,
+    insight: "Old Trafford night game: Man Utd targeting European qualification spot.",
     isPremium: false,
-    aiAnalysis: "Old Trafford dynamics. Manchester United's vertical transition index was high (8.2). Newcastle struggled to defend early crosses.",
-    topTips: ["uo15", "uoht05", "c75"]
+    aiAnalysis: "Manchester United's direct wing play will challenge Newcastle's injury-depleted fullbacks. Expect an open encounter with both teams scoring.",
+    topTips: ["win1", "dc1x", "uo15", "uo25", "btts", "c85", "c95"]
   },
   {
-    id: "match-8",
+    id: "match-18",
+    date: "tomorrow",
+    league: "La Liga",
+    leagueEmoji: "🇪🇸",
+    time: "Tomorrow, 19:30",
+    isLive: false,
+    homeTeam: {
+      name: "Sevilla",
+      logo: "⚪🔴🛡️",
+      form: ["W", "D", "L", "W", "D"]
+    },
+    awayTeam: {
+      name: "Villarreal",
+      logo: "🟡潜",
+      form: ["W", "W", "W", "L", "W"]
+    },
+    scores: { home: null, away: null },
+    predictions: { home: 42, draw: 30, away: 28 },
+    confidence: "medium",
+    confidenceVal: 72,
+    insight: "Ramon Sanchez-Pizjuan clash: Villarreal has scored in 8 consecutive away games.",
+    isPremium: false,
+    aiAnalysis: "Both sides possess explosive attacking outlets. Sevilla's home crowd will push early tempo, creating space for Villarreal's transitions.",
+    topTips: ["uo25", "btts", "dc12", "c75", "c85"]
+  },
+  {
+    id: "match-19",
+    date: "tomorrow",
+    league: "Serie A",
+    leagueEmoji: "🇮🇹",
+    time: "Tomorrow, 20:45",
+    isLive: false,
+    homeTeam: {
+      name: "Napoli",
+      logo: "🔵👑",
+      form: ["W", "D", "W", "L", "W"]
+    },
+    awayTeam: {
+      name: "Lazio",
+      logo: "🦅🔵⚪",
+      form: ["W", "L", "W", "D", "W"]
+    },
+    scores: { home: null, away: null },
+    predictions: { home: 52, draw: 28, away: 20 },
+    confidence: "high",
+    confidenceVal: 81,
+    insight: "Stadio Diego Armando Maradona: Napoli averages 61% possession at home.",
+    isPremium: true,
+    aiAnalysis: "PREMIUM SCOUT REPORT: Napoli's positional rotations in the final third are projected to break Lazio's 4-3-3 shape. Banker Pick: Napoli Win (Draw No Bet) and Over 1.5 match goals.",
+    topTips: ["win1", "dc1x", "uo15", "uo25", "huo15", "c75", "c85"]
+  },
+  {
+    id: "match-20",
+    date: "tomorrow",
+    league: "MLS",
+    leagueEmoji: "🇺🇸",
+    time: "Tomorrow, 23:30",
+    isLive: false,
+    homeTeam: {
+      name: "Inter Miami",
+      logo: "🦩💗",
+      form: ["W", "W", "D", "W", "W"]
+    },
+    awayTeam: {
+      name: "LA Galaxy",
+      logo: "⚪🌌",
+      form: ["W", "W", "W", "D", "L"]
+    },
+    scores: { home: null, away: null },
+    predictions: { home: 58, draw: 22, away: 20 },
+    confidence: "high",
+    confidenceVal: 88,
+    insight: "Chase Stadium: Inter Miami averaging 3.0 goals per game when starting key playmakers.",
+    isPremium: false,
+    aiAnalysis: "High-scoring MLS thriller expected. Inter Miami's attacking output is unmatched, but Galaxy's front three guarantees chances. Back Over 3.5 Goals.",
+    topTips: ["win1", "uo25", "uo35", "btts", "combo_1x2_gg", "c85"]
+  },
+
+  // --- YESTERDAY'S COMPLETED MATCHES (FT) ---
+  {
+    id: "match-21",
+    date: "yesterday",
+    league: "Premier League",
+    leagueEmoji: "🏴󠁧󠁢󠁥󠁮󠁧󠁿",
+    time: "FT",
+    isLive: false,
+    homeTeam: {
+      name: "Manchester City",
+      logo: "🔵",
+      form: ["W", "W", "W", "W", "W"]
+    },
+    awayTeam: {
+      name: "West Ham",
+      logo: "⚒️",
+      form: ["L", "L", "D", "W", "L"]
+    },
+    scores: { home: 3, away: 1 },
+    predictions: { home: 78, draw: 14, away: 8 },
+    confidence: "high",
+    confidenceVal: 94,
+    insight: "City secured comfortable 3-1 victory with 71% possession.",
+    isPremium: false,
+    aiAnalysis: "Match finalized. Manchester City executed textbook half-space overloads, generating 3.45 Expected Goals (xG).",
+    topTips: ["win1", "uo25", "uo35", "huo15"]
+  },
+  {
+    id: "match-22",
     date: "yesterday",
     league: "La Liga",
     leagueEmoji: "🇪🇸",
     time: "FT",
     isLive: false,
     homeTeam: {
-      name: "Atletico Madrid",
-      logo: "🔴⚪🐻",
-      form: ["W", "D", "W", "L", "W"]
+      name: "Girona",
+      logo: "🔴⚪🦁",
+      form: ["W", "W", "W", "L", "W"]
     },
     awayTeam: {
-      name: "Athletic Bilbao",
-      logo: "🦁🔴",
-      form: ["L", "W", "D", "W", "D"]
+      name: "Valencia",
+      logo: "🦇",
+      form: ["L", "D", "W", "L", "D"]
     },
-    scores: { home: 1, away: 1 },
-    predictions: { home: 40, draw: 35, away: 25 },
-    confidence: "medium",
-    confidenceVal: 70,
-    insight: "A tight defensive draw under Simeone's resilient block.",
+    scores: { home: 2, away: 0 },
+    predictions: { home: 60, draw: 24, away: 16 },
+    confidence: "high",
+    confidenceVal: 86,
+    insight: "Girona controlled tempo and kept a clean sheet at Montilivi.",
     isPremium: false,
-    aiAnalysis: "Low block comparison. Both teams set up with high defensive lines in possession but dropped to structured 4-4-2 blocks, neutralizing offensive wing runs.",
-    topTips: ["uo15", "c75", "c85", "c95"]
+    aiAnalysis: "Match finalized. Girona's structured wing play yielded 2 first-half goals and a clean defensive record.",
+    topTips: ["win1", "uo15", "hcs", "hw2n"]
   },
   {
-    id: "match-9",
+    id: "match-23",
     date: "yesterday",
     league: "Bundesliga",
     leagueEmoji: "🇩🇪",
@@ -220,18 +591,44 @@ const MATCH_DATA = [
       form: ["W", "W", "W", "W", "D"]
     },
     awayTeam: {
-      name: "Frankfurt",
-      logo: "🦅",
-      form: ["D", "L", "W", "L", "W"]
+      name: "Wolfsburg",
+      logo: "🐺🟢",
+      form: ["L", "W", "L", "D", "L"]
     },
     scores: { home: 3, away: 1 },
-    predictions: { home: 65, draw: 22, away: 13 },
+    predictions: { home: 70, draw: 18, away: 12 },
     confidence: "high",
-    confidenceVal: 88,
-    insight: "Leverkusen continues their unbeaten campaign with high goal intensity.",
+    confidenceVal: 90,
+    insight: "Leverkusen continues unbeaten run with high attacking efficiency.",
     isPremium: true,
-    aiAnalysis: "Alonso's patterns. Leverkusen operated with inverted wing-backs that created central 3v2 overloads, yielding a 3.10 Expected Goals (xG) output.",
-    topTips: ["uo15", "uo35", "uoht05", "c75", "c85"]
+    aiAnalysis: "Match finalized. Leverkusen dominated with 18 shots and 2.89 xG.",
+    topTips: ["win1", "uo25", "uo35", "huo15"]
+  },
+  {
+    id: "match-24",
+    date: "yesterday",
+    league: "Serie A",
+    leagueEmoji: "🇮🇹",
+    time: "FT",
+    isLive: false,
+    homeTeam: {
+      name: "Atalanta",
+      logo: "🔵⚫👩",
+      form: ["W", "W", "L", "D", "W"]
+    },
+    awayTeam: {
+      name: "Fiorentina",
+      logo: "🟣⚜️",
+      form: ["D", "W", "L", "W", "D"]
+    },
+    scores: { home: 2, away: 1 },
+    predictions: { home: 54, draw: 26, away: 20 },
+    confidence: "high",
+    confidenceVal: 83,
+    insight: "Gasperini's side pressed high and claimed late 2-1 winner.",
+    isPremium: false,
+    aiAnalysis: "Match finalized. Atalanta created 11 corners and 16 shots to secure 3 points in Bergamo.",
+    topTips: ["win1", "uo25", "btts", "c85", "c95"]
   }
 ];
 
