@@ -244,62 +244,58 @@ const HISTORICAL_PERFORMANCE = {
 };
 
 const GLOBAL_CLUBS = [
-  // England
-  { name: "Manchester City", country: "England", flag: "🏴󠁧󠁢󠁥󠁮󠁧󠁿", league: "Premier League", logo: "🔵", matchesPlayed: 32, wins: 23, draws: 6, losses: 3 },
-  { name: "Arsenal", country: "England", flag: "🏴󠁧󠁢󠁥󠁮󠁧󠁿", league: "Premier League", logo: "🔴", matchesPlayed: 32, wins: 22, draws: 5, losses: 5 },
-  { name: "Liverpool", country: "England", flag: "🏴󠁧󠁢󠁥󠁮󠁧󠁿", league: "Premier League", logo: "🔴🛡️", matchesPlayed: 32, wins: 21, draws: 7, losses: 4 },
-  { name: "Chelsea", country: "England", flag: "🏴󠁧󠁢󠁥󠁮󠁧󠁿", league: "Premier League", logo: "🦁", matchesPlayed: 32, wins: 15, draws: 9, losses: 8 },
-  { name: "Manchester United", country: "England", flag: "🏴󠁧󠁢󠁥󠁮󠁧󠁿", league: "Premier League", logo: "👿", matchesPlayed: 32, wins: 16, draws: 4, losses: 12 },
-  { name: "Tottenham", country: "England", flag: "🏴󠁧󠁢󠁥󠁮󠁧󠁿", league: "Premier League", logo: "⚪🐓", matchesPlayed: 32, wins: 18, draws: 6, losses: 8 },
-  { name: "Aston Villa", country: "England", flag: "🏴󠁧󠁢󠁥󠁮󠁧󠁿", league: "Premier League", logo: "🦁🟣", matchesPlayed: 32, wins: 18, draws: 6, losses: 8 },
-  { name: "Newcastle United", country: "England", flag: "🏴󠁧󠁢󠁥󠁮󠁧󠁿", league: "Premier League", logo: "🦓", matchesPlayed: 32, wins: 15, draws: 5, losses: 12 },
-  
-  // Spain
-  { name: "Real Madrid", country: "Spain", flag: "🇪🇸", league: "La Liga", logo: "⚪", matchesPlayed: 31, wins: 24, draws: 6, losses: 1 },
-  { name: "Barcelona", country: "Spain", flag: "🇪🇸", league: "La Liga", logo: "🔵🔴", matchesPlayed: 31, wins: 21, draws: 7, losses: 3 },
-  { name: "Atletico Madrid", country: "Spain", flag: "🇪🇸", league: "La Liga", logo: "🔴⚪🐻", matchesPlayed: 31, wins: 19, draws: 4, losses: 8 },
-  { name: "Girona", country: "Spain", flag: "🇪🇸", league: "La Liga", logo: "🔴⚪🦁", matchesPlayed: 31, wins: 20, draws: 5, losses: 6 },
-  { name: "Athletic Bilbao", country: "Spain", flag: "🇪🇸", league: "La Liga", logo: "🦁🔴", matchesPlayed: 31, wins: 16, draws: 9, losses: 6 },
-  { name: "Real Sociedad", country: "Spain", flag: "🇪🇸", league: "La Liga", logo: "🔵⚪👑", matchesPlayed: 31, wins: 13, draws: 11, losses: 7 },
-  
-  // Germany
-  { name: "Bayern Munich", country: "Germany", flag: "🇩🇪", league: "Bundesliga", logo: "🔴⚪", matchesPlayed: 29, wins: 20, draws: 3, losses: 6 },
-  { name: "Bayer Leverkusen", country: "Germany", flag: "🇩🇪", league: "Bundesliga", logo: "🔴🦁", matchesPlayed: 29, wins: 25, draws: 4, losses: 0 },
-  { name: "Borussia Dortmund", country: "Germany", flag: "🇩🇪", league: "Bundesliga", logo: "🟡⚫", matchesPlayed: 29, wins: 16, draws: 8, losses: 5 },
-  { name: "RB Leipzig", country: "Germany", flag: "🇩🇪", league: "Bundesliga", logo: "🔴🐂", matchesPlayed: 29, wins: 17, draws: 5, losses: 7 },
-  { name: "VfB Stuttgart", country: "Germany", flag: "🇩🇪", league: "Bundesliga", logo: "⚪🔴", matchesPlayed: 29, wins: 20, draws: 3, losses: 6 },
-  
-  // Italy
-  { name: "Inter Milan", country: "Italy", flag: "🇮🇹", league: "Serie A", logo: "🔵⚫🐍", matchesPlayed: 32, wins: 26, draws: 5, losses: 1 },
-  { name: "AC Milan", country: "Italy", flag: "🇮🇹", league: "Serie A", logo: "🔴⚫👿", matchesPlayed: 32, wins: 21, draws: 6, losses: 5 },
-  { name: "Juventus", country: "Italy", flag: "🇮🇹", league: "Serie A", logo: "⚫⚪🦓", matchesPlayed: 32, wins: 18, draws: 9, losses: 5 },
-  { name: "Bologna", country: "Italy", flag: "🇮🇹", league: "Serie A", logo: "🔴🔵🛡️", matchesPlayed: 32, wins: 16, draws: 11, losses: 5 },
-  { name: "AS Roma", country: "Italy", flag: "🇮🇹", league: "Serie A", logo: "🐺🟡🔴", matchesPlayed: 32, wins: 16, draws: 7, losses: 9 },
-  { name: "Atalanta", country: "Italy", flag: "🇮🇹", league: "Serie A", logo: "🔵⚫👩", matchesPlayed: 31, wins: 15, draws: 6, losses: 10 },
-  { name: "Lazio", country: "Italy", flag: "🇮🇹", league: "Serie A", logo: "🦅🔵⚪", matchesPlayed: 32, wins: 15, draws: 4, losses: 13 },
-  { name: "Napoli", country: "Italy", flag: "🇮🇹", league: "Serie A", logo: "🔵👑", matchesPlayed: 32, wins: 13, draws: 10, losses: 9 },
-  
-  // France
-  { name: "Paris Saint-Germain", country: "France", flag: "🇫🇷", league: "Ligue 1", logo: "🗼", matchesPlayed: 29, wins: 19, draws: 9, losses: 1 },
-  { name: "Monaco", country: "France", flag: "🇫🇷", league: "Ligue 1", logo: "🔴⚪👑", matchesPlayed: 29, wins: 15, draws: 7, losses: 7 },
-  { name: "Lille", country: "France", flag: "🇫🇷", league: "Ligue 1", logo: "🐕🔴", matchesPlayed: 29, wins: 13, draws: 10, losses: 6 },
-  { name: "Marseille", country: "France", flag: "🇫🇷", league: "Ligue 1", logo: "🔵🗼", matchesPlayed: 29, wins: 10, draws: 10, losses: 9 },
-  { name: "Lyon", country: "France", flag: "🇫🇷", league: "Ligue 1", logo: "🦁🔵🔴", matchesPlayed: 29, wins: 12, draws: 5, losses: 12 },
-  
-  // Portugal
-  { name: "Sporting CP", country: "Portugal", flag: "🇵🇹", league: "Primeira Liga", logo: "🟢⚪🦁", matchesPlayed: 29, wins: 24, draws: 3, losses: 2 },
-  { name: "Benfica", country: "Portugal", flag: "🇵🇹", league: "Primeira Liga", logo: "🦅🔴", matchesPlayed: 29, wins: 22, draws: 4, losses: 3 },
-  { name: "FC Porto", country: "Portugal", flag: "🇵🇹", league: "Primeira Liga", logo: "🔵🐉", matchesPlayed: 29, wins: 18, draws: 5, losses: 6 },
-  
-  // Netherlands
-  { name: "PSV Eindhoven", country: "Netherlands", flag: "🇳🇱", league: "Eredivisie", logo: "🔴⚪⚡", matchesPlayed: 30, wins: 26, draws: 3, losses: 1 },
-  { name: "Feyenoord", country: "Netherlands", flag: "🇳🇱", league: "Eredivisie", logo: "🔴⚪🛡️", matchesPlayed: 30, wins: 22, draws: 6, losses: 2 },
-  { name: "Ajax", country: "Netherlands", flag: "🇳🇱", league: "Eredivisie", logo: "🔴⚪🛡️🦁", matchesPlayed: 30, wins: 13, draws: 9, losses: 8 },
-  
-  // USA
-  { name: "Inter Miami", country: "USA", flag: "🇺🇸", league: "MLS", logo: "🦩💗", matchesPlayed: 9, wins: 4, draws: 3, losses: 2 },
-  { name: "LAFC", country: "USA", flag: "🇺🇸", league: "MLS", logo: "⚫🟡🦅", matchesPlayed: 9, wins: 4, draws: 3, losses: 2 },
-  { name: "LA Galaxy", country: "USA", flag: "🇺🇸", league: "MLS", logo: "⚪🌌", matchesPlayed: 9, wins: 5, draws: 3, losses: 1 }
+  // England - Premier League
+  { name: "Manchester City", country: "England", flag: "🏴󠁧󠁢󠁥󠁮󠁧󠁿", league: "Premier League", logo: "🔵", matchesPlayed: 1, wins: 1, draws: 0, losses: 0, points: 3 },
+  { name: "Arsenal", country: "England", flag: "🏴󠁧󠁢󠁥󠁮󠁧󠁿", league: "Premier League", logo: "🔴", matchesPlayed: 1, wins: 1, draws: 0, losses: 0, points: 3 },
+  { name: "Liverpool", country: "England", flag: "🏴󠁧󠁢󠁥󠁮󠁧󠁿", league: "Premier League", logo: "🔴🛡️", matchesPlayed: 1, wins: 1, draws: 0, losses: 0, points: 3 },
+  { name: "Brighton", country: "England", flag: "🏴󠁧󠁢󠁥󠁮󠁧󠁿", league: "Premier League", logo: "🕊️", matchesPlayed: 1, wins: 1, draws: 0, losses: 0, points: 3 },
+  { name: "Aston Villa", country: "England", flag: "🏴󠁧󠁢󠁥󠁮󠁧󠁿", league: "Premier League", logo: "🦁🟣", matchesPlayed: 1, wins: 1, draws: 0, losses: 0, points: 3 },
+  { name: "Manchester United", country: "England", flag: "🏴󠁧󠁢󠁥󠁮󠁧󠁿", league: "Premier League", logo: "👿", matchesPlayed: 1, wins: 1, draws: 0, losses: 0, points: 3 },
+  { name: "Newcastle United", country: "England", flag: "🏴󠁧󠁢󠁥󠁮󠁧󠁿", league: "Premier League", logo: "🦓", matchesPlayed: 1, wins: 1, draws: 0, losses: 0, points: 3 },
+  { name: "Tottenham", country: "England", flag: "🏴󠁧󠁢󠁥󠁮󠁧󠁿", league: "Premier League", logo: "⚪🐓", matchesPlayed: 1, wins: 0, draws: 1, losses: 0, points: 1 },
+  { name: "Chelsea", country: "England", flag: "🏴󠁧󠁢󠁥󠁮󠁧󠁿", league: "Premier League", logo: "🦁", matchesPlayed: 1, wins: 0, draws: 0, losses: 1, points: 0 },
+
+  // Spain - La Liga
+  { name: "Barcelona", country: "Spain", flag: "🇪🇸", league: "La Liga", logo: "🔵🔴", matchesPlayed: 1, wins: 1, draws: 0, losses: 0, points: 3 },
+  { name: "Celta Vigo", country: "Spain", flag: "🇪🇸", league: "La Liga", logo: "🩵", matchesPlayed: 1, wins: 1, draws: 0, losses: 0, points: 3 },
+  { name: "Real Madrid", country: "Spain", flag: "🇪🇸", league: "La Liga", logo: "⚪", matchesPlayed: 1, wins: 0, draws: 1, losses: 0, points: 1 },
+  { name: "Atletico Madrid", country: "Spain", flag: "🇪🇸", league: "La Liga", logo: "🔴⚪🐻", matchesPlayed: 1, wins: 0, draws: 1, losses: 0, points: 1 },
+  { name: "Athletic Bilbao", country: "Spain", flag: "🇪🇸", league: "La Liga", logo: "🦁🔴", matchesPlayed: 1, wins: 0, draws: 1, losses: 0, points: 1 },
+  { name: "Real Sociedad", country: "Spain", flag: "🇪🇸", league: "La Liga", logo: "🔵⚪👑", matchesPlayed: 1, wins: 0, draws: 0, losses: 1, points: 0 },
+  // Germany - Bundesliga
+  { name: "Bayern Munich", country: "Germany", flag: "🇩🇪", league: "Bundesliga", logo: "🔴⚪", matchesPlayed: 1, wins: 1, draws: 0, losses: 0, points: 3 },
+  { name: "Bayer Leverkusen", country: "Germany", flag: "🇩🇪", league: "Bundesliga", logo: "🔴🦁", matchesPlayed: 1, wins: 1, draws: 0, losses: 0, points: 3 },
+  { name: "Borussia Dortmund", country: "Germany", flag: "🇩🇪", league: "Bundesliga", logo: "🟡⚫", matchesPlayed: 1, wins: 1, draws: 0, losses: 0, points: 3 },
+  { name: "RB Leipzig", country: "Germany", flag: "🇩🇪", league: "Bundesliga", logo: "🔴🐂", matchesPlayed: 1, wins: 1, draws: 0, losses: 0, points: 3 },
+  { name: "Eintracht Frankfurt", country: "Germany", flag: "🇩🇪", league: "Bundesliga", logo: "🦅", matchesPlayed: 1, wins: 0, draws: 0, losses: 1, points: 0 },
+  // Italy - Serie A
+  { name: "Inter Milan", country: "Italy", flag: "🇮🇹", league: "Serie A", logo: "🔵⚫🐍", matchesPlayed: 1, wins: 0, draws: 1, losses: 0, points: 1 },
+  { name: "AC Milan", country: "Italy", flag: "🇮🇹", league: "Serie A", logo: "🔴⚫👿", matchesPlayed: 1, wins: 0, draws: 1, losses: 0, points: 1 },
+  { name: "Juventus", country: "Italy", flag: "🇮🇹", league: "Serie A", logo: "⚫⚪🦓", matchesPlayed: 1, wins: 1, draws: 0, losses: 0, points: 3 },
+  { name: "Atalanta", country: "Italy", flag: "🇮🇹", league: "Serie A", logo: "🔵⚫👩", matchesPlayed: 1, wins: 1, draws: 0, losses: 0, points: 3 },
+  { name: "Napoli", country: "Italy", flag: "🇮🇹", league: "Serie A", logo: "🔵👑", matchesPlayed: 1, wins: 0, draws: 0, losses: 1, points: 0 },
+  { name: "AS Roma", country: "Italy", flag: "🇮🇹", league: "Serie A", logo: "🐺🟡🔴", matchesPlayed: 1, wins: 0, draws: 1, losses: 0, points: 1 },
+  // France - Ligue 1
+  { name: "Paris Saint-Germain", country: "France", flag: "🇫🇷", league: "Ligue 1", logo: "🗼", matchesPlayed: 1, wins: 1, draws: 0, losses: 0, points: 3 },
+  { name: "Marseille", country: "France", flag: "🇫🇷", league: "Ligue 1", logo: "🔵🗼", matchesPlayed: 1, wins: 1, draws: 0, losses: 0, points: 3 },
+  { name: "Monaco", country: "France", flag: "🇫🇷", league: "Ligue 1", logo: "🔴⚪👑", matchesPlayed: 1, wins: 1, draws: 0, losses: 0, points: 3 },
+  { name: "Lille", country: "France", flag: "🇫🇷", league: "Ligue 1", logo: "🐕🔴", matchesPlayed: 1, wins: 1, draws: 0, losses: 0, points: 3 },
+  { name: "Lyon", country: "France", flag: "🇫🇷", league: "Ligue 1", logo: "🦁🔵🔴", matchesPlayed: 1, wins: 0, draws: 0, losses: 1, points: 0 },
+
+  // Portugal - Primeira Liga
+  { name: "Sporting CP", country: "Portugal", flag: "🇵🇹", league: "Primeira Liga", logo: "🟢⚪🦁", matchesPlayed: 1, wins: 1, draws: 0, losses: 0, points: 3 },
+  { name: "Benfica", country: "Portugal", flag: "🇵🇹", league: "Primeira Liga", logo: "🦅🔴", matchesPlayed: 1, wins: 1, draws: 0, losses: 0, points: 3 },
+  { name: "FC Porto", country: "Portugal", flag: "🇵🇹", league: "Primeira Liga", logo: "🔵🐉", matchesPlayed: 1, wins: 0, draws: 1, losses: 0, points: 1 },
+
+  // Netherlands - Eredivisie
+  { name: "PSV Eindhoven", country: "Netherlands", flag: "🇳🇱", league: "Eredivisie", logo: "🔴⚪⚡", matchesPlayed: 1, wins: 1, draws: 0, losses: 0, points: 3 },
+  { name: "Feyenoord", country: "Netherlands", flag: "🇳🇱", league: "Eredivisie", logo: "🔴⚪🛡️", matchesPlayed: 1, wins: 1, draws: 0, losses: 0, points: 3 },
+  { name: "Ajax", country: "Netherlands", flag: "🇳🇱", league: "Eredivisie", logo: "🔴⚪🛡️🦁", matchesPlayed: 1, wins: 0, draws: 0, losses: 1, points: 0 },
+
+  // USA - MLS
+  { name: "Inter Miami", country: "USA", flag: "🇺🇸", league: "MLS", logo: "🦩💗", matchesPlayed: 1, wins: 1, draws: 0, losses: 0, points: 3 },
+  { name: "LAFC", country: "USA", flag: "🇺🇸", league: "MLS", logo: "⚫🟡🦅", matchesPlayed: 1, wins: 0, draws: 1, losses: 0, points: 1 },
+  { name: "LA Galaxy", country: "USA", flag: "🇺🇸", league: "MLS", logo: "⚪🌌", matchesPlayed: 1, wins: 1, draws: 0, losses: 0, points: 3 }
 ];
 
 const LEAGUE_STATS = [
@@ -516,15 +512,15 @@ const TOP_LEAGUES_DATA = [
   { name: "World Cup", emoji: "🏆", country: "World" }
 ];
 
-try { if (typeof MATCH_DATA !== 'undefined') window.MATCH_DATA = MATCH_DATA; } catch (e) {}
-try { if (typeof MATCHES_DATA !== 'undefined') window.MATCHES_DATA = MATCHES_DATA; else if (typeof MATCH_DATA !== 'undefined') window.MATCHES_DATA = MATCH_DATA; } catch (e) {}
-try { if (typeof MATCH_STATS_DATA !== 'undefined') window.MATCH_STATS_DATA = MATCH_STATS_DATA; } catch (e) {}
-try { if (typeof LEAGUE_STATS_DATA !== 'undefined') window.LEAGUE_STATS_DATA = LEAGUE_STATS_DATA; } catch (e) {}
-try { if (typeof DAILY_TIPS !== 'undefined') window.DAILY_TIPS = DAILY_TIPS; } catch (e) {}
-try { if (typeof HOT_TRENDS !== 'undefined') window.HOT_TRENDS = HOT_TRENDS; } catch (e) {}
-try { if (typeof VALUE_BETS !== 'undefined') window.VALUE_BETS = VALUE_BETS; } catch (e) {}
-try { if (typeof COUNTRY_LEAGUES_DATA !== 'undefined') window.COUNTRY_LEAGUES_DATA = COUNTRY_LEAGUES_DATA; } catch (e) {}
-try { if (typeof TOP_LEAGUES_DATA !== 'undefined') window.TOP_LEAGUES_DATA = TOP_LEAGUES_DATA; } catch (e) {}
+try { if (typeof MATCH_DATA !== 'undefined') window.MATCH_DATA = MATCH_DATA; } catch (e) { }
+try { if (typeof MATCHES_DATA !== 'undefined') window.MATCHES_DATA = MATCHES_DATA; else if (typeof MATCH_DATA !== 'undefined') window.MATCHES_DATA = MATCH_DATA; } catch (e) { }
+try { if (typeof MATCH_STATS_DATA !== 'undefined') window.MATCH_STATS_DATA = MATCH_STATS_DATA; } catch (e) { }
+try { if (typeof LEAGUE_STATS_DATA !== 'undefined') window.LEAGUE_STATS_DATA = LEAGUE_STATS_DATA; } catch (e) { }
+try { if (typeof DAILY_TIPS !== 'undefined') window.DAILY_TIPS = DAILY_TIPS; } catch (e) { }
+try { if (typeof HOT_TRENDS !== 'undefined') window.HOT_TRENDS = HOT_TRENDS; } catch (e) { }
+try { if (typeof VALUE_BETS !== 'undefined') window.VALUE_BETS = VALUE_BETS; } catch (e) { }
+try { if (typeof COUNTRY_LEAGUES_DATA !== 'undefined') window.COUNTRY_LEAGUES_DATA = COUNTRY_LEAGUES_DATA; } catch (e) { }
+try { if (typeof TOP_LEAGUES_DATA !== 'undefined') window.TOP_LEAGUES_DATA = TOP_LEAGUES_DATA; } catch (e) { }
 
 // Auto-Export Window Bindings for data.js
 
