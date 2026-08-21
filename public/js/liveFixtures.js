@@ -1,8 +1,8 @@
 /**
  * DeepPredictBet — Live Fixtures Controller
  * Fetches real match data from API-Football via backend.
- * Updates #fixtures-grid in-place with smooth scrolling (never hides page views).
- * Displays high-visibility empty state with action buttons when a league has 0 active fixtures.
+ * Updates #fixtures-grid in-place — uses getComputedStyle to un-hide
+ * parent containers regardless of whether display:none is set inline or via CSS class.
  */
 
 (function () {
@@ -29,20 +29,30 @@
     return document.getElementById('fixtures-grid');
   }
 
+  /**
+   * Walk the DOM tree upward and force-show any hidden parent.
+   * Uses getComputedStyle — catches display:none from CSS classes, not just inline styles.
+   */
   function ensureVisible() {
     const grid = getGrid();
     if (!grid) return;
-    grid.style.display = 'grid';
-    grid.style.visibility = 'visible';
-    grid.style.opacity = '1';
-    // Walk up and un-hide any hidden parent containers
-    let parent = grid.parentElement;
-    while (parent && parent !== document.body) {
-      if (parent.style.display === 'none') {
-        parent.style.display = 'block';
+
+    let el = grid.parentElement;
+    while (el && el !== document.body) {
+      const computed = window.getComputedStyle(el);
+      if (computed.display === 'none') {
+        el.style.display = 'block';
       }
-      parent = parent.parentElement;
+      if (computed.visibility === 'hidden') {
+        el.style.visibility = 'visible';
+      }
+      el = el.parentElement;
     }
+
+    // Finally ensure the grid itself is visible
+    grid.style.display    = 'grid';
+    grid.style.visibility = 'visible';
+    grid.style.opacity    = '1';
   }
 
   function showSkeletonCards() {
@@ -117,10 +127,10 @@
   async function loadLiveFixturesForLeague(leagueName) {
     const leagueId = LEAGUE_ID_MAP[leagueName] || null;
 
-    // 1. Ensure grid is visible FIRST — no router page switching
+    // 1. Force-show the grid and all hidden parent containers (computed style aware)
     ensureVisible();
 
-    // 2. Scroll smoothly to the predictions area
+    // 2. Scroll to the predictions area
     const grid = getGrid();
     const targetSection = document.getElementById('matches-section') ||
                           document.getElementById('fixtures-section') ||
@@ -130,7 +140,7 @@
       targetSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
     }
 
-    // 3. Show skeleton loading cards immediately
+    // 3. Show skeleton immediately
     showSkeletonCards();
 
     // 4. Update section title
@@ -153,11 +163,12 @@
           const liveMatches = Array.isArray(json.matches) ? json.matches : [];
           if (liveMatches.length > 0) {
             window.MATCH_DATA = liveMatches;
+            ensureVisible();
             if (typeof window.renderMatchCards === 'function') window.renderMatchCards(liveMatches);
             setTitle(leagueName, 'live', liveMatches.length);
             return;
           }
-          // 0 fixtures from API — show empty state card
+          // API responded but 0 fixtures today
           showNoFixturesMessage(leagueName);
           setTitle(leagueName, 'live', 0);
           return;
@@ -167,20 +178,10 @@
       }
     }
 
-    // 7. Fallback: filter local MATCH_DATA by league
-    const staticAll = (typeof MATCH_DATA !== 'undefined' && Array.isArray(MATCH_DATA))
-      ? MATCH_DATA : (window.MATCH_DATA || []);
-    const filtered = staticAll.filter(m => m.league === leagueName);
-
-    if (filtered.length > 0) {
-      window.MATCH_DATA = filtered;
-      if (typeof window.renderMatchCards === 'function') window.renderMatchCards(filtered);
-      setTitle(leagueName, 'cached', filtered.length);
-    } else {
-      // No local data either — show empty state card
-      showNoFixturesMessage(leagueName);
-      setTitle(leagueName, 'cached', 0);
-    }
+    // 7. Fallback — always show the "no fixtures" message on off-days
+    // (do NOT fall back to stale static MATCH_DATA as it misrepresents today's reality)
+    showNoFixturesMessage(leagueName);
+    setTitle(leagueName, 'cached', 0);
   }
 
   function renderAllAvailableMatches() {
@@ -206,7 +207,7 @@
   window.loadLiveFixturesForLeague = loadLiveFixturesForLeague;
   window.renderAllAvailableMatches = renderAllAvailableMatches;
 
-  // Use defineProperty so app.js/ui.js cannot overwrite selectSidebarLeague after this runs
+  // Use defineProperty to prevent app.js/ui.js from overwriting selectSidebarLeague
   if (typeof window !== 'undefined') {
     Object.defineProperty(window, 'selectSidebarLeague', {
       get: () => selectSidebarLeague,
