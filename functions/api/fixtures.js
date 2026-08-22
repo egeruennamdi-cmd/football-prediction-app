@@ -1,15 +1,31 @@
 /**
  * Cloudflare Pages Function: /api/fixtures
- * Edge proxy for API-Football with Pro Plan key
+ * High-performance Edge Proxy for API-Football with Pro Plan key
  */
 
 const API_KEY = '2a68951288bede4261ef3365fa11f2c8';
 const API_HOST = 'https://v3.football.api-sports.io';
 
+const workerCache = new Map();
+const CACHE_TTL_MS = 3 * 60 * 1000; // 3 minutes edge cache
+
 export async function onRequest(context) {
   const url = new URL(context.request.url);
   const league = url.searchParams.get('league') || '39';
   const type = url.searchParams.get('type') || 'all';
+
+  const cacheKey = `${league}_${type}`;
+  const cached = workerCache.get(cacheKey);
+  if (cached && (Date.now() - cached.timestamp < CACHE_TTL_MS)) {
+    return new Response(JSON.stringify(cached.data), {
+      status: 200,
+      headers: {
+        'Content-Type': 'application/json',
+        'Cache-Control': 'public, max-age=180',
+        'Access-Control-Allow-Origin': '*'
+      }
+    });
+  }
 
   const headers = {
     'x-apisports-key': API_KEY,
@@ -19,19 +35,19 @@ export async function onRequest(context) {
     'Accept': 'application/json'
   };
 
+  const fetchEndpoint = async (endpoint) => {
+    try {
+      const res = await fetch(`${API_HOST}/${endpoint}`, { headers });
+      if (!res.ok) return [];
+      const json = await res.json();
+      return Array.isArray(json.response) ? json.response : [];
+    } catch (e) {
+      return [];
+    }
+  };
+
   try {
     let rawList = [];
-
-    const fetchEndpoint = async (endpoint) => {
-      try {
-        const res = await fetch(`${API_HOST}/${endpoint}`, { headers });
-        if (!res.ok) return [];
-        const json = await res.json();
-        return Array.isArray(json.response) ? json.response : [];
-      } catch (e) {
-        return [];
-      }
-    };
 
     if (type === 'next') {
       rawList = await fetchEndpoint(`fixtures?league=${league}&next=12`);
@@ -40,11 +56,13 @@ export async function onRequest(context) {
     } else if (type === 'live') {
       rawList = await fetchEndpoint(`fixtures?league=${league}&live=all`);
     } else {
-      const [nextData, lastData, liveData] = await Promise.all([
-        fetchEndpoint(`fixtures?league=${league}&next=12`),
-        fetchEndpoint(`fixtures?league=${league}&last=8`),
-        fetchEndpoint(`fixtures?league=${league}&live=all`)
-      ]);
+      // Fetch next upcoming fixtures
+      const nextData = await fetchEndpoint(`fixtures?league=${league}&next=12`);
+      // Fetch recent completed fixtures
+      const lastData = await fetchEndpoint(`fixtures?league=${league}&last=8`);
+      // Fetch any in-play live fixtures
+      const liveData = await fetchEndpoint(`fixtures?league=${league}&live=all`);
+
       rawList = [...liveData, ...nextData, ...lastData];
     }
 
@@ -59,16 +77,20 @@ export async function onRequest(context) {
       }
     }
 
-    return new Response(JSON.stringify({
+    const payload = {
       success: true,
       league,
       count: unique.length,
       response: unique
-    }), {
+    };
+
+    workerCache.set(cacheKey, { timestamp: Date.now(), data: payload });
+
+    return new Response(JSON.stringify(payload), {
       status: 200,
       headers: {
         'Content-Type': 'application/json',
-        'Cache-Control': 'public, max-age=60',
+        'Cache-Control': 'public, max-age=180',
         'Access-Control-Allow-Origin': '*'
       }
     });
