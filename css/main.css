@@ -223,13 +223,13 @@ header {
 
 .soccer-ball-dot {
   position: absolute !important;
-  top: -0.22em !important;
-  left: 50% !important;
+  top: -0.16em !important;
+  left: 54% !important;
   transform: translateX(-50%) !important;
-  width: 0.32em !important;
-  height: 0.32em !important;
+  width: 0.22em !important;
+  height: 0.22em !important;
   display: inline-block !important;
-  filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.4)) !important;
+  filter: drop-shadow(0 0.5px 1.5px rgba(0, 0, 0, 0.4)) !important;
   pointer-events: none !important;
 }
 
