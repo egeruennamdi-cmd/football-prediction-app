@@ -7,21 +7,20 @@ const API_KEY = '2a68951288bede4261ef3365fa11f2c8';
 const API_HOST = 'https://v3.football.api-sports.io';
 
 const workerCache = new Map();
-const CACHE_TTL_MS = 3 * 60 * 1000; // 3 minutes edge cache
+const CACHE_TTL_MS = 2 * 60 * 1000; // 2 minutes edge cache
 
 export async function onRequest(context) {
   const url = new URL(context.request.url);
   const league = url.searchParams.get('league') || '39';
-  const type = url.searchParams.get('type') || 'all';
 
-  const cacheKey = `${league}_${type}`;
+  const cacheKey = `league_${league}`;
   const cached = workerCache.get(cacheKey);
-  if (cached && (Date.now() - cached.timestamp < CACHE_TTL_MS)) {
+  if (cached && (Date.now() - cached.timestamp < CACHE_TTL_MS) && cached.data?.count > 0) {
     return new Response(JSON.stringify(cached.data), {
       status: 200,
       headers: {
         'Content-Type': 'application/json',
-        'Cache-Control': 'public, max-age=180',
+        'Cache-Control': 'public, max-age=120',
         'Access-Control-Allow-Origin': '*'
       }
     });
@@ -29,8 +28,6 @@ export async function onRequest(context) {
 
   const headers = {
     'x-apisports-key': API_KEY,
-    'x-rapidapi-key': API_KEY,
-    'x-rapidapi-host': 'v3.football.api-sports.io',
     'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36',
     'Accept': 'application/json'
   };
@@ -47,29 +44,22 @@ export async function onRequest(context) {
   };
 
   try {
-    let rawList = [];
+    // 1. Fetch next upcoming matches for this league
+    const nextMatches = await fetchEndpoint(`fixtures?league=${league}&next=12`);
 
-    if (type === 'next') {
-      rawList = await fetchEndpoint(`fixtures?league=${league}&next=12`);
-    } else if (type === 'last') {
-      rawList = await fetchEndpoint(`fixtures?league=${league}&last=8`);
-    } else if (type === 'live') {
-      rawList = await fetchEndpoint(`fixtures?league=${league}&live=all`);
-    } else {
-      // Fetch next upcoming fixtures
-      const nextData = await fetchEndpoint(`fixtures?league=${league}&next=12`);
-      // Fetch recent completed fixtures
-      const lastData = await fetchEndpoint(`fixtures?league=${league}&last=8`);
-      // Fetch any in-play live fixtures
-      const liveData = await fetchEndpoint(`fixtures?league=${league}&live=all`);
+    // 2. Fetch recent completed matches for this league
+    const lastMatches = await fetchEndpoint(`fixtures?league=${league}&last=8`);
 
-      rawList = [...liveData, ...nextData, ...lastData];
-    }
+    // 3. Fetch live in-play matches
+    const liveMatches = await fetchEndpoint(`fixtures?live=all`);
+    const leagueLive = liveMatches.filter(m => String(m.league?.id) === String(league));
+
+    const combined = [...leagueLive, ...nextMatches, ...lastMatches];
 
     // Deduplicate by fixture id
     const seen = new Set();
     const unique = [];
-    for (const item of rawList) {
+    for (const item of combined) {
       const id = item.fixture?.id;
       if (id && !seen.has(id)) {
         seen.add(id);
@@ -84,13 +74,15 @@ export async function onRequest(context) {
       response: unique
     };
 
-    workerCache.set(cacheKey, { timestamp: Date.now(), data: payload });
+    if (unique.length > 0) {
+      workerCache.set(cacheKey, { timestamp: Date.now(), data: payload });
+    }
 
     return new Response(JSON.stringify(payload), {
       status: 200,
       headers: {
         'Content-Type': 'application/json',
-        'Cache-Control': 'public, max-age=180',
+        'Cache-Control': 'public, max-age=120',
         'Access-Control-Allow-Origin': '*'
       }
     });
