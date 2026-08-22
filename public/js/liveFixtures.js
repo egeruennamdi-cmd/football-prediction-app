@@ -8,19 +8,73 @@
 (function () {
 
   const LEAGUE_ID_MAP = {
-    'Premier League':       39,
-    'La Liga':              140,
-    'Bundesliga':           78,
-    'Serie A':              135,
-    'Ligue 1':              61,
-    'Primeira Liga':        94,
-    'Eredivisie':           88,
-    'MLS':                  253,
-    'Champions League':     2,
-    'Europa League':        3,
-    'Conference League':    848,
-    'NPFL':                 302,
-    'CAF Champions League': 12
+    // ── Top 5 European Leagues ──────────────────
+    'Premier League':          39,
+    'La Liga':                 140,
+    'Serie A':                 135,
+    'Bundesliga':              78,
+    'Ligue 1':                 61,
+    // ── UEFA Competitions ───────────────────────
+    'Champions League':        2,
+    'Europa League':           3,
+    'Conference League':       848,
+    // ── Other European Leagues ──────────────────
+    'Eredivisie':              88,
+    'Primeira Liga':           94,
+    'Süper Lig':               203,
+    'Scottish Premiership':    179,
+    'Jupiler Pro League':      144,
+    'Ekstraklasa':             106,
+    'Eliteserien':             103,
+    'Allsvenskan':             113,
+    'Superliga':               119,
+    'Swiss Super League':      207,
+    'Austrian Bundesliga':     218,
+    'Greek Super League':      197,
+    'Russian Premier League':  235,
+    'Ukrainian Premier League':333,
+    // ── English Football & Cups ─────────────────
+    'Championship':            40,
+    'League One':              41,
+    'FA Cup':                  45,
+    'EFL Cup':                 48,
+    // ── Domestic Cups ───────────────────────────
+    'Copa del Rey':            143,
+    'DFB Pokal':               81,
+    'Coppa Italia':            137,
+    'Coupe de France':         66,
+    // ── Second Divisions ────────────────────────
+    'La Liga 2':               141,
+    'Serie B':                 136,
+    '2. Bundesliga':           79,
+    // ── Americas ────────────────────────────────
+    'MLS':                     253,
+    'Liga MX':                 262,
+    'Brasileirão':             71,
+    'Liga Profesional':        128,
+    'Copa Libertadores':       13,
+    'Copa Sudamericana':       11,
+    'Colombia Primera A':      239,
+    // ── Middle East ─────────────────────────────
+    'Saudi Pro League':        307,
+    'UAE Pro League':          301,
+    'Qatar Stars League':      305,
+    // ── Africa ──────────────────────────────────
+    'CAF Champions League':    12,
+    'NPFL':                    302,
+    'NPFL Nigeria':            302,
+    'Ghana Premier League':    312,
+    'South African PSL':       288,
+    'Egyptian Premier League': 233,
+    'Moroccan Botola':         200,
+    'Kenyan Premier League':   318,
+    'Tunisian Ligue 1':        202,
+    // ── Asia & Oceania ──────────────────────────
+    'J-League':                98,
+    'K-League':                292,
+    'Chinese Super League':    169,
+    'Indian Super League':     323,
+    'A-League':                188
   };
 
   const BACKEND_BASE = window.BACKEND_API_URL || 'https://deeppredictbet-backend.onrender.com';
