@@ -323,16 +323,16 @@
           <span>🪙</span> <span id="header-coins-count">500</span>
         </div>
 
-        <!-- Login Trigger Button (Top Mobile, Tablet & Desktop Header) -->
-        <div id="nav-auth-container" onclick="openAuthModal('login')"
-          style="display: flex; align-items: center; gap: 8px; cursor: pointer; touch-action: manipulation; -webkit-tap-highlight-color: transparent; user-select: none; -webkit-user-select: none; position: relative; z-index: 10;">
-          <div
-            style="background: transparent; border: none; color: #ffffff; font-weight: 700; font-size: 0.9rem; cursor: pointer; display: flex; align-items: center; gap: 6px; padding: 4px 8px; pointer-events: none;">
-            <div
-              style="width: 32px; height: 32px; border-radius: 50%; border: 2px solid rgba(255,255,255,0.7); display: flex; align-items: center; justify-content: center; font-size: 0.9rem; background: rgba(255,255,255,0.05); pointer-events: none;">
+        <!-- Login / Profile Trigger Button (Top Mobile, Tablet & Desktop Header) -->
+        <div id="nav-auth-container" onclick="handleNavAuthClick()"
+          style="display: flex; align-items: center; gap: 6px; cursor: pointer; touch-action: manipulation; -webkit-tap-highlight-color: transparent; user-select: none; -webkit-user-select: none; position: relative; z-index: 10;">
+          <div id="nav-auth-inner-box"
+            style="background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.16); border-radius: 20px; color: #ffffff; font-weight: 700; font-size: 0.82rem; cursor: pointer; display: flex; align-items: center; gap: 6px; padding: 3px 8px 3px 4px; transition: all 0.2s ease;">
+            <div id="nav-avatar-icon"
+              style="width: 28px; height: 28px; border-radius: 50%; border: 1.5px solid rgba(59,130,246,0.6); display: flex; align-items: center; justify-content: center; font-size: 0.8rem; background: linear-gradient(135deg, rgba(37,99,235,0.35) 0%, rgba(29,78,216,0.6) 100%); color: #ffffff; font-weight: 800; flex-shrink: 0;">
               👤
             </div>
-            <span id="nav-user-label" style="pointer-events: none;">Login</span>
+            <span id="nav-user-label" style="display: inline-block; max-width: 90px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; vertical-align: middle;">Login</span>
           </div>
         </div>
       </div>

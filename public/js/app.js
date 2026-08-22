@@ -3891,17 +3891,36 @@ function handleAuthSignup(e) {
   return false;
 }
 
+function handleNavAuthClick() {
+  const isLoggedIn = localStorage.getItem("userLoggedIn") === "true";
+  if (isLoggedIn) {
+    if (typeof openProfileModal === 'function') {
+      openProfileModal('info');
+    }
+  } else {
+    if (typeof openAuthModal === 'function') {
+      openAuthModal('login');
+    }
+  }
+}
+window.handleNavAuthClick = handleNavAuthClick;
+
 function updateAuthUIState() {
   const isLoggedIn = localStorage.getItem("userLoggedIn") === "true";
   const username = localStorage.getItem("currentUsername") || "Guest User";
 
   const navLabel = document.getElementById("nav-user-label");
+  const navAvatar = document.getElementById("nav-avatar-icon");
   const drawerUsername = document.getElementById("mobile-drawer-username");
   const profileUsernameDisplay = document.getElementById("profile-username-display");
   const profileAvatarInitial = document.getElementById("profile-avatar-initial");
 
   if (navLabel) {
     navLabel.innerText = isLoggedIn ? username : "Login";
+    navLabel.title = isLoggedIn ? username : "Login";
+  }
+  if (navAvatar) {
+    navAvatar.innerText = isLoggedIn ? username.charAt(0).toUpperCase() : "👤";
   }
   if (drawerUsername) {
     drawerUsername.innerText = isLoggedIn ? username : "Guest User";
