@@ -282,16 +282,39 @@ function generateScoutAccumulator(count = 40) {
 }
 window.generateScoutAccumulator = generateScoutAccumulator;
 
-function removeBetslipItem(index, event) {
+let _isRemovingBetslipItem = false;
+
+function removeBetslipItem(indexOrId, event) {
   if (event) {
     if (typeof event.stopPropagation === 'function') event.stopPropagation();
+    if (typeof event.stopImmediatePropagation === 'function') event.stopImmediatePropagation();
     if (typeof event.preventDefault === 'function') event.preventDefault();
   }
-  if (window.appState && Array.isArray(window.appState.betslip)) {
-    if (index >= 0 && index < window.appState.betslip.length) {
-      window.appState.betslip.splice(index, 1);
-    }
+  
+  if (_isRemovingBetslipItem) return;
+  _isRemovingBetslipItem = true;
+  setTimeout(function() { _isRemovingBetslipItem = false; }, 120);
+
+  if (!window.appState) {
+    window.appState = { betslip: [] };
   }
+  if (!Array.isArray(window.appState.betslip)) {
+    window.appState.betslip = [];
+  }
+  
+  let idx = -1;
+  if (typeof indexOrId === 'number') {
+    idx = indexOrId;
+  } else if (typeof indexOrId === 'string' && indexOrId.trim() !== '' && !isNaN(Number(indexOrId))) {
+    idx = Number(indexOrId);
+  } else if (typeof indexOrId === 'string') {
+    idx = window.appState.betslip.findIndex(item => item.matchId === indexOrId || (item.match && item.match.id === indexOrId));
+  }
+
+  if (idx >= 0 && idx < window.appState.betslip.length) {
+    window.appState.betslip.splice(idx, 1);
+  }
+  
   if (typeof renderBetslip === 'function') {
     renderBetslip();
   }
@@ -307,6 +330,27 @@ function clearBetslip() {
   }
 }
 window.clearBetslip = clearBetslip;
+
+// Capture-phase document listeners to guarantee clicks and taps fire on tablets & smart mobile phones
+if (typeof document !== 'undefined' && !window._betslipRemoveListenerAttached) {
+  window._betslipRemoveListenerAttached = true;
+  
+  const handleDelegatedRemove = function(e) {
+    const btn = e.target.closest ? e.target.closest(".betslip-item-remove") : null;
+    if (btn) {
+      if (typeof e.stopPropagation === 'function') e.stopPropagation();
+      if (typeof e.stopImmediatePropagation === 'function') e.stopImmediatePropagation();
+      const idx = btn.getAttribute("data-index");
+      if (idx !== null && idx !== undefined) {
+        removeBetslipItem(idx, e);
+      }
+    }
+  };
+
+  document.addEventListener("click", handleDelegatedRemove, true);
+  document.addEventListener("pointerup", handleDelegatedRemove, true);
+  document.addEventListener("touchend", handleDelegatedRemove, { capture: true, passive: false });
+}
 
 function sendBetslipToConverter() {
   if (!window.appState || !Array.isArray(window.appState.betslip) || window.appState.betslip.length === 0) {
@@ -412,7 +456,7 @@ function renderBetslip() {
           </div>
           <div style="display: flex; align-items: center; gap: 10px;">
             <span style="font-weight: 700; color: var(--text-primary); font-size: 0.8rem; pointer-events: none;">@${itemOdds.toFixed(2)}</span>
-            <button type="button" class="betslip-item-remove" data-index="${index}" onclick="removeBetslipItem(${index}, event)" ontouchend="removeBetslipItem(${index}, event)" aria-label="Remove match" title="Remove selection">&times;</button>
+            <button type="button" class="betslip-item-remove" data-index="${index}" onclick="removeBetslipItem(${index}, event)" aria-label="Remove match" title="Remove selection">&times;</button>
           </div>
         `;
         itemsContainer.appendChild(row);
