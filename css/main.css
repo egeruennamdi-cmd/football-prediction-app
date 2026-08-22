@@ -2091,14 +2091,13 @@ header {
 
 @media (min-width: 768px) and (max-width: 991px) {
   #predictions-dashboard-layout {
-    grid-template-columns: 280px 1fr !important;
+    grid-template-columns: 300px 1fr !important;
     gap: 20px !important;
   }
 }
 
 @media (max-width: 991px) {
   #sidebar-tools-card,
-  #sidebar-directory-card,
   #sidebar-community-card,
   #sidebar-betting-tools-card,
   #sidebar-leaderboard-card,
@@ -2998,6 +2997,59 @@ header {
     display: flex !important;
     align-items: center !important;
     justify-content: space-between !important;
+  }
+
+  #sidebar-topleagues-card .sidebar-league-btn {
+    padding: 10px 14px !important;
+    font-size: 0.82rem !important;
+    min-height: 40px !important;
+    display: flex !important;
+    align-items: center !important;
+    border-radius: 8px !important;
+    background: rgba(30, 41, 59, 0.95) !important;
+    border: 1px solid rgba(255, 255, 255, 0.08) !important;
+    margin-bottom: 3px !important;
+    touch-action: manipulation;
+  }
+
+  /* Country Directory Card on Mobile & Tablet: 100% Visible, Touch-Friendly, Scrollable */
+  #sidebar-directory-card {
+    display: flex !important;
+    width: 100% !important;
+    max-height: 460px !important;
+    overflow-y: auto !important;
+    margin-bottom: 16px !important;
+    background: rgba(15, 23, 42, 0.9) !important;
+    border: 1px solid rgba(16, 185, 129, 0.3) !important;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.35) !important;
+    border-radius: 14px !important;
+  }
+
+  #sidebar-directory-card .country-accordion-header {
+    padding: 12px 14px !important;
+    font-size: 0.88rem !important;
+    min-height: 44px !important;
+    touch-action: manipulation;
+  }
+
+  #sidebar-directory-card .country-accordion-content {
+    padding-left: 8px !important;
+    padding-right: 8px !important;
+    gap: 6px !important;
+  }
+
+  #sidebar-directory-card .sidebar-league-btn {
+    padding: 10px 14px !important;
+    font-size: 0.82rem !important;
+    min-height: 40px !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: space-between !important;
+    border-radius: 8px !important;
+    background: rgba(30, 41, 59, 0.95) !important;
+    border: 1px solid rgba(255, 255, 255, 0.08) !important;
+    margin-bottom: 3px !important;
+    touch-action: manipulation;
   }
   
   .logo {
