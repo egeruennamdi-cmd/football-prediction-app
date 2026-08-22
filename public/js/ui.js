@@ -2198,11 +2198,18 @@ function removeBetslipItem(index, event) {
     if (typeof event.stopPropagation === 'function') event.stopPropagation();
     if (typeof event.preventDefault === 'function') event.preventDefault();
   }
-  if (window.appState && Array.isArray(window.appState.betslip)) {
-    if (index >= 0 && index < window.appState.betslip.length) {
-      window.appState.betslip.splice(index, 1);
-    }
+  if (!window.appState) {
+    window.appState = { betslip: [] };
   }
+  if (!Array.isArray(window.appState.betslip)) {
+    window.appState.betslip = [];
+  }
+  
+  const idx = Number(index);
+  if (!isNaN(idx) && idx >= 0 && idx < window.appState.betslip.length) {
+    window.appState.betslip.splice(idx, 1);
+  }
+  
   if (typeof renderBetslip === 'function') {
     renderBetslip();
   }
@@ -2257,7 +2264,7 @@ function renderBetslip() {
         const row = document.createElement("div");
         row.className = "betslip-item";
         row.innerHTML = `
-          <div style="display: flex; flex-direction: column; gap: 2px; flex: 1; padding-right: 8px;">
+          <div style="display: flex; flex-direction: column; gap: 2px; flex: 1; padding-right: 8px; pointer-events: none;">
             <div style="font-weight: 700; color: var(--text-primary); font-size: 0.76rem; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">
               ${homeName} vs ${awayName}
             </div>
@@ -2266,8 +2273,8 @@ function renderBetslip() {
             </div>
           </div>
           <div style="display: flex; align-items: center; gap: 10px;">
-            <span style="font-weight: 700; color: var(--text-primary); font-size: 0.8rem;">@${itemOdds.toFixed(2)}</span>
-            <button type="button" class="betslip-item-remove" onclick="removeBetslipItem(${index}, event)" aria-label="Remove match" title="Remove selection">&times;</button>
+            <span style="font-weight: 700; color: var(--text-primary); font-size: 0.8rem; pointer-events: none;">@${itemOdds.toFixed(2)}</span>
+            <button type="button" class="betslip-item-remove" data-index="${index}" onclick="removeBetslipItem(${index}, event)" ontouchend="removeBetslipItem(${index}, event)" aria-label="Remove match" title="Remove selection">&times;</button>
           </div>
         `;
         itemsContainer.appendChild(row);
