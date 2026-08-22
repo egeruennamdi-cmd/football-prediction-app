@@ -282,15 +282,31 @@ function generateScoutAccumulator(count = 40) {
 }
 window.generateScoutAccumulator = generateScoutAccumulator;
 
-function removeBetslipItem(index) {
-  window.appState.betslip.splice(index, 1);
-  renderBetslip();
+function removeBetslipItem(index, event) {
+  if (event) {
+    if (typeof event.stopPropagation === 'function') event.stopPropagation();
+    if (typeof event.preventDefault === 'function') event.preventDefault();
+  }
+  if (window.appState && Array.isArray(window.appState.betslip)) {
+    if (index >= 0 && index < window.appState.betslip.length) {
+      window.appState.betslip.splice(index, 1);
+    }
+  }
+  if (typeof renderBetslip === 'function') {
+    renderBetslip();
+  }
 }
+window.removeBetslipItem = removeBetslipItem;
 
 function clearBetslip() {
-  window.appState.betslip = [];
-  renderBetslip();
+  if (window.appState) {
+    window.appState.betslip = [];
+  }
+  if (typeof renderBetslip === 'function') {
+    renderBetslip();
+  }
 }
+window.clearBetslip = clearBetslip;
 
 function sendBetslipToConverter() {
   if (!window.appState || !Array.isArray(window.appState.betslip) || window.appState.betslip.length === 0) {
@@ -361,6 +377,7 @@ function renderBetslip() {
 
   if (count === 0) {
     if (emptyState) emptyState.style.display = "block";
+    if (emptyState) emptyState.style.display = "block";
     if (itemsContainer) itemsContainer.style.display = "none";
     if (summaryActions) summaryActions.style.display = "none";
     if (headerOdds) headerOdds.style.display = "none";
@@ -372,37 +389,46 @@ function renderBetslip() {
       
       let totalOdds = 1.0;
 
-      window.appState.betslip.forEach((item, index) => {
-        totalOdds *= item.odds;
+      const betslipList = (window.appState && Array.isArray(window.appState.betslip)) ? window.appState.betslip : [];
+
+      betslipList.forEach((item, index) => {
+        const itemOdds = (typeof item.odds === 'number' && !isNaN(item.odds)) ? item.odds : 1.45;
+        totalOdds *= itemOdds;
         
+        const homeName = item.match?.homeTeam?.name || item.match?.homeTeam || item.homeTeam || 'Home';
+        const awayName = item.match?.awayTeam?.name || item.match?.awayTeam || item.awayTeam || 'Away';
+        const tipVal = item.tip || item.market || '1X';
+
         const row = document.createElement("div");
         row.className = "betslip-item";
         row.innerHTML = `
           <div style="display: flex; flex-direction: column; gap: 2px; flex: 1; padding-right: 8px;">
             <div style="font-weight: 700; color: var(--text-primary); font-size: 0.76rem; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">
-              ${item.match.homeTeam.name} vs ${item.match.awayTeam.name}
+              ${homeName} vs ${awayName}
             </div>
             <div style="font-size: 0.7rem; color: var(--text-secondary);">
-              Tip: <b style="color: var(--accent-gold);">${item.tip}</b>
+              Tip: <b style="color: var(--accent-gold);">${tipVal}</b>
             </div>
           </div>
           <div style="display: flex; align-items: center; gap: 10px;">
-            <span style="font-weight: 700; color: var(--text-primary); font-size: 0.8rem;">@${item.odds.toFixed(2)}</span>
-            <button class="betslip-item-remove" onclick="removeBetslipItem(${index})">&times;</button>
+            <span style="font-weight: 700; color: var(--text-primary); font-size: 0.8rem;">@${itemOdds.toFixed(2)}</span>
+            <button type="button" class="betslip-item-remove" onclick="removeBetslipItem(${index}, event)" aria-label="Remove match" title="Remove selection">&times;</button>
           </div>
         `;
         itemsContainer.appendChild(row);
       });
 
-      if (totalOddsVal) totalOddsVal.innerText = `@${totalOdds.toFixed(2)}`;
+      const formattedOdds = (totalOdds > 99999 ? "99,999+" : totalOdds.toFixed(2));
+      if (totalOddsVal) totalOddsVal.innerText = `@${formattedOdds}`;
       if (headerOdds) {
         headerOdds.style.display = "block";
-        headerOdds.innerText = `Total Odds: @${totalOdds.toFixed(2)}`;
+        headerOdds.innerText = `Total Odds: @${formattedOdds}`;
       }
     }
     if (summaryActions) summaryActions.style.display = "flex";
   }
 }
+window.renderBetslip = renderBetslip;
 
 // Expose Betslip functions globally
 window.toggleBetslipDrawer = toggleBetslipDrawer;

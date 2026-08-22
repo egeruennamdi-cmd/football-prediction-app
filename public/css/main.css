@@ -2717,19 +2717,36 @@ header {
 }
 
 .betslip-item-remove {
-  background: none;
-  border: none;
-  color: var(--danger);
+  background: rgba(239, 68, 68, 0.12);
+  border: 1px solid rgba(239, 68, 68, 0.25);
+  border-radius: 6px;
+  color: #ef4444;
   cursor: pointer;
   font-size: 1.15rem;
-  padding: 0 4px;
+  font-weight: 700;
+  width: 28px;
+  height: 28px;
+  min-width: 28px;
+  min-height: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   line-height: 1;
-  transition: var(--transition-fast);
+  padding: 0;
+  transition: all 0.2s ease;
+  touch-action: manipulation;
+  user-select: none;
+  -webkit-user-select: none;
+  position: relative;
+  z-index: 5;
 }
 
-.betslip-item-remove:hover {
-  color: #ef4444;
-  transform: scale(1.1);
+.betslip-item-remove:hover,
+.betslip-item-remove:active {
+  background: rgba(239, 68, 68, 0.35);
+  border-color: #ef4444;
+  color: #ffffff;
+  transform: scale(1.08);
 }
 
 /* Modal Advanced Stats probability styles */
