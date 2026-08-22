@@ -1,13 +1,13 @@
 /**
  * Cloudflare Pages Function: /api/fixtures
- * High-performance Edge Proxy for API-Football with Pro Plan key
+ * Bulletproof Edge Proxy for API-Football with Pro Plan key
  */
 
 const API_KEY = '2a68951288bede4261ef3365fa11f2c8';
 const API_HOST = 'https://v3.football.api-sports.io';
 
 const workerCache = new Map();
-const CACHE_TTL_MS = 2 * 60 * 1000; // 2 minutes edge cache
+const CACHE_TTL_MS = 2 * 60 * 1000; // 2 minutes
 
 export async function onRequest(context) {
   const url = new URL(context.request.url);
@@ -32,59 +32,46 @@ export async function onRequest(context) {
     'Accept': 'application/json'
   };
 
+  const fetchEndpoint = async (endpoint) => {
+    try {
+      const res = await fetch(`${API_HOST}/${endpoint}`, { headers });
+      if (!res.ok) return [];
+      const json = await res.json();
+      return Array.isArray(json.response) ? json.response : [];
+    } catch (e) {
+      return [];
+    }
+  };
+
   try {
-    let rawList = [];
-    let res = await fetch(`${API_HOST}/fixtures?league=${league}&season=2026`, { headers });
-    let json = await res.json();
+    let list = [];
 
-    if (Array.isArray(json.response) && json.response.length > 0) {
-      rawList = json.response;
-    } else {
-      res = await fetch(`${API_HOST}/fixtures?league=${league}&season=2025`, { headers });
-      json = await res.json();
-      if (Array.isArray(json.response) && json.response.length > 0) {
-        rawList = json.response;
-      }
-    }
+    // Parallel fetch: next 14 upcoming, last 10 completed, and live in-play
+    const [nextData, lastData, liveData] = await Promise.all([
+      fetchEndpoint(`fixtures?league=${league}&next=14`),
+      fetchEndpoint(`fixtures?league=${league}&last=10`),
+      fetchEndpoint(`fixtures?league=${league}&live=all`)
+    ]);
 
-    const live = [];
-    const finished = [];
-    const upcoming = [];
+    if (Array.isArray(liveData)) list.push(...liveData);
+    if (Array.isArray(nextData)) list.push(...nextData);
+    if (Array.isArray(lastData)) list.push(...lastData);
 
-    const LIVE_STATUSES = new Set(['1H','HT','2H','ET','BT','P','SUSP','INT','LIVE']);
-    const FT_STATUSES = new Set(['FT','AET','PEN']);
-
-    const getTime = (item) => {
-      if (item.fixture?.timestamp) return item.fixture.timestamp * 1000;
-      if (item.fixture?.date) return Date.parse(item.fixture.date) || 0;
-      return 0;
-    };
-
-    for (const item of rawList) {
-      const status = item.fixture?.status?.short;
-      if (LIVE_STATUSES.has(status)) {
-        live.push(item);
-      } else if (FT_STATUSES.has(status)) {
-        finished.push(item);
+    // If still empty, query full season as fallback
+    if (list.length === 0) {
+      const seasonData = await fetchEndpoint(`fixtures?league=${league}&season=2026`);
+      if (Array.isArray(seasonData) && seasonData.length > 0) {
+        list.push(...seasonData);
       } else {
-        upcoming.push(item);
+        const seasonData2025 = await fetchEndpoint(`fixtures?league=${league}&season=2025`);
+        if (Array.isArray(seasonData2025)) list.push(...seasonData2025);
       }
     }
 
-    // Sort finished descending (most recent first)
-    finished.sort((a, b) => getTime(b) - getTime(a));
-    // Sort upcoming ascending (soonest first)
-    upcoming.sort((a, b) => getTime(a) - getTime(b));
-
-    const selected = [
-      ...live,
-      ...upcoming.slice(0, 14),
-      ...finished.slice(0, 10)
-    ];
-
+    // Deduplicate by fixture id
     const seen = new Set();
     const unique = [];
-    for (const item of selected) {
+    for (const item of list) {
       const id = item.fixture?.id;
       if (id && !seen.has(id)) {
         seen.add(id);

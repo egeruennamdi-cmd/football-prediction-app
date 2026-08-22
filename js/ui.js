@@ -273,7 +273,7 @@ function renderMatchCards(fixtures) {
 
         <div class="vs-divider">
           <span style="font-size: 0.75rem; color: var(--text-muted);">vs</span>
-          <span class="vs-scores">${(match.isLive || match.time === 'FT') ? `${match.scores.home} - ${match.scores.away}` : '? - ?'}</span>
+          <span class="vs-scores">${(match.isLive || match.statusShort === 'FT' || match.status === 'FT' || (match.scores && match.scores.home !== null && match.scores.home !== undefined)) ? `${match.scores.home} - ${match.scores.away}` : '? - ?'}</span>
         </div>
 
         <div class="team">
