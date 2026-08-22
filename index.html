@@ -1839,7 +1839,7 @@
       <!-- Four Column Dashboard Layout (Tools & Nav + Top Leagues + Country Directory + Matches) -->
       <div id="predictions-dashboard-layout" style="margin-top: 12px;">
         <!-- Left Column 1: Tools & Predictions Sidebar Wrapper -->
-        <div style="display: flex; flex-direction: column; gap: 20px;">
+        <div id="sidebar-tools-col-wrapper" style="display: flex; flex-direction: column; gap: 20px;">
           <!-- Tools & Navigation Sidebar -->
           <div class="glass-card"
             style="padding: 18px; border: 1px solid var(--border-color); display: flex; flex-direction: column; gap: 14px; max-height: 780px; overflow-y: auto;"
@@ -1954,7 +1954,7 @@
         </div>
 
         <!-- Left Column 2: Sidebar (Top Leagues & Community Hub) -->
-        <div style="display: flex; flex-direction: column; gap: 20px;">
+        <div id="sidebar-topleagues-col-wrapper" style="display: flex; flex-direction: column; gap: 20px;">
           <!-- Top Leagues Card -->
           <div class="glass-card"
             style="padding: 18px; border: 1px solid var(--border-color); display: flex; flex-direction: column; gap: 12px; max-height: 520px; overflow-y: auto;"
@@ -2050,7 +2050,7 @@
         </div>
 
         <!-- Right Column 3: Match Cards -->
-        <div style="width: 100%;">
+        <div id="dashboard-matches-col-wrapper" style="width: 100%;">
           <div class="fixtures-grid" id="fixtures-grid" style="margin-top: 0; width: 100%;">
             <!-- Generated Dynamically by JS -->
           </div>

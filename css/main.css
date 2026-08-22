@@ -3052,6 +3052,151 @@ header {
     touch-action: manipulation;
   }
   
+  /* Tablet Layout: Top Leagues and Country Directory Side by Side, Results Full Width Below */
+@media (min-width: 640px) and (max-width: 1199px) {
+  #predictions-dashboard-layout {
+    display: grid !important;
+    grid-template-columns: 1fr 1fr !important;
+    gap: 16px 20px !important;
+    align-items: start !important;
+  }
+
+  #sidebar-tools-col-wrapper {
+    display: none !important;
+  }
+
+  #sidebar-topleagues-col-wrapper {
+    display: flex !important;
+    grid-column: 1 / 2 !important;
+    width: 100% !important;
+    margin-bottom: 0 !important;
+  }
+
+  #sidebar-topleagues-card {
+    display: flex !important;
+    width: 100% !important;
+    max-height: 500px !important;
+    overflow-y: auto !important;
+    margin-bottom: 0 !important;
+    background: rgba(15, 23, 42, 0.9) !important;
+    border: 1px solid rgba(59, 130, 246, 0.3) !important;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.35) !important;
+    border-radius: 14px !important;
+  }
+
+  #sidebar-directory-card {
+    display: flex !important;
+    grid-column: 2 / 3 !important;
+    width: 100% !important;
+    max-height: 500px !important;
+    overflow-y: auto !important;
+    margin-bottom: 0 !important;
+    background: rgba(15, 23, 42, 0.9) !important;
+    border: 1px solid rgba(16, 185, 129, 0.3) !important;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.35) !important;
+    border-radius: 14px !important;
+  }
+
+  #sidebar-community-card {
+    display: none !important;
+  }
+
+  /* Results / Match Cards displayed full-width below both side-by-side cards */
+  #dashboard-matches-col-wrapper {
+    grid-column: 1 / -1 !important;
+    width: 100% !important;
+    margin-top: 10px !important;
+  }
+}
+
+/* Smartphone Layout: Stacked Top Leagues & Country Directory with Results Below */
+@media (max-width: 639px) {
+  #predictions-dashboard-layout {
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 16px !important;
+  }
+
+  #sidebar-tools-col-wrapper {
+    display: none !important;
+  }
+
+  #sidebar-community-card {
+    display: none !important;
+  }
+
+  #sidebar-topleagues-col-wrapper {
+    display: flex !important;
+    width: 100% !important;
+    margin-bottom: 0 !important;
+  }
+
+  #sidebar-topleagues-card {
+    display: flex !important;
+    width: 100% !important;
+    max-height: 440px !important;
+    overflow-y: auto !important;
+    margin-bottom: 0 !important;
+    background: rgba(15, 23, 42, 0.9) !important;
+    border: 1px solid rgba(59, 130, 246, 0.3) !important;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.35) !important;
+    border-radius: 14px !important;
+  }
+
+  #sidebar-directory-card {
+    display: flex !important;
+    width: 100% !important;
+    max-height: 440px !important;
+    overflow-y: auto !important;
+    margin-bottom: 0 !important;
+    background: rgba(15, 23, 42, 0.9) !important;
+    border: 1px solid rgba(16, 185, 129, 0.3) !important;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.35) !important;
+    border-radius: 14px !important;
+  }
+
+  #dashboard-matches-col-wrapper {
+    width: 100% !important;
+    margin-top: 8px !important;
+  }
+}
+
+@media (max-width: 1199px) {
+  #sidebar-tools-card,
+  #sidebar-community-card,
+  #sidebar-betting-tools-card,
+  #sidebar-leaderboard-card,
+  #sidebar-store-card,
+  #sidebar-userhub-card {
+    display: none !important;
+  }
+
+  .country-accordion-header {
+    padding: 12px 14px !important;
+    font-size: 0.88rem !important;
+    min-height: 44px !important;
+    touch-action: manipulation;
+  }
+
+  .country-accordion-content {
+    padding-left: 8px !important;
+    padding-right: 8px !important;
+    gap: 6px !important;
+  }
+
+  .sidebar-league-btn {
+    padding: 10px 14px !important;
+    font-size: 0.82rem !important;
+    min-height: 40px !important;
+    display: flex !important;
+    align-items: center !important;
+    border-radius: 8px !important;
+    background: rgba(30, 41, 59, 0.95) !important;
+    border: 1px solid rgba(255, 255, 255, 0.08) !important;
+    margin-bottom: 3px !important;
+    touch-action: manipulation;
+  }
+}  
   .logo {
     font-size: 1.05rem !important;
     gap: 6px !important;
