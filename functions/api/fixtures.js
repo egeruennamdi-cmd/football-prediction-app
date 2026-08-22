@@ -7,7 +7,7 @@ const API_KEY = '2a68951288bede4261ef3365fa11f2c8';
 const API_HOST = 'https://v3.football.api-sports.io';
 
 const workerCache = new Map();
-const CACHE_TTL_MS = 2 * 60 * 1000; // 2 minutes edge cache
+const CACHE_TTL_MS = 3 * 60 * 1000; // 3 minutes edge cache
 
 export async function onRequest(context) {
   const url = new URL(context.request.url);
@@ -20,7 +20,7 @@ export async function onRequest(context) {
       status: 200,
       headers: {
         'Content-Type': 'application/json',
-        'Cache-Control': 'public, max-age=120',
+        'Cache-Control': 'public, max-age=180',
         'Access-Control-Allow-Origin': '*'
       }
     });
@@ -28,38 +28,63 @@ export async function onRequest(context) {
 
   const headers = {
     'x-apisports-key': API_KEY,
-    'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36',
+    'User-Agent': 'DeepPredictBet-Pro/1.0',
     'Accept': 'application/json'
   };
 
-  const fetchEndpoint = async (endpoint) => {
-    try {
-      const res = await fetch(`${API_HOST}/${endpoint}`, { headers });
-      if (!res.ok) return [];
-      const json = await res.json();
-      return Array.isArray(json.response) ? json.response : [];
-    } catch (e) {
-      return [];
-    }
-  };
-
   try {
-    // 1. Fetch next upcoming matches for this league
-    const nextMatches = await fetchEndpoint(`fixtures?league=${league}&next=12`);
+    // 1. Fetch full season fixtures for this league
+    let rawList = [];
+    let res = await fetch(`${API_HOST}/fixtures?league=${league}&season=2026`, { headers });
+    let json = await res.json();
 
-    // 2. Fetch recent completed matches for this league
-    const lastMatches = await fetchEndpoint(`fixtures?league=${league}&last=8`);
+    if (Array.isArray(json.response) && json.response.length > 0) {
+      rawList = json.response;
+    } else {
+      // Fallback to season 2025 if 2026 calendar is not active yet
+      res = await fetch(`${API_HOST}/fixtures?league=${league}&season=2025`, { headers });
+      json = await res.json();
+      if (Array.isArray(json.response)) {
+        rawList = json.response;
+      }
+    }
 
-    // 3. Fetch live in-play matches
-    const liveMatches = await fetchEndpoint(`fixtures?live=all`);
-    const leagueLive = liveMatches.filter(m => String(m.league?.id) === String(league));
+    // Process & select representative window: live + recent completed (8) + next upcoming (12)
+    const live = [];
+    const finished = [];
+    const upcoming = [];
 
-    const combined = [...leagueLive, ...nextMatches, ...lastMatches];
+    const now = Date.now();
+    const LIVE_STATUSES = new Set(['1H','HT','2H','ET','BT','P','SUSP','INT','LIVE']);
+    const FT_STATUSES = new Set(['FT','AET','PEN']);
+
+    for (const item of rawList) {
+      const status = item.fixture?.status?.short;
+      if (LIVE_STATUSES.has(status)) {
+        live.push(item);
+      } else if (FT_STATUSES.has(status)) {
+        finished.push(item);
+      } else {
+        upcoming.push(item);
+      }
+    }
+
+    // Sort finished matches descending (most recent first)
+    finished.sort((a, b) => new Date(b.fixture?.date).getTime() - new Date(a.fixture?.date).getTime());
+    // Sort upcoming matches ascending (soonest first)
+    upcoming.sort((a, b) => new Date(a.fixture?.date).getTime() - new Date(b.fixture?.date).getTime());
+
+    // Take top 8 recent finished + top 12 soonest upcoming + all live
+    const selected = [
+      ...live,
+      ...upcoming.slice(0, 14),
+      ...finished.slice(0, 10)
+    ];
 
     // Deduplicate by fixture id
     const seen = new Set();
     const unique = [];
-    for (const item of combined) {
+    for (const item of selected) {
       const id = item.fixture?.id;
       if (id && !seen.has(id)) {
         seen.add(id);
@@ -82,7 +107,7 @@ export async function onRequest(context) {
       status: 200,
       headers: {
         'Content-Type': 'application/json',
-        'Cache-Control': 'public, max-age=120',
+        'Cache-Control': 'public, max-age=180',
         'Access-Control-Allow-Origin': '*'
       }
     });
