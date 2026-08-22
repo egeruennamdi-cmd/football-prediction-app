@@ -14,7 +14,7 @@
 (function () {
 
   // ── Config ────────────────────────────────────────────────────────────────
-  const API_KEY  = 'e5b18229ddd53fd3d195dfdb059aa329';
+  const API_KEY  = '2a68951288bede4261ef3365fa11f2c8';
   const API_HOST = 'https://v3.football.api-sports.io';
 
   // 5-minute browser cache to protect the 100 req/day quota

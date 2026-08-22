@@ -2,7 +2,7 @@ import { Router, Request, Response } from 'express';
 
 const router = Router();
 
-const FOOTBALL_API_KEY = process.env.FOOTBALL_API_KEY || 'e5b18229ddd53fd3d195dfdb059aa329';
+const FOOTBALL_API_KEY = process.env.FOOTBALL_API_KEY || '2a68951288bede4261ef3365fa11f2c8';
 const FOOTBALL_API_HOST = process.env.FOOTBALL_API_HOST || 'v3.football.api-sports.io';
 
 // Cache memory to preserve 100 requests/day quota efficiently
