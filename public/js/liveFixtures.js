@@ -188,22 +188,32 @@
   }
 
   // ── API-Football fetch (direct browser call) ───────────────────────────────
+  //
+  // FREE-PLAN CONSTRAINT (critical):
+  //   • Using ?league=ID + ?date=DATE requires a `season` param → returns 0 results
+  //     with error "The Season field is required." for seasons after 2024.
+  //   • Using JUST ?date=DATE (no league filter) works perfectly — returns all
+  //     fixtures for the day across every league.
+  //
+  // STRATEGY: fetch ALL today's fixtures in ONE call, cache for 5 min,
+  //           filter client-side by league ID on each league click.
 
-  async function fetchFixturesForLeague(leagueId, dateStr) {
-    const cacheKey = `fixtures_${leagueId}_${dateStr}`;
+  async function fetchAllFixturesToday(dateStr) {
+    const cacheKey = `all_${dateStr}`;
     if (_cache[cacheKey] && (Date.now() - _cache[cacheKey].t < CACHE_TTL)) {
+      console.debug('[LiveFixtures] Cache hit for', dateStr);
       return _cache[cacheKey].data;
     }
 
-    // Free plan: NO season parameter — just date
-    const url = `${API_HOST}/fixtures?league=${leagueId}&date=${dateStr}&timezone=Europe/London`;
+    // date ONLY — no league param — this works on free plan
+    const url = `${API_HOST}/fixtures?date=${dateStr}&timezone=Europe/London`;
     const res = await fetch(url, {
       headers: {
         'x-apisports-key': API_KEY,
         'x-rapidapi-key':  API_KEY,
         'x-rapidapi-host': 'v3.football.api-sports.io'
       },
-      signal: AbortSignal.timeout(12000)
+      signal: AbortSignal.timeout(15000)
     });
 
     if (!res.ok) throw new Error(`API HTTP ${res.status}`);
@@ -213,9 +223,18 @@
       console.warn('[LiveFixtures] API errors:', json.errors);
     }
 
-    const fixtures = Array.isArray(json.response) ? json.response : [];
-    _cache[cacheKey] = { t: Date.now(), data: fixtures };
-    return fixtures;
+    const all = Array.isArray(json.response) ? json.response : [];
+    console.debug(`[LiveFixtures] Fetched ${all.length} total fixtures for ${dateStr}`);
+    _cache[cacheKey] = { t: Date.now(), data: all };
+    return all;
+  }
+
+  async function fetchFixturesForLeague(leagueId, dateStr) {
+    const all = await fetchAllFixturesToday(dateStr);
+    // Filter client-side by league ID
+    const filtered = all.filter(f => Number(f.league?.id) === Number(leagueId));
+    console.debug(`[LiveFixtures] League ${leagueId}: ${filtered.length} of ${all.length} matches`);
+    return filtered;
   }
 
   // ── Normalize raw API-Football fixture → app match card shape ─────────────
