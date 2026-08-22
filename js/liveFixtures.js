@@ -1,10 +1,12 @@
 /**
  * DeepPredictBet — Live Fixtures Controller (Pro Engine)
  *
- * Multi-layer Resilience:
- *   Layer 1: Edge Cloudflare Function (/api/fixtures?league=...) — same-origin, zero CORS issues
- *   Layer 2: Direct API-Football with credentials: 'omit'
- *   Layer 3: Fallback dynamic fixture generator so the app NEVER displays a broken error card
+ * Guaranteed Match Rendering:
+ *   • Pro API Key with 7,500 daily requests
+ *   • Queries edge proxy /api/fixtures?league=... with 5-min cache
+ *   • Direct API fallback if edge proxy is unreachable
+ *   • Self-contained card renderer + ui.js renderMatchCards compatibility
+ *   • Interactive Sub-filter bar: [All (X)] [🔴 Live (Y)] [📅 Upcoming (Z)] [🏁 Results (W)]
  */
 
 (function () {
@@ -79,8 +81,6 @@
   let currentLeagueMatches = [];
   let currentActiveSubfilter = 'all';
 
-  // ── DOM helpers ───────────────────────────────────────────────────────────
-
   function getGrid() { return document.getElementById('fixtures-grid'); }
 
   function ensureVisible() {
@@ -119,8 +119,6 @@
       : '';
     el.innerHTML = `${leagueName} Fixtures & Predictions${badgeHtml}${countHtml}`;
   }
-
-  // ── Render Sub-Filter Bar ──────────────────────────────────────────────────
 
   function renderFilterToolbar(leagueName, allMatches) {
     let toolbar = document.getElementById('league-fixture-subfilter-bar');
@@ -182,8 +180,6 @@
     }
   }
 
-  // ── Skeleton Loader ───────────────────────────────────────────────────────
-
   function showSkeletonCards() {
     const grid = getGrid();
     if (!grid) return;
@@ -203,10 +199,8 @@
       </div>`).join('');
   }
 
-  // ── Multi-Layer Fetch Engine ──────────────────────────────────────────────
-
   async function fetchLeagueFromEdgeProxy(leagueId) {
-    const res = await fetch(`/api/fixtures?league=${leagueId}&type=all`, {
+    const res = await fetch(`/api/fixtures?league=${leagueId}`, {
       signal: AbortSignal.timeout(6000)
     });
     if (!res.ok) throw new Error(`Proxy HTTP ${res.status}`);
@@ -216,38 +210,15 @@
 
   async function fetchLeagueDirect(leagueId) {
     const headers = {
-      'x-apisports-key': API_KEY,
-      'x-rapidapi-key':  API_KEY,
-      'x-rapidapi-host': 'v3.football.api-sports.io'
+      'x-apisports-key': API_KEY
     };
 
-    const [nextRes, lastRes, liveRes] = await Promise.allSettled([
-      fetch(`${API_HOST}/fixtures?league=${leagueId}&next=12`, { headers, mode: 'cors', credentials: 'omit', signal: AbortSignal.timeout(8000) }).then(r => r.json()),
-      fetch(`${API_HOST}/fixtures?league=${leagueId}&last=8`, { headers, mode: 'cors', credentials: 'omit', signal: AbortSignal.timeout(8000) }).then(r => r.json()),
-      fetch(`${API_HOST}/fixtures?league=${leagueId}&live=all`, { headers, mode: 'cors', credentials: 'omit', signal: AbortSignal.timeout(8000) }).then(r => r.json())
-    ]);
-
-    const rawList = [];
-    if (liveRes.status === 'fulfilled' && Array.isArray(liveRes.value?.response)) {
-      rawList.push(...liveRes.value.response);
-    }
-    if (nextRes.status === 'fulfilled' && Array.isArray(nextRes.value?.response)) {
-      rawList.push(...nextRes.value.response);
-    }
-    if (lastRes.status === 'fulfilled' && Array.isArray(lastRes.value?.response)) {
-      rawList.push(...lastRes.value.response);
-    }
-
-    const seen = new Set();
-    const unique = [];
-    for (const item of rawList) {
-      const fid = item.fixture?.id;
-      if (fid && !seen.has(fid)) {
-        seen.add(fid);
-        unique.push(item);
-      }
-    }
-    return unique;
+    const res = await fetch(`${API_HOST}/fixtures?league=${leagueId}&next=15`, {
+      headers,
+      signal: AbortSignal.timeout(8000)
+    });
+    const json = await res.json();
+    return Array.isArray(json.response) ? json.response : [];
   }
 
   async function fetchCompleteLeagueFixtures(leagueId) {
@@ -257,14 +228,12 @@
     }
 
     let results = [];
-    // Try Layer 1: Edge proxy function (same origin)
     try {
       results = await fetchLeagueFromEdgeProxy(leagueId);
     } catch (e) {
       console.warn('[LiveFixtures] Edge proxy failed, trying direct API:', e.message);
     }
 
-    // Try Layer 2: Direct API fetch with credentials: omit
     if (!results || results.length === 0) {
       try {
         results = await fetchLeagueDirect(leagueId);
@@ -278,8 +247,6 @@
     }
     return results || [];
   }
-
-  // ── Normalize Raw Fixture → DeepPredictBet Format ─────────────────────────
 
   function normalizeFixture(item) {
     const statusShort = item.fixture?.status?.short || 'NS';
@@ -298,7 +265,8 @@
     const awayProb = 20 + ((hash >> 2) % 25);
     const drawProb = Math.max(10, 100 - homeProb - awayProb);
 
-    const rawDate = item.fixture?.date ? new Date(item.fixture.date) : new Date();
+    const rawTimestamp = item.fixture?.timestamp ? item.fixture.timestamp * 1000 : (item.fixture?.date ? new Date(item.fixture.date).getTime() : Date.now());
+    const rawDate = new Date(rawTimestamp);
     const today = new Date();
     const isToday = rawDate.toDateString() === today.toDateString();
     const tomorrow = new Date(today);
@@ -323,17 +291,25 @@
         ? `🏁 Final Result: ${homeName} ${homeScore ?? 0} – ${awayScore ?? 0} ${awayName} (${dayStr})`
         : `📅 ${dayStr} · ${homeName} vs ${awayName} · Model favor: ${homeProb > awayProb ? homeName : awayName} (${Math.max(homeProb, awayProb)}%)`;
 
-    const logoStyle = 'width:32px;height:32px;object-fit:contain;border-radius:4px;';
-    const logoImg   = (src, fallback) => src
-      ? `<img src="${src}" style="${logoStyle}" onerror="this.outerHTML='${fallback}'">`
+    const logoImg = (src, fallback) => src
+      ? `<img src="${src}" style="width:36px;height:36px;object-fit:contain;display:block;margin:0 auto;" onerror="this.outerHTML='${fallback}'">`
       : fallback;
+
+    let flagHtml = '⚽';
+    if (item.league?.flag) {
+      if (item.league.flag.startsWith('http')) {
+        flagHtml = `<img src="${item.league.flag}" style="width:16px;height:12px;display:inline-block;vertical-align:middle;border-radius:2px;margin-right:2px;" onerror="this.outerHTML='⚽'">`;
+      } else {
+        flagHtml = item.league.flag;
+      }
+    }
 
     return {
       id:          `apifb-${item.fixture?.id || Math.random().toString(36).slice(2)}`,
-      rawDate:     rawDate.getTime(),
+      rawDate:     rawTimestamp,
       date:        isToday ? 'today' : isTomorrow ? 'tomorrow' : 'future',
       league:      item.league?.name  || 'Unknown League',
-      leagueEmoji: item.league?.flag  || '⚽',
+      leagueEmoji: flagHtml,
       time:        timeDisplay,
       isLive,
       status:      statusShort,
@@ -359,8 +335,6 @@
     };
   }
 
-  // ── Core Loader ───────────────────────────────────────────────────────────
-
   async function loadLiveFixturesForLeague(leagueName) {
     const leagueId = LEAGUE_ID_MAP[leagueName];
 
@@ -374,13 +348,12 @@
       try {
         rawList = await fetchCompleteLeagueFixtures(leagueId);
       } catch (err) {
-        console.warn('[LiveFixtures] Error fetching from networks:', err);
+        console.warn('[LiveFixtures] Error fetching:', err);
       }
     }
 
     let matches = rawList.map(normalizeFixture);
 
-    // If API returned no matches, filter from static MATCH_DATA or GLOBAL_CLUBS as graceful fallback
     if (matches.length === 0 && typeof MATCH_DATA !== 'undefined' && Array.isArray(MATCH_DATA)) {
       matches = MATCH_DATA.filter(m => m.league && m.league.toLowerCase().includes(leagueName.toLowerCase()));
     }
@@ -389,7 +362,6 @@
       matches = (typeof MATCH_DATA !== 'undefined' && Array.isArray(MATCH_DATA)) ? MATCH_DATA : (window.MATCH_DATA || []);
     }
 
-    // Sort matches: Live first, upcoming chronologically, then finished
     matches.sort((a, b) => {
       if (a.isLive && !b.isLive) return -1;
       if (!a.isLive && b.isLive) return 1;
@@ -413,8 +385,6 @@
     setTitle(leagueName, 'live', matches.length);
   }
 
-  // ── "Show All" Fallback ───────────────────────────────────────────────────
-
   function renderAllAvailableMatches() {
     const toolbar = document.getElementById('league-fixture-subfilter-bar');
     if (toolbar) toolbar.remove();
@@ -428,8 +398,6 @@
     document.querySelectorAll('.sidebar-league-btn').forEach(b => b.classList.remove('active'));
   }
 
-  // ── selectSidebarLeague ───────────────────────────────────────────────────
-
   function selectSidebarLeague(leagueName, btn) {
     if (btn) {
       document.querySelectorAll('.sidebar-league-btn').forEach(b => b.classList.remove('active'));
@@ -437,8 +405,6 @@
     }
     loadLiveFixturesForLeague(leagueName);
   }
-
-  // ── Global Exports ────────────────────────────────────────────────────────
 
   window.loadLiveFixturesForLeague = loadLiveFixturesForLeague;
   window.renderAllAvailableMatches = renderAllAvailableMatches;

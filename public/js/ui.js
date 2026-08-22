@@ -185,7 +185,7 @@ function renderMatchCards(fixtures) {
   }
 
   fixtures.forEach(match => {
-    const isLocked = match.isPremium && !window.appState.premiumUnlocked;
+    const isLocked = match.isPremium && !(window.appState && window.appState.premiumUnlocked);
     const card = document.createElement("div");
     card.className = `match-card ${isLocked ? 'premium-locked' : ''}`;
     card.id = `card-${match.id}`;
@@ -193,7 +193,7 @@ function renderMatchCards(fixtures) {
       card.setAttribute("onclick", `openScoutModal('${match.id}')`);
     }
 
-    const isWatched = window.appState.watchlist.includes(match.id);
+    const isWatched = (window.appState && Array.isArray(window.appState.watchlist)) ? window.appState.watchlist.includes(match.id) : false;
     const starSymbol = isWatched ? "★" : "☆";
 
     if (isLocked) {
@@ -332,7 +332,7 @@ function renderMatchCards(fixtures) {
           <span style="color: var(--text-secondary); font-size: 0.75rem;">Conf: <b>${match.confidenceVal}%</b></span>
         </div>
         <div style="display: flex; align-items: center; gap: 8px; justify-content: flex-end; width: 100%;">
-          <span style="font-family: var(--font-display); font-weight: 700; font-size: 0.95rem; color: var(--text-primary);" class="desktop-only-odds">@${(typeof getMatchOdds === 'function' ? getMatchOdds(match) : 1.85).toFixed(2)}</span>
+          <span style="font-family: var(--font-display); font-weight: 700; font-size: 0.95rem; color: var(--text-primary);" class="desktop-only-odds">@${(typeof getMatchOdds === 'function' && typeof getMatchOdds(match) === 'number' ? getMatchOdds(match) : 1.85).toFixed(2)}</span>
           <button class="btn btn-primary" onclick="addMatchCardToBetslip('${match.id}', event)" style="padding: 6px 10px; font-size: 0.75rem; height: 32px; font-weight: 700; background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%); border: none; border-radius: var(--radius-sm); color: #fff; cursor: pointer; white-space: nowrap;">
             ➕ Add to Slip
           </button>
