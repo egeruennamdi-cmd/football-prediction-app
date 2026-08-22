@@ -7,7 +7,7 @@ const API_KEY = '2a68951288bede4261ef3365fa11f2c8';
 const API_HOST = 'https://v3.football.api-sports.io';
 
 const workerCache = new Map();
-const CACHE_TTL_MS = 3 * 60 * 1000; // 3 minutes edge cache
+const CACHE_TTL_MS = 2 * 60 * 1000; // 2 minutes edge cache
 
 export async function onRequest(context) {
   const url = new URL(context.request.url);
@@ -20,7 +20,7 @@ export async function onRequest(context) {
       status: 200,
       headers: {
         'Content-Type': 'application/json',
-        'Cache-Control': 'public, max-age=180',
+        'Cache-Control': 'public, max-age=120',
         'Access-Control-Allow-Origin': '*'
       }
     });
@@ -33,7 +33,6 @@ export async function onRequest(context) {
   };
 
   try {
-    // 1. Fetch full season fixtures for this league
     let rawList = [];
     let res = await fetch(`${API_HOST}/fixtures?league=${league}&season=2026`, { headers });
     let json = await res.json();
@@ -41,22 +40,25 @@ export async function onRequest(context) {
     if (Array.isArray(json.response) && json.response.length > 0) {
       rawList = json.response;
     } else {
-      // Fallback to season 2025 if 2026 calendar is not active yet
       res = await fetch(`${API_HOST}/fixtures?league=${league}&season=2025`, { headers });
       json = await res.json();
-      if (Array.isArray(json.response)) {
+      if (Array.isArray(json.response) && json.response.length > 0) {
         rawList = json.response;
       }
     }
 
-    // Process & select representative window: live + recent completed (8) + next upcoming (12)
     const live = [];
     const finished = [];
     const upcoming = [];
 
-    const now = Date.now();
     const LIVE_STATUSES = new Set(['1H','HT','2H','ET','BT','P','SUSP','INT','LIVE']);
     const FT_STATUSES = new Set(['FT','AET','PEN']);
+
+    const getTime = (item) => {
+      if (item.fixture?.timestamp) return item.fixture.timestamp * 1000;
+      if (item.fixture?.date) return Date.parse(item.fixture.date) || 0;
+      return 0;
+    };
 
     for (const item of rawList) {
       const status = item.fixture?.status?.short;
@@ -69,19 +71,17 @@ export async function onRequest(context) {
       }
     }
 
-    // Sort finished matches descending (most recent first)
-    finished.sort((a, b) => new Date(b.fixture?.date).getTime() - new Date(a.fixture?.date).getTime());
-    // Sort upcoming matches ascending (soonest first)
-    upcoming.sort((a, b) => new Date(a.fixture?.date).getTime() - new Date(b.fixture?.date).getTime());
+    // Sort finished descending (most recent first)
+    finished.sort((a, b) => getTime(b) - getTime(a));
+    // Sort upcoming ascending (soonest first)
+    upcoming.sort((a, b) => getTime(a) - getTime(b));
 
-    // Take top 8 recent finished + top 12 soonest upcoming + all live
     const selected = [
       ...live,
       ...upcoming.slice(0, 14),
       ...finished.slice(0, 10)
     ];
 
-    // Deduplicate by fixture id
     const seen = new Set();
     const unique = [];
     for (const item of selected) {
@@ -107,7 +107,7 @@ export async function onRequest(context) {
       status: 200,
       headers: {
         'Content-Type': 'application/json',
-        'Cache-Control': 'public, max-age=180',
+        'Cache-Control': 'public, max-age=120',
         'Access-Control-Allow-Origin': '*'
       }
     });
