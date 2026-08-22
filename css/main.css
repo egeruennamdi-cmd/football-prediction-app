@@ -213,32 +213,6 @@ header {
   margin-left: -0.8px !important;
 }
 
-/* Dot on "i" in "Predict" replaced with miniature black & white soccer ball */
-.brand-i-container {
-  position: relative !important;
-  display: inline-block !important;
-  line-height: inherit !important;
-  vertical-align: baseline !important;
-}
-
-.soccer-ball-dot {
-  position: absolute !important;
-  top: -0.16em !important;
-  left: 54% !important;
-  transform: translateX(-50%) !important;
-  width: 0.22em !important;
-  height: 0.22em !important;
-  display: inline-block !important;
-  filter: drop-shadow(0 0.5px 1.5px rgba(0, 0, 0, 0.4)) !important;
-  pointer-events: none !important;
-}
-
-.brand-i-stem {
-  display: inline-block !important;
-  line-height: inherit !important;
-  color: inherit !important;
-}
-
 .nav-menu {
   display: flex;
   align-items: center;
