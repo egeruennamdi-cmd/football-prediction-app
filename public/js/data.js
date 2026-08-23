@@ -244,7 +244,7 @@ const HISTORICAL_PERFORMANCE = {
 };
 
 const GLOBAL_CLUBS = [
-  // England - Premier League (2025/26 season)
+  // England - Premier League (all 20 official clubs, 2025/26 season)
   { name: "Manchester City",     country: "England", flag: "🏴󠁧󠁢󠁥󠁮󠁧󠁿", league: "Premier League", logo: "🔵",    matchesPlayed: 1, wins: 1, draws: 0, losses: 0, points: 3 },
   { name: "Arsenal",             country: "England", flag: "🏴󠁧󠁢󠁥󠁮󠁧󠁿", league: "Premier League", logo: "🔴",    matchesPlayed: 1, wins: 1, draws: 0, losses: 0, points: 3 },
   { name: "Liverpool",           country: "England", flag: "🏴󠁧󠁢󠁥󠁮󠁧󠁿", league: "Premier League", logo: "🔴🛡️", matchesPlayed: 1, wins: 1, draws: 0, losses: 0, points: 3 },
@@ -252,12 +252,9 @@ const GLOBAL_CLUBS = [
   { name: "Aston Villa",         country: "England", flag: "🏴󠁧󠁢󠁥󠁮󠁧󠁿", league: "Premier League", logo: "🦁🟣", matchesPlayed: 1, wins: 1, draws: 0, losses: 0, points: 3 },
   { name: "Spurs (Tottenham)",   country: "England", flag: "🏴󠁧󠁢󠁥󠁮󠁧󠁿", league: "Premier League", logo: "⚪🐓", matchesPlayed: 1, wins: 1, draws: 0, losses: 0, points: 3 },
   { name: "Newcastle United",    country: "England", flag: "🏴󠁧󠁢󠁥󠁮󠁧󠁿", league: "Premier League", logo: "🦓",    matchesPlayed: 1, wins: 1, draws: 0, losses: 0, points: 3 },
-  { name: "Coventry City",       country: "England", flag: "🏴󠁧󠁢󠁥󠁮󠁧󠁿", league: "Premier League", logo: "🐘🩵",   matchesPlayed: 1, wins: 1, draws: 0, losses: 0, points: 3 },
-  { name: "Sunderland",          country: "England", flag: "🏴󠁧󠁢󠁥󠁮󠁧󠁿", league: "Premier League", logo: "🔴⚪🐱", matchesPlayed: 1, wins: 1, draws: 0, losses: 0, points: 3 },
   { name: "Manchester United",   country: "England", flag: "🏴󠁧󠁢󠁥󠁮󠁧󠁿", league: "Premier League", logo: "👿",    matchesPlayed: 1, wins: 0, draws: 1, losses: 0, points: 1 },
   { name: "West Ham",            country: "England", flag: "🏴󠁧󠁢󠁥󠁮󠁧󠁿", league: "Premier League", logo: "⚒️",    matchesPlayed: 1, wins: 0, draws: 1, losses: 0, points: 1 },
   { name: "Brighton",            country: "England", flag: "🏴󠁧󠁢󠁥󠁮󠁧󠁿", league: "Premier League", logo: "🕊️",   matchesPlayed: 1, wins: 0, draws: 1, losses: 0, points: 1 },
-  { name: "Hull City (Hall)",    country: "England", flag: "🏴󠁧󠁢󠁥󠁮󠁧󠁿", league: "Premier League", logo: "🐯🟠",   matchesPlayed: 1, wins: 0, draws: 1, losses: 0, points: 1 },
   { name: "Wolves",              country: "England", flag: "🏴󠁧󠁢󠁥󠁮󠁧󠁿", league: "Premier League", logo: "🐺",    matchesPlayed: 1, wins: 0, draws: 1, losses: 0, points: 1 },
   { name: "Fulham",              country: "England", flag: "🏴󠁧󠁢󠁥󠁮󠁧󠁿", league: "Premier League", logo: "⚫⚪",  matchesPlayed: 1, wins: 0, draws: 1, losses: 0, points: 1 },
   { name: "Brentford",           country: "England", flag: "🏴󠁧󠁢󠁥󠁮󠁧󠁿", league: "Premier League", logo: "🐝",    matchesPlayed: 1, wins: 0, draws: 0, losses: 1, points: 0 },

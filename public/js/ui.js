@@ -1793,7 +1793,17 @@ async function showMockTableStandings(leagueName, btn) {
   }
   // Fallback to GLOBAL_CLUBS
   const local = (typeof GLOBAL_CLUBS !== 'undefined' ? GLOBAL_CLUBS : [])
-    .filter(c => c.league.toLowerCase() === leagueName.toLowerCase() || (leagueName.toLowerCase().includes('premier') && c.league === 'Premier League') || (leagueName.toLowerCase().includes('championship') && c.league === 'Championship'))
+    .filter(c => {
+      const cLeague = (c.league || '').toLowerCase();
+      const qLeague = (leagueName || '').toLowerCase();
+      if (qLeague.includes('championship')) {
+        return cLeague === 'championship';
+      }
+      if (qLeague.includes('premier')) {
+        return cLeague === 'premier league';
+      }
+      return cLeague === qLeague;
+    })
     .sort((a, b) => ((b.points ?? (b.wins * 3 + b.draws)) - (a.points ?? (a.wins * 3 + a.draws))));
   // dummy matchingClubs var to avoid reference below
   const matchingClubs = local;
