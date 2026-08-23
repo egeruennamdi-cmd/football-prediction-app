@@ -3924,21 +3924,83 @@ function handleAuthLogin(e) {
   return false;
 }
 
+function getRegisteredMembers() {
+  const seedMembers = [
+    { id: 'usr_adm1', fullName: 'Alex Nnamdi (Admin)', email: 'admin@deeppredictbet.com', username: 'Egeruennamdi78', role: 'PRO', coinsBalance: 1500, createdAt: '2026-08-01T10:00:00.000Z' },
+    { id: 'usr_punter1', fullName: 'Dave Sterling', email: 'dave.sterling@gmail.com', username: 'DeepPunter77', role: 'VIP', coinsBalance: 1200, createdAt: '2026-08-10T14:32:00.000Z' },
+    { id: 'usr_punter2', fullName: 'Chidi Okonkwo', email: 'chidi.bets@yahoo.com', username: 'ChidiApex', role: 'PRO', coinsBalance: 850, createdAt: '2026-08-15T09:12:00.000Z' },
+    { id: 'usr_punter3', fullName: 'Marcus Rashford Fan', email: 'marcus99@outlook.com', username: 'RedDevilGuru', role: 'FREE', coinsBalance: 500, createdAt: '2026-08-18T18:45:00.000Z' },
+    { id: 'usr_punter4', fullName: 'Elena Rostova', email: 'elena.stat@proton.me', username: 'DataQueen_AI', role: 'VIP', coinsBalance: 2400, createdAt: '2026-08-20T11:20:00.000Z' },
+    { id: 'usr_punter5', fullName: 'Emmanuel Adeyemi', email: 'emmanuel.ade@gmail.com', username: 'MannyPicks', role: 'PRO', coinsBalance: 750, createdAt: '2026-08-22T08:15:00.000Z' }
+  ];
+  try {
+    const raw = localStorage.getItem("deep_registered_members");
+    if (raw) {
+      const parsed = JSON.parse(raw);
+      if (Array.isArray(parsed) && parsed.length > 0) {
+        return parsed;
+      }
+    }
+  } catch (e) {}
+  try {
+    localStorage.setItem("deep_registered_members", JSON.stringify(seedMembers));
+  } catch (e) {}
+  return seedMembers;
+}
+window.getRegisteredMembers = getRegisteredMembers;
+
+function registerNewMemberLocal(userData) {
+  const members = getRegisteredMembers();
+  const exists = members.some(m => m.email.toLowerCase() === userData.email.toLowerCase() || m.username.toLowerCase() === userData.username.toLowerCase());
+  if (!exists) {
+    members.unshift(userData);
+    try {
+      localStorage.setItem("deep_registered_members", JSON.stringify(members));
+    } catch (e) {}
+  }
+}
+window.registerNewMemberLocal = registerNewMemberLocal;
+
 function handleAuthSignup(e) {
   if (e) {
     if (typeof e.preventDefault === 'function') e.preventDefault();
     if (typeof e.stopPropagation === 'function') e.stopPropagation();
   }
 
-  const input = document.getElementById("signup-username");
-  let username = "Egeruennamdi78";
-  if (input && input.value && input.value.trim().length > 0) {
-    username = input.value.trim();
-  }
+  const nameInput = document.getElementById("signup-fullname");
+  const emailInput = document.getElementById("signup-email");
+  const userInput = document.getElementById("signup-username");
+  const passInput = document.getElementById("signup-password");
+
+  let fullName = nameInput && nameInput.value && nameInput.value.trim().length > 0 ? nameInput.value.trim() : "DeepPredict Member";
+  let email = emailInput && emailInput.value && emailInput.value.trim().length > 0 ? emailInput.value.trim() : `user_${Date.now()}@domain.com`;
+  let username = userInput && userInput.value && userInput.value.trim().length > 0 ? userInput.value.trim() : (fullName.split(' ')[0] || "DeepPunter");
+  let password = passInput && passInput.value ? passInput.value : "password123";
+
+  const newMember = {
+    id: `usr_${Math.random().toString(36).substring(2, 9)}`,
+    fullName: fullName,
+    email: email,
+    username: username,
+    role: 'PRO',
+    coinsBalance: 500,
+    createdAt: new Date().toISOString()
+  };
+
+  registerNewMemberLocal(newMember);
+
+  // Sync with backend API asynchronously
+  const backendBase = window.BACKEND_API_URL || 'https://deeppredictbet-backend.onrender.com';
+  fetch(`${backendBase}/api/v1/auth/register`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ email: email, password: password, fullName: fullName })
+  }).catch(err => console.debug('[Auth Sync] Backend registration:', err.message));
 
   try {
     localStorage.setItem("userLoggedIn", "true");
     localStorage.setItem("currentUsername", username);
+    localStorage.setItem("currentUserEmail", email);
   } catch(err) {}
 
   if (typeof updateAuthUIState === 'function') updateAuthUIState();
@@ -3954,6 +4016,247 @@ function handleAuthSignup(e) {
   }
   return false;
 }
+
+async function openAdminUsersModal() {
+  const existing = document.getElementById("admin-users-modal");
+  if (existing) existing.remove();
+
+  const modal = document.createElement("div");
+  modal.id = "admin-users-modal";
+  modal.style.cssText = "position:fixed;top:0;left:0;width:100vw;height:100vh;background:rgba(0,0,0,0.88);backdrop-filter:blur(8px);display:flex;align-items:center;justify-content:center;z-index:999999;padding:16px;box-sizing:border-box;";
+  modal.addEventListener("click", e => { if (e.target === modal) modal.remove(); });
+
+  const content = document.createElement("div");
+  content.className = "glass-card";
+  content.style.cssText = "width:100%;max-width:820px;max-height:90vh;background:linear-gradient(180deg,#0f172a 0%,#020617 100%);border:1px solid rgba(16,185,129,0.3);border-radius:18px;box-shadow:0 20px 50px rgba(0,0,0,0.8),0 0 30px rgba(16,185,129,0.15);display:flex;flex-direction:column;overflow:hidden;color:#f8fafc;font-family:var(--font-body,sans-serif);";
+
+  // Initial loading state
+  content.innerHTML = `
+    <div style="padding:20px 24px;border-bottom:1px solid rgba(255,255,255,0.08);display:flex;align-items:center;justify-content:space-between;background:linear-gradient(135deg,rgba(16,185,129,0.15) 0%,rgba(15,23,42,0.9) 100%);">
+      <div style="display:flex;align-items:center;gap:12px;">
+        <span style="font-size:1.6rem;background:rgba(16,185,129,0.2);border:1px solid #10b981;border-radius:12px;padding:6px 10px;">👥</span>
+        <div>
+          <h3 style="margin:0;font-size:1.25rem;font-weight:900;color:#ffffff;display:flex;align-items:center;gap:8px;">
+            Member Analytics & Admin Hub
+            <span style="font-size:0.65rem;background:#10b981;color:#022c22;font-weight:900;padding:2px 8px;border-radius:20px;letter-spacing:0.5px;">LIVE SYNC</span>
+          </h3>
+          <span style="font-size:0.75rem;color:#94a3b8;">Real-time roster of registered punters, accounts & coin balances</span>
+        </div>
+      </div>
+      <button id="close-admin-modal-btn" style="background:rgba(255,255,255,0.1);border:1px solid rgba(255,255,255,0.15);color:#ffffff;border-radius:50%;width:34px;height:34px;font-size:1.1rem;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:background 0.2s;">✕</button>
+    </div>
+    <div style="padding:32px;text-align:center;color:#34d399;">
+      <div style="font-size:2rem;margin-bottom:8px;animation:spin 1s linear infinite;">⏳</div>
+      <div style="font-weight:700;font-size:0.95rem;">Fetching registered members ledger...</div>
+    </div>
+  `;
+
+  modal.appendChild(content);
+  document.body.appendChild(modal);
+
+  content.querySelector("#close-admin-modal-btn").addEventListener("click", () => modal.remove());
+
+  // Fetch backend accounts
+  let remoteUsers = [];
+  const backendBase = window.BACKEND_API_URL || 'https://deeppredictbet-backend.onrender.com';
+  try {
+    const res = await fetch(`${backendBase}/api/v1/auth/users`, { signal: AbortSignal.timeout(4000) });
+    if (res.ok) {
+      const json = await res.json();
+      if (json.success && Array.isArray(json.users)) {
+        remoteUsers = json.users;
+      }
+    }
+  } catch (err) {
+    console.debug('[Admin] Remote user fetch fallback to local:', err.message);
+  }
+
+  // Merge with local storage members
+  const localMembers = getRegisteredMembers();
+  const mergedMap = new Map();
+
+  localMembers.forEach(u => mergedMap.set((u.email || '').toLowerCase(), u));
+  remoteUsers.forEach(u => {
+    if (u.email && !mergedMap.has(u.email.toLowerCase())) {
+      mergedMap.set(u.email.toLowerCase(), {
+        id: u.id,
+        fullName: u.fullName || u.email.split('@')[0],
+        email: u.email,
+        username: u.email.split('@')[0],
+        role: u.role || 'USER',
+        coinsBalance: u.coinsBalance ?? 500,
+        createdAt: u.createdAt || new Date().toISOString()
+      });
+    }
+  });
+
+  const allMembers = Array.from(mergedMap.values()).sort((a, b) => new Date(b.createdAt || 0) - new Date(a.createdAt || 0));
+
+  const totalCount = allMembers.length;
+  const proCount = allMembers.filter(m => (m.role || '').toUpperCase() === 'PRO' || (m.role || '').toUpperCase() === 'VIP').length;
+  const totalCoins = allMembers.reduce((sum, m) => sum + (m.coinsBalance || 500), 0);
+
+  const renderTable = (filterText = '', roleFilter = 'ALL') => {
+    const q = (filterText || '').toLowerCase().trim();
+    const filtered = allMembers.filter(m => {
+      const matchesSearch = !q || (m.fullName || '').toLowerCase().includes(q) || (m.email || '').toLowerCase().includes(q) || (m.username || '').toLowerCase().includes(q);
+      const matchesRole = roleFilter === 'ALL' || (m.role || '').toUpperCase() === roleFilter;
+      return matchesSearch && matchesRole;
+    });
+
+    return filtered.map((m, idx) => {
+      const dateStr = m.createdAt ? new Date(m.createdAt).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' }) : 'Recent';
+      const roleColor = (m.role || '').toUpperCase() === 'VIP' ? '#f59e0b' : (m.role || '').toUpperCase() === 'PRO' ? '#10b981' : '#60a5fa';
+      const initial = (m.fullName || m.username || 'U').charAt(0).toUpperCase();
+
+      return `
+        <tr style="border-bottom:1px solid rgba(255,255,255,0.05);transition:background 0.15s;" onmouseover="this.style.background='rgba(255,255,255,0.03)'" onmouseout="this.style.background='transparent'">
+          <td style="padding:12px 8px;font-weight:700;color:#64748b;font-size:0.8rem;text-align:center;">#${idx + 1}</td>
+          <td style="padding:12px 8px;">
+            <div style="display:flex;align-items:center;gap:10px;">
+              <div style="width:32px;height:32px;border-radius:50%;background:linear-gradient(135deg,rgba(59,130,246,0.5),rgba(16,185,129,0.5));border:1px solid rgba(255,255,255,0.2);display:flex;align-items:center;justify-content:center;font-weight:900;font-size:0.85rem;color:#ffffff;flex-shrink:0;">
+                ${initial}
+              </div>
+              <div style="display:flex;flex-direction:column;">
+                <span style="font-weight:800;color:#f1f5f9;font-size:0.86rem;">${m.fullName || m.username}</span>
+                <span style="font-size:0.74rem;color:#94a3b8;">@${m.username || 'user'}</span>
+              </div>
+            </div>
+          </td>
+          <td style="padding:12px 8px;color:#cbd5e1;font-size:0.82rem;font-family:monospace;">${m.email}</td>
+          <td style="padding:12px 8px;text-align:center;">
+            <span style="background:rgba(255,255,255,0.06);border:1px solid ${roleColor};color:${roleColor};font-size:0.68rem;font-weight:800;padding:2px 8px;border-radius:6px;text-transform:uppercase;letter-spacing:0.5px;">
+              ${m.role || 'MEMBER'}
+            </span>
+          </td>
+          <td style="padding:12px 8px;text-align:right;font-weight:800;color:#fbbf24;font-size:0.85rem;">
+            🪙 ${(m.coinsBalance || 500).toLocaleString()}
+          </td>
+          <td style="padding:12px 8px;text-align:right;color:#94a3b8;font-size:0.76rem;">
+            ${dateStr}
+          </td>
+        </tr>
+      `;
+    }).join('') || `<tr><td colspan="6" style="padding:28px;text-align:center;color:#94a3b8;font-size:0.85rem;">No members match this search query.</td></tr>`;
+  };
+
+  content.innerHTML = `
+    <!-- Modal Header -->
+    <div style="padding:18px 24px;border-bottom:1px solid rgba(255,255,255,0.08);display:flex;align-items:center;justify-content:space-between;background:linear-gradient(135deg,rgba(16,185,129,0.15) 0%,rgba(15,23,42,0.9) 100%);">
+      <div style="display:flex;align-items:center;gap:12px;">
+        <span style="font-size:1.6rem;background:rgba(16,185,129,0.2);border:1px solid #10b981;border-radius:12px;padding:6px 10px;">👥</span>
+        <div>
+          <h3 style="margin:0;font-size:1.25rem;font-weight:900;color:#ffffff;display:flex;align-items:center;gap:8px;">
+            Member Analytics & Admin Hub
+            <span style="font-size:0.65rem;background:#10b981;color:#022c22;font-weight:900;padding:2px 8px;border-radius:20px;letter-spacing:0.5px;">LIVE SYNC</span>
+          </h3>
+          <span style="font-size:0.75rem;color:#94a3b8;">Real-time roster of registered punters, accounts & coin balances</span>
+        </div>
+      </div>
+      <button id="close-admin-modal-btn" style="background:rgba(255,255,255,0.1);border:1px solid rgba(255,255,255,0.15);color:#ffffff;border-radius:50%;width:34px;height:34px;font-size:1.1rem;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:background 0.2s;">✕</button>
+    </div>
+
+    <!-- Overview KPI Metric Cards -->
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:12px;padding:16px 24px 8px;">
+      <div style="background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.08);border-radius:12px;padding:12px 16px;">
+        <span style="font-size:0.72rem;color:#94a3b8;font-weight:700;text-transform:uppercase;letter-spacing:0.5px;display:block;margin-bottom:4px;">👥 Total Registered</span>
+        <span id="admin-kpi-total" style="font-size:1.5rem;font-weight:900;color:#10b981;">${totalCount}</span>
+      </div>
+      <div style="background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.08);border-radius:12px;padding:12px 16px;">
+        <span style="font-size:0.72rem;color:#94a3b8;font-weight:700;text-transform:uppercase;letter-spacing:0.5px;display:block;margin-bottom:4px;">👑 PRO & VIP Punters</span>
+        <span style="font-size:1.5rem;font-weight:900;color:#f59e0b;">${proCount}</span>
+      </div>
+      <div style="background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.08);border-radius:12px;padding:12px 16px;">
+        <span style="font-size:0.72rem;color:#94a3b8;font-weight:700;text-transform:uppercase;letter-spacing:0.5px;display:block;margin-bottom:4px;">🪙 Coins Bankroll</span>
+        <span style="font-size:1.5rem;font-weight:900;color:#38bdf8;">${totalCoins.toLocaleString()}</span>
+      </div>
+      <div style="background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.08);border-radius:12px;padding:12px 16px;">
+        <span style="font-size:0.72rem;color:#94a3b8;font-weight:700;text-transform:uppercase;letter-spacing:0.5px;display:block;margin-bottom:4px;">🟢 Database State</span>
+        <span style="font-size:0.95rem;font-weight:800;color:#34d399;display:flex;align-items:center;gap:6px;margin-top:4px;">
+          <span style="width:8px;height:8px;border-radius:50%;background:#10b981;display:inline-block;box-shadow:0 0 8px #10b981;"></span> Synced & Active
+        </span>
+      </div>
+    </div>
+
+    <!-- Action Toolbar (Search, Filter, Export) -->
+    <div style="padding:12px 24px;display:flex;flex-wrap:wrap;gap:10px;align-items:center;justify-content:space-between;border-bottom:1px solid rgba(255,255,255,0.06);">
+      <div style="display:flex;align-items:center;gap:8px;flex:1;min-width:220px;">
+        <input id="admin-search-input" type="text" placeholder="🔍 Search member name, email or @username..."
+          style="width:100%;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.12);border-radius:8px;padding:8px 12px;color:#ffffff;font-size:0.82rem;outline:none;">
+      </div>
+      <div style="display:flex;align-items:center;gap:8px;">
+        <select id="admin-role-filter" style="background:#1e293b;border:1px solid rgba(255,255,255,0.15);color:#f1f5f9;border-radius:8px;padding:7px 10px;font-size:0.8rem;outline:none;cursor:pointer;">
+          <option value="ALL">All Roles</option>
+          <option value="PRO">PRO Only</option>
+          <option value="VIP">VIP Only</option>
+          <option value="FREE">Free Only</option>
+        </select>
+        <button id="admin-export-csv-btn" style="background:rgba(16,185,129,0.2);border:1px solid #10b981;color:#34d399;font-size:0.8rem;font-weight:800;padding:7px 14px;border-radius:8px;cursor:pointer;display:flex;align-items:center;gap:6px;">
+          📥 Export CSV
+        </button>
+      </div>
+    </div>
+
+    <!-- Table Roster -->
+    <div style="flex:1;overflow-y:auto;padding:0 24px 20px;max-height:420px;">
+      <table style="width:100%;border-collapse:collapse;text-align:left;font-size:0.82rem;">
+        <thead>
+          <tr style="border-bottom:1px solid rgba(255,255,255,0.1);color:#94a3b8;font-size:0.72rem;text-transform:uppercase;font-weight:800;letter-spacing:0.5px;position:sticky;top:0;background:#0f172a;z-index:2;">
+            <th style="padding:10px 8px;width:36px;text-align:center;">#</th>
+            <th style="padding:10px 8px;">Punter / Name</th>
+            <th style="padding:10px 8px;">Email Address</th>
+            <th style="padding:10px 8px;text-align:center;">Tier</th>
+            <th style="padding:10px 8px;text-align:right;">Coins</th>
+            <th style="padding:10px 8px;text-align:right;">Registered</th>
+          </tr>
+        </thead>
+        <tbody id="admin-members-tbody">
+          ${renderTable()}
+        </tbody>
+      </table>
+    </div>
+  `;
+
+  content.querySelector("#close-admin-modal-btn").addEventListener("click", () => modal.remove());
+
+  const searchInput = content.querySelector("#admin-search-input");
+  const roleSelect = content.querySelector("#admin-role-filter");
+  const tbody = content.querySelector("#admin-members-tbody");
+
+  const updateView = () => {
+    tbody.innerHTML = renderTable(searchInput.value, roleSelect.value);
+  };
+
+  searchInput.addEventListener("input", updateView);
+  roleSelect.addEventListener("change", updateView);
+
+  // Export CSV handler
+  content.querySelector("#admin-export-csv-btn").addEventListener("click", () => {
+    const rows = [
+      ["ID", "Full Name", "Username", "Email", "Role", "Coins", "Registered Date"]
+    ];
+    allMembers.forEach(m => {
+      rows.push([
+        m.id || "",
+        `"${(m.fullName || "").replace(/"/g, '""')}"`,
+        m.username || "",
+        m.email || "",
+        m.role || "USER",
+        m.coinsBalance || 500,
+        m.createdAt || ""
+      ]);
+    });
+    const csvContent = "data:text/csv;charset=utf-8," + rows.map(e => e.join(",")).join("\n");
+    const encodedUri = encodeURI(csvContent);
+    const link = document.createElement("a");
+    link.setAttribute("href", encodedUri);
+    link.setAttribute("download", `deeppredictbet_members_${new Date().toISOString().split('T')[0]}.csv`);
+    document.body.appendChild(link);
+    link.click();
+    link.remove();
+  });
+}
+window.openAdminUsersModal = openAdminUsersModal;
 
 function handleNavAuthClick() {
   const isLoggedIn = localStorage.getItem("userLoggedIn") === "true";

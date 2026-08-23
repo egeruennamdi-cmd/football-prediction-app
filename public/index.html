@@ -292,6 +292,10 @@
                 style="border-bottom: none; color: #229ED9; font-weight: 800;">
                 💬 VIP Telegram Group
               </a>
+              <a href="javascript:void(0)" class="nav-dropdown-item" onclick="openAdminUsersModal()"
+                style="border-bottom: none; color: #10b981; font-weight: 800;">
+                👥 Member Analytics (Admin)
+              </a>
             </div>
           </li>
 
@@ -546,6 +550,9 @@
           <a href="#telegram-vip-section" onclick="toggleMobileDrawer()"
             style="color: #1d4ed8; font-size: 0.86rem; text-decoration: none; font-weight: 800; padding: 6px 10px; border-radius: 8px; background: rgba(59, 130, 246, 0.08); display: flex; align-items: center; gap: 8px;">💬
             VIP Telegram Group</a>
+          <a href="javascript:void(0)" onclick="openAdminUsersModal(); toggleMobileDrawer();"
+            style="color: #10b981; font-size: 0.86rem; text-decoration: none; font-weight: 800; padding: 6px 10px; border-radius: 8px; background: rgba(16, 185, 129, 0.08); display: flex; align-items: center; gap: 8px;">👥
+            Member Analytics (Admin)</a>
         </div>
       </div>
 
@@ -4930,6 +4937,12 @@
               Rank</span>
           </div>
         </div>
+
+        <!-- Admin Member Analytics Trigger -->
+        <button onclick="closeProfileModal(null, true); openAdminUsersModal();"
+          style="width: 100%; background: rgba(16, 185, 129, 0.15); border: 1px solid #10b981; color: #34d399; font-weight: 800; font-size: 0.88rem; padding: 10px; border-radius: 10px; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; margin-bottom: 10px; text-transform: uppercase; letter-spacing: 0.3px;">
+          👥 Member Analytics & Admin Hub
+        </button>
 
         <!-- Logout Action Button -->
         <button onclick="logoutUser()"
