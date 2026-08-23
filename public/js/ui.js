@@ -1676,9 +1676,10 @@ function viewLeagueStatisticsLedger(leagueName, btn) {
 
 // Open mock modal with standings table list for this league
 async function showMockTableStandings(leagueName, btn) {
+  const cleanLeague = (leagueName || '').replace(/^[^\w\s]+/, '').trim() || leagueName;
   // League name -> API-Football league ID map
   const LEAGUE_ID_MAP = {
-    'Premier League': 39, 'Championship': 40, 'La Liga': 140, 'Bundesliga': 78,
+    'Premier League': 39, 'Championship': 40, 'EFL Championship': 40, 'La Liga': 140, 'Bundesliga': 78,
     'Serie A': 135, 'Ligue 1': 61, 'Primeira Liga': 94,
     'Eredivisie': 88, 'MLS': 253, 'Champions League': 2, 'Europa League': 3
   };
@@ -1765,7 +1766,7 @@ async function showMockTableStandings(leagueName, btn) {
   document.body.appendChild(modal);
 
   // Fetch live from API-Football
-  const leagueId = LEAGUE_ID_MAP[leagueName];
+  const leagueId = LEAGUE_ID_MAP[cleanLeague] || LEAGUE_ID_MAP[leagueName];
   const backendBase = window.BACKEND_API_URL || 'https://deeppredictbet-backend.onrender.com';
   if (leagueId) {
     try {
