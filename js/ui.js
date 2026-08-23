@@ -1678,7 +1678,7 @@ function viewLeagueStatisticsLedger(leagueName, btn) {
 async function showMockTableStandings(leagueName, btn) {
   // League name -> API-Football league ID map
   const LEAGUE_ID_MAP = {
-    'Premier League': 39, 'La Liga': 140, 'Bundesliga': 78,
+    'Premier League': 39, 'Championship': 40, 'La Liga': 140, 'Bundesliga': 78,
     'Serie A': 135, 'Ligue 1': 61, 'Primeira Liga': 94,
     'Eredivisie': 88, 'MLS': 253, 'Champions League': 2, 'Europa League': 3
   };
@@ -1793,8 +1793,8 @@ async function showMockTableStandings(leagueName, btn) {
   }
   // Fallback to GLOBAL_CLUBS
   const local = (typeof GLOBAL_CLUBS !== 'undefined' ? GLOBAL_CLUBS : [])
-    .filter(c => c.league === leagueName)
-    .sort((a, b) => ((b.points ?? b.wins * 3 + b.draws) - (a.points ?? a.wins * 3 + a.draws)));
+    .filter(c => c.league.toLowerCase() === leagueName.toLowerCase() || (leagueName.toLowerCase().includes('premier') && c.league === 'Premier League') || (leagueName.toLowerCase().includes('championship') && c.league === 'Championship'))
+    .sort((a, b) => ((b.points ?? (b.wins * 3 + b.draws)) - (a.points ?? (a.wins * 3 + a.draws))));
   // dummy matchingClubs var to avoid reference below
   const matchingClubs = local;
 
