@@ -32,10 +32,11 @@ export async function onRequestOptions() {
 }
 
 export async function onRequestGet(context) {
+  let debugInfo = {};
   try {
     let members = [];
     
-    // 1. Fetch from Cloud DB (bypassing subrequest cache)
+    // 1. Fetch from Cloud DB
     try {
       const cloudRes = await fetch(CLOUD_STORE_URL, {
         headers: {
@@ -43,17 +44,24 @@ export async function onRequestGet(context) {
           'Accept': 'application/json'
         }
       });
+      debugInfo.cloudStatus = cloudRes.status;
       if (cloudRes.ok) {
         const json = await cloudRes.json();
+        debugInfo.json = json;
         if (json.data && Array.isArray(json.data.members) && json.data.members.length > 0) {
           members = json.data.members;
         }
+      } else {
+        debugInfo.text = await cloudRes.text();
       }
-    } catch (e) {}
+    } catch (e) {
+      debugInfo.fetchError = e.message;
+    }
 
     // 2. Fallback to Cloudflare KV
     if (members.length === 0 && context.env && context.env.USERS_KV) {
       const stored = await context.env.USERS_KV.get('members_list');
+      debugInfo.kvStored = stored ? 'found' : 'empty';
       if (stored) {
         try {
           const parsed = JSON.parse(stored);
@@ -69,7 +77,8 @@ export async function onRequestGet(context) {
     return new Response(JSON.stringify({
       success: true,
       totalUsers: members.length,
-      users: members
+      users: members,
+      _debug: debugInfo
     }), {
       status: 200,
       headers: corsHeaders()
@@ -78,7 +87,8 @@ export async function onRequestGet(context) {
     return new Response(JSON.stringify({
       success: true,
       totalUsers: 1,
-      users: SEED_ADMIN
+      users: SEED_ADMIN,
+      _debug: { globalError: err.message }
     }), {
       status: 200,
       headers: corsHeaders()
