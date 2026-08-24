@@ -373,6 +373,11 @@
     });
 
     currentLeagueMatches = matches;
+    window.currentLeagueMatches = matches;
+    window.currentActiveLeague = leagueName;
+    if (window.appState) {
+      window.appState.calLeague = leagueName;
+    }
     currentActiveSubfilter = 'all';
 
     renderFilterToolbar(leagueName, matches);
@@ -389,6 +394,12 @@
     const toolbar = document.getElementById('league-fixture-subfilter-bar');
     if (toolbar) toolbar.remove();
 
+    window.currentLeagueMatches = null;
+    window.currentActiveLeague = null;
+    if (window.appState) {
+      window.appState.calLeague = 'all';
+    }
+
     const all = (typeof MATCH_DATA !== 'undefined' && Array.isArray(MATCH_DATA))
       ? MATCH_DATA : (window.MATCH_DATA || []);
     ensureVisible();
@@ -402,6 +413,9 @@
     if (btn) {
       document.querySelectorAll('.sidebar-league-btn').forEach(b => b.classList.remove('active'));
       if (btn.classList) btn.classList.add('active');
+    }
+    if (window.appState) {
+      window.appState.calLeague = leagueName;
     }
     loadLiveFixturesForLeague(leagueName);
   }

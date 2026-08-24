@@ -2967,90 +2967,176 @@ function updateFixturesDisplay() {
 
   let filtered = [...allMatches];
 
-  // 1. Date Filter
-  const activeDate = window.appState ? (window.appState.activePredictionDate || 'today') : 'today';
-  if (activeDate === 'yesterday') {
-    filtered = filtered.slice(0, 15).map((m, idx) => ({
-      ...m,
-      id: `yest-${m.id || idx}`,
-      isLive: false,
-      status: "FT",
-      time: "Finished",
-      homeScore: (idx % 3) + 1,
-      awayScore: (idx % 2),
-      isYesterday: true
-    }));
-  } else if (activeDate === 'tomorrow' || activeDate.startsWith('future-')) {
-    filtered = filtered.slice(5).map((m, idx) => ({
-      ...m,
-      id: `tmrw-${m.id || idx}`,
-      isLive: false,
-      status: "Upcoming",
-      time: `${14 + (idx % 8)}:00`,
-      isTomorrow: true
-    }));
+// Unified filtering pipeline
+function updateFixturesDisplay() {
+  // 1. Determine active base matches pool
+  let allMatches = [];
+  if (window.currentLeagueMatches && Array.isArray(window.currentLeagueMatches) && window.currentLeagueMatches.length > 0) {
+    allMatches = window.currentLeagueMatches;
+  } else if (window.MATCH_DATA && Array.isArray(window.MATCH_DATA) && window.MATCH_DATA.length > 0) {
+    allMatches = window.MATCH_DATA;
+  } else if (typeof MATCH_DATA !== 'undefined' && Array.isArray(MATCH_DATA)) {
+    allMatches = MATCH_DATA;
   }
 
-  // 2. Tab Filter (all, live, premium, upcoming, watchlist)
+  let filtered = [...allMatches];
+
+  // If a league filter is active in appState (e.g. from calendar or search) and not already filtered in currentLeagueMatches
+  if (window.appState && window.appState.calLeague && window.appState.calLeague !== 'all') {
+    const lTarget = window.appState.calLeague.toLowerCase();
+    const lFiltered = filtered.filter(m => m.league && m.league.toLowerCase().includes(lTarget));
+    if (lFiltered.length > 0) filtered = lFiltered;
+  }
+
+  // 2. Date Filter (respect real fixture dates/status without destructive slicing)
+  const activeDate = window.appState ? (window.appState.activePredictionDate || 'all') : 'all';
+  if (activeDate === 'yesterday') {
+    const yestFiltered = filtered.filter(m => m.date === 'yesterday' || m.isYesterday || m.status === 'FT' || m.statusShort === 'FT');
+    if (yestFiltered.length > 0) filtered = yestFiltered;
+  } else if (activeDate === 'today') {
+    const todayFiltered = filtered.filter(m => m.date === 'today' || m.isLive || (m.time && m.time.toLowerCase().includes('today')) || (m.statusShort && ['1H','HT','2H','NS','LIVE'].includes(m.statusShort)));
+    if (todayFiltered.length > 0) filtered = todayFiltered;
+  } else if (activeDate === 'tomorrow') {
+    const tmrwFiltered = filtered.filter(m => m.date === 'tomorrow' || m.isTomorrow || (m.time && m.time.toLowerCase().includes('tomorrow')));
+    if (tmrwFiltered.length > 0) filtered = tmrwFiltered;
+  }
+
+  // 3. Tab Filter (all, live, premium, upcoming, watchlist)
   const tabFilter = window.appState ? (window.appState.currentFilter || 'all') : 'all';
   if (tabFilter === 'live') {
-    const liveItems = filtered.filter(m => m.isLive || m.status === 'LIVE');
-    filtered = liveItems.length > 0 ? liveItems : filtered.slice(0, 4);
+    const liveItems = filtered.filter(m => m.isLive || m.status === 'LIVE' || (m.statusShort && ['1H','HT','2H','INT','LIVE'].includes(m.statusShort)));
+    if (liveItems.length > 0) filtered = liveItems;
   } else if (tabFilter === 'premium') {
-    filtered = filtered.filter(m => m.isPremium);
+    const premItems = filtered.filter(m => m.isPremium);
+    if (premItems.length > 0) filtered = premItems;
   } else if (tabFilter === 'upcoming') {
-    filtered = filtered.filter(m => !m.isLive && m.status !== 'LIVE' && m.time !== 'FT');
+    const upItems = filtered.filter(m => !m.isLive && m.status !== 'LIVE' && m.statusShort !== 'FT' && m.statusShort !== 'AET' && m.time !== 'FT');
+    if (upItems.length > 0) filtered = upItems;
   } else if (tabFilter === 'watchlist') {
     const watchlist = window.appState && Array.isArray(window.appState.watchlist) ? window.appState.watchlist : [];
     filtered = filtered.filter(m => watchlist.includes(m.id));
   }
 
-  // 3. Submenu Market Filtering
+  // 4. Submenu Market Filtering
   const marketVal = window.appState ? (window.appState.activeMarketSubmenu || 'all') : 'all';
   const targetTopTip = window.appState ? (window.appState.activeTopTip || 'all') : 'all';
 
   if (marketVal === '1x2') {
-    filtered = filtered.filter(m => m.predictions && (m.predictions.home >= 40 || m.predictions.away >= 35 || m.predictions.draw >= 30));
+    const mFiltered = filtered.filter(m => m.predictions && (m.predictions.home >= 35 || m.predictions.away >= 30 || m.predictions.draw >= 25));
+    if (mFiltered.length > 0) filtered = mFiltered;
   } else if (marketVal === 'overunder') {
-    filtered = filtered.filter(m => m.predictions);
+    const mFiltered = filtered.filter(m => m.predictions || m.topTips);
+    if (mFiltered.length > 0) filtered = mFiltered;
   } else if (marketVal === 'btts') {
-    filtered = filtered.filter(m => m.predictions && m.predictions.home > 25 && m.predictions.away > 20);
+    const mFiltered = filtered.filter(m => m.predictions && (m.predictions.home > 20 && m.predictions.away > 18));
+    if (mFiltered.length > 0) filtered = mFiltered;
   } else if (marketVal === 'doublechance') {
-    filtered = filtered.filter(m => m.predictions);
+    const mFiltered = filtered.filter(m => m.predictions || m.topTips);
+    if (mFiltered.length > 0) filtered = mFiltered;
   } else if (marketVal === 'dnb') {
-    filtered = filtered.filter(m => m.predictions && Math.abs(m.predictions.home - m.predictions.away) >= 10);
+    const mFiltered = filtered.filter(m => m.predictions && Math.abs(m.predictions.home - m.predictions.away) >= 5);
+    if (mFiltered.length > 0) filtered = mFiltered;
   } else if (marketVal === 'combo') {
-    filtered = filtered.filter(m => m.predictions && (m.predictions.home > 45 || m.predictions.away > 40));
+    const mFiltered = filtered.filter(m => m.predictions && (m.predictions.home > 35 || m.predictions.away > 30));
+    if (mFiltered.length > 0) filtered = mFiltered;
   } else if (marketVal === 'htft') {
-    filtered = filtered.filter(m => m.predictions);
+    const mFiltered = filtered.filter(m => m.predictions || m.topTips);
+    if (mFiltered.length > 0) filtered = mFiltered;
   } else if (marketVal === 'multigoals') {
-    filtered = filtered.filter(m => m.predictions);
+    const mFiltered = filtered.filter(m => m.predictions || m.topTips);
+    if (mFiltered.length > 0) filtered = mFiltered;
   } else if (marketVal === 'teamspec') {
-    filtered = filtered.filter(m => m.predictions && m.predictions.home >= 35);
+    const mFiltered = filtered.filter(m => m.predictions && (m.predictions.home >= 30 || m.predictions.away >= 30));
+    if (mFiltered.length > 0) filtered = mFiltered;
   } else if (marketVal === 'corners') {
-    filtered = filtered.filter(m => m.league);
+    const mFiltered = filtered.filter(m => m.league || m.topTips);
+    if (mFiltered.length > 0) filtered = mFiltered;
   } else if (marketVal === 'cards') {
-    filtered = filtered.filter(m => m.league);
+    const mFiltered = filtered.filter(m => m.league || m.topTips);
+    if (mFiltered.length > 0) filtered = mFiltered;
   } else if (marketVal === 'handicap') {
-    filtered = filtered.filter(m => m.predictions);
+    const mFiltered = filtered.filter(m => m.predictions || m.topTips);
+    if (mFiltered.length > 0) filtered = mFiltered;
   } else if (marketVal === 'toptips' && targetTopTip !== 'all') {
-    // Top tips directional filtering
     const directionalFilters = {
-      'win1': m => (m.predictions ? m.predictions.home >= 38 : true),
+      'win1': m => (m.predictions ? m.predictions.home >= 35 : true),
       'draw': m => (m.predictions ? m.predictions.draw >= 20 : true),
       'win2': m => (m.predictions ? m.predictions.away >= 25 : true),
-      'dc1x': m => (m.predictions ? (m.predictions.home + m.predictions.draw) >= 60 : true),
-      'dc12': m => (m.predictions ? (m.predictions.home + m.predictions.away) >= 65 : true),
-      'dcx2': m => (m.predictions ? (m.predictions.draw + m.predictions.away) >= 50 : true),
-      'dnb': m => (m.predictions ? Math.abs(m.predictions.home - m.predictions.away) >= 10 : true),
+      'dc1x': m => (m.predictions ? (m.predictions.home + m.predictions.draw) >= 55 : true),
+      'dc12': m => (m.predictions ? (m.predictions.home + m.predictions.away) >= 60 : true),
+      'dcx2': m => (m.predictions ? (m.predictions.draw + m.predictions.away) >= 45 : true),
+      'dnb': m => (m.predictions ? Math.abs(m.predictions.home - m.predictions.away) >= 5 : true),
       'uo05': m => true,
       'uo15': m => true,
       'uo25': m => true,
       'uo35': m => true,
       'uo45': m => true,
       'uo55': m => true,
-      'btts': m => (m.predictions ? m.predictions.home > 28 && m.predictions.away > 20 : true),
-      'btts_no': m => (m.predictions ? m.predictions.home <= 30 || m.predictions.away <= 20 : true)
+      'uoht05': m => true,
+      'uoht15': m => true,
+      'uoht25': m => true,
+      'uo2h05': m => true,
+      'uo2h15': m => true,
+      'uo2h25': m => true,
+      'mg12': m => true,
+      'mg13': m => true,
+      'mg23': m => true,
+      'mg24': m => true,
+      'mg25': m => true,
+      'mg35': m => true,
+      'mg46': m => true,
+      'eg0': m => true,
+      'eg1': m => true,
+      'eg2': m => true,
+      'eg3': m => true,
+      'eg4': m => true,
+      'btts': m => (m.predictions ? m.predictions.home > 25 && m.predictions.away > 18 : true),
+      'btts_no': m => (m.predictions ? m.predictions.home <= 28 || m.predictions.away <= 18 : true),
+      'bttsht': m => true,
+      'btts2h': m => true,
+      'btts_both': m => true,
+      'combo_1x2_uo': m => true,
+      'combo_1x2_under': m => true,
+      'combo_1x2_gg': m => true,
+      'combo_dc_uo': m => true,
+      'combo_dc_gg': m => true,
+      'htft_11': m => true,
+      'htft_x1': m => true,
+      'htft_21': m => true,
+      'htft_1x': m => true,
+      'htft_xx': m => true,
+      'htft_2x': m => true,
+      'htft_12': m => true,
+      'htft_x2': m => true,
+      'htft_22': m => true,
+      'wineither': m => true,
+      'winboth': m => true,
+      'huo05': m => true,
+      'huo15': m => true,
+      'auo05': m => true,
+      'auo15': m => true,
+      'hcs': m => true,
+      'acs': m => true,
+      'hw2n': m => true,
+      'aw2n': m => true,
+      'first_goal': m => true,
+      'c65': m => true,
+      'c75': m => true,
+      'c85': m => true,
+      'c95': m => true,
+      'c105': m => true,
+      'c115': m => true,
+      'c125': m => true,
+      'c45ht': m => true,
+      'c1x2': m => true,
+      'cards35': m => true,
+      'cards45': m => true,
+      'cards55': m => true,
+      'redcard': m => true,
+      'penalty': m => true,
+      'eh1': m => true,
+      'ah05': m => true,
+      'ah15': m => true
     };
     if (directionalFilters[targetTopTip]) {
       const specificFiltered = filtered.filter(directionalFilters[targetTopTip]);
@@ -3058,9 +3144,19 @@ function updateFixturesDisplay() {
     }
   }
 
-  // If filtered is empty and not watchlist, fallback to all matches so something is always displayed
+  // 5. Search Filter
+  if (window.appState && window.appState.searchFilter) {
+    const searchVal = window.appState.searchFilter.toLowerCase().trim();
+    filtered = filtered.filter(m => {
+      return (m.homeTeam && m.homeTeam.name && m.homeTeam.name.toLowerCase().includes(searchVal)) ||
+             (m.awayTeam && m.awayTeam.name && m.awayTeam.name.toLowerCase().includes(searchVal)) ||
+             (m.league && m.league.toLowerCase().includes(searchVal));
+    });
+  }
+
+  // Fallback if empty and not watchlist
   if (filtered.length === 0 && tabFilter !== 'watchlist') {
-    filtered = allMatches.slice(0, 8);
+    filtered = allMatches.slice(0, 10);
   }
 
   // Handle empty watchlist
