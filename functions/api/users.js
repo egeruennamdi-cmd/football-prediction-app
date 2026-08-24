@@ -37,10 +37,17 @@ export async function onRequestGet(context) {
     
     // 1. Fetch from Cloud DB (bypassing subrequest cache)
     try {
-      const cloudRes = await fetch(CLOUD_STORE_URL, { cache: 'no-store', signal: AbortSignal.timeout(4000) });
+      const cloudRes = await fetch(CLOUD_STORE_URL, {
+        cache: 'no-store',
+        headers: {
+          'User-Agent': 'DeepPredictBet/1.0',
+          'Accept': 'application/json'
+        },
+        signal: AbortSignal.timeout(4000)
+      });
       if (cloudRes.ok) {
         const json = await cloudRes.json();
-        if (json.data && Array.isArray(json.data.members)) {
+        if (json.data && Array.isArray(json.data.members) && json.data.members.length > 0) {
           members = json.data.members;
         }
       }
@@ -138,15 +145,24 @@ export async function onRequestPost(context) {
 
     // Write back to Cloud DB
     try {
-      await fetch(CLOUD_STORE_URL, {
+      const putRes = await fetch(CLOUD_STORE_URL, {
         method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
+        headers: {
+          'Content-Type': 'application/json',
+          'User-Agent': 'DeepPredictBet/1.0',
+          'Accept': 'application/json'
+        },
         body: JSON.stringify({
           name: 'deeppredictbet_members_store_v1',
           data: { members: members }
         })
       });
-    } catch (e) {}
+      if (!putRes.ok) {
+        console.warn('Cloud DB PUT status:', putRes.status);
+      }
+    } catch (e) {
+      console.error('Cloud DB PUT error:', e.message);
+    }
 
     // Also write to KV if available
     if (context.env && context.env.USERS_KV) {
