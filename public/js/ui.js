@@ -1615,26 +1615,30 @@ function switchTopTipsToolMarket(marketVal, btn) {
 
 // Toggle Top Leagues accordion inside the left sidebar
 function toggleSidebarTopLeaguesAccordion(index, header) {
+  if (!header) return;
   const content = header.nextElementSibling;
+  if (!content) return;
   const caret = header.querySelector(".caret");
   
-  const isOpen = content.style.maxHeight && content.style.maxHeight !== '0px';
+  const currentH = content.style.maxHeight;
+  const isClosed = !currentH || currentH === '0px' || currentH === '0';
 
   // Close all others inside this specific sidebar card
   const allContents = document.querySelectorAll("#sidebar-topleagues-accordion-list .country-accordion-content");
   const allCarets = document.querySelectorAll("#sidebar-topleagues-accordion-list .caret");
   const allHeaders = document.querySelectorAll("#sidebar-topleagues-accordion-list .country-accordion-header");
 
-  allContents.forEach(c => c.style.maxHeight = '0px');
-  allCarets.forEach(cr => cr.style.transform = 'rotate(0)');
-  allHeaders.forEach(h => h.classList.remove("active"));
+  allContents.forEach(c => { c.style.maxHeight = '0px'; });
+  allCarets.forEach(cr => { cr.style.transform = 'rotate(0deg)'; });
+  allHeaders.forEach(h => { h.classList.remove("active"); });
 
-  if (!isOpen) {
+  if (isClosed) {
     header.classList.add("active");
     content.style.maxHeight = "500px";
     if (caret) caret.style.transform = "rotate(180deg)";
   }
 }
+window.toggleSidebarTopLeaguesAccordion = toggleSidebarTopLeaguesAccordion;
 
 // 1. Interactive League Intelligence Hub Modal (Integrates Predictions, Scouting, Averages & Standings)
 function openLeagueHubModal(leagueName, btn) {
@@ -5463,7 +5467,7 @@ function renderSidebarTopLeagues() {
           </span>
           <span class="caret" style="transition: transform 0.2s ease; font-size: 0.65rem; color: #94a3b8; transform: ${isExpanded ? 'rotate(180deg)' : 'rotate(0)'};">▼</span>
         </button>
-        <div class="country-accordion-content" style="max-height: ${isExpanded ? '500px' : '0'}; overflow: hidden; transition: max-height 0.25s ease-in-out; padding-left: 8px; display: flex; flex-direction: column; gap: 4px; margin-top: 4px;">
+        <div class="country-accordion-content" style="max-height: ${isExpanded ? '500px' : '0px'}; overflow: hidden; transition: max-height 0.25s ease-in-out; padding-left: 8px; display: flex; flex-direction: column; gap: 4px; margin-top: 4px;">
           <button class="sidebar-league-btn" onclick="selectSidebarLeague('${safeName}', this)" style="padding: 7px 10px; font-size: 0.76rem; text-align: left; background: rgba(15,23,42,0.8); border: 1px solid rgba(255,255,255,0.05); color: #60a5fa; border-radius: 6px; cursor: pointer;">
             ⚽ Match Predictions
           </button>
@@ -5677,7 +5681,9 @@ function toggleSidebarCountryAccordion(idx, btn) {
   const content = btn.nextElementSibling;
   const caret = btn.querySelector('.caret');
   if (content) {
-    if (content.style.maxHeight && content.style.maxHeight !== '0px') {
+    const currentH = content.style.maxHeight;
+    const isClosed = !currentH || currentH === '0px' || currentH === '0';
+    if (!isClosed) {
       content.style.maxHeight = '0px';
       if (caret) caret.style.transform = 'rotate(0deg)';
     } else {
