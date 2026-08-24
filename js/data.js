@@ -380,14 +380,132 @@ const GLOBAL_CLUBS = [
   { name: "Sporting CP", country: "Portugal", flag: "🇵🇹", league: "Primeira Liga", logo: "🟢⚪🦁", matchesPlayed: 1, wins: 1, draws: 0, losses: 0, points: 3 },
   { name: "Benfica",     country: "Portugal", flag: "🇵🇹", league: "Primeira Liga", logo: "🦅🔴",   matchesPlayed: 1, wins: 1, draws: 0, losses: 0, points: 3 },
   { name: "FC Porto",    country: "Portugal", flag: "🇵🇹", league: "Primeira Liga", logo: "🔵🐉",   matchesPlayed: 1, wins: 0, draws: 1, losses: 0, points: 1 },
+  { name: "Braga",       country: "Portugal", flag: "🇵🇹", league: "Primeira Liga", logo: "🔴⚪",   matchesPlayed: 1, wins: 0, draws: 1, losses: 0, points: 1 },
+  { name: "Vitoria Guimaraes", country: "Portugal", flag: "🇵🇹", league: "Primeira Liga", logo: "⚫⚪", matchesPlayed: 1, wins: 0, draws: 0, losses: 1, points: 0 },
 
   // Netherlands - Eredivisie
   { name: "PSV Eindhoven", country: "Netherlands", flag: "🇳🇱", league: "Eredivisie", logo: "🔴⚪⚡",   matchesPlayed: 1, wins: 1, draws: 0, losses: 0, points: 3 },
   { name: "Feyenoord",     country: "Netherlands", flag: "🇳🇱", league: "Eredivisie", logo: "🔴⚪🛡️",  matchesPlayed: 1, wins: 1, draws: 0, losses: 0, points: 3 },
+  { name: "AZ Alkmaar",    country: "Netherlands", flag: "🇳🇱", league: "Eredivisie", logo: "🔴⚪",    matchesPlayed: 1, wins: 1, draws: 0, losses: 0, points: 3 },
+  { name: "FC Twente",     country: "Netherlands", flag: "🇳🇱", league: "Eredivisie", logo: "🔴🐎",    matchesPlayed: 1, wins: 0, draws: 1, losses: 0, points: 1 },
   { name: "Ajax",          country: "Netherlands", flag: "🇳🇱", league: "Eredivisie", logo: "🔴⚪🛡️🦁", matchesPlayed: 1, wins: 0, draws: 0, losses: 1, points: 0 },
 
+  // Turkey - Süper Lig
+  { name: "Galatasaray",      country: "Turkey", flag: "🇹🇷", league: "Süper Lig", logo: "🟡🔴🦁", matchesPlayed: 1, wins: 1, draws: 0, losses: 0, points: 3 },
+  { name: "Fenerbahçe",       country: "Turkey", flag: "🇹🇷", league: "Süper Lig", logo: "🟡🔵🐦", matchesPlayed: 1, wins: 1, draws: 0, losses: 0, points: 3 },
+  { name: "Beşiktaş",         country: "Turkey", flag: "🇹🇷", league: "Süper Lig", logo: "🦅⚫⚪", matchesPlayed: 1, wins: 1, draws: 0, losses: 0, points: 3 },
+  { name: "Trabzonspor",      country: "Turkey", flag: "🇹🇷", league: "Süper Lig", logo: "🍷🔵",   matchesPlayed: 1, wins: 0, draws: 1, losses: 0, points: 1 },
+  { name: "Başakşehir",       country: "Turkey", flag: "🇹🇷", league: "Süper Lig", logo: "🟠🔵",   matchesPlayed: 1, wins: 0, draws: 0, losses: 1, points: 0 },
+
+  // Scotland - Premiership
+  { name: "Celtic",          country: "Scotland", flag: "🏴󠁧󠁢󠁳󠁣󠁴󠁿", league: "Scottish Premiership", logo: "🟢⚪🍀", matchesPlayed: 1, wins: 1, draws: 0, losses: 0, points: 3 },
+  { name: "Rangers",         country: "Scotland", flag: "🏴󠁧󠁢󠁳󠁣󠁴󠁿", league: "Scottish Premiership", logo: "🔵🦁",   matchesPlayed: 1, wins: 1, draws: 0, losses: 0, points: 3 },
+  { name: "Aberdeen",        country: "Scotland", flag: "🏴󠁧󠁢󠁳󠁣󠁴󠁿", league: "Scottish Premiership", logo: "🔴⚪",   matchesPlayed: 1, wins: 1, draws: 0, losses: 0, points: 3 },
+  { name: "Heart of Midlothian", country: "Scotland", flag: "🏴󠁧󠁢󠁳󠁣󠁴󠁿", league: "Scottish Premiership", logo: "🍷❤️", matchesPlayed: 1, wins: 0, draws: 1, losses: 0, points: 1 },
+  { name: "Hibernian",       country: "Scotland", flag: "🏴󠁧󠁢󠁳󠁣󠁴󠁿", league: "Scottish Premiership", logo: "🟢⚪",   matchesPlayed: 1, wins: 0, draws: 0, losses: 1, points: 0 },
+
+  // Belgium - Pro League
+  { name: "Club Brugge",     country: "Belgium", flag: "🇧🇪", league: "Belgian Pro League", logo: "🔵⚫",   matchesPlayed: 1, wins: 1, draws: 0, losses: 0, points: 3 },
+  { name: "Union Saint-Gilloise", country: "Belgium", flag: "🇧🇪", league: "Belgian Pro League", logo: "🟡🔵", matchesPlayed: 1, wins: 1, draws: 0, losses: 0, points: 3 },
+  { name: "Anderlecht",      country: "Belgium", flag: "🇧🇪", league: "Belgian Pro League", logo: "🟣⚪",   matchesPlayed: 1, wins: 1, draws: 0, losses: 0, points: 3 },
+  { name: "Genk",            country: "Belgium", flag: "🇧🇪", league: "Belgian Pro League", logo: "🔵⚪",   matchesPlayed: 1, wins: 0, draws: 1, losses: 0, points: 1 },
+  { name: "Gent",            country: "Belgium", flag: "🇧🇪", league: "Belgian Pro League", logo: "🔵⚪🏹", matchesPlayed: 1, wins: 0, draws: 0, losses: 1, points: 0 },
+
+  // Brazil - Brasileirão
+  { name: "Botafogo",        country: "Brazil", flag: "🇧🇷", league: "Brasileirao", logo: "⚫⚪⭐", matchesPlayed: 1, wins: 1, draws: 0, losses: 0, points: 3 },
+  { name: "Palmeiras",       country: "Brazil", flag: "🇧🇷", league: "Brasileirao", logo: "🟢⚪🐷", matchesPlayed: 1, wins: 1, draws: 0, losses: 0, points: 3 },
+  { name: "Flamengo",        country: "Brazil", flag: "🇧🇷", league: "Brasileirao", logo: "🔴⚫🦅", matchesPlayed: 1, wins: 1, draws: 0, losses: 0, points: 3 },
+  { name: "Fortaleza",       country: "Brazil", flag: "🇧🇷", league: "Brasileirao", logo: "🔵🔴🦁", matchesPlayed: 1, wins: 0, draws: 1, losses: 0, points: 1 },
+  { name: "São Paulo",       country: "Brazil", flag: "🇧🇷", league: "Brasileirao", logo: "🔴⚪⚫", matchesPlayed: 1, wins: 0, draws: 0, losses: 1, points: 0 },
+
+  // Argentina - Liga Profesional
+  { name: "River Plate",     country: "Argentina", flag: "🇦🇷", league: "Liga Profesional", logo: "⚪🔴",   matchesPlayed: 1, wins: 1, draws: 0, losses: 0, points: 3 },
+  { name: "Racing Club",     country: "Argentina", flag: "🇦🇷", league: "Liga Profesional", logo: "🩵⚪",   matchesPlayed: 1, wins: 1, draws: 0, losses: 0, points: 3 },
+  { name: "Vélez Sarsfield", country: "Argentina", flag: "🇦🇷", league: "Liga Profesional", logo: "🔵⚪",   matchesPlayed: 1, wins: 1, draws: 0, losses: 0, points: 3 },
+  { name: "Boca Juniors",    country: "Argentina", flag: "🇦🇷", league: "Liga Profesional", logo: "🔵🟡",   matchesPlayed: 1, wins: 0, draws: 1, losses: 0, points: 1 },
+  { name: "Independiente",   country: "Argentina", flag: "🇦🇷", league: "Liga Profesional", logo: "🔴👿",   matchesPlayed: 1, wins: 0, draws: 0, losses: 1, points: 0 },
+
+  // Mexico - Liga MX
+  { name: "Club América",    country: "Mexico", flag: "🇲🇽", league: "Liga MX", logo: "🟡🔵🦅", matchesPlayed: 1, wins: 1, draws: 0, losses: 0, points: 3 },
+  { name: "Cruz Azul",       country: "Mexico", flag: "🇲🇽", league: "Liga MX", logo: "🔵🚂",   matchesPlayed: 1, wins: 1, draws: 0, losses: 0, points: 3 },
+  { name: "Monterrey",       country: "Mexico", flag: "🇲🇽", league: "Liga MX", logo: "🔵⚪🤠", matchesPlayed: 1, wins: 1, draws: 0, losses: 0, points: 3 },
+  { name: "Tigres UANL",     country: "Mexico", flag: "🇲🇽", league: "Liga MX", logo: "🟡🐯",   matchesPlayed: 1, wins: 0, draws: 1, losses: 0, points: 1 },
+  { name: "Guadalajara",     country: "Mexico", flag: "🇲🇽", league: "Liga MX", logo: "🔴⚪🐐", matchesPlayed: 1, wins: 0, draws: 0, losses: 1, points: 0 },
+
   // USA - MLS
-  { name: "LA Galaxy", country: "USA", flag: "🇺🇸", league: "MLS", logo: "⚪🌌", matchesPlayed: 1, wins: 1, draws: 0, losses: 0, points: 3 }
+  { name: "Inter Miami",     country: "USA", flag: "🇺🇸", league: "MLS", logo: "🩷🦩", matchesPlayed: 1, wins: 1, draws: 0, losses: 0, points: 3 },
+  { name: "LA Galaxy",       country: "USA", flag: "🇺🇸", league: "MLS", logo: "⚪🌌", matchesPlayed: 1, wins: 1, draws: 0, losses: 0, points: 3 },
+  { name: "Columbus Crew",   country: "USA", flag: "🇺🇸", league: "MLS", logo: "🟡⚫", matchesPlayed: 1, wins: 1, draws: 0, losses: 0, points: 3 },
+  { name: "LAFC",            country: "USA", flag: "🇺🇸", league: "MLS", logo: "⚫🟡", matchesPlayed: 1, wins: 0, draws: 1, losses: 0, points: 1 },
+  { name: "FC Cincinnati",   country: "USA", flag: "🇺🇸", league: "MLS", logo: "🔵🟠", matchesPlayed: 1, wins: 0, draws: 0, losses: 1, points: 0 },
+
+  // Saudi Arabia - Saudi Pro League
+  { name: "Al-Hilal",        country: "Saudi Arabia", flag: "🇸🇦", league: "Saudi Pro League", logo: "🔵🌙", matchesPlayed: 1, wins: 1, draws: 0, losses: 0, points: 3 },
+  { name: "Al-Nassr",        country: "Saudi Arabia", flag: "🇸🇦", league: "Saudi Pro League", logo: "🟡🔵👑", matchesPlayed: 1, wins: 1, draws: 0, losses: 0, points: 3 },
+  { name: "Al-Ittihad",      country: "Saudi Arabia", flag: "🇸🇦", league: "Saudi Pro League", logo: "🟡⚫🐅", matchesPlayed: 1, wins: 1, draws: 0, losses: 0, points: 3 },
+  { name: "Al-Ahli",         country: "Saudi Arabia", flag: "🇸🇦", league: "Saudi Pro League", logo: "🟢⚪",   matchesPlayed: 1, wins: 0, draws: 1, losses: 0, points: 1 },
+  { name: "Al-Shabab",       country: "Saudi Arabia", flag: "🇸🇦", league: "Saudi Pro League", logo: "⚫⚪🦁", matchesPlayed: 1, wins: 0, draws: 0, losses: 1, points: 0 },
+
+  // Nigeria - NPFL
+  { name: "Enugu Rangers",   country: "Nigeria", flag: "🇳🇬", league: "NPFL", logo: "🔴⚪",   matchesPlayed: 1, wins: 1, draws: 0, losses: 0, points: 3 },
+  { name: "Remo Stars",      country: "Nigeria", flag: "🇳🇬", league: "NPFL", logo: "🔵⭐",   matchesPlayed: 1, wins: 1, draws: 0, losses: 0, points: 3 },
+  { name: "Enyimba FC",      country: "Nigeria", flag: "🇳🇬", league: "NPFL", logo: "🔵🐘",   matchesPlayed: 1, wins: 1, draws: 0, losses: 0, points: 3 },
+  { name: "Rivers United",   country: "Nigeria", flag: "🇳🇬", league: "NPFL", logo: "🔵⚪🐬", matchesPlayed: 1, wins: 0, draws: 1, losses: 0, points: 1 },
+  { name: "Plateau United",  country: "Nigeria", flag: "🇳🇬", league: "NPFL", logo: "🟡🟢",   matchesPlayed: 1, wins: 0, draws: 1, losses: 0, points: 1 },
+  { name: "Shooting Stars",  country: "Nigeria", flag: "🇳🇬", league: "NPFL", logo: "🔵⭐",   matchesPlayed: 1, wins: 0, draws: 0, losses: 1, points: 0 },
+  { name: "Kano Pillars",    country: "Nigeria", flag: "🇳🇬", league: "NPFL", logo: "🟡🟢",   matchesPlayed: 1, wins: 0, draws: 0, losses: 1, points: 0 },
+
+  // South Africa - DStv Premiership
+  { name: "Mamelodi Sundowns", country: "South Africa", flag: "🇿🇦", league: "DStv Premiership", logo: "🟡🟢☀️", matchesPlayed: 1, wins: 1, draws: 0, losses: 0, points: 3 },
+  { name: "Orlando Pirates",  country: "South Africa", flag: "🇿🇦", league: "DStv Premiership", logo: "⚫⚪☠️", matchesPlayed: 1, wins: 1, draws: 0, losses: 0, points: 3 },
+  { name: "Stellenbosch FC",  country: "South Africa", flag: "🇿🇦", league: "DStv Premiership", logo: "🍷🍇",   matchesPlayed: 1, wins: 1, draws: 0, losses: 0, points: 3 },
+  { name: "Sekhukhune United", country: "South Africa", flag: "🇿🇦", league: "DStv Premiership", logo: "🟤⚪", matchesPlayed: 1, wins: 0, draws: 1, losses: 0, points: 1 },
+  { name: "Kaizer Chiefs",    country: "South Africa", flag: "🇿🇦", league: "DStv Premiership", logo: "🟡✌️",   matchesPlayed: 1, wins: 0, draws: 0, losses: 1, points: 0 },
+
+  // Egypt - Egyptian Premier League
+  { name: "Al Ahly",         country: "Egypt", flag: "🇪🇬", league: "Egyptian Premier", logo: "🔴🦅",   matchesPlayed: 1, wins: 1, draws: 0, losses: 0, points: 3 },
+  { name: "Pyramids FC",     country: "Egypt", flag: "🇪🇬", league: "Egyptian Premier", logo: "🔵🔺",   matchesPlayed: 1, wins: 1, draws: 0, losses: 0, points: 3 },
+  { name: "Zamalek",         country: "Egypt", flag: "🇪🇬", league: "Egyptian Premier", logo: "⚪🔴🏹", matchesPlayed: 1, wins: 1, draws: 0, losses: 0, points: 3 },
+  { name: "Al Masry",        country: "Egypt", flag: "🇪🇬", league: "Egyptian Premier", logo: "🟢🦅",   matchesPlayed: 1, wins: 0, draws: 1, losses: 0, points: 1 },
+  { name: "Modern Sport",    country: "Egypt", flag: "🇪🇬", league: "Egyptian Premier", logo: "🔴🔵",   matchesPlayed: 1, wins: 0, draws: 0, losses: 1, points: 0 },
+
+  // Continental Cups & Tournaments
+  { name: "Real Madrid",     country: "Spain", flag: "🇪🇸", league: "Champions League", logo: "⚪👑", matchesPlayed: 1, wins: 1, draws: 0, losses: 0, points: 3 },
+  { name: "Manchester City", country: "England", flag: "🏴󠁧󠁢󠁥󠁮󠁧󠁿", league: "Champions League", logo: "🔵", matchesPlayed: 1, wins: 1, draws: 0, losses: 0, points: 3 },
+  { name: "Bayern Munich",   country: "Germany", flag: "🇩🇪", league: "Champions League", logo: "🔴⚪", matchesPlayed: 1, wins: 1, draws: 0, losses: 0, points: 3 },
+  { name: "Paris SG",        country: "France", flag: "🇫🇷", league: "Champions League", logo: "🗼", matchesPlayed: 1, wins: 1, draws: 0, losses: 0, points: 3 },
+  
+  { name: "Manchester United", country: "England", flag: "🏴󠁧󠁢󠁥󠁮󠁧󠁿", league: "Europa League", logo: "👿", matchesPlayed: 1, wins: 1, draws: 0, losses: 0, points: 3 },
+  { name: "Tottenham",       country: "England", flag: "🏴󠁧󠁢󠁥󠁮󠁧󠁿", league: "Europa League", logo: "⚪🐓", matchesPlayed: 1, wins: 1, draws: 0, losses: 0, points: 3 },
+  { name: "AS Roma",         country: "Italy", flag: "🇮🇹", league: "Europa League", logo: "🐺🟡🔴", matchesPlayed: 1, wins: 1, draws: 0, losses: 0, points: 3 },
+  { name: "Athletic Bilbao", country: "Spain", flag: "🇪🇸", league: "Europa League", logo: "🦁🔴", matchesPlayed: 1, wins: 1, draws: 0, losses: 0, points: 3 },
+
+  { name: "Chelsea",         country: "England", flag: "🏴󠁧󠁢󠁥󠁮󠁧󠁿", league: "Conference League", logo: "🦁", matchesPlayed: 1, wins: 1, draws: 0, losses: 0, points: 3 },
+  { name: "Fiorentina",      country: "Italy", flag: "🇮🇹", league: "Conference League", logo: "🟣🌸", matchesPlayed: 1, wins: 1, draws: 0, losses: 0, points: 3 },
+  { name: "Real Betis",      country: "Spain", flag: "🇪🇸", league: "Conference League", logo: "🟢⚪", matchesPlayed: 1, wins: 1, draws: 0, losses: 0, points: 3 },
+  { name: "Heidenheim",      country: "Germany", flag: "🇩🇪", league: "Conference League", logo: "🔴⚫", matchesPlayed: 1, wins: 1, draws: 0, losses: 0, points: 3 },
+
+  { name: "Arsenal",         country: "England", flag: "🏴󠁧󠁢󠁥󠁮󠁧󠁿", league: "FA Cup", logo: "🔴", matchesPlayed: 1, wins: 1, draws: 0, losses: 0, points: 3 },
+  { name: "Manchester City", country: "England", flag: "🏴󠁧󠁢󠁥󠁮󠁧󠁿", league: "FA Cup", logo: "🔵", matchesPlayed: 1, wins: 1, draws: 0, losses: 0, points: 3 },
+  { name: "Liverpool",       country: "England", flag: "🏴󠁧󠁢󠁥󠁮󠁧󠁿", league: "FA Cup", logo: "🔴🛡️", matchesPlayed: 1, wins: 1, draws: 0, losses: 0, points: 3 },
+  { name: "Chelsea",         country: "England", flag: "🏴󠁧󠁢󠁥󠁮󠁧󠁿", league: "FA Cup", logo: "🦁", matchesPlayed: 1, wins: 1, draws: 0, losses: 0, points: 3 },
+
+  { name: "Flamengo",        country: "Brazil", flag: "🇧🇷", league: "Copa Libertadores", logo: "🔴⚫🦅", matchesPlayed: 1, wins: 1, draws: 0, losses: 0, points: 3 },
+  { name: "Palmeiras",       country: "Brazil", flag: "🇧🇷", league: "Copa Libertadores", logo: "🟢⚪🐷", matchesPlayed: 1, wins: 1, draws: 0, losses: 0, points: 3 },
+  { name: "River Plate",     country: "Argentina", flag: "🇦🇷", league: "Copa Libertadores", logo: "⚪🔴", matchesPlayed: 1, wins: 1, draws: 0, losses: 0, points: 3 },
+  { name: "Fluminense",      country: "Brazil", flag: "🇧🇷", league: "Copa Libertadores", logo: "🟢🔴⚪", matchesPlayed: 1, wins: 0, draws: 1, losses: 0, points: 1 },
+
+  { name: "Nigeria",         country: "Africa", flag: "🇳🇬", league: "AFCON", logo: "🦅🇳🇬", matchesPlayed: 1, wins: 1, draws: 0, losses: 0, points: 3 },
+  { name: "Ivory Coast",     country: "Africa", flag: "🇨🇮", league: "AFCON", logo: "🐘🇨🇮", matchesPlayed: 1, wins: 1, draws: 0, losses: 0, points: 3 },
+  { name: "Senegal",         country: "Africa", flag: "🇸🇳", league: "AFCON", logo: "🦁🇸🇳", matchesPlayed: 1, wins: 1, draws: 0, losses: 0, points: 3 },
+  { name: "Morocco",         country: "Africa", flag: "🇲🇦", league: "AFCON", logo: "🦁🇲🇦", matchesPlayed: 1, wins: 1, draws: 0, losses: 0, points: 3 },
+  { name: "Egypt",           country: "Africa", flag: "🇪🇬", league: "AFCON", logo: "👑🇪🇬", matchesPlayed: 1, wins: 0, draws: 1, losses: 0, points: 1 },
+
+  { name: "Argentina",       country: "Global", flag: "🇦🇷", league: "World Cup", logo: "⭐🇦🇷", matchesPlayed: 1, wins: 1, draws: 0, losses: 0, points: 3 },
+  { name: "France",          country: "Global", flag: "🇫🇷", league: "World Cup", logo: "🐓🇫🇷", matchesPlayed: 1, wins: 1, draws: 0, losses: 0, points: 3 },
+  { name: "Brazil",          country: "Global", flag: "🇧🇷", league: "World Cup", logo: "⚽🇧🇷", matchesPlayed: 1, wins: 1, draws: 0, losses: 0, points: 3 },
+  { name: "England",         country: "Global", flag: "🏴󠁧󠁢󠁥󠁮󠁧󠁿", league: "World Cup", logo: "🦁🏴󠁧󠁢󠁥󠁮󠁧󠁿", matchesPlayed: 1, wins: 1, draws: 0, losses: 0, points: 3 },
+  { name: "Spain",           country: "Global", flag: "🇪🇸", league: "World Cup", logo: "🐂🇪🇸", matchesPlayed: 1, wins: 1, draws: 0, losses: 0, points: 3 }
 ];
 
 const LEAGUE_STATS = [
@@ -395,7 +513,28 @@ const LEAGUE_STATS = [
   { league: "La Liga", flag: "🇪🇸", avgGoals: "2.64", bttsPct: "52%", homeWinPct: "44%", drawPct: "26%", over25Pct: "54%", avgCards: "4.8", avgCorners: "9.2" },
   { league: "Bundesliga", flag: "🇩🇪", avgGoals: "3.18", bttsPct: "64%", homeWinPct: "48%", drawPct: "20%", over25Pct: "68%", avgCards: "3.8", avgCorners: "10.1" },
   { league: "Serie A", flag: "🇮🇹", avgGoals: "2.58", bttsPct: "48%", homeWinPct: "42%", drawPct: "28%", over25Pct: "50%", avgCards: "4.5", avgCorners: "9.6" },
-  { league: "Ligue 1", flag: "🇫🇷", avgGoals: "2.70", bttsPct: "54%", homeWinPct: "43%", drawPct: "25%", over25Pct: "56%", avgCards: "4.0", avgCorners: "9.8" }
+  { league: "Ligue 1", flag: "🇫🇷", avgGoals: "2.70", bttsPct: "54%", homeWinPct: "43%", drawPct: "25%", over25Pct: "56%", avgCards: "4.0", avgCorners: "9.8" },
+  { league: "Champions League", flag: "🇪🇺", avgGoals: "3.05", bttsPct: "60%", homeWinPct: "49%", drawPct: "21%", over25Pct: "65%", avgCards: "4.1", avgCorners: "10.2" },
+  { league: "Europa League", flag: "🇪🇺", avgGoals: "2.92", bttsPct: "57%", homeWinPct: "45%", drawPct: "23%", over25Pct: "61%", avgCards: "4.3", avgCorners: "9.9" },
+  { league: "Conference League", flag: "🇪🇺", avgGoals: "2.88", bttsPct: "55%", homeWinPct: "47%", drawPct: "22%", over25Pct: "59%", avgCards: "3.9", avgCorners: "9.5" },
+  { league: "FA Cup", flag: "🏴󠁧󠁢󠁥󠁮󠁧󠁿", avgGoals: "3.10", bttsPct: "59%", homeWinPct: "45%", drawPct: "22%", over25Pct: "64%", avgCards: "3.2", avgCorners: "10.0" },
+  { league: "Championship", flag: "🏴󠁧󠁢󠁥󠁮󠁧󠁿", avgGoals: "2.65", bttsPct: "53%", homeWinPct: "43%", drawPct: "27%", over25Pct: "52%", avgCards: "3.7", avgCorners: "10.5" },
+  { league: "Eredivisie", flag: "🇳🇱", avgGoals: "3.24", bttsPct: "62%", homeWinPct: "46%", drawPct: "21%", over25Pct: "69%", avgCards: "3.3", avgCorners: "10.8" },
+  { league: "Primeira Liga", flag: "🇵🇹", avgGoals: "2.72", bttsPct: "50%", homeWinPct: "45%", drawPct: "24%", over25Pct: "55%", avgCards: "5.1", avgCorners: "9.4" },
+  { league: "Süper Lig", flag: "🇹🇷", avgGoals: "2.80", bttsPct: "56%", homeWinPct: "47%", drawPct: "23%", over25Pct: "58%", avgCards: "4.9", avgCorners: "9.7" },
+  { league: "Scottish Premiership", flag: "🏴󠁧󠁢󠁳󠁣󠁴󠁿", avgGoals: "2.86", bttsPct: "54%", homeWinPct: "48%", drawPct: "22%", over25Pct: "60%", avgCards: "3.6", avgCorners: "10.3" },
+  { league: "Belgian Pro League", flag: "🇧🇪", avgGoals: "2.95", bttsPct: "61%", homeWinPct: "44%", drawPct: "24%", over25Pct: "63%", avgCards: "4.2", avgCorners: "10.1" },
+  { league: "Brasileirao", flag: "🇧🇷", avgGoals: "2.42", bttsPct: "47%", homeWinPct: "46%", drawPct: "28%", over25Pct: "48%", avgCards: "4.7", avgCorners: "10.0" },
+  { league: "Liga Profesional", flag: "🇦🇷", avgGoals: "2.18", bttsPct: "41%", homeWinPct: "42%", drawPct: "32%", over25Pct: "42%", avgCards: "5.2", avgCorners: "9.1" },
+  { league: "Liga MX", flag: "🇲🇽", avgGoals: "2.78", bttsPct: "57%", homeWinPct: "45%", drawPct: "25%", over25Pct: "58%", avgCards: "4.4", avgCorners: "9.8" },
+  { league: "MLS", flag: "🇺🇸", avgGoals: "3.12", bttsPct: "63%", homeWinPct: "49%", drawPct: "23%", over25Pct: "66%", avgCards: "3.5", avgCorners: "9.9" },
+  { league: "Saudi Pro League", flag: "🇸🇦", avgGoals: "2.98", bttsPct: "58%", homeWinPct: "48%", drawPct: "22%", over25Pct: "62%", avgCards: "3.8", avgCorners: "9.4" },
+  { league: "NPFL", flag: "🇳🇬", avgGoals: "2.25", bttsPct: "42%", homeWinPct: "62%", drawPct: "24%", over25Pct: "44%", avgCards: "3.1", avgCorners: "8.9" },
+  { league: "DStv Premiership", flag: "🇿🇦", avgGoals: "2.15", bttsPct: "39%", homeWinPct: "43%", drawPct: "31%", over25Pct: "40%", avgCards: "3.4", avgCorners: "8.8" },
+  { league: "Egyptian Premier", flag: "🇪🇬", avgGoals: "2.35", bttsPct: "45%", homeWinPct: "46%", drawPct: "29%", over25Pct: "46%", avgCards: "3.9", avgCorners: "9.0" },
+  { league: "Copa Libertadores", flag: "🏆", avgGoals: "2.55", bttsPct: "49%", homeWinPct: "51%", drawPct: "24%", over25Pct: "52%", avgCards: "5.3", avgCorners: "9.6" },
+  { league: "AFCON", flag: "🏆", avgGoals: "2.40", bttsPct: "46%", homeWinPct: "44%", drawPct: "28%", over25Pct: "48%", avgCards: "3.7", avgCorners: "8.6" },
+  { league: "World Cup", flag: "🏆", avgGoals: "2.75", bttsPct: "52%", homeWinPct: "45%", drawPct: "25%", over25Pct: "55%", avgCards: "3.8", avgCorners: "9.5" }
 ];
 
 const DAILY_TIPS = [

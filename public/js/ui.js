@@ -1636,43 +1636,293 @@ function toggleSidebarTopLeaguesAccordion(index, header) {
   }
 }
 
-// Scouting clubs for this top league
+// 1. Interactive League Intelligence Hub Modal (Integrates Predictions, Scouting, Averages & Standings)
+function openLeagueHubModal(leagueName, btn) {
+  const cleanLeague = (leagueName || '').replace(/^[^\w\s]+/, '').trim() || leagueName;
+  if (btn) {
+    const parent = btn.parentElement;
+    if (parent) {
+      const buttons = parent.querySelectorAll(".btn");
+      buttons.forEach(b => {
+        b.classList.remove("btn-primary");
+        b.classList.add("btn-secondary");
+      });
+      btn.classList.remove("btn-secondary");
+      btn.classList.add("btn-primary");
+    }
+  }
+
+  const existing = document.getElementById("league-hub-modal");
+  if (existing) existing.remove();
+
+  const modal = document.createElement("div");
+  modal.id = "league-hub-modal";
+  modal.style.cssText = "position:fixed;left:0;top:0;width:100vw;height:100vh;background:rgba(0,0,0,0.88);backdrop-filter:blur(8px);display:flex;align-items:center;justify-content:center;z-index:999999;padding:16px;box-sizing:border-box;";
+  modal.addEventListener("click", e => { if (e.target === modal) modal.remove(); });
+
+  const content = document.createElement("div");
+  content.className = "glass-card";
+  content.style.cssText = "width:100%;max-width:560px;background:linear-gradient(180deg,#0f172a 0%,#020617 100%);border:1px solid rgba(59,130,246,0.35);border-radius:18px;box-shadow:0 20px 50px rgba(0,0,0,0.8),0 0 30px rgba(59,130,246,0.15);overflow:hidden;color:#f8fafc;font-family:var(--font-body,sans-serif);animation:fadeIn 0.2s ease-out;";
+
+  const safeLeague = cleanLeague.replace(/'/g, "\\'");
+
+  content.innerHTML = `
+    <div style="padding:18px 22px;border-bottom:1px solid rgba(255,255,255,0.08);display:flex;align-items:center;justify-content:space-between;background:linear-gradient(135deg,rgba(59,130,246,0.18) 0%,rgba(15,23,42,0.9) 100%);">
+      <div style="display:flex;align-items:center;gap:10px;">
+        <span style="font-size:1.5rem;background:rgba(59,130,246,0.2);border:1px solid rgba(59,130,246,0.4);border-radius:10px;padding:4px 8px;">🏆</span>
+        <div>
+          <h3 style="margin:0;font-size:1.15rem;font-weight:900;color:#ffffff;display:flex;align-items:center;gap:6px;">
+            ${leagueName}
+          </h3>
+          <span style="font-size:0.72rem;color:#94a3b8;">Integrated Competition Hub & AI Tools</span>
+        </div>
+      </div>
+      <button id="close-league-hub-btn" style="background:rgba(255,255,255,0.1);border:1px solid rgba(255,255,255,0.15);color:#ffffff;border-radius:50%;width:32px;height:32px;font-size:1rem;cursor:pointer;display:flex;align-items:center;justify-content:center;">✕</button>
+    </div>
+
+    <div style="padding:20px;display:flex;flex-direction:column;gap:12px;">
+      <div style="font-size:0.78rem;font-weight:700;text-transform:uppercase;color:#60a5fa;letter-spacing:0.5px;margin-bottom:2px;">
+        Select an Action for ${cleanLeague}:
+      </div>
+
+      <!-- Action 1: Match Predictions -->
+      <button onclick="document.getElementById('league-hub-modal').remove(); triggerMatchPreview('${safeLeague}');" style="display:flex;align-items:center;gap:14px;padding:14px 16px;background:rgba(30,41,59,0.7);border:1px solid rgba(59,130,246,0.3);border-radius:12px;color:#ffffff;cursor:pointer;text-align:left;transition:all 0.15s ease;" onmouseover="this.style.background='rgba(59,130,246,0.25)';this.style.borderColor='#3b82f6';" onmouseout="this.style.background='rgba(30,41,59,0.7)';this.style.borderColor='rgba(59,130,246,0.3)';">
+        <span style="font-size:1.6rem;background:rgba(59,130,246,0.2);border-radius:10px;padding:8px 10px;">⚽</span>
+        <div style="flex:1;">
+          <div style="font-weight:800;font-size:0.95rem;color:#60a5fa;margin-bottom:2px;">Match Predictions</div>
+          <div style="font-size:0.75rem;color:#94a3b8;">View AI match scorelines, win probabilities, and value tips for this league</div>
+        </div>
+        <span style="font-size:1.1rem;color:#60a5fa;">➔</span>
+      </button>
+
+      <!-- Action 2: Scouting Clubs -->
+      <button onclick="document.getElementById('league-hub-modal').remove(); scoutLeagueClubs('${safeLeague}');" style="display:flex;align-items:center;gap:14px;padding:14px 16px;background:rgba(30,41,59,0.7);border:1px solid rgba(16,185,129,0.3);border-radius:12px;color:#ffffff;cursor:pointer;text-align:left;transition:all 0.15s ease;" onmouseover="this.style.background='rgba(16,185,129,0.25)';this.style.borderColor='#10b981';" onmouseout="this.style.background='rgba(30,41,59,0.7)';this.style.borderColor='rgba(16,185,129,0.3)';">
+        <span style="font-size:1.6rem;background:rgba(16,185,129,0.2);border-radius:10px;padding:8px 10px;">🏟️</span>
+        <div style="flex:1;">
+          <div style="font-weight:800;font-size:0.95rem;color:#34d399;margin-bottom:2px;">Scouting Clubs</div>
+          <div style="font-size:0.75rem;color:#94a3b8;">Explore official clubs, squad form, attack/defense xG ratings & team insights</div>
+        </div>
+        <span style="font-size:1.1rem;color:#34d399;">➔</span>
+      </button>
+
+      <!-- Action 3: League Averages -->
+      <button onclick="document.getElementById('league-hub-modal').remove(); openLeagueAveragesModal('${safeLeague}');" style="display:flex;align-items:center;gap:14px;padding:14px 16px;background:rgba(30,41,59,0.7);border:1px solid rgba(245,158,11,0.3);border-radius:12px;color:#ffffff;cursor:pointer;text-align:left;transition:all 0.15s ease;" onmouseover="this.style.background='rgba(245,158,11,0.25)';this.style.borderColor='#f59e0b';" onmouseout="this.style.background='rgba(30,41,59,0.7)';this.style.borderColor='rgba(245,158,11,0.3)';">
+        <span style="font-size:1.6rem;background:rgba(245,158,11,0.2);border-radius:10px;padding:8px 10px;">📊</span>
+        <div style="flex:1;">
+          <div style="font-weight:800;font-size:0.95rem;color:#fbbf24;margin-bottom:2px;">League Averages</div>
+          <div style="font-size:0.75rem;color:#94a3b8;">Statistical averages: Goals/game, BTTS %, Over 2.5 %, Cards & Corner frequency</div>
+        </div>
+        <span style="font-size:1.1rem;color:#fbbf24;">➔</span>
+      </button>
+
+      <!-- Action 4: Table Standings -->
+      <button onclick="document.getElementById('league-hub-modal').remove(); showMockTableStandings('${safeLeague}');" style="display:flex;align-items:center;gap:14px;padding:14px 16px;background:rgba(30,41,59,0.7);border:1px solid rgba(168,85,247,0.3);border-radius:12px;color:#ffffff;cursor:pointer;text-align:left;transition:all 0.15s ease;" onmouseover="this.style.background='rgba(168,85,247,0.25)';this.style.borderColor='#a855f7';" onmouseout="this.style.background='rgba(30,41,59,0.7)';this.style.borderColor='rgba(168,85,247,0.3)';">
+        <span style="font-size:1.6rem;background:rgba(168,85,247,0.2);border-radius:10px;padding:8px 10px;">🏆</span>
+        <div style="flex:1;">
+          <div style="font-weight:800;font-size:0.95rem;color:#c084fc;margin-bottom:2px;">Table Standings</div>
+          <div style="font-size:0.75rem;color:#94a3b8;">Live league ladder with match results, wins, draws, losses, and point tallies</div>
+        </div>
+        <span style="font-size:1.1rem;color:#c084fc;">➔</span>
+      </button>
+    </div>
+  `;
+
+  modal.appendChild(content);
+  document.body.appendChild(modal);
+  content.querySelector("#close-league-hub-btn").addEventListener("click", () => modal.remove());
+}
+window.openLeagueHubModal = openLeagueHubModal;
+
+// Scouting clubs for this competition with full interactive roster & stats
 function scoutLeagueClubs(leagueName, btn) {
+  const cleanLeague = (leagueName || '').replace(/^[^\w\s]+/, '').trim() || leagueName;
   if (btn) {
     const allLeagueBtns = document.querySelectorAll(".sidebar-league-btn");
     allLeagueBtns.forEach(b => b.classList.remove("active"));
     if (btn.classList) btn.classList.add("active");
   }
 
-  alert(`🔍 Gathering scout statistics for ${leagueName}... Select a match on the dashboard to chat with the AI Scout chatbot!`);
-}
+  const existing = document.getElementById("scout-clubs-modal");
+  if (existing) existing.remove();
 
-// Navigate and highlight league in stats table ledger
-function viewLeagueStatisticsLedger(leagueName, btn) {
+  const modal = document.createElement("div");
+  modal.id = "scout-clubs-modal";
+  modal.style.cssText = "position:fixed;left:0;top:0;width:100vw;height:100vh;background:rgba(0,0,0,0.88);backdrop-filter:blur(8px);display:flex;align-items:center;justify-content:center;z-index:999999;padding:16px;box-sizing:border-box;";
+  modal.addEventListener("click", e => { if (e.target === modal) modal.remove(); });
+
+  const content = document.createElement("div");
+  content.className = "glass-card";
+  content.style.cssText = "width:100%;max-width:680px;max-height:88vh;background:linear-gradient(180deg,#0f172a 0%,#020617 100%);border:1px solid rgba(16,185,129,0.35);border-radius:18px;box-shadow:0 20px 50px rgba(0,0,0,0.8),0 0 30px rgba(16,185,129,0.15);display:flex;flex-direction:column;overflow:hidden;color:#f8fafc;font-family:var(--font-body,sans-serif);";
+
+  // Filter clubs matching this league
+  const qLeague = cleanLeague.toLowerCase();
+  const clubs = (typeof GLOBAL_CLUBS !== 'undefined' ? GLOBAL_CLUBS : []).filter(c => {
+    const cLeague = (c.league || '').toLowerCase();
+    return cLeague.includes(qLeague) || qLeague.includes(cLeague);
+  });
+
+  const clubRows = clubs.length > 0 ? clubs.map((c, idx) => {
+    const winRate = c.matchesPlayed > 0 ? Math.round((c.wins / c.matchesPlayed) * 100) : (c.points > 0 ? 75 : 50);
+    const attackVal = (1.4 + ((c.wins || 0) * 0.4)).toFixed(1);
+
+    return `
+      <div style="padding:14px 16px;background:rgba(15,23,42,0.6);border:1px solid rgba(255,255,255,0.06);border-radius:12px;margin-bottom:8px;display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;transition:border-color 0.15s ease;">
+        <div style="display:flex;align-items:center;gap:12px;min-width:180px;">
+          <span style="font-size:1.6rem;background:rgba(255,255,255,0.05);padding:4px 8px;border-radius:10px;">${c.logo || '⚽'}</span>
+          <div>
+            <div style="font-weight:800;font-size:0.95rem;color:#ffffff;">${c.name}</div>
+            <div style="font-size:0.75rem;color:#94a3b8;display:flex;align-items:center;gap:6px;">
+              <span>${c.flag || '🏳️'} ${c.country || cleanLeague}</span>
+              <span>•</span>
+              <span style="color:#10b981;font-weight:700;">${c.points || 0} PTS</span>
+            </div>
+          </div>
+        </div>
+
+        <div style="display:flex;align-items:center;gap:16px;flex-wrap:wrap;">
+          <div style="text-align:center;">
+            <div style="font-size:0.68rem;color:#94a3b8;text-transform:uppercase;">Win Rate</div>
+            <div style="font-size:0.85rem;font-weight:800;color:#38bdf8;">${winRate}%</div>
+          </div>
+          <div style="text-align:center;">
+            <div style="font-size:0.68rem;color:#94a3b8;text-transform:uppercase;">Attack Index</div>
+            <div style="font-size:0.85rem;font-weight:800;color:#34d399;">${attackVal} xG</div>
+          </div>
+          <button onclick="document.getElementById('scout-clubs-modal').remove(); if(typeof openAiScoutChat==='function'){openAiScoutChat('${c.name.replace(/'/g, "\\'")}');}else{alert('AI Scout Analysis for ${c.name.replace(/'/g, "\\'")}: High pressing index with dangerous transition efficiency.');}" style="padding:6px 12px;background:rgba(16,185,129,0.15);border:1px solid #10b981;color:#10b981;font-weight:700;font-size:0.75rem;border-radius:8px;cursor:pointer;display:flex;align-items:center;gap:4px;">
+            🤖 AI Scout
+          </button>
+        </div>
+      </div>
+    `;
+  }).join('') : `
+    <div style="text-align:center;padding:40px;color:#94a3b8;">
+      <div style="font-size:2rem;margin-bottom:8px;">🏟️</div>
+      <div style="font-weight:700;color:#ffffff;font-size:1rem;margin-bottom:4px;">Active Roster Scouting</div>
+      <div style="font-size:0.8rem;">Gathering club records & tactical intelligence for ${cleanLeague}...</div>
+    </div>
+  `;
+
+  content.innerHTML = `
+    <div style="padding:18px 22px;border-bottom:1px solid rgba(255,255,255,0.08);display:flex;align-items:center;justify-content:space-between;background:linear-gradient(135deg,rgba(16,185,129,0.18) 0%,rgba(15,23,42,0.9) 100%);">
+      <div style="display:flex;align-items:center;gap:10px;">
+        <span style="font-size:1.5rem;background:rgba(16,185,129,0.2);border:1px solid #10b981;border-radius:10px;padding:4px 8px;">🏟️</span>
+        <div>
+          <h3 style="margin:0;font-size:1.15rem;font-weight:900;color:#ffffff;display:flex;align-items:center;gap:6px;">
+            Scouting Clubs: ${cleanLeague}
+          </h3>
+          <span style="font-size:0.72rem;color:#94a3b8;">Squad Ratings, Attack/Defense Index & AI Tactical Profiles</span>
+        </div>
+      </div>
+      <button id="close-scout-modal-btn" style="background:rgba(255,255,255,0.1);border:1px solid rgba(255,255,255,0.15);color:#ffffff;border-radius:50%;width:32px;height:32px;font-size:1rem;cursor:pointer;display:flex;align-items:center;justify-content:center;">✕</button>
+    </div>
+
+    <div style="padding:16px 20px;overflow-y:auto;max-height:calc(88vh - 80px);">
+      ${clubRows}
+    </div>
+  `;
+
+  modal.appendChild(content);
+  document.body.appendChild(modal);
+  content.querySelector("#close-scout-modal-btn").addEventListener("click", () => modal.remove());
+}
+window.scoutLeagueClubs = scoutLeagueClubs;
+
+// Open League Averages statistical ledger modal
+function openLeagueAveragesModal(leagueName, btn) {
+  const cleanLeague = (leagueName || '').replace(/^[^\w\s]+/, '').trim() || leagueName;
   if (btn) {
     const allLeagueBtns = document.querySelectorAll(".sidebar-league-btn");
     allLeagueBtns.forEach(b => b.classList.remove("active"));
     if (btn.classList) btn.classList.add("active");
   }
 
-  const ledgerSec = document.getElementById("analytics");
-  if (ledgerSec) {
-    ledgerSec.scrollIntoView({ behavior: 'smooth' });
-    
-    // Highlight table rows matching this league
-    const allRows = document.querySelectorAll("#league-stats-tbody tr");
-    allRows.forEach(row => {
-      if (row.innerText.includes(leagueName)) {
-        row.style.background = "rgba(26, 104, 219, 0.15)";
-        row.style.borderLeft = "4px solid var(--primary)";
-        setTimeout(() => {
-          row.style.background = "";
-          row.style.borderLeft = "";
-        }, 3000);
-      }
-    });
-  }
+  const existing = document.getElementById("league-averages-modal");
+  if (existing) existing.remove();
+
+  const modal = document.createElement("div");
+  modal.id = "league-averages-modal";
+  modal.style.cssText = "position:fixed;left:0;top:0;width:100vw;height:100vh;background:rgba(0,0,0,0.88);backdrop-filter:blur(8px);display:flex;align-items:center;justify-content:center;z-index:999999;padding:16px;box-sizing:border-box;";
+  modal.addEventListener("click", e => { if (e.target === modal) modal.remove(); });
+
+  const content = document.createElement("div");
+  content.className = "glass-card";
+  content.style.cssText = "width:100%;max-width:580px;background:linear-gradient(180deg,#0f172a 0%,#020617 100%);border:1px solid rgba(245,158,11,0.35);border-radius:18px;box-shadow:0 20px 50px rgba(0,0,0,0.8),0 0 30px rgba(245,158,11,0.15);overflow:hidden;color:#f8fafc;font-family:var(--font-body,sans-serif);animation:fadeIn 0.2s ease-out;";
+
+  // Find league record in LEAGUE_STATS
+  const qLeague = cleanLeague.toLowerCase();
+  const stat = (typeof LEAGUE_STATS !== 'undefined' ? LEAGUE_STATS : []).find(s => {
+    const sLeague = (s.league || '').toLowerCase();
+    return sLeague.includes(qLeague) || qLeague.includes(sLeague);
+  }) || {
+    league: cleanLeague,
+    flag: "🏆",
+    avgGoals: "2.75",
+    bttsPct: "54%",
+    homeWinPct: "46%",
+    drawPct: "24%",
+    over25Pct: "58%",
+    avgCards: "3.9",
+    avgCorners: "9.8"
+  };
+
+  content.innerHTML = `
+    <div style="padding:18px 22px;border-bottom:1px solid rgba(255,255,255,0.08);display:flex;align-items:center;justify-content:space-between;background:linear-gradient(135deg,rgba(245,158,11,0.18) 0%,rgba(15,23,42,0.9) 100%);">
+      <div style="display:flex;align-items:center;gap:10px;">
+        <span style="font-size:1.5rem;background:rgba(245,158,11,0.2);border:1px solid #f59e0b;border-radius:10px;padding:4px 8px;">📊</span>
+        <div>
+          <h3 style="margin:0;font-size:1.15rem;font-weight:900;color:#ffffff;display:flex;align-items:center;gap:6px;">
+            ${stat.flag || '🏆'} ${stat.league} Averages
+          </h3>
+          <span style="font-size:0.72rem;color:#94a3b8;">Tournament Metrics, Goal Intensity & Betting Market Indicators</span>
+        </div>
+      </div>
+      <button id="close-averages-modal-btn" style="background:rgba(255,255,255,0.1);border:1px solid rgba(255,255,255,0.15);color:#ffffff;border-radius:50%;width:32px;height:32px;font-size:1rem;cursor:pointer;display:flex;align-items:center;justify-content:center;">✕</button>
+    </div>
+
+    <div style="padding:22px;display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+      <div style="padding:14px;background:rgba(30,41,59,0.7);border:1px solid rgba(255,255,255,0.06);border-radius:12px;text-align:center;">
+        <div style="font-size:0.7rem;color:#94a3b8;text-transform:uppercase;font-weight:700;">⚽ Avg Goals / Match</div>
+        <div style="font-size:1.5rem;font-weight:900;color:#38bdf8;margin-top:4px;">${stat.avgGoals}</div>
+      </div>
+
+      <div style="padding:14px;background:rgba(30,41,59,0.7);border:1px solid rgba(255,255,255,0.06);border-radius:12px;text-align:center;">
+        <div style="font-size:0.7rem;color:#94a3b8;text-transform:uppercase;font-weight:700;">🥅 Both Teams To Score (BTTS)</div>
+        <div style="font-size:1.5rem;font-weight:900;color:#34d399;margin-top:4px;">${stat.bttsPct}</div>
+      </div>
+
+      <div style="padding:14px;background:rgba(30,41,59,0.7);border:1px solid rgba(255,255,255,0.06);border-radius:12px;text-align:center;">
+        <div style="font-size:0.7rem;color:#94a3b8;text-transform:uppercase;font-weight:700;">📈 Over 2.5 Goals %</div>
+        <div style="font-size:1.5rem;font-weight:900;color:#fbbf24;margin-top:4px;">${stat.over25Pct}</div>
+      </div>
+
+      <div style="padding:14px;background:rgba(30,41,59,0.7);border:1px solid rgba(255,255,255,0.06);border-radius:12px;text-align:center;">
+        <div style="font-size:0.7rem;color:#94a3b8;text-transform:uppercase;font-weight:700;">🏠 Home Win Advantage</div>
+        <div style="font-size:1.5rem;font-weight:900;color:#60a5fa;margin-top:4px;">${stat.homeWinPct}</div>
+      </div>
+
+      <div style="padding:14px;background:rgba(30,41,59,0.7);border:1px solid rgba(255,255,255,0.06);border-radius:12px;text-align:center;">
+        <div style="font-size:0.7rem;color:#94a3b8;text-transform:uppercase;font-weight:700;">🟨 Avg Cards / Game</div>
+        <div style="font-size:1.5rem;font-weight:900;color:#f87171;margin-top:4px;">${stat.avgCards}</div>
+      </div>
+
+      <div style="padding:14px;background:rgba(30,41,59,0.7);border:1px solid rgba(255,255,255,0.06);border-radius:12px;text-align:center;">
+        <div style="font-size:0.7rem;color:#94a3b8;text-transform:uppercase;font-weight:700;">🚩 Avg Corners / Game</div>
+        <div style="font-size:1.5rem;font-weight:900;color:#c084fc;margin-top:4px;">${stat.avgCorners}</div>
+      </div>
+    </div>
+
+    <div style="padding:12px 22px 20px;display:flex;justify-content:flex-end;">
+      <button id="close-averages-ok-btn" class="btn btn-primary" style="padding:8px 24px;border-radius:8px;">OK</button>
+    </div>
+  `;
+
+  modal.appendChild(content);
+  document.body.appendChild(modal);
+  content.querySelector("#close-averages-modal-btn").addEventListener("click", () => modal.remove());
+  content.querySelector("#close-averages-ok-btn").addEventListener("click", () => modal.remove());
 }
+window.openLeagueAveragesModal = openLeagueAveragesModal;
+window.viewLeagueStatisticsLedger = openLeagueAveragesModal;
 
 // Open mock modal with standings table list for this league
 async function showMockTableStandings(leagueName, btn) {
