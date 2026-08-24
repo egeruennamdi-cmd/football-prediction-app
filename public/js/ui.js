@@ -3989,13 +3989,24 @@ function handleAuthSignup(e) {
 
   registerNewMemberLocal(newMember);
 
-  // Sync with backend API asynchronously
+  // 1. Sync with Cloudflare Edge Function (/api/users and /api/register)
+  try {
+    fetch('/api/users', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(newMember)
+    }).catch(err => console.debug('[Edge User Sync]:', err.message));
+  } catch (err) {}
+
+  // 2. Sync with backend API asynchronously
   const backendBase = window.BACKEND_API_URL || 'https://deeppredictbet-backend.onrender.com';
-  fetch(`${backendBase}/api/v1/auth/register`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ email: email, password: password, fullName: fullName })
-  }).catch(err => console.debug('[Auth Sync] Backend registration:', err.message));
+  try {
+    fetch(`${backendBase}/api/v1/auth/register`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email: email, password: password, fullName: fullName, username: username })
+    }).catch(err => console.debug('[Auth Sync] Backend registration:', err.message));
+  } catch (err) {}
 
   try {
     localStorage.setItem("userLoggedIn", "true");
@@ -4056,11 +4067,25 @@ async function openAdminUsersModal() {
 
   content.querySelector("#close-admin-modal-btn").addEventListener("click", () => modal.remove());
 
-  // Fetch backend accounts
+  // 1. Fetch from Cloudflare Edge /api/users (Global Database)
+  let edgeUsers = [];
+  try {
+    const edgeRes = await fetch('/api/users', { signal: AbortSignal.timeout(5000) });
+    if (edgeRes.ok) {
+      const json = await edgeRes.json();
+      if (json.success && Array.isArray(json.users) && json.users.length > 0) {
+        edgeUsers = json.users;
+      }
+    }
+  } catch (err) {
+    console.debug('[Admin] Edge user fetch error:', err.message);
+  }
+
+  // 2. Fetch backend accounts
   let remoteUsers = [];
   const backendBase = window.BACKEND_API_URL || 'https://deeppredictbet-backend.onrender.com';
   try {
-    const res = await fetch(`${backendBase}/api/v1/auth/users`, { signal: AbortSignal.timeout(4000) });
+    const res = await fetch(`${backendBase}/api/v1/auth/users`, { signal: AbortSignal.timeout(3000) });
     if (res.ok) {
       const json = await res.json();
       if (json.success && Array.isArray(json.users)) {
@@ -4068,14 +4093,17 @@ async function openAdminUsersModal() {
       }
     }
   } catch (err) {
-    console.debug('[Admin] Remote user fetch fallback to local:', err.message);
+    console.debug('[Admin] Remote user fetch fallback:', err.message);
   }
 
-  // Merge with local storage members
+  // Merge with local storage members and edge users
   const localMembers = getRegisteredMembers();
   const mergedMap = new Map();
 
-  localMembers.forEach(u => mergedMap.set((u.email || '').toLowerCase(), u));
+  // Edge users are authoritative
+  edgeUsers.forEach(u => {
+    if (u.email) mergedMap.set(u.email.toLowerCase(), u);
+  });
   remoteUsers.forEach(u => {
     if (u.email && !mergedMap.has(u.email.toLowerCase())) {
       mergedMap.set(u.email.toLowerCase(), {
@@ -4089,8 +4117,26 @@ async function openAdminUsersModal() {
       });
     }
   });
+  localMembers.forEach(u => {
+    if (u.email && !mergedMap.has(u.email.toLowerCase())) {
+      mergedMap.set(u.email.toLowerCase(), u);
+      // Sync local user to edge KV in background
+      try {
+        fetch('/api/users', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(u)
+        }).catch(() => {});
+      } catch (e) {}
+    }
+  });
 
   const allMembers = Array.from(mergedMap.values()).sort((a, b) => new Date(b.createdAt || 0) - new Date(a.createdAt || 0));
+
+  // Save merged state back to local cache
+  try {
+    localStorage.setItem("deep_registered_members", JSON.stringify(allMembers));
+  } catch (e) {}
 
   const totalCount = allMembers.length;
   const proCount = allMembers.filter(m => (m.role || '').toUpperCase() === 'PRO' || (m.role || '').toUpperCase() === 'VIP').length;
