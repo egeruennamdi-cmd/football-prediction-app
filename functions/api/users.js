@@ -1,4 +1,4 @@
-﻿/**
+/**
  * Cloudflare Pages Function: /api/users
  * Real-time Global User Ledger with Dual Cloud Persistence (Cloudflare KV + REST Cloud DB)
  */
@@ -35,9 +35,9 @@ export async function onRequestGet(context) {
   try {
     let members = [];
     
-    // 1. Fetch from Cloud DB
+    // 1. Fetch from Cloud DB (bypassing subrequest cache)
     try {
-      const cloudRes = await fetch(CLOUD_STORE_URL, { signal: AbortSignal.timeout(4000) });
+      const cloudRes = await fetch(CLOUD_STORE_URL, { cache: 'no-store', signal: AbortSignal.timeout(4000) });
       if (cloudRes.ok) {
         const json = await cloudRes.json();
         if (json.data && Array.isArray(json.data.members)) {
@@ -99,7 +99,7 @@ export async function onRequestPost(context) {
     
     // 1. Fetch existing members from Cloud DB
     try {
-      const cloudRes = await fetch(CLOUD_STORE_URL, { signal: AbortSignal.timeout(4000) });
+      const cloudRes = await fetch(CLOUD_STORE_URL, { cache: 'no-store', signal: AbortSignal.timeout(4000) });
       if (cloudRes.ok) {
         const json = await cloudRes.json();
         if (json.data && Array.isArray(json.data.members)) {
