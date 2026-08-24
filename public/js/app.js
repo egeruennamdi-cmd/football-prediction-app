@@ -2579,6 +2579,53 @@ function openLeagueHubModal(leagueName, btn) {
 }
 window.openLeagueHubModal = openLeagueHubModal;
 
+// Universal Club Lookup for all 50+ Leagues & Cups
+function getClubsForLeague(leagueName) {
+  const clean = (leagueName || '').replace(/^[^\w\s]+/, '').trim().toLowerCase();
+  const allClubs = (typeof GLOBAL_CLUBS !== 'undefined' && Array.isArray(GLOBAL_CLUBS)) ? GLOBAL_CLUBS : [];
+
+  // Direct league name match
+  let matches = allClubs.filter(c => {
+    const cLeague = (c.league || '').toLowerCase();
+    return cLeague === clean || cLeague.includes(clean) || clean.includes(cLeague);
+  });
+
+  if (matches.length > 0) return matches;
+
+  // Cup & tournament mappings to clubs
+  if (clean.includes('fa cup') || clean.includes('efl cup') || clean.includes('carabao') || clean.includes('league one')) {
+    return allClubs.filter(c => (c.country || '').toLowerCase() === 'england');
+  }
+  if (clean.includes('copa del rey') || clean.includes('la liga 2')) {
+    return allClubs.filter(c => (c.country || '').toLowerCase() === 'spain');
+  }
+  if (clean.includes('dfb pokal') || clean.includes('2. bundesliga')) {
+    return allClubs.filter(c => (c.country || '').toLowerCase() === 'germany');
+  }
+  if (clean.includes('coppa italia') || clean.includes('serie b')) {
+    return allClubs.filter(c => (c.country || '').toLowerCase() === 'italy');
+  }
+  if (clean.includes('coupe de france')) {
+    return allClubs.filter(c => (c.country || '').toLowerCase() === 'france');
+  }
+  if (clean.includes('champions league') || clean.includes('europa league') || clean.includes('conference')) {
+    return allClubs.filter(c => ['Arsenal', 'Manchester City', 'Liverpool', 'Real Madrid', 'Barcelona', 'Bayern Munich', 'Borussia Dortmund', 'Inter Milan', 'Juventus', 'Paris Saint-Germain', 'Sporting CP', 'Benfica', 'PSV Eindhoven'].includes(c.name));
+  }
+  if (clean.includes('copa libertadores') || clean.includes('copa sudamericana')) {
+    return allClubs.filter(c => ['Brazil', 'Argentina', 'Colombia'].includes(c.country));
+  }
+  if (clean.includes('caf champions league') || clean.includes('african')) {
+    return allClubs.filter(c => ['Egypt', 'Morocco', 'Tunisia', 'South Africa', 'Nigeria', 'Ghana'].includes(c.country));
+  }
+
+  // General fallback: match by country
+  const byCountry = allClubs.filter(c => (c.country || '').toLowerCase().includes(clean) || clean.includes((c.country || '').toLowerCase()));
+  if (byCountry.length > 0) return byCountry;
+
+  return allClubs.slice(0, 10);
+}
+window.getClubsForLeague = getClubsForLeague;
+
 // Scouting clubs for this competition with full interactive roster & stats
 function scoutLeagueClubs(leagueName, btn) {
   const cleanLeague = (leagueName || '').replace(/^[^\w\s]+/, '').trim() || leagueName;
@@ -2600,14 +2647,9 @@ function scoutLeagueClubs(leagueName, btn) {
   content.className = "glass-card";
   content.style.cssText = "width:100%;max-width:680px;max-height:88vh;background:linear-gradient(180deg,#0f172a 0%,#020617 100%);border:1px solid rgba(16,185,129,0.35);border-radius:18px;box-shadow:0 20px 50px rgba(0,0,0,0.8),0 0 30px rgba(16,185,129,0.15);display:flex;flex-direction:column;overflow:hidden;color:#f8fafc;font-family:var(--font-body,sans-serif);";
 
-  // Filter clubs matching this league
-  const qLeague = cleanLeague.toLowerCase();
-  const clubs = (typeof GLOBAL_CLUBS !== 'undefined' ? GLOBAL_CLUBS : []).filter(c => {
-    const cLeague = (c.league || '').toLowerCase();
-    return cLeague.includes(qLeague) || qLeague.includes(cLeague);
-  });
+  const clubs = getClubsForLeague(cleanLeague);
 
-  const clubRows = clubs.length > 0 ? clubs.map((c, idx) => {
+  const clubRows = clubs.map((c, idx) => {
     const winRate = c.matchesPlayed > 0 ? Math.round((c.wins / c.matchesPlayed) * 100) : (c.points > 0 ? 75 : 50);
     const attackVal = (1.4 + ((c.wins || 0) * 0.4)).toFixed(1);
 
@@ -2640,13 +2682,7 @@ function scoutLeagueClubs(leagueName, btn) {
         </div>
       </div>
     `;
-  }).join('') : `
-    <div style="text-align:center;padding:40px;color:#94a3b8;">
-      <div style="font-size:2rem;margin-bottom:8px;">🏟️</div>
-      <div style="font-weight:700;color:#ffffff;font-size:1rem;margin-bottom:4px;">Active Roster Scouting</div>
-      <div style="font-size:0.8rem;">Gathering club records & tactical intelligence for ${cleanLeague}...</div>
-    </div>
-  `;
+  }).join('');
 
   content.innerHTML = `
     <div style="padding:18px 22px;border-bottom:1px solid rgba(255,255,255,0.08);display:flex;align-items:center;justify-content:space-between;background:linear-gradient(135deg,rgba(16,185,129,0.18) 0%,rgba(15,23,42,0.9) 100%);">
@@ -2769,6 +2805,117 @@ function openLeagueAveragesModal(leagueName, btn) {
 }
 window.openLeagueAveragesModal = openLeagueAveragesModal;
 window.viewLeagueStatisticsLedger = openLeagueAveragesModal;
+
+// Open mock modal with standings table list for this league
+async function showMockTableStandings(leagueName, btn) {
+  const cleanLeague = (leagueName || '').replace(/^[^\w\s]+/, '').trim() || leagueName;
+  const LEAGUE_ID_MAP = {
+    'Premier League': 39, 'Championship': 40, 'EFL Championship': 40, 'La Liga': 140, 'Bundesliga': 78,
+    'Serie A': 135, 'Ligue 1': 61, 'Primeira Liga': 94,
+    'Eredivisie': 88, 'MLS': 253, 'Champions League': 2, 'Europa League': 3
+  };
+  const now = new Date();
+  const season = now.getMonth() >= 6 ? now.getFullYear() : now.getFullYear() - 1;
+  if (btn) {
+    const allLeagueBtns = document.querySelectorAll(".sidebar-league-btn");
+    allLeagueBtns.forEach(b => b.classList.remove("active"));
+    if (btn.classList) btn.classList.add("active");
+  }
+
+  // Build modal shell
+  const existing = document.getElementById("live-standings-modal");
+  if (existing) existing.remove();
+
+  const modal = document.createElement("div");
+  modal.id = "live-standings-modal";
+  modal.style.cssText = "position:fixed;left:0;top:0;width:100vw;height:100vh;background:rgba(0,0,0,0.85);display:flex;align-items:center;justify-content:center;z-index:999999;";
+  modal.addEventListener("click", e => { if (e.target === modal) modal.remove(); });
+
+  const content = document.createElement("div");
+  content.className = "glass-card";
+  content.style.cssText = "width:90%;max-width:540px;padding:24px;border:1px solid var(--border-color,rgba(255,255,255,0.1));border-radius:16px;background:var(--bg-card,#1e293b);box-shadow:0 25px 60px rgba(0,0,0,0.8);";
+
+  const closeFn = () => modal.remove();
+
+  const renderStandingRows = (clubs) => clubs.map((club, idx) => {
+    const p = club.matchesPlayed ?? club.all?.played ?? 1;
+    const w = club.wins ?? club.all?.win ?? 0;
+    const d = club.draws ?? club.all?.draw ?? 0;
+    const l = club.losses ?? club.all?.lose ?? 0;
+    const pts = club.points ?? (w * 3 + d);
+    const nm = club.name ?? club.team?.name ?? "Unknown";
+    const lg = club.logo ?? "⚽";
+    return `<div style="display:grid;grid-template-columns:30px 1.6fr 40px 40px 40px 40px 44px;font-size:0.85rem;padding:9px 8px;border-bottom:1px solid rgba(255,255,255,0.04);align-items:center;">
+      <span style="font-weight:700;color:${idx < 4 ? 'var(--secondary,#10b981)' : 'var(--text-muted,#64748b)'}">${idx + 1}</span>
+      <span style="font-weight:600;color:var(--text-primary,#f1f5f9);display:flex;align-items:center;gap:6px;"><span>${lg}</span>${nm}</span>
+      <span style="text-align:center;color:var(--text-secondary,#94a3b8)">${p}</span>
+      <span style="text-align:center;color:#10b981;font-weight:700">${w}</span>
+      <span style="text-align:center;color:#64748b">${d}</span>
+      <span style="text-align:center;color:#ef4444">${l}</span>
+      <span style="text-align:center;font-weight:700;color:#f59e0b">${pts}</span>
+    </div>`;
+  }).join("");
+
+  const buildStandingsContent = (clubs, source) => {
+    const badge = source === 'live'
+      ? `<span style="font-size:0.68rem;background:rgba(16,185,129,0.15);color:#10b981;border:1px solid rgba(16,185,129,0.3);border-radius:20px;padding:2px 8px;">🟢 Live</span>`
+      : `<span style="font-size:0.68rem;background:rgba(148,163,184,0.1);color:#94a3b8;border:1px solid rgba(148,163,184,0.2);border-radius:20px;padding:2px 8px;">📦 Standings</span>`;
+    const body = `<div style="max-height:380px;overflow-y:auto;">${renderStandingRows(clubs)}</div>`;
+    content.innerHTML = `
+      <div style="display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid var(--border-color,rgba(255,255,255,0.08));padding-bottom:12px;margin-bottom:12px;">
+        <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
+          <h3 style="margin:0;font-size:1.1rem;color:var(--text-primary,#f1f5f9);">🏆 ${leagueName} Standings</h3>${badge}
+        </div>
+        <button id="cls-st" style="background:rgba(255,255,255,0.08);border:none;color:#94a3b8;font-size:1rem;cursor:pointer;border-radius:50%;width:28px;height:28px;">✕</button>
+      </div>
+      <div style="display:grid;grid-template-columns:30px 1.6fr 40px 40px 40px 40px 44px;font-size:0.7rem;font-weight:700;text-transform:uppercase;color:var(--text-secondary,#94a3b8);padding:6px 8px;border-bottom:1px solid var(--border-color,rgba(255,255,255,0.08));margin-bottom:4px;">
+        <span>Pos</span><span>Club</span><span style="text-align:center">P</span><span style="text-align:center">W</span><span style="text-align:center">D</span><span style="text-align:center">L</span><span style="text-align:center">Pts</span>
+      </div>
+      ${body}
+      <div style="text-align:right;margin-top:14px;">
+        <button id="cls-st-ok" class="btn btn-primary" style="padding:6px 16px;font-size:0.82rem;border-radius:8px;">OK</button>
+      </div>`;
+    const c1 = content.querySelector("#cls-st");
+    const c2 = content.querySelector("#cls-st-ok");
+    if (c1) c1.addEventListener("click", closeFn);
+    if (c2) c2.addEventListener("click", closeFn);
+  };
+
+  // Immediate render from local clubs so it is INSTANT and NEVER blank
+  const localClubs = [...getClubsForLeague(cleanLeague)].sort((a, b) => ((b.points ?? (b.wins * 3 + b.draws)) - (a.points ?? (a.wins * 3 + a.draws))));
+  buildStandingsContent(localClubs, 'cached');
+
+  modal.appendChild(content);
+  document.body.appendChild(modal);
+
+  // Background check for live API table if available
+  const leagueId = LEAGUE_ID_MAP[cleanLeague] || LEAGUE_ID_MAP[leagueName];
+  const backendBase = window.BACKEND_API_URL || 'https://deeppredictbet-backend.onrender.com';
+  if (leagueId) {
+    try {
+      const res = await fetch(`${backendBase}/api/v1/live/standings?league=${leagueId}&season=${season}`, { signal: AbortSignal.timeout(3000) });
+      if (res.ok) {
+        const json = await res.json();
+        const raw = json.standings?.[0]?.league?.standings?.[0] || json.standings?.[0] || json.standings || [];
+        if (Array.isArray(raw) && raw.length > 0) {
+          const liveClubs = raw.map(item => ({
+            name: item.team?.name || item.name || "—",
+            logo: item.team?.logo ? `<img src="${item.team.logo}" style="width:20px;height:20px;object-fit:contain;vertical-align:middle;" onerror="this.outerHTML='⚽'">` : "⚽",
+            matchesPlayed: item.all?.played ?? 0,
+            wins:          item.all?.win    ?? 0,
+            draws:         item.all?.draw   ?? 0,
+            losses:        item.all?.lose   ?? 0,
+            points:        item.points      ?? 0
+          }));
+          buildStandingsContent(liveClubs, 'live');
+        }
+      }
+    } catch (err) {
+      // already showing cached table, no error banner needed
+    }
+  }
+}
+window.showMockTableStandings = showMockTableStandings;
 
 function triggerMatchPreview(leagueName, btn) {
   // Update active styling for previews bar
