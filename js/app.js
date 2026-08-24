@@ -1200,14 +1200,7 @@ function selectDeepPredictBetLive() {
 }
 window.selectDeepPredictBetLive = selectDeepPredictBetLive;
 
-// Safe Ready Helper - Guarantees execution regardless of script load timing
-function runOnReady(fn) {
-  if (document.readyState === 'interactive' || document.readyState === 'complete') {
-    setTimeout(fn, 0);
-  } else {
-    document.addEventListener("DOMContentLoaded", fn);
-  }
-}
+
 
 function initAppEngine() {
   // Initialize state
@@ -2582,7 +2575,21 @@ window.openLeagueHubModal = openLeagueHubModal;
 // Universal Club Lookup for all 50+ Leagues & Cups
 function getClubsForLeague(leagueName) {
   const clean = (leagueName || '').replace(/^[^\w\s]+/, '').trim().toLowerCase();
-  const allClubs = (typeof GLOBAL_CLUBS !== 'undefined' && Array.isArray(GLOBAL_CLUBS)) ? GLOBAL_CLUBS : [];
+  const allClubs = (typeof GLOBAL_CLUBS !== 'undefined' && Array.isArray(GLOBAL_CLUBS) && GLOBAL_CLUBS.length > 0)
+    ? GLOBAL_CLUBS
+    : ((typeof window.GLOBAL_CLUBS !== 'undefined' && Array.isArray(window.GLOBAL_CLUBS) && window.GLOBAL_CLUBS.length > 0)
+      ? window.GLOBAL_CLUBS
+      : [
+          { name: "Arsenal", country: "England", flag: "🏴󠁧󠁢󠁥󠁮󠁧󠁿", league: "Premier League", logo: "🔴", matchesPlayed: 1, wins: 1, draws: 0, losses: 0, points: 3 },
+          { name: "Manchester City", country: "England", flag: "🏴󠁧󠁢󠁥󠁮󠁧󠁿", league: "Premier League", logo: "🔵", matchesPlayed: 1, wins: 1, draws: 0, losses: 0, points: 3 },
+          { name: "Liverpool", country: "England", flag: "🏴󠁧󠁢󠁥󠁮󠁧󠁿", league: "Premier League", logo: "🔴🛡️", matchesPlayed: 1, wins: 0, draws: 1, losses: 0, points: 1 },
+          { name: "Chelsea", country: "England", flag: "🏴󠁧󠁢󠁥󠁮󠁧󠁿", league: "Premier League", logo: "🦁", matchesPlayed: 1, wins: 0, draws: 0, losses: 1, points: 0 },
+          { name: "Real Madrid", country: "Spain", flag: "🇪🇸", league: "La Liga", logo: "⚪", matchesPlayed: 1, wins: 1, draws: 0, losses: 0, points: 3 },
+          { name: "Barcelona", country: "Spain", flag: "🇪🇸", league: "La Liga", logo: "🔵🔴", matchesPlayed: 1, wins: 1, draws: 0, losses: 0, points: 3 },
+          { name: "Bayern Munich", country: "Germany", flag: "🇩🇪", league: "Bundesliga", logo: "🔴⚪", matchesPlayed: 1, wins: 1, draws: 0, losses: 0, points: 3 },
+          { name: "Inter Milan", country: "Italy", flag: "🇮🇹", league: "Serie A", logo: "🔵⚫", matchesPlayed: 1, wins: 1, draws: 0, losses: 0, points: 3 },
+          { name: "Paris Saint-Germain", country: "France", flag: "🇫🇷", league: "Ligue 1", logo: "🗼🔵🔴", matchesPlayed: 1, wins: 1, draws: 0, losses: 0, points: 3 }
+        ]);
 
   // Direct league name match
   let matches = allClubs.filter(c => {
@@ -2593,29 +2600,37 @@ function getClubsForLeague(leagueName) {
   if (matches.length > 0) return matches;
 
   // Cup & tournament mappings to clubs
-  if (clean.includes('fa cup') || clean.includes('efl cup') || clean.includes('carabao') || clean.includes('league one')) {
-    return allClubs.filter(c => (c.country || '').toLowerCase() === 'england');
+  if (clean.includes('fa cup') || clean.includes('efl cup') || clean.includes('carabao') || clean.includes('league one') || clean.includes('premier') || clean.includes('championship')) {
+    const res = allClubs.filter(c => (c.country || '').toLowerCase() === 'england');
+    if (res.length > 0) return res;
   }
-  if (clean.includes('copa del rey') || clean.includes('la liga 2')) {
-    return allClubs.filter(c => (c.country || '').toLowerCase() === 'spain');
+  if (clean.includes('copa del rey') || clean.includes('la liga') || clean.includes('segunda') || clean.includes('spain')) {
+    const res = allClubs.filter(c => (c.country || '').toLowerCase() === 'spain');
+    if (res.length > 0) return res;
   }
-  if (clean.includes('dfb pokal') || clean.includes('2. bundesliga')) {
-    return allClubs.filter(c => (c.country || '').toLowerCase() === 'germany');
+  if (clean.includes('dfb pokal') || clean.includes('bundesliga') || clean.includes('germany')) {
+    const res = allClubs.filter(c => (c.country || '').toLowerCase() === 'germany');
+    if (res.length > 0) return res;
   }
-  if (clean.includes('coppa italia') || clean.includes('serie b')) {
-    return allClubs.filter(c => (c.country || '').toLowerCase() === 'italy');
+  if (clean.includes('coppa italia') || clean.includes('serie a') || clean.includes('serie b') || clean.includes('italy')) {
+    const res = allClubs.filter(c => (c.country || '').toLowerCase() === 'italy');
+    if (res.length > 0) return res;
   }
-  if (clean.includes('coupe de france')) {
-    return allClubs.filter(c => (c.country || '').toLowerCase() === 'france');
+  if (clean.includes('coupe de france') || clean.includes('ligue 1') || clean.includes('ligue 2') || clean.includes('france')) {
+    const res = allClubs.filter(c => (c.country || '').toLowerCase() === 'france');
+    if (res.length > 0) return res;
   }
-  if (clean.includes('champions league') || clean.includes('europa league') || clean.includes('conference')) {
-    return allClubs.filter(c => ['Arsenal', 'Manchester City', 'Liverpool', 'Real Madrid', 'Barcelona', 'Bayern Munich', 'Borussia Dortmund', 'Inter Milan', 'Juventus', 'Paris Saint-Germain', 'Sporting CP', 'Benfica', 'PSV Eindhoven'].includes(c.name));
+  if (clean.includes('champions league') || clean.includes('europa league') || clean.includes('conference') || clean.includes('europe')) {
+    const res = allClubs.filter(c => ['Arsenal', 'Manchester City', 'Liverpool', 'Real Madrid', 'Barcelona', 'Bayern Munich', 'Borussia Dortmund', 'Inter Milan', 'Juventus', 'Paris Saint-Germain', 'Sporting CP', 'Benfica', 'PSV Eindhoven'].includes(c.name));
+    if (res.length > 0) return res;
   }
-  if (clean.includes('copa libertadores') || clean.includes('copa sudamericana')) {
-    return allClubs.filter(c => ['Brazil', 'Argentina', 'Colombia'].includes(c.country));
+  if (clean.includes('copa libertadores') || clean.includes('copa sudamericana') || clean.includes('brasileir') || clean.includes('liga profesional') || clean.includes('america')) {
+    const res = allClubs.filter(c => ['Brazil', 'Argentina', 'Colombia'].includes(c.country));
+    if (res.length > 0) return res;
   }
-  if (clean.includes('caf champions league') || clean.includes('african')) {
-    return allClubs.filter(c => ['Egypt', 'Morocco', 'Tunisia', 'South Africa', 'Nigeria', 'Ghana'].includes(c.country));
+  if (clean.includes('caf') || clean.includes('african') || clean.includes('npfl') || clean.includes('dstv') || clean.includes('egypt') || clean.includes('ghana') || clean.includes('moroc') || clean.includes('tunis') || clean.includes('kenya')) {
+    const res = allClubs.filter(c => ['Nigeria', 'Egypt', 'Morocco', 'Tunisia', 'South Africa', 'Ghana', 'Kenya'].includes(c.country));
+    if (res.length > 0) return res;
   }
 
   // General fallback: match by country

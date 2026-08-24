@@ -710,37 +710,68 @@ const COUNTRY_LEAGUES_DATA = [
 ];
 
 const TOP_LEAGUES_DATA = [
-  { name: "Premier League", emoji: "🏴󠁧󠁢󠁥󠁮󠁧󠁿", country: "England" },
-  { name: "Championship", emoji: "🏴󠁧󠁢󠁥󠁮󠁧󠁿", country: "England" },
-  { name: "FA Cup", emoji: "🏴󠁧󠁢󠁥󠁮󠁧󠁿", country: "England" },
-  { name: "EFL Cup", emoji: "🏴󠁧󠁢󠁥󠁮󠁧󠁿", country: "England" },
-  { name: "La Liga", emoji: "🇪🇸", country: "Spain" },
-  { name: "La Liga 2", emoji: "🇪🇸", country: "Spain" },
-  { name: "Bundesliga", emoji: "🇩🇪", country: "Germany" },
-  { name: "2. Bundesliga", emoji: "🇩🇪", country: "Germany" },
-  { name: "Serie A", emoji: "🇮🇹", country: "Italy" },
-  { name: "Serie B", emoji: "🇮🇹", country: "Italy" },
-  { name: "Ligue 1", emoji: "🇫🇷", country: "France" },
-  { name: "Ligue 2", emoji: "🇫🇷", country: "France" },
-  { name: "Eredivisie", emoji: "🇳🇱", country: "Netherlands" },
-  { name: "Primeira Liga", emoji: "🇵🇹", country: "Portugal" },
-  { name: "Süper Lig", emoji: "🇹🇷", country: "Turkey" },
-  { name: "Scottish Premiership", emoji: "🏴󠁧󠁢󠁳󠁣󠁴󠁿", country: "Scotland" },
-  { name: "Belgian Pro League", emoji: "🇧🇪", country: "Belgium" },
-  { name: "Brasileirão", emoji: "🇧🇷", country: "Brazil" },
-  { name: "Liga Profesional", emoji: "🇦🇷", country: "Argentina" },
-  { name: "Liga MX", emoji: "🇲🇽", country: "Mexico" },
-  { name: "MLS", emoji: "🇺🇸", country: "USA" },
-  { name: "Saudi Pro League", emoji: "🇸🇦", country: "Saudi Arabia" },
-  { name: "NPFL", emoji: "🇳🇬", country: "Nigeria" },
-  { name: "DStv Premiership", emoji: "🇿🇦", country: "South Africa" },
-  { name: "Egyptian Premier", emoji: "🇪🇬", country: "Egypt" },
-  { name: "Champions League", emoji: "🇪🇺", country: "Europe" },
-  { name: "Europa League", emoji: "🇪🇺", country: "Europe" },
-  { name: "Conference League", emoji: "🇪🇺", country: "Europe" },
-  { name: "Copa Libertadores", emoji: "🌎", country: "South America" },
-  { name: "AFCON", emoji: "🏆", country: "Africa" },
-  { name: "World Cup", emoji: "🏆", country: "World" }
+  // ── Top 5 European Leagues & Domestic Cups ──────────
+  { name: "Premier League",         emoji: "🏴󠁧󠁢󠁥󠁮󠁧󠁿", country: "England" },
+  { name: "Championship",           emoji: "🏴󠁧󠁢󠁥󠁮󠁧󠁿", country: "England" },
+  { name: "League One",              emoji: "🏴󠁧󠁢󠁥󠁮󠁧󠁿", country: "England" },
+  { name: "FA Cup",                  emoji: "🏴󠁧󠁢󠁥󠁮󠁧󠁿", country: "England" },
+  { name: "EFL Cup",                 emoji: "🏴󠁧󠁢󠁥󠁮󠁧󠁿", country: "England" },
+  { name: "La Liga",                 emoji: "🇪🇸", country: "Spain" },
+  { name: "La Liga 2",               emoji: "🇪🇸", country: "Spain" },
+  { name: "Copa del Rey",            emoji: "🇪🇸", country: "Spain" },
+  { name: "Serie A",                 emoji: "🇮🇹", country: "Italy" },
+  { name: "Serie B",                 emoji: "🇮🇹", country: "Italy" },
+  { name: "Coppa Italia",            emoji: "🇮🇹", country: "Italy" },
+  { name: "Bundesliga",              emoji: "🇩🇪", country: "Germany" },
+  { name: "2. Bundesliga",           emoji: "🇩🇪", country: "Germany" },
+  { name: "DFB Pokal",               emoji: "🇩🇪", country: "Germany" },
+  { name: "Ligue 1",                 emoji: "🇫🇷", country: "France" },
+  { name: "Ligue 2",                 emoji: "🇫🇷", country: "France" },
+  { name: "Coupe de France",         emoji: "🇫🇷", country: "France" },
+  // ── Continental & European Leagues ──────────
+  { name: "Champions League",        emoji: "🇪🇺", country: "Europe" },
+  { name: "Europa League",           emoji: "🇪🇺", country: "Europe" },
+  { name: "Conference League",       emoji: "🇪🇺", country: "Europe" },
+  { name: "Eredivisie",              emoji: "🇳🇱", country: "Netherlands" },
+  { name: "Primeira Liga",           emoji: "🇵🇹", country: "Portugal" },
+  { name: "Süper Lig",               emoji: "🇹🇷", country: "Turkey" },
+  { name: "Scottish Premiership",    emoji: "🏴󠁧󠁢󠁳󠁣󠁴󠁿", country: "Scotland" },
+  { name: "Belgian Pro League",      emoji: "🇧🇪", country: "Belgium" },
+  { name: "Swiss Super League",      emoji: "🇨🇭", country: "Switzerland" },
+  { name: "Austrian Bundesliga",     emoji: "🇦🇹", country: "Austria" },
+  { name: "Greek Super League",      emoji: "🇬🇷", country: "Greece" },
+  { name: "Ekstraklasa",             emoji: "🇵🇱", country: "Poland" },
+  { name: "Eliteserien",             emoji: "🇳🇴", country: "Norway" },
+  { name: "Allsvenskan",             emoji: "🇸🇪", country: "Sweden" },
+  { name: "Superliga",               emoji: "🇩🇰", country: "Denmark" },
+  // ── Americas ────────────────────────────────
+  { name: "MLS",                     emoji: "🇺🇸", country: "USA" },
+  { name: "Liga MX",                 emoji: "🇲🇽", country: "Mexico" },
+  { name: "Brasileirão",             emoji: "🇧🇷", country: "Brazil" },
+  { name: "Liga Profesional",        emoji: "🇦🇷", country: "Argentina" },
+  { name: "Copa Libertadores",       emoji: "🌎", country: "South America" },
+  { name: "Copa Sudamericana",       emoji: "🌎", country: "South America" },
+  { name: "Colombia Primera A",      emoji: "🇨🇴", country: "Colombia" },
+  // ── Middle East & Africa ────────────────────
+  { name: "Saudi Pro League",        emoji: "🇸🇦", country: "Saudi Arabia" },
+  { name: "UAE Pro League",          emoji: "🇦🇪", country: "UAE" },
+  { name: "Qatar Stars League",      emoji: "🇶🇦", country: "Qatar" },
+  { name: "CAF Champions League",    emoji: "🌍", country: "Africa" },
+  { name: "NPFL",                    emoji: "🇳🇬", country: "Nigeria" },
+  { name: "Ghana Premier League",    emoji: "🇬🇭", country: "Ghana" },
+  { name: "South African PSL",       emoji: "🇿🇦", country: "South Africa" },
+  { name: "Egyptian Premier League", emoji: "🇪🇬", country: "Egypt" },
+  { name: "Moroccan Botola",         emoji: "🇲🇦", country: "Morocco" },
+  { name: "Kenyan Premier League",   emoji: "🇰🇪", country: "Kenya" },
+  { name: "Tunisian Ligue 1",        emoji: "🇹🇳", country: "Tunisia" },
+  // ── Asia & Oceania ──────────────────────────
+  { name: "J-League",                emoji: "🇯🇵", country: "Japan" },
+  { name: "K-League",                emoji: "🇰🇷", country: "South Korea" },
+  { name: "Chinese Super League",    emoji: "🇨🇳", country: "China" },
+  { name: "Indian Super League",     emoji: "🇮🇳", country: "India" },
+  { name: "A-League",                emoji: "🇦🇺", country: "Australia" },
+  { name: "AFCON",                   emoji: "🏆", country: "Africa" },
+  { name: "World Cup",               emoji: "🏆", country: "World" }
 ];
 
 try { if (typeof MATCH_DATA !== 'undefined') window.MATCH_DATA = MATCH_DATA; } catch (e) { }
@@ -752,6 +783,9 @@ try { if (typeof HOT_TRENDS !== 'undefined') window.HOT_TRENDS = HOT_TRENDS; } c
 try { if (typeof VALUE_BETS !== 'undefined') window.VALUE_BETS = VALUE_BETS; } catch (e) { }
 try { if (typeof COUNTRY_LEAGUES_DATA !== 'undefined') window.COUNTRY_LEAGUES_DATA = COUNTRY_LEAGUES_DATA; } catch (e) { }
 try { if (typeof TOP_LEAGUES_DATA !== 'undefined') window.TOP_LEAGUES_DATA = TOP_LEAGUES_DATA; } catch (e) { }
+try { if (typeof GLOBAL_CLUBS !== 'undefined') window.GLOBAL_CLUBS = GLOBAL_CLUBS; } catch (e) { }
+try { if (typeof LEAGUE_STATS !== 'undefined') window.LEAGUE_STATS = LEAGUE_STATS; } catch (e) { }
+try { if (typeof HISTORICAL_PERFORMANCE !== 'undefined') window.HISTORICAL_PERFORMANCE = HISTORICAL_PERFORMANCE; } catch (e) { }
 
 // Auto-Export Window Bindings for data.js
 

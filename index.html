@@ -5422,31 +5422,11 @@
   <script src="js/app.js"></script>
   <script src="js/liveFixtures.js"></script>
   <script>
-    // Universal Click Listener for Table Standings
-    document.addEventListener("click", function (e) {
-      const btn = e.target.closest("button, a, div");
-      if (!btn) return;
-
-      const text = (btn.innerText || "").trim();
-      if (text.includes("Table Standings")) {
-        let leagueName = "Premier League";
-        const parent = btn.closest(".accordion-item, .league-item, .sidebar-accordion, div");
-        if (parent) {
-          const t = parent.innerText;
-          if (t.includes("La Liga") || t.includes("Spain")) leagueName = "La Liga";
-          else if (t.includes("Bundesliga") || t.includes("Germany")) leagueName = "Bundesliga";
-          else if (t.includes("Serie A") || t.includes("Italy")) leagueName = "Serie A";
-          else if (t.includes("Ligue 1") || t.includes("France")) leagueName = "Ligue 1";
-          else if (t.includes("Premier League") || t.includes("England")) leagueName = "Premier League";
-        }
-
-        if (typeof renderUniversalStandingsModal === "function") {
-          renderUniversalStandingsModal(leagueName);
-        } else if (typeof openLeagueStandingsModal === "function") {
-          openLeagueStandingsModal(leagueName);
-        }
-      }
-    }, true);
+    // Clean global helper bindings
+    window.addEventListener('DOMContentLoaded', () => {
+      if (typeof renderSidebarTopLeagues === 'function') renderSidebarTopLeagues();
+      if (typeof renderSidebarCountries === 'function') renderSidebarCountries();
+    });
   </script>
 </body>
 
