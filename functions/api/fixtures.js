@@ -25,19 +25,27 @@ export async function onRequest(context) {
   };
 
   try {
-    // 1. Fetch upcoming fixtures
-    let res = await fetch(`${API_HOST}/fixtures?league=${league}&next=15`, { headers });
-    let json = await res.json();
-    let fixtures = Array.isArray(json.response) ? json.response : [];
+    // 1. Fetch upcoming fixtures AND recent completed results (last 1-3 weeks) concurrently
+    const [resNext, resLast] = await Promise.allSettled([
+      fetch(`${API_HOST}/fixtures?league=${league}&next=15`, { headers }),
+      fetch(`${API_HOST}/fixtures?league=${league}&last=15`, { headers })
+    ]);
 
-    // 2. If next=15 had 0 or rate-limited, try last=15 completed
-    if (fixtures.length === 0) {
-      const resLast = await fetch(`${API_HOST}/fixtures?league=${league}&last=15`, { headers });
-      const jsonLast = await resLast.json();
-      if (Array.isArray(jsonLast.response) && jsonLast.response.length > 0) {
-        fixtures = jsonLast.response;
-      }
+    let upcomingFixtures = [];
+    let pastFixtures = [];
+
+    if (resNext.status === 'fulfilled' && resNext.value.ok) {
+      const jsonNext = await resNext.value.json();
+      if (Array.isArray(jsonNext.response)) upcomingFixtures = jsonNext.response;
     }
+
+    if (resLast.status === 'fulfilled' && resLast.value.ok) {
+      const jsonLast = await resLast.value.json();
+      if (Array.isArray(jsonLast.response)) pastFixtures = jsonLast.response;
+    }
+
+    // Combine upcoming fixtures + recent past results
+    const fixtures = [...upcomingFixtures, ...pastFixtures];
 
     const payload = {
       success: true,

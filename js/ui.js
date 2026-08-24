@@ -2977,13 +2977,13 @@ function updateFixturesDisplay() {
   // 2. Date Filter (respect real fixture dates/status without destructive slicing)
   const activeDate = window.appState ? (window.appState.activePredictionDate || 'all') : 'all';
   if (activeDate === 'yesterday') {
-    const yestFiltered = filtered.filter(m => m.date === 'yesterday' || m.isYesterday || m.status === 'FT' || m.statusShort === 'FT');
+    const yestFiltered = filtered.filter(m => m && (m.date === 'yesterday' || m.isYesterday || m.status === 'FT' || m.statusShort === 'FT' || m.isFT || (m.time && m.time.startsWith('FT'))));
     if (yestFiltered.length > 0) filtered = yestFiltered;
   } else if (activeDate === 'today') {
-    const todayFiltered = filtered.filter(m => m.date === 'today' || m.isLive || (m.time && m.time.toLowerCase().includes('today')) || (m.statusShort && ['1H','HT','2H','NS','LIVE'].includes(m.statusShort)));
+    const todayFiltered = filtered.filter(m => m && (m.date === 'today' || m.isLive || (m.time && m.time.toLowerCase().includes('today')) || (m.statusShort && ['1H','HT','2H','NS','LIVE'].includes(m.statusShort))));
     if (todayFiltered.length > 0) filtered = todayFiltered;
   } else if (activeDate === 'tomorrow') {
-    const tmrwFiltered = filtered.filter(m => m.date === 'tomorrow' || m.isTomorrow || (m.time && m.time.toLowerCase().includes('tomorrow')));
+    const tmrwFiltered = filtered.filter(m => m && (m.date === 'tomorrow' || m.isTomorrow || (m.time && m.time.toLowerCase().includes('tomorrow'))));
     if (tmrwFiltered.length > 0) filtered = tmrwFiltered;
   }
 
