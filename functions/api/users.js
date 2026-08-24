@@ -1,9 +1,7 @@
-/**
+﻿/**
  * Cloudflare Pages Function: /api/users
- * Real-time Global User Ledger with Dual Cloud Persistence (Cloudflare KV + REST Cloud DB)
+ * Real-time Global User Ledger backed by Cloudflare KV Storage (USERS_KV)
  */
-
-const CLOUD_STORE_URL = 'https://api.restful-api.dev/objects/ff8081819ff5b11001a034670ed3107f';
 
 const SEED_ADMIN = [
   {
@@ -32,53 +30,32 @@ export async function onRequestOptions() {
 }
 
 export async function onRequestGet(context) {
-  let debugInfo = {};
   try {
     let members = [];
     
-    // 1. Fetch from Cloud DB
-    try {
-      const cloudRes = await fetch(CLOUD_STORE_URL, {
-        headers: {
-          'User-Agent': 'DeepPredictBet/1.0',
-          'Accept': 'application/json'
-        }
-      });
-      debugInfo.cloudStatus = cloudRes.status;
-      if (cloudRes.ok) {
-        const json = await cloudRes.json();
-        debugInfo.json = json;
-        if (json.data && Array.isArray(json.data.members) && json.data.members.length > 0) {
-          members = json.data.members;
-        }
-      } else {
-        debugInfo.text = await cloudRes.text();
-      }
-    } catch (e) {
-      debugInfo.fetchError = e.message;
-    }
-
-    // 2. Fallback to Cloudflare KV
-    if (members.length === 0 && context.env && context.env.USERS_KV) {
+    if (context.env && context.env.USERS_KV) {
       const stored = await context.env.USERS_KV.get('members_list');
-      debugInfo.kvStored = stored ? 'found' : 'empty';
       if (stored) {
         try {
           const parsed = JSON.parse(stored);
-          if (Array.isArray(parsed) && parsed.length > 0) members = parsed;
+          if (Array.isArray(parsed) && parsed.length > 0) {
+            members = parsed;
+          }
         } catch (e) {}
       }
     }
 
     if (members.length === 0) {
       members = [...SEED_ADMIN];
+      if (context.env && context.env.USERS_KV) {
+        await context.env.USERS_KV.put('members_list', JSON.stringify(members));
+      }
     }
 
     return new Response(JSON.stringify({
       success: true,
       totalUsers: members.length,
-      users: members,
-      _debug: debugInfo
+      users: members
     }), {
       status: 200,
       headers: corsHeaders()
@@ -87,8 +64,7 @@ export async function onRequestGet(context) {
     return new Response(JSON.stringify({
       success: true,
       totalUsers: 1,
-      users: SEED_ADMIN,
-      _debug: { globalError: err.message }
+      users: SEED_ADMIN
     }), {
       status: 200,
       headers: corsHeaders()
@@ -112,21 +88,17 @@ export async function onRequestPost(context) {
 
     let members = [];
     
-    // 1. Fetch existing members from Cloud DB
-    try {
-      const cloudRes = await fetch(CLOUD_STORE_URL, {
-        headers: {
-          'User-Agent': 'DeepPredictBet/1.0',
-          'Accept': 'application/json'
-        }
-      });
-      if (cloudRes.ok) {
-        const json = await cloudRes.json();
-        if (json.data && Array.isArray(json.data.members)) {
-          members = json.data.members;
-        }
+    if (context.env && context.env.USERS_KV) {
+      const stored = await context.env.USERS_KV.get('members_list');
+      if (stored) {
+        try {
+          const parsed = JSON.parse(stored);
+          if (Array.isArray(parsed)) {
+            members = parsed;
+          }
+        } catch (e) {}
       }
-    } catch (e) {}
+    }
 
     if (members.length === 0) {
       members = [...SEED_ADMIN];
@@ -145,43 +117,20 @@ export async function onRequestPost(context) {
       members[existingIndex] = registeredUser;
     } else {
       registeredUser = {
-        id: `usr_${Math.random().toString(36).substring(2, 9)}`,
+        id: body.id || `usr_${Math.random().toString(36).substring(2, 9)}`,
         fullName: cleanName,
         email: cleanEmail,
         username: cleanUser || cleanName.split(' ')[0] || 'Punter',
         role: body.role || 'PRO',
         coinsBalance: body.coinsBalance ?? 500,
-        createdAt: new Date().toISOString()
+        createdAt: body.createdAt || new Date().toISOString()
       };
       members.unshift(registeredUser);
     }
 
-    // Write back to Cloud DB
-    try {
-      const putRes = await fetch(CLOUD_STORE_URL, {
-        method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-          'User-Agent': 'DeepPredictBet/1.0',
-          'Accept': 'application/json'
-        },
-        body: JSON.stringify({
-          name: 'deeppredictbet_members_store_v1',
-          data: { members: members }
-        })
-      });
-      if (!putRes.ok) {
-        console.warn('Cloud DB PUT status:', putRes.status);
-      }
-    } catch (e) {
-      console.error('Cloud DB PUT error:', e.message);
-    }
-
-    // Also write to KV if available
+    // Persist to Cloudflare KV
     if (context.env && context.env.USERS_KV) {
-      try {
-        await context.env.USERS_KV.put('members_list', JSON.stringify(members));
-      } catch (e) {}
+      await context.env.USERS_KV.put('members_list', JSON.stringify(members));
     }
 
     return new Response(JSON.stringify({
