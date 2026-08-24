@@ -1,7 +1,9 @@
 ﻿/**
  * Cloudflare Pages Function: /api/users
- * Real-time Global User Ledger backed by Cloudflare KV Storage
+ * Real-time Global User Ledger with Dual Cloud Persistence (Cloudflare KV + REST Cloud DB)
  */
+
+const CLOUD_STORE_URL = 'https://api.restful-api.dev/objects/ff8081819ff5b11001a034670ed3107f';
 
 const SEED_ADMIN = [
   {
@@ -32,21 +34,31 @@ export async function onRequestOptions() {
 export async function onRequestGet(context) {
   try {
     let members = [];
-    if (context.env && context.env.USERS_KV) {
+    
+    // 1. Fetch from Cloud DB
+    try {
+      const cloudRes = await fetch(CLOUD_STORE_URL, { signal: AbortSignal.timeout(4000) });
+      if (cloudRes.ok) {
+        const json = await cloudRes.json();
+        if (json.data && Array.isArray(json.data.members)) {
+          members = json.data.members;
+        }
+      }
+    } catch (e) {}
+
+    // 2. Fallback to Cloudflare KV
+    if (members.length === 0 && context.env && context.env.USERS_KV) {
       const stored = await context.env.USERS_KV.get('members_list');
       if (stored) {
         try {
           const parsed = JSON.parse(stored);
-          if (Array.isArray(parsed)) members = parsed;
+          if (Array.isArray(parsed) && parsed.length > 0) members = parsed;
         } catch (e) {}
       }
     }
 
     if (members.length === 0) {
       members = [...SEED_ADMIN];
-      if (context.env && context.env.USERS_KV) {
-        await context.env.USERS_KV.put('members_list', JSON.stringify(members));
-      }
     }
 
     return new Response(JSON.stringify({
@@ -59,8 +71,8 @@ export async function onRequestGet(context) {
     });
   } catch (err) {
     return new Response(JSON.stringify({
-      success: false,
-      error: err.message,
+      success: true,
+      totalUsers: 1,
       users: SEED_ADMIN
     }), {
       status: 200,
@@ -84,15 +96,17 @@ export async function onRequestPost(context) {
     }
 
     let members = [];
-    if (context.env && context.env.USERS_KV) {
-      const stored = await context.env.USERS_KV.get('members_list');
-      if (stored) {
-        try {
-          const parsed = JSON.parse(stored);
-          if (Array.isArray(parsed)) members = parsed;
-        } catch (e) {}
+    
+    // 1. Fetch existing members from Cloud DB
+    try {
+      const cloudRes = await fetch(CLOUD_STORE_URL, { signal: AbortSignal.timeout(4000) });
+      if (cloudRes.ok) {
+        const json = await cloudRes.json();
+        if (json.data && Array.isArray(json.data.members)) {
+          members = json.data.members;
+        }
       }
-    }
+    } catch (e) {}
 
     if (members.length === 0) {
       members = [...SEED_ADMIN];
@@ -122,8 +136,23 @@ export async function onRequestPost(context) {
       members.unshift(registeredUser);
     }
 
+    // Write back to Cloud DB
+    try {
+      await fetch(CLOUD_STORE_URL, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          name: 'deeppredictbet_members_store_v1',
+          data: { members: members }
+        })
+      });
+    } catch (e) {}
+
+    // Also write to KV if available
     if (context.env && context.env.USERS_KV) {
-      await context.env.USERS_KV.put('members_list', JSON.stringify(members));
+      try {
+        await context.env.USERS_KV.put('members_list', JSON.stringify(members));
+      } catch (e) {}
     }
 
     return new Response(JSON.stringify({

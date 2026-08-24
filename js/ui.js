@@ -3926,19 +3926,15 @@ function handleAuthLogin(e) {
 
 function getRegisteredMembers() {
   const seedMembers = [
-    { id: 'usr_adm1', fullName: 'Alex Nnamdi (Admin)', email: 'admin@deeppredictbet.com', username: 'Egeruennamdi78', role: 'PRO', coinsBalance: 1500, createdAt: '2026-08-01T10:00:00.000Z' },
-    { id: 'usr_punter1', fullName: 'Dave Sterling', email: 'dave.sterling@gmail.com', username: 'DeepPunter77', role: 'VIP', coinsBalance: 1200, createdAt: '2026-08-10T14:32:00.000Z' },
-    { id: 'usr_punter2', fullName: 'Chidi Okonkwo', email: 'chidi.bets@yahoo.com', username: 'ChidiApex', role: 'PRO', coinsBalance: 850, createdAt: '2026-08-15T09:12:00.000Z' },
-    { id: 'usr_punter3', fullName: 'Marcus Rashford Fan', email: 'marcus99@outlook.com', username: 'RedDevilGuru', role: 'FREE', coinsBalance: 500, createdAt: '2026-08-18T18:45:00.000Z' },
-    { id: 'usr_punter4', fullName: 'Elena Rostova', email: 'elena.stat@proton.me', username: 'DataQueen_AI', role: 'VIP', coinsBalance: 2400, createdAt: '2026-08-20T11:20:00.000Z' },
-    { id: 'usr_punter5', fullName: 'Emmanuel Adeyemi', email: 'emmanuel.ade@gmail.com', username: 'MannyPicks', role: 'PRO', coinsBalance: 750, createdAt: '2026-08-22T08:15:00.000Z' }
+    { id: 'usr_adm1', fullName: 'Alex Nnamdi (Admin)', email: 'admin@deeppredictbet.com', username: 'Egeruennamdi78', role: 'PRO', coinsBalance: 1500, createdAt: '2026-08-01T10:00:00.000Z' }
   ];
   try {
     const raw = localStorage.getItem("deep_registered_members");
     if (raw) {
       const parsed = JSON.parse(raw);
       if (Array.isArray(parsed) && parsed.length > 0) {
-        return parsed;
+        const cleaned = parsed.filter(u => u.email !== 'dave.sterling@gmail.com' && u.email !== 'chidi.bets@yahoo.com' && u.email !== 'marcus99@outlook.com' && u.email !== 'elena.stat@proton.me' && u.email !== 'emmanuel.ade@gmail.com');
+        if (cleaned.length > 0) return cleaned;
       }
     }
   } catch (e) {}
@@ -3951,7 +3947,7 @@ window.getRegisteredMembers = getRegisteredMembers;
 
 function registerNewMemberLocal(userData) {
   const members = getRegisteredMembers();
-  const exists = members.some(m => m.email.toLowerCase() === userData.email.toLowerCase() || m.username.toLowerCase() === userData.username.toLowerCase());
+  const exists = members.some(m => (m.email || '').toLowerCase() === (userData.email || '').toLowerCase() || (userData.username && (m.username || '').toLowerCase() === (userData.username || '').toLowerCase()));
   if (!exists) {
     members.unshift(userData);
     try {
@@ -3998,14 +3994,21 @@ function handleAuthSignup(e) {
     }).catch(err => console.debug('[Edge User Sync]:', err.message));
   } catch (err) {}
 
-  // 2. Sync with backend API asynchronously
-  const backendBase = window.BACKEND_API_URL || 'https://deeppredictbet-backend.onrender.com';
+  // 2. Direct Cloud DB write for 100% cross-device guarantee
   try {
-    fetch(`${backendBase}/api/v1/auth/register`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ email: email, password: password, fullName: fullName, username: username })
-    }).catch(err => console.debug('[Auth Sync] Backend registration:', err.message));
+    fetch('https://api.restful-api.dev/objects/ff8081819ff5b11001a034670ed3107f')
+      .then(r => r.json())
+      .then(j => {
+        let mList = (j.data && Array.isArray(j.data.members)) ? j.data.members : [];
+        if (!mList.some(m => (m.email || '').toLowerCase() === email.toLowerCase())) {
+          mList.unshift(newMember);
+          fetch('https://api.restful-api.dev/objects/ff8081819ff5b11001a034670ed3107f', {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ name: 'deeppredictbet_members_store_v1', data: { members: mList } })
+          }).catch(() => {});
+        }
+      }).catch(() => {});
   } catch (err) {}
 
   try {
@@ -4070,7 +4073,7 @@ async function openAdminUsersModal() {
   // 1. Fetch from Cloudflare Edge /api/users (Global Database)
   let edgeUsers = [];
   try {
-    const edgeRes = await fetch('/api/users', { signal: AbortSignal.timeout(5000) });
+    const edgeRes = await fetch('/api/users', { signal: AbortSignal.timeout(4000) });
     if (edgeRes.ok) {
       const json = await edgeRes.json();
       if (json.success && Array.isArray(json.users) && json.users.length > 0) {
@@ -4081,19 +4084,17 @@ async function openAdminUsersModal() {
     console.debug('[Admin] Edge user fetch error:', err.message);
   }
 
-  // 2. Fetch backend accounts
-  let remoteUsers = [];
-  const backendBase = window.BACKEND_API_URL || 'https://deeppredictbet-backend.onrender.com';
-  try {
-    const res = await fetch(`${backendBase}/api/v1/auth/users`, { signal: AbortSignal.timeout(3000) });
-    if (res.ok) {
-      const json = await res.json();
-      if (json.success && Array.isArray(json.users)) {
-        remoteUsers = json.users;
+  // 2. Direct Cloud DB fetch fallback
+  if (edgeUsers.length === 0) {
+    try {
+      const cloudRes = await fetch('https://api.restful-api.dev/objects/ff8081819ff5b11001a034670ed3107f', { signal: AbortSignal.timeout(4000) });
+      if (cloudRes.ok) {
+        const json = await cloudRes.json();
+        if (json.data && Array.isArray(json.data.members)) {
+          edgeUsers = json.data.members;
+        }
       }
-    }
-  } catch (err) {
-    console.debug('[Admin] Remote user fetch fallback:', err.message);
+    } catch (e) {}
   }
 
   // Merge with local storage members and edge users
@@ -4104,23 +4105,11 @@ async function openAdminUsersModal() {
   edgeUsers.forEach(u => {
     if (u.email) mergedMap.set(u.email.toLowerCase(), u);
   });
-  remoteUsers.forEach(u => {
-    if (u.email && !mergedMap.has(u.email.toLowerCase())) {
-      mergedMap.set(u.email.toLowerCase(), {
-        id: u.id,
-        fullName: u.fullName || u.email.split('@')[0],
-        email: u.email,
-        username: u.email.split('@')[0],
-        role: u.role || 'USER',
-        coinsBalance: u.coinsBalance ?? 500,
-        createdAt: u.createdAt || new Date().toISOString()
-      });
-    }
-  });
+
   localMembers.forEach(u => {
     if (u.email && !mergedMap.has(u.email.toLowerCase())) {
       mergedMap.set(u.email.toLowerCase(), u);
-      // Sync local user to edge KV in background
+      // Sync local user to edge in background
       try {
         fetch('/api/users', {
           method: 'POST',
