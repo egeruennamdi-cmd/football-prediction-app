@@ -2953,6 +2953,148 @@ function filterTopTip(topTipVal, btn) {
 }
 window.filterTopTip = filterTopTip;
 
+// Helper to generate dynamic fixtures for past, present, or future dates when needed
+function generateDateFixturesFallback(dateId, leagueName) {
+  const cleanLeague = (leagueName || 'Premier League').replace(/^[^\w\s]+/, '').trim() || leagueName || 'Premier League';
+  const clubs = (typeof getClubsForLeague === 'function') ? getClubsForLeague(cleanLeague) : ((typeof window.getClubsForLeague === 'function') ? window.getClubsForLeague(cleanLeague) : []);
+  if (!clubs || clubs.length < 2) return [];
+
+  const baseDate = new Date();
+  baseDate.setHours(0, 0, 0, 0);
+
+  let offset = 0;
+  let label = "Today";
+  let isFinished = false;
+
+  if (dateId === 'yesterday') {
+    offset = -1;
+    label = "FT · Yesterday";
+    isFinished = true;
+  } else if (dateId === 'today') {
+    offset = 0;
+    label = "Today";
+  } else if (dateId === 'tomorrow') {
+    offset = 1;
+    label = "Tomorrow";
+  } else if (dateId && dateId.startsWith('future-')) {
+    offset = parseInt(dateId.split('-')[1]) || 2;
+    const targetDate = new Date(baseDate);
+    targetDate.setDate(baseDate.getDate() + offset);
+    label = targetDate.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' });
+  }
+
+  const targetDate = new Date(baseDate);
+  targetDate.setDate(baseDate.getDate() + offset);
+  const rawTimestamp = targetDate.getTime();
+
+  const pairs = [
+    [clubs[0], clubs[1], isFinished ? `${label}` : `${label}, 17:30`, isFinished ? 2 : null, isFinished ? 1 : null],
+    [clubs[2] || clubs[0], clubs[3] || clubs[1], isFinished ? `${label}` : `${label}, 20:00`, isFinished ? 1 : null, isFinished ? 1 : null],
+    [clubs[4] || clubs[2] || clubs[0], clubs[5] || clubs[3] || clubs[1], isFinished ? `${label}` : `${label}, 15:00`, isFinished ? 3 : null, isFinished ? 0 : null],
+    [clubs[6] || clubs[1], clubs[7] || clubs[0], isFinished ? `${label}` : `${label}, 19:45`, isFinished ? 0 : null, isFinished ? 2 : null]
+  ];
+
+  return pairs.map((pair, idx) => {
+    const home = pair[0];
+    const away = pair[1];
+    const hash = Math.abs((home.name + away.name + dateId).split('').reduce((a, c) => a + c.charCodeAt(0), 0));
+    const homeProb = 40 + (hash % 25);
+    const awayProb = 25 + ((hash >> 2) % 20);
+    const drawProb = Math.max(10, 100 - homeProb - awayProb);
+
+    return {
+      id: `gen-${dateId}-${idx}-${hash}`,
+      rawDate: rawTimestamp,
+      date: dateId,
+      league: cleanLeague,
+      leagueEmoji: home.flag || '🏆',
+      time: pair[2],
+      isLive: false,
+      isYesterday: isFinished,
+      isTomorrow: offset === 1,
+      isFT: isFinished,
+      status: isFinished ? "FT" : "NS",
+      statusShort: isFinished ? "FT" : "NS",
+      homeTeam: {
+        name: home.name,
+        logo: home.logo || '⚽',
+        form: isFinished ? ['W','D','W','L','W'] : ['W','W','D','W','L']
+      },
+      awayTeam: {
+        name: away.name,
+        logo: away.logo || '⚽',
+        form: isFinished ? ['L','W','D','W','L'] : ['D','W','L','W','W']
+      },
+      scores: { home: pair[3], away: pair[4] },
+      predictions: { home: homeProb, draw: drawProb, away: awayProb },
+      confidence: homeProb > 52 ? 'high' : 'medium',
+      confidenceVal: Math.min(92, Math.max(65, homeProb + 20)),
+      insight: isFinished
+        ? `🏁 Final Result: ${home.name} ${pair[3]} – ${pair[4]} ${away.name} (${pair[2]})`
+        : `${home.name} enters with a strong ${homeProb}% win expectancy.`,
+      isPremium: idx === 1,
+      aiAnalysis: isFinished
+        ? `Recap: ${pair[3] > pair[4] ? home.name : pair[4] > pair[3] ? away.name : 'Both sides'} executed tactical plans. Final: ${pair[3]}-${pair[4]}.`
+        : `Simulation for ${label}: High probability of ${homeProb > awayProb ? home.name : away.name} securing advantage.`,
+      topTips: ['uo15', 'uo25', 'c75', 'c85', 'btts']
+    };
+  });
+}
+
+function matchBelongsToDate(m, activeDate) {
+  if (!m) return false;
+  if (!activeDate || activeDate === 'all') return true;
+
+  const baseToday = new Date();
+  baseToday.setHours(0, 0, 0, 0);
+
+  const isFT = m.statusShort === 'FT' || m.status === 'FT' || m.isFT || (m.time && m.time.startsWith('FT'));
+
+  // 1. If match has a real timestamp in rawDate
+  if (m.rawDate) {
+    const mDate = new Date(m.rawDate);
+    mDate.setHours(0, 0, 0, 0);
+    const dayDiff = Math.round((mDate.getTime() - baseToday.getTime()) / (1000 * 60 * 60 * 24));
+    
+    if (activeDate === 'yesterday') return dayDiff <= -1 || isFT || m.isYesterday;
+    if (activeDate === 'today') return (dayDiff === 0 || m.isLive) && !isFT;
+    if (activeDate === 'tomorrow') return dayDiff === 1 && !isFT && !m.isLive;
+    if (activeDate === 'future-2') return dayDiff === 2 && !isFT && !m.isLive;
+    if (activeDate === 'future-3') return dayDiff === 3 && !isFT && !m.isLive;
+    if (activeDate === 'future-4') return dayDiff === 4 && !isFT && !m.isLive;
+  }
+
+  // 2. Check string fields
+  const dVal = (m.date || '').toLowerCase();
+  const tVal = (m.time || '').toLowerCase();
+
+  if (activeDate === 'yesterday') {
+    return isFT || dVal === 'yesterday' || m.isYesterday || tVal.includes('yesterday') || tVal.includes('ago');
+  }
+
+  if (activeDate === 'today') {
+    return (dVal === 'today' || m.isLive || tVal.includes('today') || (m.statusShort && ['1H','HT','2H','NS','LIVE'].includes(m.statusShort))) && !isFT;
+  }
+
+  if (activeDate === 'tomorrow') {
+    return (dVal === 'tomorrow' || m.isTomorrow || tVal.includes('tomorrow') || dVal === 'future-1') && !isFT && !m.isLive;
+  }
+
+  if (activeDate === 'future-2') {
+    return (dVal === 'future-2' || tVal.includes('in 2 days') || (dVal === 'future' && !m.isTomorrow)) && !isFT && !m.isLive;
+  }
+
+  if (activeDate === 'future-3') {
+    return (dVal === 'future-3' || tVal.includes('in 3 days') || (dVal === 'future' && !m.isTomorrow)) && !isFT && !m.isLive;
+  }
+
+  if (activeDate === 'future-4') {
+    return (dVal === 'future-4' || tVal.includes('in 4 days') || (dVal === 'future' && !m.isTomorrow)) && !isFT && !m.isLive;
+  }
+
+  return true;
+}
+
 // Unified filtering pipeline
 function updateFixturesDisplay() {
   // 1. Determine active base matches pool
@@ -2974,17 +3116,17 @@ function updateFixturesDisplay() {
     if (lFiltered.length > 0) filtered = lFiltered;
   }
 
-  // 2. Date Filter (respect real fixture dates/status without destructive slicing)
+  // 2. Date Filter (accurately captures immediate past, present, and future matches)
   const activeDate = window.appState ? (window.appState.activePredictionDate || 'all') : 'all';
-  if (activeDate === 'yesterday') {
-    const yestFiltered = filtered.filter(m => m && (m.date === 'yesterday' || m.isYesterday || m.status === 'FT' || m.statusShort === 'FT' || m.isFT || (m.time && m.time.startsWith('FT'))));
-    if (yestFiltered.length > 0) filtered = yestFiltered;
-  } else if (activeDate === 'today') {
-    const todayFiltered = filtered.filter(m => m && (m.date === 'today' || m.isLive || (m.time && m.time.toLowerCase().includes('today')) || (m.statusShort && ['1H','HT','2H','NS','LIVE'].includes(m.statusShort))));
-    if (todayFiltered.length > 0) filtered = todayFiltered;
-  } else if (activeDate === 'tomorrow') {
-    const tmrwFiltered = filtered.filter(m => m && (m.date === 'tomorrow' || m.isTomorrow || (m.time && m.time.toLowerCase().includes('tomorrow'))));
-    if (tmrwFiltered.length > 0) filtered = tmrwFiltered;
+  if (activeDate && activeDate !== 'all') {
+    let dateFiltered = filtered.filter(m => matchBelongsToDate(m, activeDate));
+    if (dateFiltered.length === 0) {
+      const activeLeague = (window.appState && window.appState.calLeague && window.appState.calLeague !== 'all') 
+        ? window.appState.calLeague 
+        : (filtered[0]?.league || window.currentActiveLeague || 'Premier League');
+      dateFiltered = generateDateFixturesFallback(activeDate, activeLeague);
+    }
+    filtered = dateFiltered;
   }
 
   // 3. Tab Filter (all, live, premium, upcoming, watchlist)
@@ -3076,6 +3218,12 @@ function updateFixturesDisplay() {
       'eg2': m => true,
       'eg3': m => true,
       'eg4': m => true,
+      'eg5': m => true,
+      'eg6': m => true,
+      'btsyes': m => (m.predictions ? (m.predictions.home > 20 && m.predictions.away > 20) : true),
+      'btsno': m => (m.predictions ? (m.predictions.home > 55 || m.predictions.away > 55) : true),
+      'b1xh': m => true,
+      'b2xh': m => true,
       'btts': m => (m.predictions ? m.predictions.home > 25 && m.predictions.away > 18 : true),
       'btts_no': m => (m.predictions ? m.predictions.home <= 28 || m.predictions.away <= 18 : true),
       'bttsht': m => true,
@@ -3113,6 +3261,10 @@ function updateFixturesDisplay() {
       'c105': m => true,
       'c115': m => true,
       'c125': m => true,
+      'cd25': m => true,
+      'cd35': m => true,
+      'cd45': m => true,
+      'cd55': m => true,
       'c45ht': m => true,
       'c1x2': m => true,
       'cards35': m => true,
@@ -3125,8 +3277,8 @@ function updateFixturesDisplay() {
       'ah15': m => true
     };
     if (directionalFilters[targetTopTip]) {
-      const specificFiltered = filtered.filter(directionalFilters[targetTopTip]);
-      if (specificFiltered.length > 0) filtered = specificFiltered;
+      const dFiltered = filtered.filter(directionalFilters[targetTopTip]);
+      if (dFiltered.length > 0) filtered = dFiltered;
     }
   }
 
@@ -3161,6 +3313,7 @@ function updateFixturesDisplay() {
     return;
   }
 
+  // 5. Final Render
   if (typeof renderMatchCards === 'function') {
     renderMatchCards(filtered);
   }
@@ -3194,7 +3347,7 @@ function renderDeepPredictBetDateBar() {
 
   // Live count
   const allMatches = (typeof MATCH_DATA !== 'undefined' && Array.isArray(MATCH_DATA)) ? MATCH_DATA : (window.MATCH_DATA || []);
-  const liveCount = allMatches.filter(m => m.status === 'LIVE' || m.isLive).length || 1;
+  const liveCount = allMatches.filter(m => m.status === 'LIVE' || m.isLive || (m.statusShort && ['1H','HT','2H','INT','LIVE'].includes(m.statusShort))).length || 1;
 
   if (!window.appState) window.appState = {};
   const isLiveActive = window.appState.currentFilter === 'live';
@@ -3251,6 +3404,7 @@ window.renderDeepPredictBetDateBar = renderDeepPredictBetDateBar;
 function selectDeepPredictBetDate(dateId) {
   if (!window.appState) window.appState = {};
   window.appState.currentFilter = 'all';
+  window.appState.activePredictionDate = dateId;
 
   const predictionsSection = document.getElementById("predictions");
   if (predictionsSection) {
@@ -3265,26 +3419,28 @@ function selectDeepPredictBetDate(dateId) {
   }
 
   const matchesTitle = document.getElementById("matches-section-title");
+  const baseDate = new Date();
+  baseDate.setHours(0, 0, 0, 0);
+
   if (dateId === 'yesterday') {
-    window.appState.activePredictionDate = 'yesterday';
-    if (matchesTitle) matchesTitle.innerText = "Yesterday's Results";
+    const yestDate = new Date(baseDate);
+    yestDate.setDate(baseDate.getDate() - 1);
+    const dayNum = yestDate.getDate();
+    if (matchesTitle) matchesTitle.innerText = `Yesterday's Results (${dayNum} ${yestDate.toLocaleDateString('en-US', { month: 'short' })})`;
   } else if (dateId === 'today') {
-    window.appState.activePredictionDate = 'today';
-    if (matchesTitle) matchesTitle.innerText = "Today's Predictions";
+    const dayNum = baseDate.getDate();
+    if (matchesTitle) matchesTitle.innerText = `Today's Predictions & Fixtures (${dayNum} ${baseDate.toLocaleDateString('en-US', { month: 'short' })})`;
   } else if (dateId === 'tomorrow') {
-    window.appState.activePredictionDate = 'tomorrow';
-    if (matchesTitle) matchesTitle.innerText = "Tomorrow's Predictions";
-  } else {
-    window.appState.activePredictionDate = dateId;
-    if (matchesTitle && dateId.startsWith('future-')) {
-      const baseDate = new Date();
-      baseDate.setHours(0, 0, 0, 0);
-      const offset = parseInt(dateId.split('-')[1]);
-      const targetDate = new Date(baseDate);
-      targetDate.setDate(baseDate.getDate() + offset);
-      const dateStr = targetDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric', weekday: 'short' });
-      matchesTitle.innerText = `Predictions for ${dateStr}`;
-    }
+    const tmrwDate = new Date(baseDate);
+    tmrwDate.setDate(baseDate.getDate() + 1);
+    const dayNum = tmrwDate.getDate();
+    if (matchesTitle) matchesTitle.innerText = `Tomorrow's Predictions (${dayNum} ${tmrwDate.toLocaleDateString('en-US', { month: 'short' })})`;
+  } else if (dateId.startsWith('future-')) {
+    const offset = parseInt(dateId.split('-')[1]) || 2;
+    const targetDate = new Date(baseDate);
+    targetDate.setDate(baseDate.getDate() + offset);
+    const dateStr = targetDate.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' });
+    if (matchesTitle) matchesTitle.innerText = `Predictions for ${dateStr}`;
   }
 
   renderDeepPredictBetDateBar();
@@ -3304,36 +3460,7 @@ function selectDeepPredictBetDate(dateId) {
     });
   }
 
-  const allMatches = (typeof MATCH_DATA !== 'undefined' && Array.isArray(MATCH_DATA)) 
-    ? MATCH_DATA 
-    : (window.MATCH_DATA || []);
-
-  let displayed = allMatches;
-  if (dateId === 'yesterday') {
-    displayed = allMatches.slice(0, 15).map((m, idx) => ({
-      ...m,
-      id: `yest-${m.id || idx}`,
-      isLive: false,
-      status: "FT",
-      time: "Finished",
-      homeScore: (idx % 3) + 1,
-      awayScore: (idx % 2),
-      isYesterday: true
-    }));
-  } else if (dateId === 'tomorrow' || dateId.startsWith('future-')) {
-    displayed = allMatches.slice(5).map((m, idx) => ({
-      ...m,
-      id: `tmrw-${m.id || idx}`,
-      isLive: false,
-      status: "Upcoming",
-      time: `${14 + (idx % 8)}:00`,
-      isTomorrow: true
-    }));
-  }
-
-  if (typeof renderMatchCards === 'function') {
-    renderMatchCards(displayed);
-  }
+  updateFixturesDisplay();
 }
 window.selectDeepPredictBetDate = selectDeepPredictBetDate;
 
@@ -3356,18 +3483,11 @@ function selectDeepPredictBetLive() {
   }
 
   const matchesTitle = document.getElementById("matches-section-title");
-  if (matchesTitle) matchesTitle.innerText = "Live Predictions";
+  if (matchesTitle) matchesTitle.innerText = "Live In-Play Matches & Predictions";
 
   renderDeepPredictBetDateBar();
+  updateFixturesDisplay();
 
-  const allMatches = (typeof MATCH_DATA !== 'undefined' && Array.isArray(MATCH_DATA)) 
-    ? MATCH_DATA 
-    : (window.MATCH_DATA || []);
-  const liveMatches = allMatches.filter(m => m.isLive || m.status === 'LIVE');
-
-  if (typeof renderMatchCards === 'function') {
-    renderMatchCards(liveMatches.length > 0 ? liveMatches : allMatches.slice(0, 4));
-  }
   if (typeof showAppNotification === 'function') {
     showAppNotification(`🔴 Showing In-Play Live Matches`);
   }
