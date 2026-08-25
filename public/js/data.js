@@ -167,23 +167,53 @@ const MATCH_DATA = [
     statusShort: "FT",
     isFT: true,
     homeTeam: {
-      name: "Manchester United",
-      logo: "👿",
-      form: ["W", "L", "W", "W", "L"]
+      name: "Fulham",
+      logo: "⚪⚫",
+      form: ["L", "W", "D", "W", "L"]
     },
     awayTeam: {
-      name: "Newcastle United",
-      logo: "🦓",
-      form: ["L", "W", "D", "L", "W"]
+      name: "Chelsea",
+      logo: "🦁",
+      form: ["W", "W", "D", "L", "W"]
     },
-    scores: { home: 2, away: 0 },
-    predictions: { home: 45, draw: 30, away: 25 },
+    scores: { home: 2, away: 3 },
+    predictions: { home: 28, draw: 24, away: 48 },
+    confidence: "high",
+    confidenceVal: 86,
+    insight: "Chelsea claimed a thrilling 3-2 West London derby victory at Craven Cottage.",
+    isPremium: false,
+    aiAnalysis: "High-tempo London derby: Chelsea's direct wide transitions and clinical offensive finishing (Palmer 2 assists, Madueke goal) overcame Fulham's aggressive second-half press. Both Teams To Score (BTTS) and Over 2.5 hit comfortably.",
+    topTips: ["uo15", "uo25", "btts", "win2"]
+  },
+  {
+    id: "match-7b",
+    date: "yesterday",
+    isYesterday: true,
+    league: "Premier League",
+    leagueEmoji: "🏴󠁧󠁢󠁥󠁮󠁧󠁿",
+    time: "FT · Yesterday",
+    isLive: false,
+    status: "FT",
+    statusShort: "FT",
+    isFT: true,
+    homeTeam: {
+      name: "Brighton",
+      logo: "🕊️🔵",
+      form: ["W", "W", "D", "W", "L"]
+    },
+    awayTeam: {
+      name: "Manchester United",
+      logo: "👿",
+      form: ["L", "W", "W", "L", "W"]
+    },
+    scores: { home: 2, away: 1 },
+    predictions: { home: 44, draw: 28, away: 28 },
     confidence: "high",
     confidenceVal: 84,
-    insight: "Manchester United secured a clean sheet 2-0 victory at Old Trafford.",
+    insight: "Brighton edged Manchester United 2-1 with a dramatic 95th-minute stoppage-time header.",
     isPremium: false,
-    aiAnalysis: "Old Trafford dynamics: Manchester United's vertical transition index was high (8.2). Newcastle struggled to defend early crosses, leading to two clinical second-half goals.",
-    topTips: ["uo15", "uoht05", "c75"]
+    aiAnalysis: "Amex Stadium battle: Danny Welbeck opened scoring against his former club, Amad Diallo leveled at 60', before João Pedro sealed the 2-1 win at 90+5'. Over 2.5 goals and BTTS landed as projected.",
+    topTips: ["uo15", "uo25", "btts", "win1"]
   },
   {
     id: "match-8",
@@ -251,7 +281,7 @@ const MATCH_DATA = [
     isYesterday: true,
     league: "Premier League",
     leagueEmoji: "🏴󠁧󠁢󠁥󠁮󠁧󠁿",
-    time: "FT · 1 Week Ago",
+    time: "FT · Yesterday",
     isLive: false,
     status: "FT",
     statusShort: "FT",
@@ -266,14 +296,14 @@ const MATCH_DATA = [
       logo: "🔵🍬",
       form: ["L", "L", "D", "W", "L"]
     },
-    scores: { home: 3, away: 0 },
-    predictions: { home: 60, draw: 22, away: 18 },
+    scores: { home: 4, away: 0 },
+    predictions: { home: 68, draw: 18, away: 14 },
     confidence: "high",
-    confidenceVal: 89,
-    insight: "Spurs dominated with 64% possession and a comfortable 3-0 home win.",
+    confidenceVal: 91,
+    insight: "Tottenham dismantled Everton 4-0 at the Tottenham Hotspur Stadium.",
     isPremium: false,
-    aiAnalysis: "Postecoglou high line executed cleanly. Everton conceded 18 shots in the box with 0.42 xG generated.",
-    topTips: ["uo15", "uo25", "win1"]
+    aiAnalysis: "Postecoglou high press in full flow: Son Heung-min scored twice alongside goals from Romero and Bissouma. Clean sheet and Over 2.5 landed with ease.",
+    topTips: ["uo15", "uo25", "uo35", "win1"]
   },
   {
     id: "match-11",
@@ -281,7 +311,7 @@ const MATCH_DATA = [
     isYesterday: true,
     league: "Premier League",
     leagueEmoji: "🏴󠁧󠁢󠁥󠁮󠁧󠁿",
-    time: "FT · 2 Weeks Ago",
+    time: "FT · Yesterday",
     isLive: false,
     status: "FT",
     statusShort: "FT",
@@ -289,21 +319,21 @@ const MATCH_DATA = [
     homeTeam: {
       name: "Aston Villa",
       logo: "🦁🟣",
-      form: ["W", "D", "W", "W", "L"]
+      form: ["L", "W", "W", "D", "W"]
     },
     awayTeam: {
-      name: "Wolves",
-      logo: "🐺",
-      form: ["L", "D", "L", "L", "W"]
+      name: "Arsenal",
+      logo: "🔴",
+      form: ["W", "W", "W", "W", "D"]
     },
-    scores: { home: 2, away: 1 },
-    predictions: { home: 56, draw: 25, away: 19 },
+    scores: { home: 0, away: 2 },
+    predictions: { home: 26, draw: 28, away: 46 },
     confidence: "high",
-    confidenceVal: 85,
-    insight: "Villa came back from behind to win 2-1 at Villa Park.",
+    confidenceVal: 87,
+    insight: "Arsenal produced a clinical 2-0 away victory at Villa Park.",
     isPremium: false,
-    aiAnalysis: "Emery's second-half tactical substitutions broke down Wolves' low block through rapid half-space runs.",
-    topTips: ["btts", "uo25", "win1"]
+    aiAnalysis: "Arteta's tactical control: Leandro Trossard scored within 2 minutes of coming on, followed by Thomas Partey's strike to avenge last season's double defeat.",
+    topTips: ["uo15", "uo25", "win2"]
   },
   {
     id: "match-12",

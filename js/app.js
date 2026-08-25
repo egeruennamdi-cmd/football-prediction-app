@@ -3183,7 +3183,17 @@ function generateDateFixturesFallback(dateId, leagueName) {
   targetDate.setDate(baseDate.getDate() + offset);
   const rawTimestamp = targetDate.getTime();
 
-  const pairs = [
+  const fulhamClub = clubs.find(c => c.name.toLowerCase().includes('fulham')) || { name: "Fulham", logo: "⚪⚫", flag: "🏴󠁧󠁢󠁥󠁮󠁧󠁿" };
+  const chelseaClub = clubs.find(c => c.name.toLowerCase().includes('chelsea')) || { name: "Chelsea", logo: "🦁", flag: "🏴󠁧󠁢󠁥󠁮󠁧󠁿" };
+  const brightonClub = clubs.find(c => c.name.toLowerCase().includes('brighton')) || { name: "Brighton", logo: "🕊️🔵", flag: "🏴󠁧󠁢󠁥󠁮󠁧󠁿" };
+  const manUtdClub = clubs.find(c => c.name.toLowerCase().includes('united') || c.name.toLowerCase().includes('manchester united')) || { name: "Manchester United", logo: "👿", flag: "🏴󠁧󠁢󠁥󠁮󠁧󠁿" };
+
+  const pairs = (isFinished && cleanLeague.toLowerCase().includes('premier')) ? [
+    [fulhamClub, chelseaClub, "FT · Yesterday", 2, 3],
+    [brightonClub, manUtdClub, "FT · Yesterday", 2, 1],
+    [clubs[0] || fulhamClub, clubs[1] || chelseaClub, "FT · Yesterday", 2, 0],
+    [clubs[2] || brightonClub, clubs[3] || manUtdClub, "FT · Yesterday", 4, 0]
+  ] : [
     [clubs[0], clubs[1], isFinished ? `${label}` : `${label}, 17:30`, isFinished ? 2 : null, isFinished ? 1 : null],
     [clubs[2] || clubs[0], clubs[3] || clubs[1], isFinished ? `${label}` : `${label}, 20:00`, isFinished ? 1 : null, isFinished ? 1 : null],
     [clubs[4] || clubs[2] || clubs[0], clubs[5] || clubs[3] || clubs[1], isFinished ? `${label}` : `${label}, 15:00`, isFinished ? 3 : null, isFinished ? 0 : null],
