@@ -72,9 +72,9 @@ export async function onRequestPost(context) {
     const resData = await response.json().catch(() => ({}));
 
     // Check if BetPaddi returned converted data
-    if (response.ok && (resData.status === "success" || resData.data || resData.converted_code || resData.target_code)) {
+    if (response.ok && (resData.code || resData.converted_code || resData.target_code || resData.data || resData.status === "success" || (resData.message && resData.message.toLowerCase().includes("successful")))) {
       const dataObj = resData.data || resData;
-      const convertedCode = dataObj.converted_code || dataObj.target_code || dataObj.code || resData.converted_code;
+      const convertedCode = resData.code || dataObj.converted_code || dataObj.target_code || dataObj.code;
       const totalOdds = dataObj.total_odds || dataObj.odds || "14.50";
       const matches = dataObj.matches || dataObj.events || [];
 
