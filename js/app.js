@@ -6229,48 +6229,25 @@ window.loadRecentConversion = loadRecentConversion;
 /* --- SMART MULTI-CARD BET CODE CONVERTER ENGINE --- */
 
 function resolveConverterInputs() {
-  const heroCodeEl = document.getElementById("hero-betcode-src-code");
   const mainCodeEl = document.getElementById("betcode-src-code");
+  const heroCodeEl = document.getElementById("hero-betcode-src-code");
 
-  const heroCode = heroCodeEl ? heroCodeEl.value.trim() : "";
   const mainCode = mainCodeEl ? mainCodeEl.value.trim() : "";
+  const heroCode = heroCodeEl ? heroCodeEl.value.trim() : "";
 
-  const heroSrc = document.getElementById("hero-betcode-src-select")?.value || "";
   const mainSrc = document.getElementById("betcode-src-select")?.value || "";
+  const heroSrc = document.getElementById("hero-betcode-src-select")?.value || "";
 
-  const heroTgt = document.getElementById("hero-betcode-target-select")?.value || "";
   const mainTgt = document.getElementById("betcode-tgt-select")?.value || "";
+  const heroTgt = document.getElementById("hero-betcode-target-select")?.value || "";
 
-  let code = "BC9P2XZ";
-  let src = "888starz:xx";
-  let tgt = "1xbet:ng";
+  let code = mainCode || heroCode || "5P69RVW";
+  let src = mainSrc || heroSrc || "bet9ja";
+  let tgt = mainTgt || heroTgt || "sportybet:ng";
 
-  // Check focused or active input first
-  if (document.activeElement === heroCodeEl && heroCode) {
-    code = heroCode;
-    src = heroSrc || "888starz:xx";
-    tgt = heroTgt || "1xbet:ng";
-  } else if (document.activeElement === mainCodeEl && mainCode) {
-    code = mainCode;
-    src = mainSrc || "888starz:xx";
-    tgt = mainTgt || "1xbet:ng";
-  } else if (mainCode) {
-    code = mainCode;
-    src = mainSrc || heroSrc || "888starz:xx";
-    tgt = mainTgt || heroTgt || "1xbet:ng";
-  } else if (heroCode) {
-    code = heroCode;
-    src = heroSrc || mainSrc || "888starz:xx";
-    tgt = heroTgt || mainTgt || "1xbet:ng";
-  } else {
-    code = "BC9P2XZ";
-    src = mainSrc || heroSrc || "888starz:xx";
-    tgt = mainTgt || heroTgt || "1xbet:ng";
-  }
-
-  // Sync inputs across all cards
-  if (heroCodeEl && !heroCodeEl.value) heroCodeEl.value = code;
+  // Sync inputs across cards
   if (mainCodeEl && !mainCodeEl.value) mainCodeEl.value = code;
+  if (heroCodeEl && !heroCodeEl.value) heroCodeEl.value = code;
 
   return { code, src, tgt };
 }

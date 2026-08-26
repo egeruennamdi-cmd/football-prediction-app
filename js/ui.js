@@ -5979,6 +5979,40 @@ if (document.readyState === 'loading') {
   setTimeout(renderRecentConvertedSlips, 1000);
 }
 
+function resolveConverterInputs() {
+  const mainCodeEl = document.getElementById("betcode-src-code");
+  const heroCodeEl = document.getElementById("hero-betcode-src-code");
+
+  const mainCode = mainCodeEl ? mainCodeEl.value.trim() : "";
+  const heroCode = heroCodeEl ? heroCodeEl.value.trim() : "";
+
+  const mainSrc = document.getElementById("betcode-src-select")?.value || "";
+  const heroSrc = document.getElementById("hero-betcode-src-select")?.value || "";
+
+  const mainTgt = document.getElementById("betcode-tgt-select")?.value || "";
+  const heroTgt = document.getElementById("hero-betcode-target-select")?.value || "";
+
+  let code = mainCode || heroCode || "5P69RVW";
+  let src = mainSrc || heroSrc || "bet9ja";
+  let tgt = mainTgt || heroTgt || "sportybet:ng";
+
+  // Sync inputs
+  if (mainCodeEl && !mainCodeEl.value) mainCodeEl.value = code;
+  if (heroCodeEl && !heroCodeEl.value) heroCodeEl.value = code;
+
+  return { code, src, tgt };
+}
+
+function convertBetSlipCode() {
+  const { code, src, tgt } = resolveConverterInputs();
+  convertBetCode(code, src, tgt);
+}
+
+function executeHeroBetCodeConversion() {
+  const { code, src, tgt } = resolveConverterInputs();
+  convertBetCode(code, src, tgt);
+}
+
 async function convertBetCode(code, src, target) {
   const sourceCode = (code || "BC9P2XZ").toUpperCase().trim();
   const sourceBookie = src || "bet9ja";
