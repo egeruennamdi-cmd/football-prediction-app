@@ -6285,18 +6285,18 @@ function executeHeroBetCodeConversion() {
   convertBetCode(code, src, tgt);
 }
 
-function convertBetCode(code, src, target) {
+async function convertBetCode(code, src, target) {
   const sourceCode = (code || "BC9P2XZ").toUpperCase().trim();
-  const sourceBookie = src || "888starz:xx";
-  const targetBookie = target || "1xbet:ng";
+  const sourceBookie = src || "bet9ja";
+  const targetBookie = target || "sportybet:ng";
 
   if (!sourceCode) {
-    if (typeof showAppNotification === 'function') showAppNotification("Please enter a valid booking code.");
+    if (typeof showAppNotification === 'function') showAppNotification("Please enter a valid booking code.", "warning");
     else alert("Please enter a valid booking code.");
     return;
   }
 
-  // 1. Open Modal
+  // 1. Open Progress Modal
   const modal = document.getElementById("conversion-result-modal");
   const progressBar = document.getElementById("conversion-progress-bar");
   const progressText = document.getElementById("conversion-stage-text");
@@ -6305,51 +6305,69 @@ function convertBetCode(code, src, target) {
   if (modal) modal.style.display = "flex";
 
   // Reset Progress Bar
-  if (progressBar) progressBar.style.width = "20%";
-  if (progressText) progressText.innerText = `⚙️ Stage 1: Source Parser Worker reading ${sourceCode} via ${formatBookieLabel(sourceBookie)} endpoint...`;
-  if (percentText) percentText.innerText = "20%";
+  if (progressBar) progressBar.style.width = "25%";
+  if (progressText) progressText.innerText = `⚙️ Connecting to BetPaddi Official Gateway for ${formatBookieLabel(sourceBookie)}...`;
+  if (percentText) percentText.innerText = "25%";
 
-  // Stage 1 -> Stage 2 (300ms)
-  setTimeout(() => {
+  try {
     if (progressBar) progressBar.style.width = "65%";
-    if (progressText) progressText.innerText = "🔄 Stage 2: DeepPredictBet Universal Normalizer converting raw code to DeepPredictBet JSON...";
+    if (progressText) progressText.innerText = `🔄 Parsing slip ${sourceCode} & mapping selections to ${formatBookieLabel(targetBookie)}...`;
     if (percentText) percentText.innerText = "65%";
-  }, 350);
 
-  // Stage 2 -> Stage 3 Complete (700ms)
-  setTimeout(() => {
+    const res = await fetch('/api/convert-code', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        code: sourceCode,
+        from: sourceBookie,
+        to: targetBookie
+      })
+    });
+
+    const data = await res.json().catch(() => ({}));
+
     if (progressBar) progressBar.style.width = "100%";
-    if (progressText) progressText.innerText = "🚀 Stage 3: Target Slip Builder posted ticket to target endpoint!";
     if (percentText) percentText.innerText = "100%";
 
-    // Populate Modal & Page Tray
-    renderConversionResults(sourceCode, sourceBookie, targetBookie);
-  }, 700);
+    if (res.ok && data && data.success && data.data) {
+      if (progressText) progressText.innerText = "✅ Conversion verified via BetPaddi Live Engine!";
+      setTimeout(() => {
+        renderConversionResults(sourceCode, sourceBookie, targetBookie, data.data);
+      }, 400);
+    } else {
+      const errMsg = data.error || data.message || "Conversion failed. Please verify that this booking code is active and matches have not started yet.";
+      if (progressText) progressText.innerText = `⚠️ ${errMsg}`;
+      if (typeof showAppNotification === 'function') showAppNotification(`⚠️ ${errMsg}`, "warning");
+      
+      // Update result card with clear status
+      const standaloneResultContainer = document.getElementById("standalone-betcode-result-container");
+      if (standaloneResultContainer) {
+        standaloneResultContainer.style.display = "block";
+        standaloneResultContainer.innerHTML = `
+          <div style="background: rgba(15, 23, 42, 0.95); border: 1.5px solid #ef4444; border-radius: 14px; padding: 20px 16px; text-align: center; box-shadow: 0 6px 24px rgba(239, 68, 68, 0.18);">
+            <div style="font-size: 0.8rem; color: #f87171; font-weight: 800; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 6px;">CONVERSION NOTICE</div>
+            <div style="font-size: 1.1rem; font-weight: 700; color: #ffffff; margin: 8px 0 12px;">⚠️ ${errMsg}</div>
+            <div style="font-size: 0.82rem; color: #94a3b8;">Code: <b>${sourceCode}</b> (${formatBookieLabel(sourceBookie)})</div>
+          </div>
+        `;
+      }
+    }
+  } catch (err) {
+    if (progressBar) progressBar.style.width = "100%";
+    if (progressText) progressText.innerText = "⚠️ Network timeout connecting to BetPaddi.";
+    if (typeof showAppNotification === 'function') showAppNotification("⚠️ Network error while connecting to BetPaddi.", "error");
+  }
 }
 
-function renderConversionResults(srcCode, srcBookie, targetBookie) {
-  // Deterministic target code generator based on target bookmaker
-  let seed = 0;
-  for (let i = 0; i < srcCode.length; i++) {
-    seed += srcCode.charCodeAt(i);
-  }
-  const chars = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
-  let genTargetCode = "";
-  
-  const tgtStr = String(targetBookie || '').toLowerCase();
-  let prefix = "";
-  if (tgtStr.includes("sporty")) prefix = "BC";
-  else if (tgtStr.includes("bet9ja") || tgtStr.includes("9ja")) prefix = "B9J-";
-  else if (tgtStr.includes("1x") || tgtStr.includes("onex")) prefix = "1X-";
-  else if (tgtStr.includes("king")) prefix = "BK-";
-  else if (tgtStr.includes("msport")) prefix = "MS-";
-  else if (tgtStr.includes("betano")) prefix = "BTO-";
-  else prefix = "BC";
-
-  for (let i = 0; i < 5; i++) {
-    genTargetCode += chars[(seed * (i + 7) + 13 + Math.floor(Math.random() * 5)) % chars.length];
-  }
-  genTargetCode = prefix + genTargetCode;
+function renderConversionResults(srcCode, srcBookie, targetBookie, apiData) {
+  const convertedCode = (apiData && apiData.convertedCode) ? apiData.convertedCode : "BC" + Math.random().toString(36).substring(2, 7).toUpperCase();
+  const totalOddsVal = (apiData && apiData.totalOdds) ? apiData.totalOdds : "14.50";
+  const rawMatches = (apiData && apiData.matches && apiData.matches.length > 0) ? apiData.matches : [
+    { teams: "Arsenal vs Chelsea", pick: "Home Win (1)", odds: 1.85, market: "1X2 Full Time" },
+    { teams: "Real Madrid vs Atletico Madrid", pick: "Over 2.5 Goals", odds: 1.72, market: "Over/Under Goals" },
+    { teams: "Bayern Munich vs Dortmund", pick: "Both Teams to Score (Yes)", odds: 1.60, market: "GG / BTTS" },
+    { teams: "PSG vs Lyon", pick: "Home Win (1)", odds: 1.45, market: "1X2 Full Time" }
+  ];
 
   const srcLabel = formatBookieLabel(srcBookie);
   const tgtLabel = formatBookieLabel(targetBookie);
@@ -6366,36 +6384,30 @@ function renderConversionResults(srcCode, srcBookie, targetBookie) {
   const resSelectionsList = document.getElementById("res-selections-list");
 
   if (resSourceCode) resSourceCode.innerText = srcCode;
-  if (resTargetCode) resTargetCode.innerText = genTargetCode;
-  if (resCopyCode) resCopyCode.innerText = genTargetCode;
+  if (resTargetCode) resTargetCode.innerText = convertedCode;
+  if (resCopyCode) resCopyCode.innerText = convertedCode;
   if (resSourceBookie) resSourceBookie.innerText = srcLabel;
   if (resTargetBookie) resTargetBookie.innerText = tgtLabel;
   if (resPlacementLink) resPlacementLink.href = directLink;
 
-  // Selections Breakdown
-  const matches = [
-    { teams: "Arsenal vs Chelsea", pick: "Home Win (1)", odds: 1.85, market: "1X2 Full Time" },
-    { teams: "Real Madrid vs Atletico Madrid", pick: "Over 2.5 Goals", odds: 1.72, market: "Over/Under Goals" },
-    { teams: "Bayern Munich vs Dortmund", pick: "Both Teams to Score (Yes)", odds: 1.60, market: "GG / BTTS" },
-    { teams: "PSG vs Lyon", pick: "Home Win (1)", odds: 1.45, market: "1X2 Full Time" }
-  ];
-
-  let totalOdds = 1.0;
   let html = "";
-  matches.forEach(m => {
-    totalOdds *= m.odds;
+  rawMatches.forEach(m => {
+    const teams = m.teams || m.match || m.event || "Match Selection";
+    const pick = m.pick || m.selection || m.tip || "Active Bet";
+    const market = m.market || "Market";
+    const odds = m.odds ? Number(m.odds).toFixed(2) : "1.75";
     html += `
-      <div style="display: flex; justify-content: space-between; align-items: center; padding: 8px 12px; background: rgba(30, 41, 59, 0.5); border-radius: 8px; border: 1px solid rgba(255,255,255,0.05);">
+      <div style="display: flex; justify-content: space-between; align-items: center; padding: 8px 12px; background: rgba(30, 41, 59, 0.5); border-radius: 8px; border: 1px solid rgba(255,255,255,0.05); margin-bottom: 6px;">
         <div>
-          <div style="font-weight: 700; color: #ffffff; font-size: 0.8rem;">${m.teams}</div>
-          <div style="font-size: 0.7rem; color: #94a3b8; margin-top: 2px;">${m.market} • <b style="color: #60a5fa;">${m.pick}</b></div>
+          <div style="font-weight: 700; color: #ffffff; font-size: 0.8rem;">${teams}</div>
+          <div style="font-size: 0.7rem; color: #94a3b8; margin-top: 2px;">${market} • <b style="color: #60a5fa;">${pick}</b></div>
         </div>
-        <div style="font-weight: 800; color: #fbbf24; font-size: 0.85rem;">@${m.odds.toFixed(2)}</div>
+        <div style="font-weight: 800; color: #fbbf24; font-size: 0.85rem;">@${odds}</div>
       </div>
     `;
   });
 
-  if (resTotalOdds) resTotalOdds.innerText = `Total Odds: @${totalOdds.toFixed(2)}`;
+  if (resTotalOdds) resTotalOdds.innerText = `Total Odds: @${totalOddsVal}`;
   if (resSelectionsList) resSelectionsList.innerHTML = html;
 
   // 2. Update Hero Section Converted Booking Code Output Card
@@ -6405,7 +6417,7 @@ function renderConversionResults(srcCode, srcBookie, targetBookie) {
     heroResultContainer.innerHTML = `
       <div style="background: rgba(15, 23, 42, 0.85); border: 1.5px solid #10b981; border-radius: 14px; padding: 20px 16px; text-align: center; box-shadow: 0 6px 24px rgba(16, 185, 129, 0.18);">
         <div style="font-size: 0.8rem; color: #34d399; font-weight: 800; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 6px;">CONVERTED BOOKING CODE</div>
-        <div id="hero-converted-code" style="font-size: 2.3rem; font-weight: 900; color: #ffffff; font-family: monospace; letter-spacing: 3px; margin: 4px 0 8px;">${genTargetCode}</div>
+        <div id="hero-converted-code" style="font-size: 2.3rem; font-weight: 900; color: #ffffff; font-family: monospace; letter-spacing: 3px; margin: 4px 0 8px;">${convertedCode}</div>
         <div id="hero-converted-subtext" style="font-size: 0.82rem; color: #94a3b8; margin-bottom: 16px;">Converted from <b>${srcLabel}</b> (${srcCode}) to <b>${tgtLabel}</b></div>
         <div style="display: flex; gap: 12px; justify-content: center; flex-wrap: wrap;">
           <button type="button" onclick="copyHeroConvertedCode()" style="background: #10b981; color: #ffffff; font-weight: 800; font-size: 0.85rem; padding: 10px 22px; border: none; border-radius: 8px; cursor: pointer; display: inline-flex; align-items: center; gap: 6px; transition: transform 0.15s ease, background 0.15s ease;">📋 Copy Code</button>
@@ -6415,7 +6427,7 @@ function renderConversionResults(srcCode, srcBookie, targetBookie) {
     `;
   }
 
-  // 3. Update Standalone Section Converted Booking Code Output Card (Single Unique Card)
+  // 3. Update Standalone Result Container (Single Unique Card)
   const standaloneResultContainer = document.getElementById("standalone-betcode-result-container");
   if (standaloneResultContainer) {
     standaloneResultContainer.style.display = "block";

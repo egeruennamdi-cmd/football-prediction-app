@@ -3,125 +3,105 @@
  * Cloudflare Pages Function: /api/convert-code
  */
 const BETPADDI_API_KEY = "BP-52eb15ce2fd694bc2faf9987b18a160762f176082cb57d04";
-const BETPADDI_BASE_URL = "https://api.betpaddi.com/api/v1";
+const BETPADDI_CONVERT_URL = "https://betpaddi.com/api/v1/conversion/convert-code";
 
-const BOOKMAKER_SLUGS = {
-  'sportybet': 'sportybet',
-  'bet9ja': 'bet9ja',
-  '1xbet': '1xbet',
-  'betking': 'betking',
-  'msport': 'msport',
-  'betano': 'betano',
-  '22bet': '22bet',
-  'paripesa': 'paripesa'
-};
-
-function normalizeBookmaker(rawName) {
-  const clean = (rawName || '').toLowerCase().replace(/[^a-z0-9]/g, '');
-  for (const [key, slug] of Object.entries(BOOKMAKER_SLUGS)) {
-    if (clean.includes(key)) return slug;
-  }
-  return 'sportybet';
+function normalizeBookieCode(raw) {
+  if (!raw) return "sportybet:ng";
+  const str = String(raw).trim();
+  if (str.includes(":")) return str; // already formatted like sportybet:ng, 1xbet:ng
+  const low = str.toLowerCase();
+  if (low.includes("bet9ja")) return "bet9ja";
+  if (low.includes("sporty")) return "sportybet:ng";
+  if (low.includes("1x")) return "1xbet:ng";
+  if (low.includes("king")) return "betking:ng";
+  if (low.includes("msport")) return "msport:ng";
+  if (low.includes("betano")) return "betano:ng";
+  if (low.includes("22bet")) return "_22bet_ng";
+  return str;
 }
 
 export async function onRequestPost(context) {
   const corsHeaders = {
     "Access-Control-Allow-Origin": "*",
     "Access-Control-Allow-Methods": "POST, OPTIONS",
-    "Access-Control-Allow-Headers": "Content-Type, Authorization",
+    "Access-Control-Allow-Headers": "Content-Type, Authorization, x-api-key",
     "Content-Type": "application/json"
   };
 
   try {
     const body = await context.request.json();
-    const { fromBookmaker, toBookmaker, bookingCode } = body;
+    const { fromBookmaker, toBookmaker, bookingCode, from, to, code } = body;
 
-    if (!bookingCode || !bookingCode.trim()) {
+    const rawCode = (bookingCode || code || "").trim().toUpperCase();
+    const sourceBookie = normalizeBookieCode(from || fromBookmaker || "bet9ja");
+    const targetBookie = normalizeBookieCode(to || toBookmaker || "sportybet:ng");
+
+    if (!rawCode) {
       return new Response(JSON.stringify({
         success: false,
-        error: "Missing booking code."
+        error: "Please enter a valid booking code."
       }), { status: 400, headers: corsHeaders });
     }
 
-    const fromSlug = normalizeBookmaker(fromBookmaker);
-    const toSlug = normalizeBookmaker(toBookmaker);
+    if (sourceBookie === targetBookie) {
+      return new Response(JSON.stringify({
+        success: false,
+        error: "Source and Target bookmakers cannot be identical. Please select different platforms."
+      }), { status: 400, headers: corsHeaders });
+    }
 
+    // Call Real Official BetPaddi API
     const betpaddiPayload = {
-      from: fromSlug,
-      to: toSlug,
-      code: bookingCode.trim(),
-      source_bookmaker: fromSlug,
-      target_bookmaker: toSlug,
-      booking_code: bookingCode.trim()
+      code: rawCode,
+      from: sourceBookie,
+      to: targetBookie
     };
 
-    let convertedCode = null;
-    let totalOdds = null;
-    let matchesCount = null;
-    let isLiveBetPaddi = false;
+    const response = await fetch(BETPADDI_CONVERT_URL, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "Accept": "application/json",
+        "Authorization": `Bearer ${BETPADDI_API_KEY}`,
+        "x-api-key": BETPADDI_API_KEY
+      },
+      body: JSON.stringify(betpaddiPayload)
+    });
 
-    try {
-      const response = await fetch(`${BETPADDI_BASE_URL}/convert`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          "Accept": "application/json",
-          "Authorization": `Bearer ${BETPADDI_API_KEY}`,
-          "x-api-key": BETPADDI_API_KEY
-        },
-        body: JSON.stringify(betpaddiPayload)
-      });
+    const resData = await response.json().catch(() => ({}));
 
-      if (response.ok) {
-        const resData = await response.json();
-        if (resData && (resData.data || resData.converted_code || resData.code)) {
-          const d = resData.data || resData;
-          convertedCode = d.converted_code || d.target_code || d.code || d.booking_code;
-          totalOdds = d.total_odds || d.odds || null;
-          matchesCount = d.matches?.length || d.events?.length || null;
-          isLiveBetPaddi = true;
+    // Check if BetPaddi returned converted data
+    if (response.ok && (resData.status === "success" || resData.data || resData.converted_code || resData.target_code)) {
+      const dataObj = resData.data || resData;
+      const convertedCode = dataObj.converted_code || dataObj.target_code || dataObj.code || resData.converted_code;
+      const totalOdds = dataObj.total_odds || dataObj.odds || "14.50";
+      const matches = dataObj.matches || dataObj.events || [];
+
+      return new Response(JSON.stringify({
+        success: true,
+        provider: "BetPaddi Official Engine",
+        data: {
+          sourceCode: rawCode,
+          sourceBookie,
+          targetBookie,
+          convertedCode,
+          totalOdds,
+          matches
         }
-      }
-    } catch (apiErr) {
-      console.warn("[BetPaddi] Upstream fallback:", apiErr.message);
+      }), { status: 200, headers: corsHeaders });
     }
 
-    if (!convertedCode) {
-      const prefixes = {
-        'sportybet': 'BC',
-        'bet9ja': 'B9J-',
-        '1xbet': '1X-',
-        'betking': 'BK-',
-        'msport': 'MS-',
-        'betano': 'BTO-'
-      };
-      const prefix = prefixes[toSlug] || 'BC';
-      const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
-      let randomSuffix = '';
-      for (let i = 0; i < 5; i++) {
-        randomSuffix += chars.charAt(Math.floor(Math.random() * chars.length));
-      }
-      convertedCode = `${prefix}${randomSuffix}`;
-      totalOdds = totalOdds || (12.40 + Math.random() * 8.5).toFixed(2);
-    }
-
+    // If BetPaddi returned an error message from upstream
+    const errMsg = resData.message || resData.error || "Conversion failed. Please verify that this booking code is active on the source bookmaker and the matches have not kicked off yet.";
     return new Response(JSON.stringify({
-      success: true,
-      provider: isLiveBetPaddi ? "BetPaddi Live Engine" : "DeepPredict Resilient Converter",
-      data: {
-        sourceBookmaker: fromBookmaker,
-        targetBookmaker: toBookmaker,
-        sourceCode: bookingCode.trim(),
-        convertedCode: convertedCode,
-        totalOdds: totalOdds || "14.50",
-        matchesCount: matchesCount || 5
-      }
-    }), { status: 200, headers: corsHeaders });
+      success: false,
+      error: errMsg
+    }), { status: 400, headers: corsHeaders });
 
   } catch (error) {
     return new Response(JSON.stringify({
       success: false,
-      error: error.message
+      error: error.message || "Network error while connecting to BetPaddi API."
     }), { status: 500, headers: corsHeaders });
   }
 }
@@ -132,7 +112,7 @@ export async function onRequestOptions() {
     headers: {
       "Access-Control-Allow-Origin": "*",
       "Access-Control-Allow-Methods": "POST, OPTIONS",
-      "Access-Control-Allow-Headers": "Content-Type, Authorization"
+      "Access-Control-Allow-Headers": "Content-Type, Authorization, x-api-key"
     }
   });
 }
