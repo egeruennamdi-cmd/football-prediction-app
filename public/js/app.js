@@ -6415,7 +6415,7 @@ function renderConversionResults(srcCode, srcBookie, targetBookie) {
     `;
   }
 
-  // 3. Update Standalone Section Converted Booking Code Output Card
+  // 3. Update Standalone Section Converted Booking Code Output Card (Single Unique Card)
   const standaloneResultContainer = document.getElementById("standalone-betcode-result-container");
   if (standaloneResultContainer) {
     standaloneResultContainer.style.display = "block";
@@ -6432,21 +6432,11 @@ function renderConversionResults(srcCode, srcBookie, targetBookie) {
     `;
   }
 
-  // 4. Also Update On-Page Decoded Tray (#betcode-decoded-tray)
+  // Ensure decoded tray remains cleanly hidden
   const decodedTray = document.getElementById("betcode-decoded-tray");
   if (decodedTray) {
-    decodedTray.style.display = "block";
-    decodedTray.innerHTML = `
-      <div style="background: rgba(16, 185, 129, 0.1); border: 1.5px solid #10b981; border-radius: 12px; padding: 18px; text-align: center;">
-        <div style="font-size: 0.75rem; color: #a7f3d0; font-weight: 800; text-transform: uppercase;">Converted Booking Code</div>
-        <div style="font-size: 2rem; font-weight: 900; color: #ffffff; font-family: monospace; letter-spacing: 2px; margin: 6px 0;">${genTargetCode}</div>
-        <div style="font-size: 0.78rem; color: #94a3b8; margin-bottom: 12px;">Converted from <b>${srcLabel}</b> (${srcCode}) to <b>${tgtLabel}</b></div>
-        <div style="display: flex; gap: 10px; justify-content: center; flex-wrap: wrap;">
-          <button onclick="copyTargetBookingCode()" style="background: #10b981; color: #ffffff; font-weight: 800; font-size: 0.82rem; padding: 10px 18px; border: none; border-radius: 8px; cursor: pointer;">📋 Copy Code</button>
-          <a href="${directLink}" target="_blank" style="background: #2563eb; color: #ffffff; font-weight: 800; font-size: 0.82rem; padding: 10px 18px; border-radius: 8px; text-decoration: none;">⚡ Bet on ${tgtLabel}</a>
-        </div>
-      </div>
-    `;
+    decodedTray.style.display = "none";
+    decodedTray.innerHTML = "";
   }
 }
 
