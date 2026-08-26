@@ -6110,8 +6110,10 @@ function renderConversionResults(srcCode, srcBookie, targetBookie, apiData) {
     standaloneResultContainer.style.display = "block";
     standaloneResultContainer.innerHTML = `
       <div style="background: rgba(15, 23, 42, 0.85); border: 1.5px solid #10b981; border-radius: 14px; padding: 20px 16px; text-align: center; box-shadow: 0 6px 24px rgba(16, 185, 129, 0.18);">
-        <div style="font-size: 0.8rem; color: #34d399; font-weight: 800; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 6px;">CONVERTED BOOKING CODE</div>
-        <div id="standalone-converted-code" style="font-size: 2.3rem; font-weight: 900; color: #ffffff; font-family: monospace; letter-spacing: 3px; margin: 4px 0 8px;">${genTargetCode}</div>
+        <div style="display: inline-flex; align-items: center; gap: 6px; background: rgba(16, 185, 129, 0.15); border: 1px solid rgba(16, 185, 129, 0.4); padding: 4px 10px; border-radius: 20px; font-size: 0.75rem; color: #34d399; font-weight: 800; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 8px;">
+          ⚡ BetPaddi Live Engine Verified
+        </div>
+        <div id="standalone-converted-code" style="font-size: 2.3rem; font-weight: 900; color: #ffffff; font-family: monospace; letter-spacing: 3px; margin: 4px 0 8px;">${convertedCode}</div>
         <div id="standalone-converted-subtext" style="font-size: 0.82rem; color: #94a3b8; margin-bottom: 16px;">Converted from <b>${srcLabel}</b> (${srcCode}) to <b>${tgtLabel}</b></div>
         <div style="display: flex; gap: 12px; justify-content: center; flex-wrap: wrap;">
           <button type="button" onclick="copyStandaloneConvertedCode()" style="background: #10b981; color: #ffffff; font-weight: 800; font-size: 0.85rem; padding: 10px 22px; border: none; border-radius: 8px; cursor: pointer; display: inline-flex; align-items: center; gap: 6px; transition: transform 0.15s ease, background 0.15s ease;">📋 Copy Code</button>
