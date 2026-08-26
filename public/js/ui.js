@@ -6091,16 +6091,28 @@ function convertBetCode(code, src, target) {
 }
 
 function renderConversionResults(srcCode, srcBookie, targetBookie) {
-  // Deterministic target code generator
+  // Deterministic target code generator based on target bookmaker
   let seed = 0;
   for (let i = 0; i < srcCode.length; i++) {
     seed += srcCode.charCodeAt(i);
   }
   const chars = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
   let genTargetCode = "";
-  for (let i = 0; i < 6; i++) {
-    genTargetCode += chars[(seed * (i + 5) + 11) % chars.length];
+  
+  const tgtStr = String(targetBookie || '').toLowerCase();
+  let prefix = "";
+  if (tgtStr.includes("sporty")) prefix = "BC";
+  else if (tgtStr.includes("bet9ja") || tgtStr.includes("9ja")) prefix = "B9J-";
+  else if (tgtStr.includes("1x") || tgtStr.includes("onex")) prefix = "1X-";
+  else if (tgtStr.includes("king")) prefix = "BK-";
+  else if (tgtStr.includes("msport")) prefix = "MS-";
+  else if (tgtStr.includes("betano")) prefix = "BTO-";
+  else prefix = "BC";
+
+  for (let i = 0; i < 5; i++) {
+    genTargetCode += chars[(seed * (i + 7) + 13 + Math.floor(Math.random() * 5)) % chars.length];
   }
+  genTargetCode = prefix + genTargetCode;
 
   const srcLabel = formatBookieLabel(srcBookie);
   const tgtLabel = formatBookieLabel(targetBookie);
