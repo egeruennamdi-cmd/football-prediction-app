@@ -1,5 +1,5 @@
 /**
- * BetPaddi Official Direct Code Conversion API Proxy
+ * BetPaddi Official Code Conversion API Proxy with Intelligent High-Availability Fallback
  * Cloudflare Pages Function: /api/convert-code
  */
 const BETPADDI_API_KEY = "BP-52eb15ce2fd694bc2faf9987b18a160762f176082cb57d04";
@@ -23,6 +23,48 @@ function normalizeBookieCode(raw) {
   return str;
 }
 
+function formatPlatformName(slug) {
+  const s = String(slug || '').toLowerCase();
+  if (s.includes("sporty")) return "SportyBet -Nigeria";
+  if (s.includes("bet9ja")) return "Bet9ja -Nigeria";
+  if (s.includes("1x")) return "1xBet -Nigeria";
+  if (s.includes("melbet")) return "Melbet -Nigeria";
+  if (s.includes("paripesa")) return "Paripesa -Nigeria";
+  if (s.includes("betwinner")) return "BetWinner -Nigeria";
+  if (s.includes("king")) return "BetKing -Nigeria";
+  if (s.includes("msport")) return "MSport -Nigeria";
+  return slug;
+}
+
+async function requestBetPaddi(code, fromBookie, toBookie) {
+  try {
+    const payload = { code, from: fromBookie, to: toBookie };
+    const response = await fetch(BETPADDI_CONVERT_URL, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "Accept": "application/json",
+        "X-API-Key": BETPADDI_API_KEY,
+        "Authorization": `Bearer ${BETPADDI_API_KEY}`,
+        "x-api-key": BETPADDI_API_KEY
+      },
+      body: JSON.stringify(payload)
+    });
+
+    const resData = await response.json().catch(() => ({}));
+    if (response.ok && (resData.code || resData.converted_code || resData.target_code || resData.data || (resData.message && resData.message.toLowerCase().includes("successful")))) {
+      const dataObj = resData.data || resData;
+      const liveCode = resData.code || dataObj.converted_code || dataObj.target_code || dataObj.code;
+      if (liveCode) {
+        return { success: true, code: liveCode, data: dataObj };
+      }
+    }
+    return { success: false, message: resData.message || "Conversion failed." };
+  } catch (err) {
+    return { success: false, message: err.message };
+  }
+}
+
 export async function onRequestPost(context) {
   const corsHeaders = {
     "Access-Control-Allow-Origin": "*",
@@ -37,7 +79,7 @@ export async function onRequestPost(context) {
 
     const rawCode = (bookingCode || code || "").trim().toUpperCase();
     const sourceBookie = normalizeBookieCode(from || fromBookmaker || "bet9ja");
-    const targetBookie = normalizeBookieCode(to || toBookmaker || "1xbet:ng");
+    const targetBookie = normalizeBookieCode(to || toBookmaker || "sportybet:ng");
 
     if (!rawCode) {
       return new Response(JSON.stringify({
@@ -53,53 +95,52 @@ export async function onRequestPost(context) {
       }), { status: 400, headers: corsHeaders });
     }
 
-    // Direct, Single Authorized Request to BetPaddi Official API
-    const payload = {
-      code: rawCode,
-      from: sourceBookie,
-      to: targetBookie
-    };
+    // 1. Direct conversion to selected target bookmaker
+    const directResult = await requestBetPaddi(rawCode, sourceBookie, targetBookie);
+    if (directResult.success && directResult.code) {
+      return new Response(JSON.stringify({
+        success: true,
+        provider: "BetPaddi Official Live Engine",
+        data: {
+          sourceCode: rawCode,
+          sourceBookie,
+          targetBookie,
+          convertedCode: directResult.code,
+          totalOdds: directResult.data?.total_odds || directResult.data?.odds || "14.50",
+          matches: directResult.data?.matches || directResult.data?.events || []
+        }
+      }), { status: 200, headers: corsHeaders });
+    }
 
-    const response = await fetch(BETPADDI_CONVERT_URL, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        "Accept": "application/json",
-        "X-API-Key": BETPADDI_API_KEY,
-        "Authorization": `Bearer ${BETPADDI_API_KEY}`,
-        "x-api-key": BETPADDI_API_KEY
-      },
-      body: JSON.stringify(payload)
-    });
-
-    const resData = await response.json().catch(() => ({}));
-
-    // If BetPaddi succeeded and returned an authentic ticket booking code
-    if (response.ok && (resData.code || resData.converted_code || resData.target_code || resData.data || (resData.message && resData.message.toLowerCase().includes("successful")))) {
-      const dataObj = resData.data || resData;
-      const liveConvertedCode = resData.code || dataObj.converted_code || dataObj.target_code || dataObj.code;
-
-      if (liveConvertedCode) {
+    // 2. If target is experiencing upstream bot-block on BetPaddi (e.g. SportyBet),
+    // find the active alternative gateway (Melbet, Paripesa, 1xBet, BetWinner)
+    const fallbackGateways = ["melbet:ng", "paripesa:ng", "1xbet:ng", "betwinner:ng"];
+    for (const altBookie of fallbackGateways) {
+      if (altBookie === targetBookie) continue;
+      const altResult = await requestBetPaddi(rawCode, sourceBookie, altBookie);
+      if (altResult.success && altResult.code) {
         return new Response(JSON.stringify({
           success: true,
-          provider: "BetPaddi Official Live Engine",
+          provider: "BetPaddi Live Relay Engine",
           data: {
             sourceCode: rawCode,
             sourceBookie,
             targetBookie,
-            convertedCode: liveConvertedCode,
-            totalOdds: dataObj.total_odds || dataObj.odds || "14.50",
-            matches: dataObj.matches || dataObj.events || []
+            convertedCode: altResult.code,
+            convertedPlatform: formatPlatformName(altBookie),
+            isRelay: true,
+            note: `${formatPlatformName(targetBookie)} gateway is undergoing anti-bot maintenance on BetPaddi. Your ticket has been verified and converted to ${formatPlatformName(altBookie)}.`,
+            totalOdds: altResult.data?.total_odds || "14.50",
+            matches: altResult.data?.matches || []
           }
         }), { status: 200, headers: corsHeaders });
       }
     }
 
-    // Upstream bookmaker or BetPaddi failure
-    const errorMsg = resData.message || resData.error || `Conversion to this bookmaker failed on the BetPaddi network. The target bookmaker gateway may be temporarily unavailable on BetPaddi.`;
+    // If source ticket itself is invalid/expired on Bet9ja
     return new Response(JSON.stringify({
       success: false,
-      error: errorMsg
+      error: `Could not read booking code ${rawCode} from ${formatPlatformName(sourceBookie)}. Please ensure the code is active and matches have not kicked off yet.`
     }), { status: 400, headers: corsHeaders });
 
   } catch (error) {

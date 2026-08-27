@@ -6141,6 +6141,10 @@ function renderConversionResults(srcCode, srcBookie, targetBookie, apiData) {
   // 2. Update Standalone Result Container (Single Unique Card)
   const standaloneResultContainer = document.getElementById("standalone-betcode-result-container");
   if (standaloneResultContainer) {
+    const isRelay = apiData && apiData.isRelay;
+    const activePlatform = (apiData && apiData.convertedPlatform) || tgtLabel;
+    const activeLink = (apiData && apiData.convertedPlatform) ? getBookieDirectUrl(apiData.convertedPlatform) : directLink;
+
     standaloneResultContainer.style.display = "block";
     standaloneResultContainer.innerHTML = `
       <div style="background: rgba(15, 23, 42, 0.85); border: 1.5px solid #10b981; border-radius: 14px; padding: 20px 16px; text-align: center; box-shadow: 0 6px 24px rgba(16, 185, 129, 0.18);">
@@ -6148,15 +6152,15 @@ function renderConversionResults(srcCode, srcBookie, targetBookie, apiData) {
           ⚡ BetPaddi Live Engine Verified
         </div>
         <div id="standalone-converted-code" style="font-size: 2.3rem; font-weight: 900; color: #ffffff; font-family: monospace; letter-spacing: 3px; margin: 4px 0 8px;">${convertedCode}</div>
-        <div id="standalone-converted-subtext" style="font-size: 0.82rem; color: #94a3b8; margin-bottom: 12px;">Converted from <b>${srcLabel}</b> (${srcCode}) to <b>${tgtLabel}</b></div>
-        ${(apiData && apiData.altVerifiedCode) ? `
-          <div style="margin-bottom: 14px; font-size: 0.78rem; color: #60a5fa; background: rgba(37, 99, 235, 0.15); border: 1px solid rgba(59, 130, 246, 0.3); border-radius: 8px; padding: 6px 12px; display: inline-block;">
-            ⚡ <b>${apiData.altVerifiedBookie || '1xBet'}</b> Verified Code: <b style="color: #ffffff; font-family: monospace; letter-spacing: 1px;">${apiData.altVerifiedCode}</b>
+        <div id="standalone-converted-subtext" style="font-size: 0.82rem; color: #94a3b8; margin-bottom: 12px;">Converted from <b>${srcLabel}</b> (${srcCode}) to <b>${activePlatform}</b></div>
+        ${(apiData && apiData.note) ? `
+          <div style="margin-bottom: 12px; font-size: 0.78rem; color: #fbbf24; background: rgba(251, 191, 36, 0.12); border: 1px solid rgba(251, 191, 36, 0.3); border-radius: 8px; padding: 8px 12px; line-height: 1.4;">
+            ℹ️ ${apiData.note}
           </div>
         ` : ''}
         <div style="display: flex; gap: 12px; justify-content: center; flex-wrap: wrap;">
           <button type="button" onclick="copyStandaloneConvertedCode()" style="background: #10b981; color: #ffffff; font-weight: 800; font-size: 0.85rem; padding: 10px 22px; border: none; border-radius: 8px; cursor: pointer; display: inline-flex; align-items: center; gap: 6px; transition: transform 0.15s ease, background 0.15s ease;">📋 Copy Code</button>
-          <a id="standalone-converted-bet-btn" href="${directLink}" target="_blank" style="background: #2563eb; color: #ffffff; font-weight: 800; font-size: 0.85rem; padding: 10px 22px; border-radius: 8px; text-decoration: none; display: inline-flex; align-items: center; gap: 6px; transition: transform 0.15s ease, background 0.15s ease;">⚡ Bet on ${tgtLabel}</a>
+          <a id="standalone-converted-bet-btn" href="${activeLink}" target="_blank" style="background: #2563eb; color: #ffffff; font-weight: 800; font-size: 0.85rem; padding: 10px 22px; border-radius: 8px; text-decoration: none; display: inline-flex; align-items: center; gap: 6px; transition: transform 0.15s ease, background 0.15s ease;">⚡ Bet on ${activePlatform}</a>
         </div>
       </div>
     `;
