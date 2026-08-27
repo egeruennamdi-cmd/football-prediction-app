@@ -6139,6 +6139,16 @@ function renderRecentConvertedSlips() {
     }
   ];
 
+  try {
+    const saved = localStorage.getItem("dprecent_conversions");
+    if (saved) {
+      const parsed = JSON.parse(saved);
+      if (Array.isArray(parsed) && parsed.length > 0) {
+        window.recentConversionsList = parsed;
+      }
+    }
+  } catch (e) {}
+
   if (!window.recentConversionsList || window.recentConversionsList.length === 0) {
     window.recentConversionsList = defaultConversions;
   }
@@ -6431,6 +6441,29 @@ function renderConversionResults(srcCode, srcBookie, targetBookie, apiData) {
       </div>
     `;
   }
+
+  // 3. Immediately Prepend Newly Converted Ticket to "Free Converted Bet Codes for Today"
+  try {
+    const cleanSrc = srcLabel.replace(/^[^\w\s\(\)]+/, '').trim().toUpperCase();
+    const cleanTgt = (activePlatform || tgtLabel).replace(/^[^\w\s\(\)]+/, '').trim().toUpperCase();
+    const newEntry = {
+      srcBookie: cleanSrc,
+      srcCode: srcCode,
+      tgtBookie: cleanTgt,
+      tgtCode: convertedCode,
+      matches: rawMatches.length || 4,
+      totalOdds: totalOddsVal ? (String(totalOddsVal).includes('x') ? totalOddsVal : `${totalOddsVal}x`) : "8.50x",
+      timeAgo: "Just now"
+    };
+
+    if (!window.recentConversionsList) window.recentConversionsList = [];
+    window.recentConversionsList = [newEntry, ...window.recentConversionsList.filter(item => item.srcCode !== srcCode && item.tgtCode !== convertedCode)];
+    localStorage.setItem("dprecent_conversions", JSON.stringify(window.recentConversionsList.slice(0, 15)));
+    
+    if (typeof renderRecentConvertedSlips === 'function') {
+      renderRecentConvertedSlips();
+    }
+  } catch (e) {}
 
   // Ensure decoded tray remains cleanly hidden
   const decodedTray = document.getElementById("betcode-decoded-tray");
