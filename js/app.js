@@ -309,11 +309,32 @@ function generateScoutAccumulator(count = 40) {
     "Multi-Goals 2-4", "Over 0.5 HT Goals", "Corners Over 8.5"
   ];
 
+  const now = new Date();
+  const dayNames = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+  const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+
+  const getDynamicDateForMatch = (index) => {
+    const dayOffset = Math.floor(index / 10);
+    const targetDate = new Date(now.getTime() + dayOffset * 24 * 60 * 60 * 1000);
+    const dName = dayNames[targetDate.getDay()];
+    const mName = monthNames[targetDate.getMonth()];
+    const dNum = targetDate.getDate();
+    const prefix = (dayOffset === 0) ? 'Today' : (dayOffset === 1 ? 'Tomorrow' : dName);
+    const times = ['12:30', '14:00', '15:30', '16:00', '17:30', '18:00', '19:45', '20:00', '20:30', '21:00'];
+    const kickoffTime = times[index % times.length];
+    
+    if (dayOffset === 0 && index < 2) {
+      return `🔴 Live ${68 + index * 6}' (${prefix}, ${mName} ${dNum})`;
+    }
+    return `📅 ${prefix} (${dName}, ${mName} ${dNum}) • ${kickoffTime}`;
+  };
+
   for (let i = 0; i < reqCount; i++) {
     const match = pool[i % pool.length];
     const tip = marketOptions[i % marketOptions.length];
     const homeName = (match.homeTeam && match.homeTeam.name) ? match.homeTeam.name : "Home Team";
     const awayName = (match.awayTeam && match.awayTeam.name) ? match.awayTeam.name : "Away Team";
+    const dynamicSchedule = getDynamicDateForMatch(i);
 
     const hash = (homeName + awayName + i);
     let h = 0;
@@ -325,7 +346,8 @@ function generateScoutAccumulator(count = 40) {
       match: {
         ...match,
         homeTeam: { name: homeName },
-        awayTeam: { name: awayName }
+        awayTeam: { name: awayName },
+        time: dynamicSchedule
       },
       tip,
       odds
