@@ -505,6 +505,9 @@ function renderBetslip() {
         
         const homeName = item.match?.homeTeam?.name || item.match?.homeTeam || item.homeTeam || 'Home';
         const awayName = item.match?.awayTeam?.name || item.match?.awayTeam || item.awayTeam || 'Away';
+        const leagueName = item.match?.league || '';
+        const timeStr = item.match?.time || (item.match?.date === 'today' ? 'Today' : (item.match?.date === 'tomorrow' ? 'Tomorrow' : 'Upcoming'));
+        const isLive = item.match?.isLive || (timeStr && timeStr.toLowerCase().includes('live'));
         const tipVal = item.tip || item.market || '1X';
 
         const row = document.createElement("div");
@@ -514,8 +517,11 @@ function renderBetslip() {
             <div style="font-weight: 700; color: var(--text-primary); font-size: 0.76rem; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">
               ${homeName} vs ${awayName}
             </div>
-            <div style="font-size: 0.7rem; color: var(--text-secondary);">
-              Tip: <b style="color: var(--accent-gold);">${tipVal}</b>
+            <div style="font-size: 0.68rem; color: var(--text-secondary); display: flex; align-items: center; gap: 4px; flex-wrap: wrap;">
+              ${leagueName ? `<span style="color: #60a5fa; font-weight: 600;">${leagueName} •</span>` : ''}
+              <span style="color: ${isLive ? '#ef4444' : '#fbbf24'}; font-weight: 700;">${isLive ? '🔴' : '📅'} ${timeStr}</span>
+              <span>•</span>
+              <span>Tip: <b style="color: var(--accent-gold);">${tipVal}</b></span>
             </div>
           </div>
           <div style="display: flex; align-items: center; gap: 10px;">
@@ -2167,11 +2173,29 @@ function quickPromptScout(text, autoOpenModal = true) {
   const selectionsList = selections.slice(0, count).map((s, idx) => {
     const hName = s.match?.homeTeam?.name || 'Home Team';
     const aName = s.match?.awayTeam?.name || 'Away Team';
+    const leagueName = s.match?.league || 'Football League';
+    const timeStr = s.match?.time || (s.match?.date === 'today' ? 'Today, 18:00' : (s.match?.date === 'tomorrow' ? 'Tomorrow, 20:00' : 'Upcoming'));
+    const isLive = s.match?.isLive || (timeStr && timeStr.toLowerCase().includes('live'));
     const oddVal = (s.odds || 1.45).toFixed(2);
     return `
-      <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid rgba(255,255,255,0.08); padding: 7px 0; font-size:0.8rem;">
-        <span style="font-weight:700; color:#ffffff;">#${idx+1} ${hName} vs ${aName}</span>
-        <span style="color:#34d399; font-weight:800; background:rgba(16,185,129,0.15); border: 1px solid rgba(16,185,129,0.35); padding: 2px 8px; border-radius:4px;">${s.tip} (@${oddVal})</span>
+      <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid rgba(255,255,255,0.08); padding: 8px 0; font-size:0.8rem; gap: 8px;">
+        <div style="display:flex; flex-direction:column; gap:2px; min-width:0;">
+          <div style="font-weight:700; color:#ffffff; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">
+            #${idx+1} ${hName} vs ${aName}
+          </div>
+          <div style="font-size:0.7rem; color:#94a3b8; display:flex; align-items:center; gap:6px;">
+            <span style="color:#60a5fa; font-weight:600;">${leagueName}</span>
+            <span>•</span>
+            <span style="color:${isLive ? '#ef4444' : '#fbbf24'}; font-weight:700; display:inline-flex; align-items:center; gap:3px;">
+              ${isLive ? '🔴' : '📅'} ${timeStr}
+            </span>
+          </div>
+        </div>
+        <div style="text-align:right; flex-shrink:0;">
+          <span style="color:#34d399; font-weight:800; background:rgba(16,185,129,0.15); border: 1px solid rgba(16,185,129,0.35); padding: 3px 8px; border-radius:4px; font-size:0.75rem; white-space:nowrap;">
+            ${s.tip} (@${oddVal})
+          </span>
+        </div>
       </div>
     `;
   }).join("");
