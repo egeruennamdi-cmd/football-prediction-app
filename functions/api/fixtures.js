@@ -9,10 +9,11 @@ const API_HOST = 'https://v3.football.api-sports.io';
 export async function onRequest(context) {
   const cache = caches.default;
   const url = new URL(context.request.url);
-  const league = url.searchParams.get('league') || '39';
+  const live = url.searchParams.get('live');
+  const league = url.searchParams.get('league') || (live ? '' : '39');
+  const next = url.searchParams.get('next') || '15';
 
-  // Construct cache key based on league
-  const cacheKey = new Request(`https://deeppredictbet.pages.dev/api/fixtures?league=${league}`);
+  const cacheKey = new Request(url.toString());
   const cachedResponse = await cache.match(cacheKey);
   if (cachedResponse) {
     return cachedResponse;
@@ -25,40 +26,54 @@ export async function onRequest(context) {
   };
 
   try {
-    // 1. Fetch upcoming fixtures AND recent completed results (last 1-3 weeks) concurrently
-    const [resNext, resLast] = await Promise.allSettled([
-      fetch(`${API_HOST}/fixtures?league=${league}&next=15`, { headers }),
-      fetch(`${API_HOST}/fixtures?league=${league}&last=15`, { headers })
-    ]);
+    let fixtures = [];
 
-    let upcomingFixtures = [];
-    let pastFixtures = [];
+    if (live === 'all' || live === 'true') {
+      // Fetch all currently in-play live matches across global leagues
+      const resLive = await fetch(`${API_HOST}/fixtures?live=all`, { headers });
+      if (resLive.ok) {
+        const jsonLive = await resLive.json();
+        if (Array.isArray(jsonLive.response)) {
+          fixtures = jsonLive.response;
+        }
+      }
+    } else if (league) {
+      // Fetch upcoming and recent fixtures for the specified league
+      const [resNext, resLast] = await Promise.allSettled([
+        fetch(`${API_HOST}/fixtures?league=${league}&next=${next}`, { headers }),
+        fetch(`${API_HOST}/fixtures?league=${league}&last=15`, { headers })
+      ]);
 
-    if (resNext.status === 'fulfilled' && resNext.value.ok) {
-      const jsonNext = await resNext.value.json();
-      if (Array.isArray(jsonNext.response)) upcomingFixtures = jsonNext.response;
+      let upcomingFixtures = [];
+      let pastFixtures = [];
+
+      if (resNext.status === 'fulfilled' && resNext.value.ok) {
+        const jsonNext = await resNext.value.json();
+        if (Array.isArray(jsonNext.response)) upcomingFixtures = jsonNext.response;
+      }
+
+      if (resLast.status === 'fulfilled' && resLast.value.ok) {
+        const jsonLast = await resLast.value.json();
+        if (Array.isArray(jsonLast.response)) pastFixtures = jsonLast.response;
+      }
+
+      fixtures = [...upcomingFixtures, ...pastFixtures];
     }
-
-    if (resLast.status === 'fulfilled' && resLast.value.ok) {
-      const jsonLast = await resLast.value.json();
-      if (Array.isArray(jsonLast.response)) pastFixtures = jsonLast.response;
-    }
-
-    // Combine upcoming fixtures + recent past results
-    const fixtures = [...upcomingFixtures, ...pastFixtures];
 
     const payload = {
       success: true,
-      league,
+      league: league || 'all',
+      live: !!live,
       count: fixtures.length,
       response: fixtures
     };
 
+    const ttl = (live === 'all' || live === 'true') ? 30 : 300; // 30s cache for live, 5m for fixtures
     const response = new Response(JSON.stringify(payload), {
       status: 200,
       headers: {
         'Content-Type': 'application/json',
-        'Cache-Control': 'public, max-age=300, s-maxage=300',
+        'Cache-Control': `public, max-age=${ttl}, s-maxage=${ttl}`,
         'Access-Control-Allow-Origin': '*'
       }
     });

@@ -512,9 +512,61 @@
     loadLiveFixturesForLeague(leagueName);
   }
 
+  async function prefetchGlobalFixturesAndLive() {
+    if (!window.LIVE_FIXTURES_POOL) window.LIVE_FIXTURES_POOL = [];
+    if (!window.TOP_LEAGUES_FIXTURES_POOL) window.TOP_LEAGUES_FIXTURES_POOL = [];
+
+    // 1. Fetch In-Play Live Matches
+    try {
+      const resLive = await fetch('/api/fixtures?live=all', { signal: AbortSignal.timeout(6000) });
+      if (resLive.ok) {
+        const dataLive = await resLive.json();
+        if (dataLive && Array.isArray(dataLive.response) && dataLive.response.length > 0) {
+          const liveNormalized = dataLive.response.map(normalizeFixture).filter(m => m && m.isLive);
+          window.LIVE_FIXTURES_POOL = liveNormalized;
+          window.DYNAMIC_MATCH_DATA = liveNormalized;
+        }
+      }
+    } catch (e) {
+      console.debug('[LiveFixtures] Live stream prefetch:', e.message);
+    }
+
+    // 2. Prefetch upcoming fixtures from top leagues concurrently
+    const topLeagueIds = [39, 140, 135, 78, 61, 2, 3, 307, 253, 71, 302];
+    try {
+      const fetchPromises = topLeagueIds.slice(0, 5).map(async id => {
+        try {
+          const raw = await fetchCompleteLeagueFixtures(id);
+          return (raw || []).map(normalizeFixture);
+        } catch (err) {
+          return [];
+        }
+      });
+      const results = await Promise.allSettled(fetchPromises);
+      const allUpcoming = [];
+      results.forEach(r => {
+        if (r.status === 'fulfilled' && Array.isArray(r.value)) {
+          allUpcoming.push(...r.value.filter(m => m && !m.isFT && m.statusShort !== 'FT'));
+        }
+      });
+      if (allUpcoming.length > 0) {
+        window.TOP_LEAGUES_FIXTURES_POOL = allUpcoming;
+      }
+    } catch (e2) {
+      console.debug('[LiveFixtures] Top leagues prefetch:', e2.message);
+    }
+  }
+
+  // Trigger prefetch on script load
+  if (typeof window !== 'undefined') {
+    setTimeout(prefetchGlobalFixturesAndLive, 800);
+  }
+
   window.loadLiveFixturesForLeague = loadLiveFixturesForLeague;
   window.renderAllAvailableMatches = renderAllAvailableMatches;
   window.applyLeagueSubfilter = applyLeagueSubfilter;
+  window.prefetchGlobalFixturesAndLive = prefetchGlobalFixturesAndLive;
+  window.normalizeApiFootballFixture = normalizeFixture;
 
   Object.defineProperty(window, 'selectSidebarLeague', {
     get: () => selectSidebarLeague,
