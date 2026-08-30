@@ -63,29 +63,57 @@ export async function onRequest(context) {
       form:          item.form                    ?? ''
     }));
 
+    const CLUB_LOGOS = {
+      "Manchester City": "🔵", "Man City": "🔵",
+      "Hull City": "🐯", "Hull": "🐯",
+      "Chelsea": "🦁",
+      "Brentford": "🐝",
+      "Newcastle United": "🦓", "Newcastle": "🦓",
+      "Everton": "🔵🦁",
+      "Leeds United": "⚪🦚", "Leeds": "⚪🦚",
+      "Brighton": "🕊️",
+      "Arsenal": "🔴",
+      "Liverpool": "🔴🛡️",
+      "Spurs (Tottenham)": "⚪🐓", "Tottenham": "⚪🐓",
+      "Aston Villa": "🦁🟣",
+      "West Ham": "⚒️",
+      "Fulham": "⚫⚪",
+      "Bournemouth": "🍒",
+      "Manchester United": "👿", "Man United": "👿",
+      "Nottingham Forest": "🌲🔴",
+      "Crystal Palace": "🦅🔴🔵",
+      "Leicester City": "🦊",
+      "Southampton": "⚪🔴🧣"
+    };
+
     if (table.length === 0 && (league === '39' || league === 'Premier League')) {
       table = [
-        { rank: 1, name: "Manchester City", matchesPlayed: 2, wins: 2, draws: 0, losses: 0, goalsFor: 6, goalsAgainst: 2, goalDiff: 4, points: 6, form: "WW" },
-        { rank: 2, name: "Hull City", matchesPlayed: 2, wins: 2, draws: 0, losses: 0, goalsFor: 3, goalsAgainst: 0, goalDiff: 3, points: 6, form: "WW" },
-        { rank: 3, name: "Chelsea", matchesPlayed: 2, wins: 2, draws: 0, losses: 0, goalsFor: 7, goalsAgainst: 5, goalDiff: 2, points: 6, form: "WW" },
-        { rank: 4, name: "Brentford", matchesPlayed: 2, wins: 1, draws: 1, losses: 0, goalsFor: 4, goalsAgainst: 1, goalDiff: 3, points: 4, form: "WD" },
-        { rank: 5, name: "Newcastle United", matchesPlayed: 2, wins: 1, draws: 1, losses: 0, goalsFor: 4, goalsAgainst: 2, goalDiff: 2, points: 4, form: "DW" },
-        { rank: 6, name: "Everton", matchesPlayed: 2, wins: 1, draws: 1, losses: 0, goalsFor: 3, goalsAgainst: 1, goalDiff: 2, points: 4, form: "WD" },
-        { rank: 7, name: "Leeds United", matchesPlayed: 2, wins: 1, draws: 1, losses: 0, goalsFor: 2, goalsAgainst: 1, goalDiff: 1, points: 4, form: "WD" },
-        { rank: 8, name: "Brighton", matchesPlayed: 2, wins: 1, draws: 0, losses: 1, goalsFor: 7, goalsAgainst: 4, goalDiff: 3, points: 3, form: "WL" },
-        { rank: 9, name: "Arsenal", matchesPlayed: 1, wins: 1, draws: 0, losses: 0, goalsFor: 3, goalsAgainst: 0, goalDiff: 3, points: 3, form: "W" },
-        { rank: 10, name: "Liverpool", matchesPlayed: 2, wins: 1, draws: 0, losses: 1, goalsFor: 3, goalsAgainst: 2, goalDiff: 1, points: 3, form: "LW" },
-        { rank: 11, name: "Spurs (Tottenham)", matchesPlayed: 2, wins: 1, draws: 0, losses: 1, goalsFor: 4, goalsAgainst: 3, goalDiff: 1, points: 3, form: "WL" },
-        { rank: 12, name: "Aston Villa", matchesPlayed: 2, wins: 1, draws: 0, losses: 1, goalsFor: 3, goalsAgainst: 3, goalDiff: 0, points: 3, form: "WL" },
-        { rank: 13, name: "West Ham", matchesPlayed: 2, wins: 1, draws: 0, losses: 1, goalsFor: 2, goalsAgainst: 3, goalDiff: -1, points: 3, form: "LW" },
-        { rank: 14, name: "Fulham", matchesPlayed: 2, wins: 0, draws: 2, losses: 0, goalsFor: 2, goalsAgainst: 2, goalDiff: 0, points: 2, form: "DD" },
-        { rank: 15, name: "Bournemouth", matchesPlayed: 2, wins: 0, draws: 1, losses: 1, goalsFor: 2, goalsAgainst: 3, goalDiff: -1, points: 1, form: "LD" },
-        { rank: 16, name: "Manchester United", matchesPlayed: 2, wins: 0, draws: 1, losses: 1, goalsFor: 2, goalsAgainst: 3, goalDiff: -1, points: 1, form: "LD" },
-        { rank: 17, name: "Nottingham Forest", matchesPlayed: 2, wins: 0, draws: 1, losses: 1, goalsFor: 1, goalsAgainst: 3, goalDiff: -2, points: 1, form: "LD" },
-        { rank: 18, name: "Crystal Palace", matchesPlayed: 2, wins: 0, draws: 0, losses: 2, goalsFor: 1, goalsAgainst: 4, goalDiff: -3, points: 0, form: "LL" },
-        { rank: 19, name: "Leicester City", matchesPlayed: 2, wins: 0, draws: 0, losses: 2, goalsFor: 1, goalsAgainst: 5, goalDiff: -4, points: 0, form: "LL" },
-        { rank: 20, name: "Southampton", matchesPlayed: 2, wins: 0, draws: 0, losses: 2, goalsFor: 0, goalsAgainst: 5, goalDiff: -5, points: 0, form: "LL" }
+        { rank: 1, name: "Manchester City", logo: "🔵", matchesPlayed: 2, wins: 2, draws: 0, losses: 0, goalsFor: 6, goalsAgainst: 2, goalDiff: 4, points: 6, form: "WW" },
+        { rank: 2, name: "Hull City", logo: "🐯", matchesPlayed: 2, wins: 2, draws: 0, losses: 0, goalsFor: 3, goalsAgainst: 0, goalDiff: 3, points: 6, form: "WW" },
+        { rank: 3, name: "Chelsea", logo: "🦁", matchesPlayed: 2, wins: 2, draws: 0, losses: 0, goalsFor: 7, goalsAgainst: 5, goalDiff: 2, points: 6, form: "WW" },
+        { rank: 4, name: "Brentford", logo: "🐝", matchesPlayed: 2, wins: 1, draws: 1, losses: 0, goalsFor: 4, goalsAgainst: 1, goalDiff: 3, points: 4, form: "WD" },
+        { rank: 5, name: "Newcastle United", logo: "🦓", matchesPlayed: 2, wins: 1, draws: 1, losses: 0, goalsFor: 4, goalsAgainst: 2, goalDiff: 2, points: 4, form: "DW" },
+        { rank: 6, name: "Everton", logo: "🔵🦁", matchesPlayed: 2, wins: 1, draws: 1, losses: 0, goalsFor: 3, goalsAgainst: 1, goalDiff: 2, points: 4, form: "WD" },
+        { rank: 7, name: "Leeds United", logo: "⚪🦚", matchesPlayed: 2, wins: 1, draws: 1, losses: 0, goalsFor: 2, goalsAgainst: 1, goalDiff: 1, points: 4, form: "WD" },
+        { rank: 8, name: "Brighton", logo: "🕊️", matchesPlayed: 2, wins: 1, draws: 0, losses: 1, goalsFor: 7, goalsAgainst: 4, goalDiff: 3, points: 3, form: "WL" },
+        { rank: 9, name: "Arsenal", logo: "🔴", matchesPlayed: 1, wins: 1, draws: 0, losses: 0, goalsFor: 3, goalsAgainst: 0, goalDiff: 3, points: 3, form: "W" },
+        { rank: 10, name: "Liverpool", logo: "🔴🛡️", matchesPlayed: 2, wins: 1, draws: 0, losses: 1, goalsFor: 3, goalsAgainst: 2, goalDiff: 1, points: 3, form: "LW" },
+        { rank: 11, name: "Spurs (Tottenham)", logo: "⚪🐓", matchesPlayed: 2, wins: 1, draws: 0, losses: 1, goalsFor: 4, goalsAgainst: 3, goalDiff: 1, points: 3, form: "WL" },
+        { rank: 12, name: "Aston Villa", logo: "🦁🟣", matchesPlayed: 2, wins: 1, draws: 0, losses: 1, goalsFor: 3, goalsAgainst: 3, goalDiff: 0, points: 3, form: "WL" },
+        { rank: 13, name: "West Ham", logo: "⚒️", matchesPlayed: 2, wins: 1, draws: 0, losses: 1, goalsFor: 2, goalsAgainst: 3, goalDiff: -1, points: 3, form: "LW" },
+        { rank: 14, name: "Fulham", logo: "⚫⚪", matchesPlayed: 2, wins: 0, draws: 2, losses: 0, goalsFor: 2, goalsAgainst: 2, goalDiff: 0, points: 2, form: "DD" },
+        { rank: 15, name: "Bournemouth", logo: "🍒", matchesPlayed: 2, wins: 0, draws: 1, losses: 1, goalsFor: 2, goalsAgainst: 3, goalDiff: -1, points: 1, form: "LD" },
+        { rank: 16, name: "Manchester United", logo: "👿", matchesPlayed: 2, wins: 0, draws: 1, losses: 1, goalsFor: 2, goalsAgainst: 3, goalDiff: -1, points: 1, form: "LD" },
+        { rank: 17, name: "Nottingham Forest", logo: "🌲🔴", matchesPlayed: 2, wins: 0, draws: 1, losses: 1, goalsFor: 1, goalsAgainst: 3, goalDiff: -2, points: 1, form: "LD" },
+        { rank: 18, name: "Crystal Palace", logo: "🦅🔴🔵", matchesPlayed: 2, wins: 0, draws: 0, losses: 2, goalsFor: 1, goalsAgainst: 4, goalDiff: -3, points: 0, form: "LL" },
+        { rank: 19, name: "Leicester City", logo: "🦊", matchesPlayed: 2, wins: 0, draws: 0, losses: 2, goalsFor: 1, goalsAgainst: 5, goalDiff: -4, points: 0, form: "LL" },
+        { rank: 20, name: "Southampton", logo: "⚪🔴🧣", matchesPlayed: 2, wins: 0, draws: 0, losses: 2, goalsFor: 0, goalsAgainst: 5, goalDiff: -5, points: 0, form: "LL" }
       ];
+    } else {
+      table = table.map(item => ({
+        ...item,
+        logo: item.logo || CLUB_LOGOS[item.name] || '⚽'
+      }));
     }
 
     const payload = { success: table.length > 0, league, season, count: table.length, standings: table };
@@ -103,26 +131,26 @@ export async function onRequest(context) {
     return response;
   } catch (err) {
     const fallbackTable = [
-      { rank: 1, name: "Manchester City", matchesPlayed: 2, wins: 2, draws: 0, losses: 0, goalsFor: 6, goalsAgainst: 2, goalDiff: 4, points: 6, form: "WW" },
-      { rank: 2, name: "Hull City", matchesPlayed: 2, wins: 2, draws: 0, losses: 0, goalsFor: 3, goalsAgainst: 0, goalDiff: 3, points: 6, form: "WW" },
-      { rank: 3, name: "Chelsea", matchesPlayed: 2, wins: 2, draws: 0, losses: 0, goalsFor: 7, goalsAgainst: 5, goalDiff: 2, points: 6, form: "WW" },
-      { rank: 4, name: "Brentford", matchesPlayed: 2, wins: 1, draws: 1, losses: 0, goalsFor: 4, goalsAgainst: 1, goalDiff: 3, points: 4, form: "WD" },
-      { rank: 5, name: "Newcastle United", matchesPlayed: 2, wins: 1, draws: 1, losses: 0, goalsFor: 4, goalsAgainst: 2, goalDiff: 2, points: 4, form: "DW" },
-      { rank: 6, name: "Everton", matchesPlayed: 2, wins: 1, draws: 1, losses: 0, goalsFor: 3, goalsAgainst: 1, goalDiff: 2, points: 4, form: "WD" },
-      { rank: 7, name: "Leeds United", matchesPlayed: 2, wins: 1, draws: 1, losses: 0, goalsFor: 2, goalsAgainst: 1, goalDiff: 1, points: 4, form: "WD" },
-      { rank: 8, name: "Brighton", matchesPlayed: 2, wins: 1, draws: 0, losses: 1, goalsFor: 7, goalsAgainst: 4, goalDiff: 3, points: 3, form: "WL" },
-      { rank: 9, name: "Arsenal", matchesPlayed: 1, wins: 1, draws: 0, losses: 0, goalsFor: 3, goalsAgainst: 0, goalDiff: 3, points: 3, form: "W" },
-      { rank: 10, name: "Liverpool", matchesPlayed: 2, wins: 1, draws: 0, losses: 1, goalsFor: 3, goalsAgainst: 2, goalDiff: 1, points: 3, form: "LW" },
-      { rank: 11, name: "Spurs (Tottenham)", matchesPlayed: 2, wins: 1, draws: 0, losses: 1, goalsFor: 4, goalsAgainst: 3, goalDiff: 1, points: 3, form: "WL" },
-      { rank: 12, name: "Aston Villa", matchesPlayed: 2, wins: 1, draws: 0, losses: 1, goalsFor: 3, goalsAgainst: 3, goalDiff: 0, points: 3, form: "WL" },
-      { rank: 13, name: "West Ham", matchesPlayed: 2, wins: 1, draws: 0, losses: 1, goalsFor: 2, goalsAgainst: 3, goalDiff: -1, points: 3, form: "LW" },
-      { rank: 14, name: "Fulham", matchesPlayed: 2, wins: 0, draws: 2, losses: 0, goalsFor: 2, goalsAgainst: 2, goalDiff: 0, points: 2, form: "DD" },
-      { rank: 15, name: "Bournemouth", matchesPlayed: 2, wins: 0, draws: 1, losses: 1, goalsFor: 2, goalsAgainst: 3, goalDiff: -1, points: 1, form: "LD" },
-      { rank: 16, name: "Manchester United", matchesPlayed: 2, wins: 0, draws: 1, losses: 1, goalsFor: 2, goalsAgainst: 3, goalDiff: -1, points: 1, form: "LD" },
-      { rank: 17, name: "Nottingham Forest", matchesPlayed: 2, wins: 0, draws: 1, losses: 1, goalsFor: 1, goalsAgainst: 3, goalDiff: -2, points: 1, form: "LD" },
-      { rank: 18, name: "Crystal Palace", matchesPlayed: 2, wins: 0, draws: 0, losses: 2, goalsFor: 1, goalsAgainst: 4, goalDiff: -3, points: 0, form: "LL" },
-      { rank: 19, name: "Leicester City", matchesPlayed: 2, wins: 0, draws: 0, losses: 2, goalsFor: 1, goalsAgainst: 5, goalDiff: -4, points: 0, form: "LL" },
-      { rank: 20, name: "Southampton", matchesPlayed: 2, wins: 0, draws: 0, losses: 2, goalsFor: 0, goalsAgainst: 5, goalDiff: -5, points: 0, form: "LL" }
+      { rank: 1, name: "Manchester City", logo: "🔵", matchesPlayed: 2, wins: 2, draws: 0, losses: 0, goalsFor: 6, goalsAgainst: 2, goalDiff: 4, points: 6, form: "WW" },
+      { rank: 2, name: "Hull City", logo: "🐯", matchesPlayed: 2, wins: 2, draws: 0, losses: 0, goalsFor: 3, goalsAgainst: 0, goalDiff: 3, points: 6, form: "WW" },
+      { rank: 3, name: "Chelsea", logo: "🦁", matchesPlayed: 2, wins: 2, draws: 0, losses: 0, goalsFor: 7, goalsAgainst: 5, goalDiff: 2, points: 6, form: "WW" },
+      { rank: 4, name: "Brentford", logo: "🐝", matchesPlayed: 2, wins: 1, draws: 1, losses: 0, goalsFor: 4, goalsAgainst: 1, goalDiff: 3, points: 4, form: "WD" },
+      { rank: 5, name: "Newcastle United", logo: "🦓", matchesPlayed: 2, wins: 1, draws: 1, losses: 0, goalsFor: 4, goalsAgainst: 2, goalDiff: 2, points: 4, form: "DW" },
+      { rank: 6, name: "Everton", logo: "🔵🦁", matchesPlayed: 2, wins: 1, draws: 1, losses: 0, goalsFor: 3, goalsAgainst: 1, goalDiff: 2, points: 4, form: "WD" },
+      { rank: 7, name: "Leeds United", logo: "⚪🦚", matchesPlayed: 2, wins: 1, draws: 1, losses: 0, goalsFor: 2, goalsAgainst: 1, goalDiff: 1, points: 4, form: "WD" },
+      { rank: 8, name: "Brighton", logo: "🕊️", matchesPlayed: 2, wins: 1, draws: 0, losses: 1, goalsFor: 7, goalsAgainst: 4, goalDiff: 3, points: 3, form: "WL" },
+      { rank: 9, name: "Arsenal", logo: "🔴", matchesPlayed: 1, wins: 1, draws: 0, losses: 0, goalsFor: 3, goalsAgainst: 0, goalDiff: 3, points: 3, form: "W" },
+      { rank: 10, name: "Liverpool", logo: "🔴🛡️", matchesPlayed: 2, wins: 1, draws: 0, losses: 1, goalsFor: 3, goalsAgainst: 2, goalDiff: 1, points: 3, form: "LW" },
+      { rank: 11, name: "Spurs (Tottenham)", logo: "⚪🐓", matchesPlayed: 2, wins: 1, draws: 0, losses: 1, goalsFor: 4, goalsAgainst: 3, goalDiff: 1, points: 3, form: "WL" },
+      { rank: 12, name: "Aston Villa", logo: "🦁🟣", matchesPlayed: 2, wins: 1, draws: 0, losses: 1, goalsFor: 3, goalsAgainst: 3, goalDiff: 0, points: 3, form: "WL" },
+      { rank: 13, name: "West Ham", logo: "⚒️", matchesPlayed: 2, wins: 1, draws: 0, losses: 1, goalsFor: 2, goalsAgainst: 3, goalDiff: -1, points: 3, form: "LW" },
+      { rank: 14, name: "Fulham", logo: "⚫⚪", matchesPlayed: 2, wins: 0, draws: 2, losses: 0, goalsFor: 2, goalsAgainst: 2, goalDiff: 0, points: 2, form: "DD" },
+      { rank: 15, name: "Bournemouth", logo: "🍒", matchesPlayed: 2, wins: 0, draws: 1, losses: 1, goalsFor: 2, goalsAgainst: 3, goalDiff: -1, points: 1, form: "LD" },
+      { rank: 16, name: "Manchester United", logo: "👿", matchesPlayed: 2, wins: 0, draws: 1, losses: 1, goalsFor: 2, goalsAgainst: 3, goalDiff: -1, points: 1, form: "LD" },
+      { rank: 17, name: "Nottingham Forest", logo: "🌲🔴", matchesPlayed: 2, wins: 0, draws: 1, losses: 1, goalsFor: 1, goalsAgainst: 3, goalDiff: -2, points: 1, form: "LD" },
+      { rank: 18, name: "Crystal Palace", logo: "🦅🔴🔵", matchesPlayed: 2, wins: 0, draws: 0, losses: 2, goalsFor: 1, goalsAgainst: 4, goalDiff: -3, points: 0, form: "LL" },
+      { rank: 19, name: "Leicester City", logo: "🦊", matchesPlayed: 2, wins: 0, draws: 0, losses: 2, goalsFor: 1, goalsAgainst: 5, goalDiff: -4, points: 0, form: "LL" },
+      { rank: 20, name: "Southampton", logo: "⚪🔴🧣", matchesPlayed: 2, wins: 0, draws: 0, losses: 2, goalsFor: 0, goalsAgainst: 5, goalDiff: -5, points: 0, form: "LL" }
     ];
     return new Response(JSON.stringify({ success: true, error: err.message, standings: fallbackTable }), {
       status: 200,

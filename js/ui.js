@@ -2031,20 +2031,55 @@ async function showMockTableStandings(leagueName, btn) {
     if (btn.classList) btn.classList.add("active");
   }
 
-  // Build modal shell
   const existing = document.getElementById("live-standings-modal");
   if (existing) existing.remove();
 
   const modal = document.createElement("div");
   modal.id = "live-standings-modal";
-  modal.style.cssText = "position:fixed;left:0;top:0;width:100vw;height:100vh;background:rgba(0,0,0,0.85);display:flex;align-items:center;justify-content:center;z-index:999999;";
+  modal.style.cssText = "position:fixed;left:0;top:0;width:100vw;height:100vh;background:rgba(0,0,0,0.85);display:flex;align-items:center;justify-content:center;z-index:999999;padding:10px;box-sizing:border-box;";
   modal.addEventListener("click", e => { if (e.target === modal) modal.remove(); });
 
   const content = document.createElement("div");
   content.className = "glass-card";
-  content.style.cssText = "width:90%;max-width:540px;padding:24px;border:1px solid var(--border-color,rgba(255,255,255,0.1));border-radius:16px;background:var(--bg-card,#1e293b);box-shadow:0 25px 60px rgba(0,0,0,0.8);";
+  content.style.cssText = "width:100%;max-width:500px;padding:16px 12px;border:1px solid var(--border-color,rgba(255,255,255,0.1));border-radius:16px;background:var(--bg-card,#1e293b);box-shadow:0 25px 60px rgba(0,0,0,0.8);box-sizing:border-box;";
 
   const closeFn = () => modal.remove();
+
+  const resolveLogo = (clubName, rawLogo) => {
+    if (rawLogo && typeof rawLogo === 'string' && rawLogo.startsWith('http')) {
+      return `<img src="${rawLogo}" style="width:16px;height:16px;object-fit:contain;vertical-align:middle;" onerror="this.outerHTML='⚽'">`;
+    }
+    if (rawLogo && rawLogo !== '⚽' && !rawLogo.includes('⚽')) return rawLogo;
+    if (!clubName) return '⚽';
+    const norm = clubName.toLowerCase().trim();
+    const allClubs = (typeof GLOBAL_CLUBS !== 'undefined' && Array.isArray(GLOBAL_CLUBS)) ? GLOBAL_CLUBS : (window.GLOBAL_CLUBS || []);
+    const found = allClubs.find(c => {
+      const cName = (c.name || '').toLowerCase();
+      return cName === norm || cName.includes(norm) || norm.includes(cName);
+    });
+    if (found && found.logo) return found.logo;
+    if (norm.includes('man city') || norm.includes('manchester city')) return '🔵';
+    if (norm.includes('hull')) return '🐯';
+    if (norm.includes('chelsea')) return '🦁';
+    if (norm.includes('brentford')) return '🐝';
+    if (norm.includes('newcastle')) return '🦓';
+    if (norm.includes('everton')) return '🔵🦁';
+    if (norm.includes('leeds')) return '⚪🦚';
+    if (norm.includes('brighton')) return '🕊️';
+    if (norm.includes('arsenal')) return '🔴';
+    if (norm.includes('liverpool')) return '🔴🛡️';
+    if (norm.includes('tottenham') || norm.includes('spurs')) return '⚪🐓';
+    if (norm.includes('aston villa')) return '🦁🟣';
+    if (norm.includes('west ham')) return '⚒️';
+    if (norm.includes('fulham')) return '⚫⚪';
+    if (norm.includes('bournemouth')) return '🍒';
+    if (norm.includes('man united') || norm.includes('manchester united')) return '👿';
+    if (norm.includes('nottingham')) return '🌲🔴';
+    if (norm.includes('crystal palace')) return '🦅🔴🔵';
+    if (norm.includes('leicester')) return '🦊';
+    if (norm.includes('southampton')) return '⚪🔴🧣';
+    return '⚽';
+  };
 
   const renderStandingRows = (clubs) => clubs.map((club, idx) => {
     const p = club.matchesPlayed ?? club.all?.played ?? 0;
@@ -2053,15 +2088,18 @@ async function showMockTableStandings(leagueName, btn) {
     const l = club.losses ?? club.all?.lose ?? 0;
     const pts = club.points ?? (w * 3 + d);
     const nm = club.name ?? club.team?.name ?? "Unknown";
-    const lg = club.logo ?? "⚽";
-    return `<div style="display:grid;grid-template-columns:30px 1.6fr 40px 40px 40px 40px 44px;font-size:0.85rem;padding:9px 8px;border-bottom:1px solid rgba(255,255,255,0.04);align-items:center;">
-      <span style="font-weight:700;color:${idx < 4 ? 'var(--secondary,#10b981)' : 'var(--text-muted,#64748b)'}">${idx + 1}</span>
-      <span style="font-weight:600;color:var(--text-primary,#f1f5f9);display:flex;align-items:center;gap:6px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;"><span>${lg}</span><span style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${nm}</span></span>
-      <span style="text-align:center;color:var(--text-secondary,#94a3b8)">${p}</span>
-      <span style="text-align:center;color:#10b981;font-weight:700">${w}</span>
-      <span style="text-align:center;color:#64748b">${d}</span>
-      <span style="text-align:center;color:#ef4444">${l}</span>
-      <span style="text-align:center;font-weight:700;color:#f59e0b">${pts}</span>
+    const lg = resolveLogo(nm, club.logo);
+    return `<div style="display:grid;grid-template-columns:22px 1fr 28px 28px 28px 28px 34px;font-size:0.8rem;padding:8px 4px;border-bottom:1px solid rgba(255,255,255,0.04);align-items:center;">
+      <span style="font-weight:700;font-size:0.75rem;color:${idx < 4 ? 'var(--secondary,#10b981)' : 'var(--text-muted,#64748b)'}">${idx + 1}</span>
+      <span style="font-weight:600;color:var(--text-primary,#f1f5f9);display:flex;align-items:center;gap:5px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;padding-right:4px;">
+        <span style="display:inline-flex;align-items:center;justify-content:center;min-width:18px;">${lg}</span>
+        <span style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${nm}</span>
+      </span>
+      <span style="text-align:center;color:var(--text-secondary,#94a3b8);font-size:0.75rem;">${p}</span>
+      <span style="text-align:center;color:#10b981;font-weight:700;font-size:0.75rem;">${w}</span>
+      <span style="text-align:center;color:#64748b;font-size:0.75rem;">${d}</span>
+      <span style="text-align:center;color:#ef4444;font-size:0.75rem;">${l}</span>
+      <span style="text-align:center;font-weight:700;color:#f59e0b;font-size:0.78rem;">${pts}</span>
     </div>`;
   }).join("");
 
@@ -2071,17 +2109,17 @@ async function showMockTableStandings(leagueName, btn) {
       : `<span style="font-size:0.68rem;background:rgba(148,163,184,0.1);color:#94a3b8;border:1px solid rgba(148,163,184,0.2);border-radius:20px;padding:2px 8px;">📦 Standings</span>`;
     const body = `<div style="max-height:380px;overflow-y:auto;">${renderStandingRows(clubs)}</div>`;
     content.innerHTML = `
-      <div style="display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid var(--border-color,rgba(255,255,255,0.08));padding-bottom:12px;margin-bottom:12px;">
-        <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
-          <h3 style="margin:0;font-size:1.1rem;color:var(--text-primary,#f1f5f9);">🏆 ${leagueName} Standings</h3>${badge}
+      <div style="display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid var(--border-color,rgba(255,255,255,0.08));padding-bottom:10px;margin-bottom:10px;">
+        <div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap;">
+          <h3 style="margin:0;font-size:1rem;color:var(--text-primary,#f1f5f9);">🏆 ${leagueName} Standings</h3>${badge}
         </div>
         <button id="cls-st" style="background:rgba(255,255,255,0.08);border:none;color:#94a3b8;font-size:1rem;cursor:pointer;border-radius:50%;width:28px;height:28px;">✕</button>
       </div>
-      <div style="display:grid;grid-template-columns:30px 1.6fr 40px 40px 40px 40px 44px;font-size:0.7rem;font-weight:700;text-transform:uppercase;color:var(--text-secondary,#94a3b8);padding:6px 8px;border-bottom:1px solid var(--border-color,rgba(255,255,255,0.08));margin-bottom:4px;">
+      <div style="display:grid;grid-template-columns:22px 1fr 28px 28px 28px 28px 34px;font-size:0.68rem;font-weight:700;text-transform:uppercase;color:var(--text-secondary,#94a3b8);padding:6px 4px;border-bottom:1px solid var(--border-color,rgba(255,255,255,0.08));margin-bottom:4px;">
         <span>Pos</span><span>Club</span><span style="text-align:center">P</span><span style="text-align:center">W</span><span style="text-align:center">D</span><span style="text-align:center">L</span><span style="text-align:center">Pts</span>
       </div>
       ${body}
-      <div style="text-align:right;margin-top:14px;">
+      <div style="text-align:right;margin-top:12px;">
         <button id="cls-st-ok" class="btn btn-primary" style="padding:6px 16px;font-size:0.82rem;border-radius:8px;">OK</button>
       </div>`;
     const c1 = content.querySelector("#cls-st");
@@ -2122,7 +2160,7 @@ async function showMockTableStandings(leagueName, btn) {
         if (Array.isArray(raw) && raw.length > 0) {
           const liveClubs = raw.map(item => ({
             name: item.name || "—",
-            logo: item.logo ? `<img src="${item.logo}" style="width:20px;height:20px;object-fit:contain;vertical-align:middle;" onerror="this.outerHTML='⚽'">` : "⚽",
+            logo: resolveLogo(item.name, item.logo),
             matchesPlayed: item.matchesPlayed ?? 0,
             wins:          item.wins          ?? 0,
             draws:         item.draws         ?? 0,
