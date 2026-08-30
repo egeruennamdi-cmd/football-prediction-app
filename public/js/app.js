@@ -2950,30 +2950,24 @@ async function showMockTableStandings(leagueName, btn) {
     const w = club.wins ?? club.all?.win ?? 0;
     const d = club.draws ?? club.all?.draw ?? 0;
     const l = club.losses ?? club.all?.lose ?? 0;
-    const gd = club.goalDiff ?? ((club.goalsFor !== undefined && club.goalsAgainst !== undefined) ? (club.goalsFor - club.goalsAgainst) : (club.goalsDiff ?? 0));
-    const gdStr = gd > 0 ? `+${gd}` : `${gd}`;
     const pts = club.points ?? (w * 3 + d);
     const nm = club.name ?? club.team?.name ?? "Unknown";
     const lg = club.logo ?? "⚽";
-    return `<div style="display:grid;grid-template-columns:26px 1.4fr 34px 34px 34px 34px 38px 44px;font-size:0.83rem;padding:9px 8px;border-bottom:1px solid rgba(255,255,255,0.05);align-items:center;">
-      <span style="font-weight:700;color:${idx < 4 ? '#10b981' : (idx >= clubs.length - 3 ? '#ef4444' : 'var(--text-muted,#64748b)')}">${idx + 1}</span>
-      <span style="font-weight:600;color:var(--text-primary,#f1f5f9);display:flex;align-items:center;gap:7px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">
-        <span>${lg}</span>
-        <span style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${nm}</span>
-      </span>
+    return `<div style="display:grid;grid-template-columns:30px 1.6fr 40px 40px 40px 40px 44px;font-size:0.85rem;padding:9px 8px;border-bottom:1px solid rgba(255,255,255,0.04);align-items:center;">
+      <span style="font-weight:700;color:${idx < 4 ? 'var(--secondary,#10b981)' : 'var(--text-muted,#64748b)'}">${idx + 1}</span>
+      <span style="font-weight:600;color:var(--text-primary,#f1f5f9);display:flex;align-items:center;gap:6px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;"><span>${lg}</span><span style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${nm}</span></span>
       <span style="text-align:center;color:var(--text-secondary,#94a3b8)">${p}</span>
       <span style="text-align:center;color:#10b981;font-weight:700">${w}</span>
-      <span style="text-align:center;color:#94a3b8">${d}</span>
+      <span style="text-align:center;color:#64748b">${d}</span>
       <span style="text-align:center;color:#ef4444">${l}</span>
-      <span style="text-align:center;color:#60a5fa;font-size:0.75rem;">${gdStr}</span>
-      <span style="text-align:center;font-weight:800;color:#f59e0b">${pts}</span>
+      <span style="text-align:center;font-weight:700;color:#f59e0b">${pts}</span>
     </div>`;
   }).join("");
 
   const buildStandingsContent = (clubs, source) => {
     const badge = source === 'live'
       ? `<span style="font-size:0.68rem;background:rgba(16,185,129,0.15);color:#10b981;border:1px solid rgba(16,185,129,0.3);border-radius:20px;padding:2px 8px;">🟢 Live Standings</span>`
-      : `<span style="font-size:0.68rem;background:rgba(59,130,246,0.15);color:#60a5fa;border:1px solid rgba(59,130,246,0.3);border-radius:20px;padding:2px 8px;">🏆 Matchday 2</span>`;
+      : `<span style="font-size:0.68rem;background:rgba(148,163,184,0.1);color:#94a3b8;border:1px solid rgba(148,163,184,0.2);border-radius:20px;padding:2px 8px;">📦 Standings</span>`;
     const body = `<div style="max-height:380px;overflow-y:auto;">${renderStandingRows(clubs)}</div>`;
     content.innerHTML = `
       <div style="display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid var(--border-color,rgba(255,255,255,0.08));padding-bottom:12px;margin-bottom:12px;">
@@ -2982,8 +2976,8 @@ async function showMockTableStandings(leagueName, btn) {
         </div>
         <button id="cls-st" style="background:rgba(255,255,255,0.08);border:none;color:#94a3b8;font-size:1rem;cursor:pointer;border-radius:50%;width:28px;height:28px;">✕</button>
       </div>
-      <div style="display:grid;grid-template-columns:26px 1.4fr 34px 34px 34px 34px 38px 44px;font-size:0.72rem;font-weight:800;text-transform:uppercase;color:var(--text-secondary,#94a3b8);padding:6px 8px;border-bottom:1px solid var(--border-color,rgba(255,255,255,0.08));margin-bottom:4px;">
-        <span>Pos</span><span>Club</span><span style="text-align:center">P</span><span style="text-align:center">W</span><span style="text-align:center">D</span><span style="text-align:center">L</span><span style="text-align:center">GD</span><span style="text-align:center">Pts</span>
+      <div style="display:grid;grid-template-columns:30px 1.6fr 40px 40px 40px 40px 44px;font-size:0.7rem;font-weight:700;text-transform:uppercase;color:var(--text-secondary,#94a3b8);padding:6px 8px;border-bottom:1px solid var(--border-color,rgba(255,255,255,0.08));margin-bottom:4px;">
+        <span>Pos</span><span>Club</span><span style="text-align:center">P</span><span style="text-align:center">W</span><span style="text-align:center">D</span><span style="text-align:center">L</span><span style="text-align:center">Pts</span>
       </div>
       ${body}
       <div style="text-align:right;margin-top:14px;">
