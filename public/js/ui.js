@@ -2007,9 +2007,21 @@ window.viewLeagueStatisticsLedger = openLeagueAveragesModal;
 async function showMockTableStandings(leagueName, btn) {
   const cleanLeague = (leagueName || '').replace(/^[^\w\s]+/, '').trim() || leagueName;
   const LEAGUE_ID_MAP = {
-    'Premier League': 39, 'Championship': 40, 'EFL Championship': 40, 'La Liga': 140, 'Bundesliga': 78,
-    'Serie A': 135, 'Ligue 1': 61, 'Primeira Liga': 94,
-    'Eredivisie': 88, 'MLS': 253, 'Champions League': 2, 'Europa League': 3
+    'Premier League': 39, 'Championship': 40, 'EFL Championship': 40,
+    'La Liga': 140, 'Bundesliga': 78, 'Serie A': 135, 'Ligue 1': 61,
+    'Primeira Liga': 94, 'Eredivisie': 88, 'MLS': 253,
+    'Champions League': 2, 'UEFA Champions League': 2,
+    'Europa League': 3, 'UEFA Europa League': 3, 'Conference League': 848,
+    'Scottish Premiership': 179, 'Scottish Championship': 180,
+    'Süper Lig': 203, 'Super Lig': 203, 'Belgian Pro League': 144,
+    'Saudi Pro League': 307, 'Brasileirao': 71, 'Brasileirão': 71,
+    'Liga Profesional': 128, 'Liga MX': 262,
+    'Egyptian Premier League': 233, 'NPFL': 332, 'South African PSL': 288,
+    'Tanzanian Premier League': 372, 'Zambian Super League': 381,
+    'Serie B': 136, 'Ligue 2': 62, 'Segunda División': 141,
+    'National League': 41, 'League One': 42, 'League Two': 43,
+    'Copa Libertadores': 13, 'Copa Sudamericana': 11,
+    'AFC Champions League': 17, 'CAF Champions League': 12
   };
   const now = new Date();
   const season = now.getMonth() >= 6 ? now.getFullYear() : now.getFullYear() - 1;
@@ -2085,30 +2097,40 @@ async function showMockTableStandings(leagueName, btn) {
   modal.appendChild(content);
   document.body.appendChild(modal);
 
-  // Background check for live API table if available
+  // Live standings: call /api/standings Cloudflare edge function (bypasses API IP restrictions)
   const leagueId = LEAGUE_ID_MAP[cleanLeague] || LEAGUE_ID_MAP[leagueName];
-  const backendBase = window.BACKEND_API_URL || 'https://deeppredictbet-backend.onrender.com';
   if (leagueId) {
     try {
-      const res = await fetch(`${backendBase}/api/v1/live/standings?league=${leagueId}&season=${season}`, { signal: AbortSignal.timeout(3000) });
+      // Determine base URL: local dev uses localhost, production uses same origin (Cloudflare Pages)
+      const edgeBase = (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1')
+        ? 'http://localhost:8788'
+        : '';
+      const res = await fetch(`${edgeBase}/api/standings?league=${leagueId}&season=${season}`, {
+        signal: AbortSignal.timeout(8000)
+      });
       if (res.ok) {
         const json = await res.json();
-        const raw = json.standings?.[0]?.league?.standings?.[0] || json.standings?.[0] || json.standings || [];
+        const raw = json.standings || [];
         if (Array.isArray(raw) && raw.length > 0) {
           const liveClubs = raw.map(item => ({
-            name: item.team?.name || item.name || "—",
-            logo: item.team?.logo ? `<img src="${item.team.logo}" style="width:20px;height:20px;object-fit:contain;vertical-align:middle;" onerror="this.outerHTML='⚽'">` : "⚽",
-            matchesPlayed: item.all?.played ?? 0,
-            wins:          item.all?.win    ?? 0,
-            draws:         item.all?.draw   ?? 0,
-            losses:        item.all?.lose   ?? 0,
-            points:        item.points      ?? 0
+            name: item.name || "—",
+            logo: item.logo ? `<img src="${item.logo}" style="width:20px;height:20px;object-fit:contain;vertical-align:middle;" onerror="this.outerHTML='⚽'">` : "⚽",
+            matchesPlayed: item.matchesPlayed ?? 0,
+            wins:          item.wins          ?? 0,
+            draws:         item.draws         ?? 0,
+            losses:        item.losses        ?? 0,
+            goalsFor:      item.goalsFor      ?? 0,
+            goalsAgainst:  item.goalsAgainst  ?? 0,
+            goalDiff:      item.goalDiff      ?? 0,
+            points:        item.points        ?? 0,
+            form:          item.form          ?? ''
           }));
           buildStandingsContent(liveClubs, 'live');
         }
       }
     } catch (err) {
-      // already showing cached table, no error banner needed
+      // Fallback local data already rendered — silent fail
+      console.debug('[Standings] Edge fetch failed, showing local data:', err.message);
     }
   }
 }
