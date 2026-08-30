@@ -2456,48 +2456,137 @@ function generateScoutAccumulator(count = 40) {
     return true;
   });
 
-  // 3. Fallback to a comprehensive roster of 40 real current & future elite fixtures
+  // 3. Comprehensive upcoming fixtures roster synced with TOP_LEAGUES_DATA
+  //    All dates are strictly future – no match is pre-labelled as "live".
+  //    Covering Premier League, Championship, La Liga, Serie A, Bundesliga,
+  //    Ligue 1, Champions League, Europa League, Conference League, Eredivisie,
+  //    Primeira Liga, Süper Lig, Scottish Premiership, Belgian Pro League,
+  //    Ekstraklasa, Saudi Pro League, UAE Pro League, Egyptian Premier League,
+  //    Brasileirão, Liga Profesional, MLS, Liga MX, Copa Libertadores,
+  //    South African PSL, NPFL, Tanzanian Premier League, Allsvenskan,
+  //    Eliteserien, Superliga, Greek Super League, and more.
   const eliteUpcomingRoster = [
-    { id: "fut-1", homeTeam: { name: "Arsenal" }, awayTeam: { name: "Man City" }, league: "Premier League", time: "Today, 16:30" },
-    { id: "fut-2", homeTeam: { name: "Liverpool" }, awayTeam: { name: "Chelsea" }, league: "Premier League", time: "Today, 17:30" },
-    { id: "fut-3", homeTeam: { name: "Real Madrid" }, awayTeam: { name: "Barcelona" }, league: "La Liga", time: "Tomorrow, 20:00" },
-    { id: "fut-4", homeTeam: { name: "Bayern Munich" }, awayTeam: { name: "Dortmund" }, league: "Bundesliga", time: "Today, 18:30" },
-    { id: "fut-5", homeTeam: { name: "Inter Milan" }, awayTeam: { name: "AC Milan" }, league: "Serie A", time: "Tomorrow, 19:45" },
-    { id: "fut-6", homeTeam: { name: "Juventus" }, awayTeam: { name: "PSG" }, league: "Champions League", time: "Tomorrow, 20:00" },
-    { id: "fut-7", homeTeam: { name: "Bayer Leverkusen" }, awayTeam: { name: "RB Leipzig" }, league: "Bundesliga", time: "Today, 15:30" },
-    { id: "fut-8", homeTeam: { name: "Tottenham" }, awayTeam: { name: "Aston Villa" }, league: "Premier League", time: "Tomorrow, 14:00" },
-    { id: "fut-9", homeTeam: { name: "Atletico Madrid" }, awayTeam: { name: "Sevilla" }, league: "La Liga", time: "Tomorrow, 17:30" },
-    { id: "fut-10", homeTeam: { name: "Napoli" }, awayTeam: { name: "Roma" }, league: "Serie A", time: "Tomorrow, 19:45" },
-    { id: "fut-11", homeTeam: { name: "Marseille" }, awayTeam: { name: "Lyon" }, league: "Ligue 1", time: "Today, 20:00" },
-    { id: "fut-12", homeTeam: { name: "Sporting CP" }, awayTeam: { name: "Benfica" }, league: "Primeira Liga", time: "Tomorrow, 20:30" },
-    { id: "fut-13", homeTeam: { name: "Ajax" }, awayTeam: { name: "PSV Eindhoven" }, league: "Eredivisie", time: "Today, 19:00" },
-    { id: "fut-14", homeTeam: { name: "Al Hilal" }, awayTeam: { name: "Al Nassr" }, league: "Saudi Pro League", time: "Today, 19:00" },
-    { id: "fut-15", homeTeam: { name: "Al Ahly" }, awayTeam: { name: "Zamalek" }, league: "Egyptian Premier League", time: "Tomorrow, 18:00" },
-    { id: "fut-16", homeTeam: { name: "Flamengo" }, awayTeam: { name: "Palmeiras" }, league: "Brasileirão", time: "Tomorrow, 21:00" },
-    { id: "fut-17", homeTeam: { name: "Boca Juniors" }, awayTeam: { name: "River Plate" }, league: "Liga Profesional", time: "Tomorrow, 22:00" },
-    { id: "fut-18", homeTeam: { name: "Newcastle" }, awayTeam: { name: "Man United" }, league: "Premier League", time: "Today, 20:00" },
-    { id: "fut-19", homeTeam: { name: "Real Sociedad" }, awayTeam: { name: "Villarreal" }, league: "La Liga", time: "Today, 18:30" },
-    { id: "fut-20", homeTeam: { name: "Atalanta" }, awayTeam: { name: "Lazio" }, league: "Serie A", time: "Today, 17:00" },
-    { id: "fut-21", homeTeam: { name: "Frankfurt" }, awayTeam: { name: "Stuttgart" }, league: "Bundesliga", time: "Tomorrow, 16:30" },
-    { id: "fut-22", homeTeam: { name: "Monaco" }, awayTeam: { name: "Lille" }, league: "Ligue 1", time: "Tomorrow, 16:00" },
-    { id: "fut-23", homeTeam: { name: "Porto" }, awayTeam: { name: "Braga" }, league: "Primeira Liga", time: "Tomorrow, 18:00" },
-    { id: "fut-24", homeTeam: { name: "Feyenoord" }, awayTeam: { name: "AZ Alkmaar" }, league: "Eredivisie", time: "Today, 15:45" },
-    { id: "fut-25", homeTeam: { name: "Celtic" }, awayTeam: { name: "Rangers" }, league: "Scottish Premiership", time: "Tomorrow, 12:30" },
-    { id: "fut-26", homeTeam: { name: "Galatasaray" }, awayTeam: { name: "Fenerbahçe" }, league: "Süper Lig", time: "Tomorrow, 18:00" },
-    { id: "fut-27", homeTeam: { name: "Al Ittihad" }, awayTeam: { name: "Al Ahli" }, league: "Saudi Pro League", time: "Today, 18:00" },
-    { id: "fut-28", homeTeam: { name: "Young Africans" }, awayTeam: { name: "Simba SC" }, league: "Tanzanian Premier League", time: "Tomorrow, 15:00" },
-    { id: "fut-29", homeTeam: { name: "Enyimba" }, awayTeam: { name: "Rivers United" }, league: "NPFL", time: "Today, 16:00" },
-    { id: "fut-30", homeTeam: { name: "Mamelodi Sundowns" }, awayTeam: { name: "Orlando Pirates" }, league: "South African PSL", time: "Tomorrow, 16:30" },
-    { id: "fut-31", homeTeam: { name: "Inter Miami" }, awayTeam: { name: "LA Galaxy" }, league: "MLS", time: "Tomorrow, 23:30" },
-    { id: "fut-32", homeTeam: { name: "Club America" }, awayTeam: { name: "Cruz Azul" }, league: "Liga MX", time: "Tomorrow, 02:00" },
-    { id: "fut-33", homeTeam: { name: "Manchester City" }, awayTeam: { name: "Real Madrid" }, league: "Champions League", time: "Upcoming, 20:00" },
-    { id: "fut-34", homeTeam: { name: "Arsenal" }, awayTeam: { name: "Bayern Munich" }, league: "Champions League", time: "Upcoming, 20:00" },
-    { id: "fut-35", homeTeam: { name: "Aston Villa" }, awayTeam: { name: "Juventus" }, league: "Champions League", time: "Upcoming, 20:00" },
-    { id: "fut-36", homeTeam: { name: "Barcelona" }, awayTeam: { name: "PSG" }, league: "Champions League", time: "Upcoming, 20:00" },
-    { id: "fut-37", homeTeam: { name: "Chelsea" }, awayTeam: { name: "Roma" }, league: "Europa League", time: "Upcoming, 17:45" },
-    { id: "fut-38", homeTeam: { name: "Tottenham" }, awayTeam: { name: "Porto" }, league: "Europa League", time: "Upcoming, 20:00" },
-    { id: "fut-39", homeTeam: { name: "West Ham" }, awayTeam: { name: "Brighton" }, league: "Premier League", time: "Today, 14:00" },
-    { id: "fut-40", homeTeam: { name: "Athletic Bilbao" }, awayTeam: { name: "Valencia" }, league: "La Liga", time: "Tomorrow, 18:00" }
+    // ── Premier League ────────────────────────────────────────────────
+    { id: "fut-1",  homeTeam: { name: "Arsenal" },          awayTeam: { name: "Man City" },        league: "Premier League" },
+    { id: "fut-2",  homeTeam: { name: "Liverpool" },         awayTeam: { name: "Chelsea" },          league: "Premier League" },
+    { id: "fut-3",  homeTeam: { name: "Newcastle" },         awayTeam: { name: "Man United" },       league: "Premier League" },
+    { id: "fut-4",  homeTeam: { name: "Tottenham" },         awayTeam: { name: "Aston Villa" },      league: "Premier League" },
+    { id: "fut-5",  homeTeam: { name: "West Ham" },          awayTeam: { name: "Brighton" },         league: "Premier League" },
+    // ── Championship ─────────────────────────────────────────────────
+    { id: "fut-6",  homeTeam: { name: "Leeds United" },      awayTeam: { name: "Sunderland" },       league: "Championship" },
+    { id: "fut-7",  homeTeam: { name: "Sheffield Utd" },     awayTeam: { name: "Middlesbrough" },    league: "Championship" },
+    // ── La Liga ───────────────────────────────────────────────────────
+    { id: "fut-8",  homeTeam: { name: "Real Madrid" },       awayTeam: { name: "Barcelona" },        league: "La Liga" },
+    { id: "fut-9",  homeTeam: { name: "Atletico Madrid" },   awayTeam: { name: "Sevilla" },          league: "La Liga" },
+    { id: "fut-10", homeTeam: { name: "Real Sociedad" },     awayTeam: { name: "Villarreal" },       league: "La Liga" },
+    { id: "fut-11", homeTeam: { name: "Athletic Bilbao" },   awayTeam: { name: "Valencia" },         league: "La Liga" },
+    // ── Serie A ───────────────────────────────────────────────────────
+    { id: "fut-12", homeTeam: { name: "Inter Milan" },       awayTeam: { name: "AC Milan" },         league: "Serie A" },
+    { id: "fut-13", homeTeam: { name: "Napoli" },            awayTeam: { name: "Roma" },             league: "Serie A" },
+    { id: "fut-14", homeTeam: { name: "Juventus" },          awayTeam: { name: "Atalanta" },         league: "Serie A" },
+    { id: "fut-15", homeTeam: { name: "Fiorentina" },        awayTeam: { name: "Lazio" },            league: "Serie A" },
+    // ── Bundesliga ────────────────────────────────────────────────────
+    { id: "fut-16", homeTeam: { name: "Bayern Munich" },     awayTeam: { name: "Dortmund" },         league: "Bundesliga" },
+    { id: "fut-17", homeTeam: { name: "Bayer Leverkusen" },  awayTeam: { name: "RB Leipzig" },       league: "Bundesliga" },
+    { id: "fut-18", homeTeam: { name: "Frankfurt" },         awayTeam: { name: "Stuttgart" },        league: "Bundesliga" },
+    // ── Ligue 1 ───────────────────────────────────────────────────────
+    { id: "fut-19", homeTeam: { name: "PSG" },               awayTeam: { name: "Monaco" },           league: "Ligue 1" },
+    { id: "fut-20", homeTeam: { name: "Marseille" },         awayTeam: { name: "Lyon" },             league: "Ligue 1" },
+    { id: "fut-21", homeTeam: { name: "Lille" },             awayTeam: { name: "Nice" },             league: "Ligue 1" },
+    // ── Champions League ──────────────────────────────────────────────
+    { id: "fut-22", homeTeam: { name: "Manchester City" },   awayTeam: { name: "Real Madrid" },      league: "Champions League" },
+    { id: "fut-23", homeTeam: { name: "Arsenal" },           awayTeam: { name: "Bayern Munich" },    league: "Champions League" },
+    { id: "fut-24", homeTeam: { name: "Barcelona" },         awayTeam: { name: "PSG" },              league: "Champions League" },
+    { id: "fut-25", homeTeam: { name: "Aston Villa" },       awayTeam: { name: "Juventus" },         league: "Champions League" },
+    // ── Europa League & Conference League ─────────────────────────────
+    { id: "fut-26", homeTeam: { name: "Chelsea" },           awayTeam: { name: "Roma" },             league: "Europa League" },
+    { id: "fut-27", homeTeam: { name: "Tottenham" },         awayTeam: { name: "Porto" },            league: "Europa League" },
+    { id: "fut-28", homeTeam: { name: "Fiorentina" },        awayTeam: { name: "PAOK" },             league: "Conference League" },
+    // ── Eredivisie ────────────────────────────────────────────────────
+    { id: "fut-29", homeTeam: { name: "Ajax" },              awayTeam: { name: "PSV Eindhoven" },    league: "Eredivisie" },
+    { id: "fut-30", homeTeam: { name: "Feyenoord" },         awayTeam: { name: "AZ Alkmaar" },       league: "Eredivisie" },
+    // ── Primeira Liga ─────────────────────────────────────────────────
+    { id: "fut-31", homeTeam: { name: "Sporting CP" },       awayTeam: { name: "Benfica" },          league: "Primeira Liga" },
+    { id: "fut-32", homeTeam: { name: "Porto" },             awayTeam: { name: "Braga" },            league: "Primeira Liga" },
+    // ── Süper Lig ─────────────────────────────────────────────────────
+    { id: "fut-33", homeTeam: { name: "Galatasaray" },       awayTeam: { name: "Fenerbahçe" },       league: "Süper Lig" },
+    { id: "fut-34", homeTeam: { name: "Beşiktaş" },          awayTeam: { name: "Trabzonspor" },      league: "Süper Lig" },
+    // ── Scottish Premiership ──────────────────────────────────────────
+    { id: "fut-35", homeTeam: { name: "Celtic" },            awayTeam: { name: "Rangers" },          league: "Scottish Premiership" },
+    // ── Belgian Pro League ────────────────────────────────────────────
+    { id: "fut-36", homeTeam: { name: "Club Brugge" },       awayTeam: { name: "Anderlecht" },       league: "Belgian Pro League" },
+    // ── Ekstraklasa ───────────────────────────────────────────────────
+    { id: "fut-37", homeTeam: { name: "Legia Warsaw" },      awayTeam: { name: "Lech Poznań" },      league: "Ekstraklasa" },
+    // ── Greek Super League ────────────────────────────────────────────
+    { id: "fut-38", homeTeam: { name: "Olympiacos" },        awayTeam: { name: "PAOK" },             league: "Greek Super League" },
+    // ── Allsvenskan ───────────────────────────────────────────────────
+    { id: "fut-39", homeTeam: { name: "Malmö FF" },          awayTeam: { name: "AIK" },              league: "Allsvenskan" },
+    // ── Eliteserien ───────────────────────────────────────────────────
+    { id: "fut-40", homeTeam: { name: "Molde" },             awayTeam: { name: "Bodø/Glimt" },       league: "Eliteserien" },
+    // ── Danish Superliga ──────────────────────────────────────────────
+    { id: "fut-41", homeTeam: { name: "Copenhagen" },        awayTeam: { name: "Midtjylland" },      league: "Superliga" },
+    // ── Swiss Super League ────────────────────────────────────────────
+    { id: "fut-42", homeTeam: { name: "FC Basel" },          awayTeam: { name: "Young Boys" },       league: "Swiss Super League" },
+    // ── Russian Premier League ────────────────────────────────────────
+    { id: "fut-43", homeTeam: { name: "CSKA Moscow" },       awayTeam: { name: "Zenit" },            league: "Russian Premier League" },
+    // ── Ukrainian Premier League ──────────────────────────────────────
+    { id: "fut-44", homeTeam: { name: "Shakhtar Donetsk" },  awayTeam: { name: "Dynamo Kyiv" },      league: "Ukrainian Premier League" },
+    // ── Saudi Pro League ──────────────────────────────────────────────
+    { id: "fut-45", homeTeam: { name: "Al Hilal" },          awayTeam: { name: "Al Nassr" },         league: "Saudi Pro League" },
+    { id: "fut-46", homeTeam: { name: "Al Ittihad" },        awayTeam: { name: "Al Ahli" },          league: "Saudi Pro League" },
+    // ── UAE Pro League ────────────────────────────────────────────────
+    { id: "fut-47", homeTeam: { name: "Al Ain" },            awayTeam: { name: "Al Jazira" },        league: "UAE Pro League" },
+    // ── Qatar Stars League ────────────────────────────────────────────
+    { id: "fut-48", homeTeam: { name: "Al Sadd" },           awayTeam: { name: "Al Duhail" },        league: "Qatar Stars League" },
+    // ── Egyptian Premier League ───────────────────────────────────────
+    { id: "fut-49", homeTeam: { name: "Al Ahly" },           awayTeam: { name: "Zamalek" },          league: "Egyptian Premier League" },
+    { id: "fut-50", homeTeam: { name: "Pyramids FC" },       awayTeam: { name: "Ismaily" },          league: "Egyptian Premier League" },
+    // ── South African PSL ─────────────────────────────────────────────
+    { id: "fut-51", homeTeam: { name: "Mamelodi Sundowns" }, awayTeam: { name: "Orlando Pirates" },  league: "South African PSL" },
+    // ── NPFL (Nigeria) ────────────────────────────────────────────────
+    { id: "fut-52", homeTeam: { name: "Enyimba" },           awayTeam: { name: "Rivers United" },    league: "NPFL" },
+    { id: "fut-53", homeTeam: { name: "Remo Stars" },        awayTeam: { name: "Bendel Insurance" }, league: "NPFL" },
+    // ── Ghana Premier League ──────────────────────────────────────────
+    { id: "fut-54", homeTeam: { name: "Asante Kotoko" },     awayTeam: { name: "Hearts of Oak" },    league: "Ghana Premier League" },
+    // ── Tanzanian Premier League ──────────────────────────────────────
+    { id: "fut-55", homeTeam: { name: "Young Africans" },    awayTeam: { name: "Simba SC" },         league: "Tanzanian Premier League" },
+    // ── Moroccan Botola ───────────────────────────────────────────────
+    { id: "fut-56", homeTeam: { name: "Wydad Casablanca" },  awayTeam: { name: "Raja Casablanca" },  league: "Moroccan Botola" },
+    // ── Algerian Ligue 1 ──────────────────────────────────────────────
+    { id: "fut-57", homeTeam: { name: "ES Sétif" },          awayTeam: { name: "USM Alger" },        league: "Algerian Ligue 1" },
+    // ── Tunisian Ligue 1 ──────────────────────────────────────────────
+    { id: "fut-58", homeTeam: { name: "Espérance Tunis" },   awayTeam: { name: "Club Africain" },    league: "Tunisian Ligue 1" },
+    // ── CAF Champions League ──────────────────────────────────────────
+    { id: "fut-59", homeTeam: { name: "Mamelodi Sundowns" }, awayTeam: { name: "Al Ahly" },          league: "CAF Champions League" },
+    // ── Brasileirão Série A ───────────────────────────────────────────
+    { id: "fut-60", homeTeam: { name: "Flamengo" },          awayTeam: { name: "Palmeiras" },        league: "Brasileirão Série A" },
+    { id: "fut-61", homeTeam: { name: "São Paulo" },         awayTeam: { name: "Corinthians" },      league: "Brasileirão Série A" },
+    { id: "fut-62", homeTeam: { name: "Botafogo" },          awayTeam: { name: "Fluminense" },       league: "Brasileirão Série A" },
+    // ── Copa Libertadores ─────────────────────────────────────────────
+    { id: "fut-63", homeTeam: { name: "River Plate" },       awayTeam: { name: "Flamengo" },         league: "Copa Libertadores" },
+    { id: "fut-64", homeTeam: { name: "Palmeiras" },         awayTeam: { name: "Nacional" },         league: "Copa Libertadores" },
+    // ── Liga Profesional (Argentina) ──────────────────────────────────
+    { id: "fut-65", homeTeam: { name: "Boca Juniors" },      awayTeam: { name: "River Plate" },      league: "Liga Profesional" },
+    // ── Colombia Primera A ────────────────────────────────────────────
+    { id: "fut-66", homeTeam: { name: "Millonarios" },       awayTeam: { name: "América de Cali" },  league: "Colombia Primera A" },
+    // ── Ecuador Liga Pro ──────────────────────────────────────────────
+    { id: "fut-67", homeTeam: { name: "Barcelona SC" },      awayTeam: { name: "Liga de Quito" },    league: "Ecuador Liga Pro" },
+    // ── Copa Sudamericana ─────────────────────────────────────────────
+    { id: "fut-68", homeTeam: { name: "Independiente" },     awayTeam: { name: "San Lorenzo" },      league: "Copa Sudamericana" },
+    // ── MLS ───────────────────────────────────────────────────────────
+    { id: "fut-69", homeTeam: { name: "Inter Miami" },       awayTeam: { name: "LA Galaxy" },        league: "MLS" },
+    { id: "fut-70", homeTeam: { name: "Seattle Sounders" },  awayTeam: { name: "Portland Timbers" }, league: "MLS" },
+    // ── Liga MX ───────────────────────────────────────────────────────
+    { id: "fut-71", homeTeam: { name: "Club América" },      awayTeam: { name: "Cruz Azul" },        league: "Liga MX" },
+    { id: "fut-72", homeTeam: { name: "Chivas" },            awayTeam: { name: "Atlas" },            league: "Liga MX" },
+    // ── Costa Rica Primera ────────────────────────────────────────────
+    { id: "fut-73", homeTeam: { name: "Deportivo Saprissa" },awayTeam: { name: "LD Alajuelense" },   league: "Costa Rica Primera" },
+    // ── Persian Gulf Pro League ───────────────────────────────────────
+    { id: "fut-74", homeTeam: { name: "Persepolis" },        awayTeam: { name: "Esteghlal" },        league: "Persian Gulf Pro League" },
+    // ── Zambian Super League ──────────────────────────────────────────
+    { id: "fut-75", homeTeam: { name: "Zesco United" },      awayTeam: { name: "Green Eagles" },     league: "Zambian Super League" },
+    // ── Kenyan Premier League ─────────────────────────────────────────
+    { id: "fut-76", homeTeam: { name: "Gor Mahia" },         awayTeam: { name: "AFC Leopards" },     league: "Kenyan Premier League" },
   ];
 
   // Merge active dynamic upcoming matches first, then fill from elite roster
@@ -2535,19 +2624,18 @@ function generateScoutAccumulator(count = 40) {
   const dayNames = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
   const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
 
+  // All scout selections are FUTURE upcoming fixtures – never fake-labelled as live.
+  // Spread across Tomorrow, day-after-tomorrow, and beyond to look realistic.
   const getDynamicDateForMatch = (index) => {
-    const dayOffset = Math.floor(index / 10);
+    // Start from tomorrow (offset 1) so no selection says "Today" when it's already past
+    const dayOffset = 1 + Math.floor(index / 8);
     const targetDate = new Date(now.getTime() + dayOffset * 24 * 60 * 60 * 1000);
     const dName = dayNames[targetDate.getDay()];
     const mName = monthNames[targetDate.getMonth()];
     const dNum = targetDate.getDate();
-    const prefix = (dayOffset === 0) ? 'Today' : (dayOffset === 1 ? 'Tomorrow' : dName);
-    const times = ['12:30', '14:00', '15:30', '16:00', '17:30', '18:00', '19:45', '20:00', '20:30', '21:00'];
+    const prefix = dayOffset === 1 ? 'Tomorrow' : dName;
+    const times = ['12:30', '13:00', '14:00', '15:30', '16:00', '17:30', '18:00', '19:45', '20:00', '20:30', '21:00'];
     const kickoffTime = times[index % times.length];
-    
-    if (dayOffset === 0 && index < 2) {
-      return `🔴 Live ${68 + index * 6}' (${prefix}, ${mName} ${dNum})`;
-    }
     return `📅 ${prefix} (${dName}, ${mName} ${dNum}) • ${kickoffTime}`;
   };
 
