@@ -796,10 +796,18 @@ const DAILY_TIPS = [
 ];
 
 const HOT_TRENDS = [
-  { team: "Real Madrid", trend: "Undefeated in last 15 La Liga games", icon: "🔥" },
-  { team: "Bayer Leverkusen", trend: "0 losses this season in Bundesliga", icon: "🛡️" },
-  { team: "Bayern Munich", trend: "Averaging 3.2 goals per game", icon: "⚽" },
-  { team: "Sporting CP", trend: "Won last 6 home fixtures", icon: "📈" }
+  { team: "Arsenal", trend: "Won last 6 home matches in Premier League", icon: "🔴" },
+  { team: "Real Madrid", trend: "Over 2.5 Goals in 8 consecutive games", icon: "⚪" },
+  { team: "Bayern Munich", trend: "BTTS Yes in 9 of last 10 fixtures", icon: "🔴⚪" },
+  { team: "Barcelona", trend: "Unbeaten in last 12 La Liga matches", icon: "🔵🔴" },
+  { team: "Manchester City", trend: "Scored 2+ Goals in last 7 matches", icon: "🩵" },
+  { team: "Inter Milan", trend: "Clean sheet in 5 consecutive Serie A fixtures", icon: "🔵⚫" },
+  { team: "PSG", trend: "Won first half in 8 of last 10 Ligue 1 matches", icon: "🗼" },
+  { team: "Liverpool", trend: "Over 1.5 Goals in 14 straight games", icon: "🔴🛡️" },
+  { team: "Bayer Leverkusen", trend: "Unbeaten in 15 domestic games", icon: "🔴⚫" },
+  { team: "Juventus", trend: "Under 2.5 Goals in 7 of last 9 matches", icon: "⚪⚫" },
+  { team: "Tottenham", trend: "Both Teams To Score in 8 of last 9 home games", icon: "⚪🐓" },
+  { team: "Brighton", trend: "Scored in 8 consecutive away fixtures", icon: "🔵🪶" }
 ];
 
 const VALUE_BETS = [

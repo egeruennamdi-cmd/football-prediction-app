@@ -1087,31 +1087,56 @@ window.copyDailyTipOdds = copyDailyTipOdds;
 window.renderDailyBets = renderDailyBets;
 
 // Render Hot Trends Ticker (Bulletproof Version)
+function getDynamicHotTrends() {
+  const dynamicList = [];
+  const matches = (typeof MATCH_DATA !== 'undefined' && Array.isArray(MATCH_DATA) && MATCH_DATA.length > 0)
+    ? MATCH_DATA
+    : (window.MATCH_DATA && Array.isArray(window.MATCH_DATA) ? window.MATCH_DATA : []);
+
+  if (matches.length > 0) {
+    matches.forEach(m => {
+      if (m.homeTeam && m.homeTeam.name && m.topTip) {
+        dynamicList.push({
+          team: m.homeTeam.name,
+          icon: m.homeTeam.logo || '⚽',
+          trend: `${m.topTip} (${m.confidenceVal || 85}% AI Model Confidence)`
+        });
+      }
+      if (m.awayTeam && m.awayTeam.name && m.insight) {
+        const snippet = m.insight.split('.')[0];
+        if (snippet && snippet.length < 65) {
+          dynamicList.push({
+            team: m.awayTeam.name,
+            icon: m.awayTeam.logo || '⚽',
+            trend: snippet
+          });
+        }
+      }
+    });
+  }
+
+  const baseTrends = (typeof HOT_TRENDS !== 'undefined' && Array.isArray(HOT_TRENDS) && HOT_TRENDS.length > 0)
+    ? HOT_TRENDS
+    : (window.HOT_TRENDS && Array.isArray(window.HOT_TRENDS) ? window.HOT_TRENDS : [
+        { team: "Arsenal", icon: "🔴", trend: "Won last 6 home matches in Premier League" },
+        { team: "Real Madrid", icon: "⚪", trend: "Over 2.5 Goals in 8 consecutive games" },
+        { team: "Bayern Munich", icon: "🔴⚪", trend: "BTTS Yes in 9 of last 10 fixtures" },
+        { team: "Barcelona", icon: "🔵🔴", trend: "Unbeaten in last 12 La Liga matches" },
+        { team: "Manchester City", icon: "🩵", trend: "Scored 2+ Goals in last 7 matches" },
+        { team: "Inter Milan", icon: "🔵⚫", trend: "Clean sheet in 5 consecutive Serie A fixtures" },
+        { team: "PSG", icon: "🗼", trend: "Won first half in 8 of last 10 Ligue 1 matches" },
+        { team: "Liverpool", icon: "🔴🛡️", trend: "Over 1.5 Goals in 14 straight games" }
+      ]);
+
+  return dynamicList.length > 0 ? [...dynamicList.slice(0, 8), ...baseTrends.slice(0, 6)] : baseTrends;
+}
+
 function renderTrends() {
   const container = document.getElementById("trends-ticker-container");
   if (!container) return;
 
   try {
-    const defaultTrends = [
-      { team: "Arsenal", icon: "🔴", trend: "Won last 6 home matches in Premier League" },
-      { team: "Real Madrid", icon: "⚪", trend: "Over 2.5 Goals in 8 consecutive games" },
-      { team: "Bayern Munich", icon: "🔴⚪", trend: "BTTS Yes in 9 of last 10 fixtures" },
-      { team: "Barcelona", icon: "🔵🔴", trend: "Unbeaten in last 12 La Liga matches" },
-      { team: "Manchester City", icon: "🩵", trend: "Scored 2+ Goals in last 7 matches" },
-      { team: "Inter Milan", icon: "🔵⚫", trend: "Clean sheet in 5 consecutive games" },
-      { team: "PSG", icon: "🗼", trend: "Won first half in 8 of last 10 matches" },
-      { team: "Liverpool", icon: "🔴🛡️", trend: "Over 1.5 Goals in 14 straight games" },
-      { team: "Bayer Leverkusen", icon: "🔴⚫", trend: "Unbeaten streak in 15 domestic games" },
-      { team: "Juventus", icon: "⚪⚫", trend: "Under 2.5 Goals in 7 of last 9 matches" }
-    ];
-
-    let trendsData = defaultTrends;
-    if (typeof HOT_TRENDS !== 'undefined' && Array.isArray(HOT_TRENDS) && HOT_TRENDS.length > 0) {
-      trendsData = HOT_TRENDS;
-    } else if (typeof window.HOT_TRENDS !== 'undefined' && Array.isArray(window.HOT_TRENDS) && window.HOT_TRENDS.length > 0) {
-      trendsData = window.HOT_TRENDS;
-    }
-
+    const trendsData = getDynamicHotTrends();
     const combinedTrends = [...trendsData, ...trendsData, ...trendsData];
 
     container.innerHTML = combinedTrends.map(trend => `
@@ -1133,6 +1158,7 @@ function renderTrends() {
   }
 }
 window.renderTrends = renderTrends;
+window.getDynamicHotTrends = getDynamicHotTrends;
 
 // Auto-run Hot Trends on site load
 if (document.readyState === 'loading') {
