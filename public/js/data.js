@@ -4,7 +4,7 @@ const MATCH_DATA = [
     date: "future",
     league: "Premier League",
     leagueEmoji: "🏴󠁧󠁢󠁥󠁮󠁧󠁿",
-    time: "Matchday 5 Clash",
+    time: "20th, September 2026, 16:30",
     isLive: false,
     homeTeam: {
       name: "Manchester City",
@@ -30,7 +30,7 @@ const MATCH_DATA = [
     date: "future",
     league: "La Liga",
     leagueEmoji: "🇪🇸",
-    time: "El Clásico",
+    time: "26th, October 2026, 20:00",
     isLive: false,
     homeTeam: {
       name: "Real Madrid",
@@ -56,7 +56,7 @@ const MATCH_DATA = [
     date: "future",
     league: "Premier League",
     leagueEmoji: "🏴󠁧󠁢󠁥󠁮󠁧󠁿",
-    time: "Matchday 8",
+    time: "19th, October 2026, 16:30",
     isLive: false,
     homeTeam: {
       name: "Liverpool",
@@ -82,7 +82,7 @@ const MATCH_DATA = [
     date: "future",
     league: "Bundesliga",
     leagueEmoji: "🇩🇪",
-    time: "Der Klassiker",
+    time: "30th, November 2026, 17:30",
     isLive: false,
     homeTeam: {
       name: "Bayern Munich",
@@ -105,10 +105,10 @@ const MATCH_DATA = [
   },
   {
     id: "match-5",
-    date: "tomorrow",
+    date: "future",
     league: "Serie A",
     leagueEmoji: "🇮🇹",
-    time: "Tomorrow, 19:45",
+    time: "21st, September 2026, 19:45",
     isLive: false,
     homeTeam: {
       name: "Inter Milan",
@@ -131,10 +131,10 @@ const MATCH_DATA = [
   },
   {
     id: "match-6",
-    date: "tomorrow",
+    date: "future",
     league: "Champions League",
     leagueEmoji: "🇪🇺",
-    time: "Tomorrow, 20:00",
+    time: "1st, October 2026, 20:00",
     isLive: false,
     homeTeam: {
       name: "Juventus",

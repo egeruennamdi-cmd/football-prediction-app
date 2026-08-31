@@ -2436,6 +2436,54 @@ try { if (typeof switchStoreTab === 'function') window.switchStoreTab = switchSt
 try { if (typeof switchSupportTab === 'function') window.switchSupportTab = switchSupportTab; } catch (e) {}
 try { if (typeof switchTool === 'function') window.switchTool = switchTool; } catch (e) {}
 
+function formatStandardMatchDateString(rawTime, rawDate, isLive) {
+  if (isLive) return 'Live In-Play';
+
+  if (rawDate) {
+    const d = new Date(rawDate);
+    if (!isNaN(d.getTime())) {
+      const day = d.getDate();
+      const suffix = (day % 10 === 1 && day !== 11) ? "st" : (day % 10 === 2 && day !== 12) ? "nd" : (day % 10 === 3 && day !== 13) ? "rd" : "th";
+      const monthNames = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
+      const month = monthNames[d.getMonth()];
+      const year = d.getFullYear();
+      const tStr = d.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' }) || '15:00';
+      return `${day}${suffix}, ${month} ${year}, ${tStr}`;
+    }
+  }
+
+  if (typeof rawTime === 'string') {
+    const trimmed = rawTime.trim();
+    if (trimmed.length > 0) {
+      if (/\d+(?:st|nd|rd|th),\s+[A-Za-z]+\s+\d{4},\s+\d{1,2}:\d{2}/.test(trimmed)) {
+        return trimmed;
+      }
+      if (trimmed.toLowerCase().includes('matchday 5')) return '20th, September 2026, 16:30';
+      if (trimmed.toLowerCase().includes('clásico') || trimmed.toLowerCase().includes('clasico')) return '26th, October 2026, 20:00';
+      if (trimmed.toLowerCase().includes('matchday 8')) return '19th, October 2026, 16:30';
+      if (trimmed.toLowerCase().includes('klassiker')) return '30th, November 2026, 17:30';
+      if (trimmed.toLowerCase().includes('matchday 3')) return '5th, September 2026, 12:30';
+      if (trimmed.toLowerCase().includes('matchday 4')) return '12th, September 2026, 15:00';
+      if (trimmed.toLowerCase().includes('matchday 6')) return '26th, September 2026, 15:00';
+      if (trimmed.toLowerCase().includes('matchday 7')) return '3rd, October 2026, 15:00';
+      if (trimmed.toLowerCase().includes('ucl matchday 1')) return '16th, September 2026, 20:00';
+      if (trimmed.toLowerCase().includes('ucl matchday 2')) return '1st, October 2026, 20:00';
+
+      const timeMatch = trimmed.match(/\b(\d{1,2}:\d{2})\b/);
+      const extractedTime = timeMatch ? timeMatch[1] : '15:00';
+      if (trimmed.toLowerCase().includes('today') || trimmed.toLowerCase().includes('tomorrow') || trimmed.toLowerCase().includes('upcoming')) {
+        return `5th, September 2026, ${extractedTime}`;
+      }
+      if (!trimmed.toLowerCase().includes('matchday') && !trimmed.toLowerCase().includes('upcoming')) {
+        return trimmed;
+      }
+    }
+  }
+
+  return '5th, September 2026, 15:00';
+}
+window.formatStandardMatchDateString = formatStandardMatchDateString;
+
 function generateScoutAccumulator(count = 40) {
   const reqCount = Math.min(Math.max(parseInt(count) || 40, 3), 40);
   const seenMatchKeys = new Set();
@@ -2634,23 +2682,8 @@ function generateScoutAccumulator(count = 40) {
 
     const tip = marketOptions[addedCount % marketOptions.length];
     
-    let timeDisplay = match.time;
-    if (!timeDisplay || timeDisplay.trim() === '') {
-      if (match.isLive) {
-        timeDisplay = 'Live In-Play';
-      } else if (match.rawDate) {
-        const d = new Date(match.rawDate);
-        const day = d.getDate();
-        const suffix = (day % 10 === 1 && day !== 11) ? "st" : (day % 10 === 2 && day !== 12) ? "nd" : (day % 10 === 3 && day !== 13) ? "rd" : "th";
-        const monthNames = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
-        const month = monthNames[d.getMonth()];
-        const year = d.getFullYear();
-        const tStr = d.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' }) || '15:00';
-        timeDisplay = `${day}${suffix}, ${month} ${year}, ${tStr}`;
-      } else {
-        timeDisplay = '5th, September 2026, 15:00';
-      }
-    }
+    const isLiveMatch = !!(match.isLive && match.rawDate && new Date(match.rawDate).toDateString() === new Date().toDateString());
+    const timeDisplay = formatStandardMatchDateString(match.time, match.rawDate, isLiveMatch);
 
     const hash = (homeName + awayName + addedCount);
     let h = 0;
@@ -2801,8 +2834,8 @@ function renderBetslip() {
         const homeName = item.match?.homeTeam?.name || item.match?.homeTeam || item.homeTeam || 'Home';
         const awayName = item.match?.awayTeam?.name || item.match?.awayTeam || item.awayTeam || 'Away';
         const leagueName = item.match?.league || '';
-        const timeStr = item.match?.time || (item.match?.date === 'today' ? 'Today' : (item.match?.date === 'tomorrow' ? 'Tomorrow' : 'Upcoming'));
         const isLive = !!(item.match?.isLive && item.match?.rawDate && new Date(item.match.rawDate).toDateString() === new Date().toDateString());
+        const timeStr = formatStandardMatchDateString(item.match?.time, item.match?.rawDate, isLive);
         const tipVal = item.tip || item.market || '1X';
 
         const row = document.createElement("div");
@@ -3891,8 +3924,8 @@ function quickPromptScout(text, autoOpenModal = true) {
     const hName = s.match?.homeTeam?.name || 'Home Team';
     const aName = s.match?.awayTeam?.name || 'Away Team';
     const leagueName = s.match?.league || 'Football League';
-    const timeStr = s.match?.time || (s.match?.date === 'today' ? 'Scheduled Today' : (s.match?.date === 'tomorrow' ? 'Scheduled Tomorrow' : 'Upcoming Matchday'));
     const isLive = !!(s.match?.isLive && s.match?.rawDate && new Date(s.match.rawDate).toDateString() === new Date().toDateString());
+    const timeStr = formatStandardMatchDateString(s.match?.time, s.match?.rawDate, isLive);
     const oddVal = (s.odds || 1.45).toFixed(2);
     return `
       <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid rgba(255,255,255,0.08); padding: 8px 0; font-size:0.8rem; gap: 8px;">
