@@ -217,7 +217,7 @@ window.addMatchCardToBetslip = addMatchCardToBetslip;
 function generateScoutAccumulator(count = 40) {
   const reqCount = Math.min(Math.max(parseInt(count) || 40, 3), 40);
   const seenMatchKeys = new Set();
-  const activePool = [];
+  const rawPool = [];
 
   // 1. Gather all active live matches and API-streamed fixtures
   const liveCandidateLists = [
@@ -241,92 +241,137 @@ function generateScoutAccumulator(count = 40) {
       const key = `${hName.toLowerCase()}-${aName.toLowerCase()}`;
       if (hName && aName && !seenMatchKeys.has(key)) {
         seenMatchKeys.add(key);
-        activePool.push(m);
+        rawPool.push(m);
       }
     });
   });
 
-  // 2. Comprehensive real matchday fixtures across all 🏆 Top Leagues Elite competitions
+  // 2. Comprehensive 60+ Unique Fixtures across 🏆 Top Leagues Elite (Zero club repetition)
   const authenticTopLeaguesFixtures = [
-    // ── Premier League ──
-    { id: "epl-fix-1", homeTeam: { name: "Arsenal", logo: "🔴" }, awayTeam: { name: "Brighton", logo: "🕊️" }, league: "Premier League", leagueEmoji: "🏴󠁧󠁢󠁥󠁮󠁧󠁿", time: "Today, 12:30", date: "today" },
-    { id: "epl-fix-2", homeTeam: { name: "West Ham", logo: "⚒️" }, awayTeam: { name: "Manchester City", logo: "🔵" }, league: "Premier League", leagueEmoji: "🏴󠁧󠁢󠁥󠁮󠁧󠁿", time: "Today, 17:30", date: "today" },
-    { id: "epl-fix-3", homeTeam: { name: "Chelsea", logo: "🦁" }, awayTeam: { name: "Crystal Palace", logo: "🦅" }, league: "Premier League", leagueEmoji: "🏴󠁧󠁢󠁥󠁮󠁧󠁿", time: "Tomorrow, 13:30", date: "tomorrow" },
-    { id: "epl-fix-4", homeTeam: { name: "Newcastle", logo: "🦓" }, awayTeam: { name: "Tottenham", logo: "⚪🐓" }, league: "Premier League", leagueEmoji: "🏴󠁧󠁢󠁥󠁮󠁧󠁿", time: "Tomorrow, 13:30", date: "tomorrow" },
-    { id: "epl-fix-5", homeTeam: { name: "Manchester United", logo: "👿" }, awayTeam: { name: "Liverpool", logo: "🔴🛡️" }, league: "Premier League", leagueEmoji: "🏴󠁧󠁢󠁥󠁮󠁧󠁿", time: "Tomorrow, 16:00", date: "tomorrow" },
+    // ── England ──
+    { id: "epl-fix-1", homeTeam: { name: "Arsenal", logo: "🔴" }, awayTeam: { name: "Brighton", logo: "🕊️" }, league: "Premier League", leagueEmoji: "🏴󠁧󠁢󠁥󠁮󠁧󠁿", time: "Upcoming Matchday", date: "future" },
+    { id: "epl-fix-2", homeTeam: { name: "Manchester City", logo: "🔵" }, awayTeam: { name: "Brentford", logo: "🐝" }, league: "Premier League", leagueEmoji: "🏴󠁧󠁢󠁥󠁮󠁧󠁿", time: "Upcoming Matchday", date: "future" },
+    { id: "epl-fix-3", homeTeam: { name: "Liverpool", logo: "🔴🛡️" }, awayTeam: { name: "Bournemouth", logo: "🍒" }, league: "Premier League", leagueEmoji: "🏴󠁧󠁢󠁥󠁮󠁧󠁿", time: "Upcoming Matchday", date: "future" },
+    { id: "epl-fix-4", homeTeam: { name: "Chelsea", logo: "🦁" }, awayTeam: { name: "Crystal Palace", logo: "🦅" }, league: "Premier League", leagueEmoji: "🏴󠁧󠁢󠁥󠁮󠁧󠁿", time: "Upcoming Matchday", date: "future" },
+    { id: "epl-fix-5", homeTeam: { name: "Newcastle", logo: "🦓" }, awayTeam: { name: "Tottenham", logo: "⚪🐓" }, league: "Premier League", leagueEmoji: "🏴󠁧󠁢󠁥󠁮󠁧󠁿", time: "Upcoming Matchday", date: "future" },
     { id: "epl-fix-6", homeTeam: { name: "Aston Villa", logo: "🦁🟣" }, awayTeam: { name: "Everton", logo: "🔵" }, league: "Premier League", leagueEmoji: "🏴󠁧󠁢󠁥󠁮󠁧󠁿", time: "Upcoming Matchday", date: "future" },
-    // ── La Liga ──
-    { id: "laliga-fix-1", homeTeam: { name: "Barcelona", logo: "🔵🔴" }, awayTeam: { name: "Real Valladolid", logo: "🟣⚪" }, league: "La Liga", leagueEmoji: "🇪🇸", time: "Today, 16:00", date: "today" },
-    { id: "laliga-fix-2", homeTeam: { name: "Athletic Bilbao", logo: "🔴⚪🦁" }, awayTeam: { name: "Atletico Madrid", logo: "🔴⚪" }, league: "La Liga", leagueEmoji: "🇪🇸", time: "Today, 18:00", date: "today" },
-    { id: "laliga-fix-3", homeTeam: { name: "Real Madrid", logo: "⚪" }, awayTeam: { name: "Real Betis", logo: "🟢⚪" }, league: "La Liga", leagueEmoji: "🇪🇸", time: "Tomorrow, 20:30", date: "tomorrow" },
-    { id: "laliga-fix-4", homeTeam: { name: "Sevilla", logo: "⚪🔴" }, awayTeam: { name: "Girona", logo: "🔴⚪" }, league: "La Liga", leagueEmoji: "🇪🇸", time: "Tomorrow, 18:00", date: "tomorrow" },
-    { id: "laliga-fix-5", homeTeam: { name: "Valencia", logo: "🦇" }, awayTeam: { name: "Villarreal", logo: "🟡" }, league: "La Liga", leagueEmoji: "🇪🇸", time: "Upcoming Matchday", date: "future" },
-    // ── Serie A ──
-    { id: "seriea-fix-1", homeTeam: { name: "Inter Milan", logo: "🔵⚫🐍" }, awayTeam: { name: "Atalanta", logo: "🔵⚫" }, league: "Serie A", leagueEmoji: "🇮🇹", time: "Today, 19:45", date: "today" },
-    { id: "seriea-fix-2", homeTeam: { name: "Lazio", logo: "🦅🔵" }, awayTeam: { name: "AC Milan", logo: "🔴⚫👿" }, league: "Serie A", leagueEmoji: "🇮🇹", time: "Today, 19:45", date: "today" },
-    { id: "seriea-fix-3", homeTeam: { name: "Juventus", logo: "⚪⚫🦓" }, awayTeam: { name: "Roma", logo: "🐺🟡🔴" }, league: "Serie A", leagueEmoji: "🇮🇹", time: "Tomorrow, 19:45", date: "tomorrow" },
-    { id: "seriea-fix-4", homeTeam: { name: "Napoli", logo: "🔵👑" }, awayTeam: { name: "Parma", logo: "🟡🔵" }, league: "Serie A", leagueEmoji: "🇮🇹", time: "Today, 19:45", date: "today" },
-    { id: "seriea-fix-5", homeTeam: { name: "Fiorentina", logo: "🟣⚜️" }, awayTeam: { name: "Monza", logo: "🔴⚪" }, league: "Serie A", leagueEmoji: "🇮🇹", time: "Tomorrow, 17:30", date: "tomorrow" },
-    // ── Bundesliga ──
-    { id: "bundes-fix-1", homeTeam: { name: "Bayer Leverkusen", logo: "🔴⚫" }, awayTeam: { name: "RB Leipzig", logo: "⚪🔴" }, league: "Bundesliga", leagueEmoji: "🇩🇪", time: "Today, 17:30", date: "today" },
-    { id: "bundes-fix-2", homeTeam: { name: "Frankfurt", logo: "🦅🔴⚫" }, awayTeam: { name: "Hoffenheim", logo: "🔵⚪" }, league: "Bundesliga", leagueEmoji: "🇩🇪", time: "Today, 14:30", date: "today" },
-    { id: "bundes-fix-3", homeTeam: { name: "Bayern Munich", logo: "🔴⚪" }, awayTeam: { name: "Freiburg", logo: "⚫⚪" }, league: "Bundesliga", leagueEmoji: "🇩🇪", time: "Tomorrow, 16:30", date: "tomorrow" },
-    { id: "bundes-fix-4", homeTeam: { name: "Heidenheim", logo: "🔴🔵" }, awayTeam: { name: "Borussia Dortmund", logo: "🟡⚫" }, league: "Bundesliga", leagueEmoji: "🇩🇪", time: "Upcoming Matchday", date: "future" },
-    // ── Ligue 1 ──
-    { id: "ligue1-fix-1", homeTeam: { name: "Lille", logo: "🔴⚪🐕" }, awayTeam: { name: "PSG", logo: "🔵🔴🗼" }, league: "Ligue 1", leagueEmoji: "🇫🇷", time: "Tomorrow, 19:45", date: "tomorrow" },
-    { id: "ligue1-fix-2", homeTeam: { name: "Lyon", logo: "🔵🔴🦁" }, awayTeam: { name: "Strasbourg", logo: "🔵⚪" }, league: "Ligue 1", leagueEmoji: "🇫🇷", time: "Today, 19:45", date: "today" },
-    { id: "ligue1-fix-3", homeTeam: { name: "Monaco", logo: "⚪🔴" }, awayTeam: { name: "Lens", logo: "🔴🟡" }, league: "Ligue 1", leagueEmoji: "🇫🇷", time: "Tomorrow, 14:00", date: "tomorrow" },
-    { id: "ligue1-fix-4", homeTeam: { name: "Marseille", logo: "⚪🔵" }, awayTeam: { name: "Reims", logo: "🔴⚪" }, league: "Ligue 1", leagueEmoji: "🇫🇷", time: "Upcoming Matchday", date: "future" },
-    // ── Champions League ──
-    { id: "ucl-fix-1", homeTeam: { name: "Manchester City", logo: "🔵" }, awayTeam: { name: "Inter Milan", logo: "🔵⚫🐍" }, league: "Champions League", leagueEmoji: "🇪🇺", time: "Matchday Fixture", date: "future" },
-    { id: "ucl-fix-2", homeTeam: { name: "Real Madrid", logo: "⚪" }, awayTeam: { name: "Stuttgart", logo: "⚪🔴" }, league: "Champions League", leagueEmoji: "🇪🇺", time: "Matchday Fixture", date: "future" },
-    { id: "ucl-fix-3", homeTeam: { name: "Bayern Munich", logo: "🔴⚪" }, awayTeam: { name: "Dinamo Zagreb", logo: "🔵" }, league: "Champions League", leagueEmoji: "🇪🇺", time: "Matchday Fixture", date: "future" },
-    { id: "ucl-fix-4", homeTeam: { name: "Arsenal", logo: "🔴" }, awayTeam: { name: "Atalanta", logo: "🔵⚫" }, league: "Champions League", leagueEmoji: "🇪🇺", time: "Matchday Fixture", date: "future" },
-    { id: "ucl-fix-5", homeTeam: { name: "Milan", logo: "🔴⚫👿" }, awayTeam: { name: "Liverpool", logo: "🔴🛡️" }, league: "Champions League", leagueEmoji: "🇪🇺", time: "Matchday Fixture", date: "future" },
-    // ── Saudi Pro League ──
-    { id: "saudi-fix-1", homeTeam: { name: "Al Hilal", logo: "🔵🌙" }, awayTeam: { name: "Damac", logo: "🔴🟡" }, league: "Saudi Pro League", leagueEmoji: "🇸🇦", time: "Today, 19:00", date: "today" },
-    { id: "saudi-fix-2", homeTeam: { name: "Al Nassr", logo: "🟡🔵👑" }, awayTeam: { name: "Al Ahli", logo: "🟢⚪" }, league: "Saudi Pro League", leagueEmoji: "🇸🇦", time: "Tomorrow, 19:00", date: "tomorrow" },
-    { id: "saudi-fix-3", homeTeam: { name: "Al Ittihad", logo: "🟡⚫🐯" }, awayTeam: { name: "Al Taawoun", logo: "🟡🔵" }, league: "Saudi Pro League", leagueEmoji: "🇸🇦", time: "Upcoming Matchday", date: "future" },
-    // ── NPFL (Nigeria) ──
-    { id: "npfl-fix-1", homeTeam: { name: "Enyimba", logo: "🔵🐘" }, awayTeam: { name: "Heartland", logo: "🔴⚪" }, league: "NPFL", leagueEmoji: "🇳🇬", time: "Tomorrow, 16:00", date: "tomorrow" },
-    { id: "npfl-fix-2", homeTeam: { name: "Rivers United", logo: "🔵⚪🐬" }, awayTeam: { name: "Bendel Insurance", logo: "🟢⚪" }, league: "NPFL", leagueEmoji: "🇳🇬", time: "Tomorrow, 16:00", date: "tomorrow" },
-    { id: "npfl-fix-3", homeTeam: { name: "Remo Stars", logo: "🔵⭐" }, awayTeam: { name: "Rangers Int", logo: "🟢⚪" }, league: "NPFL", leagueEmoji: "🇳🇬", time: "Upcoming Matchday", date: "future" },
-    // ── South African PSL ──
-    { id: "psl-fix-1", homeTeam: { name: "Mamelodi Sundowns", logo: "🟡🔵👆" }, awayTeam: { name: "SuperSport Utd", logo: "🔵⚪" }, league: "South African PSL", leagueEmoji: "🇿🇦", time: "Tomorrow, 14:00", date: "tomorrow" },
-    { id: "psl-fix-2", homeTeam: { name: "Orlando Pirates", logo: "☠️⚫⚪" }, awayTeam: { name: "Polokwane City", logo: "🟠⚪" }, league: "South African PSL", leagueEmoji: "🇿🇦", time: "Tomorrow, 16:30", date: "tomorrow" },
-    { id: "psl-fix-3", homeTeam: { name: "Kaizer Chiefs", logo: "🟡⚫" }, awayTeam: { name: "Stellenbosch", logo: "🍷🟡" }, league: "South African PSL", leagueEmoji: "🇿🇦", time: "Upcoming Matchday", date: "future" },
-    // ── Egyptian Premier League ──
-    { id: "egypt-fix-1", homeTeam: { name: "Al Ahly", logo: "🔴🦅" }, awayTeam: { name: "Smouha", logo: "🔵⚪" }, league: "Egyptian Premier League", leagueEmoji: "🇪🇬", time: "Tomorrow, 18:00", date: "tomorrow" },
-    { id: "egypt-fix-2", homeTeam: { name: "Zamalek", logo: "⚪🔴🏹" }, awayTeam: { name: "Pyramids FC", logo: "🔵⚪" }, league: "Egyptian Premier League", leagueEmoji: "🇪🇬", time: "Upcoming Matchday", date: "future" },
-    // ── MLS (USA) ──
-    { id: "mls-fix-1", homeTeam: { name: "Inter Miami", logo: "🦩🌸" }, awayTeam: { name: "Chicago Fire", logo: "🔴⚪🔵" }, league: "MLS", leagueEmoji: "🇺🇸", time: "Tomorrow, 00:30", date: "tomorrow" },
-    { id: "mls-fix-2", homeTeam: { name: "LA Galaxy", logo: "⭐⚪🔵" }, awayTeam: { name: "St. Louis City", logo: "🔴🔵" }, league: "MLS", leagueEmoji: "🇺🇸", time: "Tomorrow, 03:30", date: "tomorrow" },
-    { id: "mls-fix-3", homeTeam: { name: "Columbus Crew", logo: "🟡⚫" }, awayTeam: { name: "NYCFC", logo: "🔵⚪" }, league: "MLS", leagueEmoji: "🇺🇸", time: "Upcoming Matchday", date: "future" },
-    // ── Brasileirão Série A ──
-    { id: "br-fix-1", homeTeam: { name: "Flamengo", logo: "🔴⚫" }, awayTeam: { name: "Corinthians", logo: "⚪⚫" }, league: "Brasileirão Série A", leagueEmoji: "🇧🇷", time: "Tomorrow, 20:00", date: "tomorrow" },
-    { id: "br-fix-2", homeTeam: { name: "Palmeiras", logo: "🟢⚪" }, awayTeam: { name: "Athletico PR", logo: "🔴⚫" }, league: "Brasileirão Série A", leagueEmoji: "🇧🇷", time: "Tomorrow, 22:30", date: "tomorrow" },
-    { id: "br-fix-3", homeTeam: { name: "Botafogo", logo: "⚫⚪⭐" }, awayTeam: { name: "Fortaleza", logo: "🔵🔴⚪" }, league: "Brasileirão Série A", leagueEmoji: "🇧🇷", time: "Upcoming Matchday", date: "future" },
-    // ── Eredivisie & Primeira Liga ──
-    { id: "ered-fix-1", homeTeam: { name: "Feyenoord", logo: "🔴⚪" }, awayTeam: { name: "Ajax", logo: "⚪🔴⚪" }, league: "Eredivisie", leagueEmoji: "🇳🇱", time: "Tomorrow, 13:30", date: "tomorrow" },
-    { id: "ered-fix-2", homeTeam: { name: "PSV Eindhoven", logo: "🔴⚪" }, awayTeam: { name: "Go Ahead Eagles", logo: "🔴🟡" }, league: "Eredivisie", leagueEmoji: "🇳🇱", time: "Today, 17:45", date: "today" },
-    { id: "port-fix-1", homeTeam: { name: "Sporting CP", logo: "🟢⚪🦁" }, awayTeam: { name: "Porto", logo: "🔵⚪🐉" }, league: "Primeira Liga", leagueEmoji: "🇵🇹", time: "Today, 20:30", date: "today" },
+    { id: "epl-fix-7", homeTeam: { name: "Manchester United", logo: "👿" }, awayTeam: { name: "Fulham", logo: "⚪⚫" }, league: "Premier League", leagueEmoji: "🏴󠁧󠁢󠁥󠁮󠁧󠁿", time: "Upcoming Matchday", date: "future" },
+    { id: "epl-fix-8", homeTeam: { name: "West Ham", logo: "⚒️" }, awayTeam: { name: "Wolves", logo: "🐺" }, league: "Premier League", leagueEmoji: "🏴󠁧󠁢󠁥󠁮󠁧󠁿", time: "Upcoming Matchday", date: "future" },
+    { id: "champ-fix-1", homeTeam: { name: "Leeds United", logo: "⚪🟡" }, awayTeam: { name: "Burnley", logo: "🟣🔵" }, league: "Championship", leagueEmoji: "🏴󠁧󠁢󠁥󠁮󠁧󠁿", time: "Upcoming Matchday", date: "future" },
+    { id: "champ-fix-2", homeTeam: { name: "Sheffield United", logo: "⚔️" }, awayTeam: { name: "Sunderland", logo: "🔴⚪" }, league: "Championship", leagueEmoji: "🏴󠁧󠁢󠁥󠁮󠁧󠁿", time: "Upcoming Matchday", date: "future" },
+    
+    // ── Spain ──
+    { id: "laliga-fix-1", homeTeam: { name: "Real Madrid", logo: "⚪👑" }, awayTeam: { name: "Real Betis", logo: "🟢⚪" }, league: "La Liga", leagueEmoji: "🇪🇸", time: "Upcoming Matchday", date: "future" },
+    { id: "laliga-fix-2", homeTeam: { name: "Barcelona", logo: "🔵🔴" }, awayTeam: { name: "Real Valladolid", logo: "🟣⚪" }, league: "La Liga", leagueEmoji: "🇪🇸", time: "Upcoming Matchday", date: "future" },
+    { id: "laliga-fix-3", homeTeam: { name: "Atletico Madrid", logo: "🔴⚪" }, awayTeam: { name: "Espanyol", logo: "🔵⚪" }, league: "La Liga", leagueEmoji: "🇪🇸", time: "Upcoming Matchday", date: "future" },
+    { id: "laliga-fix-4", homeTeam: { name: "Athletic Bilbao", logo: "🔴⚪🦁" }, awayTeam: { name: "Valencia", logo: "🦇" }, league: "La Liga", leagueEmoji: "🇪🇸", time: "Upcoming Matchday", date: "future" },
+    { id: "laliga-fix-5", homeTeam: { name: "Sevilla", logo: "⚪🔴" }, awayTeam: { name: "Girona", logo: "🔴⚪" }, league: "La Liga", leagueEmoji: "🇪🇸", time: "Upcoming Matchday", date: "future" },
+    { id: "laliga-fix-6", homeTeam: { name: "Real Sociedad", logo: "🔵⚪" }, awayTeam: { name: "Alaves", logo: "🔵⚪" }, league: "La Liga", leagueEmoji: "🇪🇸", time: "Upcoming Matchday", date: "future" },
+    { id: "laliga2-fix-1", homeTeam: { name: "Real Zaragoza", logo: "⚪🔵" }, awayTeam: { name: "Elche", logo: "🟢⚪" }, league: "La Liga 2", leagueEmoji: "🇪🇸", time: "Upcoming Matchday", date: "future" },
+
+    // ── Italy ──
+    { id: "seriea-fix-1", homeTeam: { name: "Inter Milan", logo: "🔵⚫🐍" }, awayTeam: { name: "Atalanta", logo: "🔵⚫" }, league: "Serie A", leagueEmoji: "🇮🇹", time: "Upcoming Matchday", date: "future" },
+    { id: "seriea-fix-2", homeTeam: { name: "Juventus", logo: "⚪⚫🦓" }, awayTeam: { name: "Roma", logo: "🐺🟡🔴" }, league: "Serie A", leagueEmoji: "🇮🇹", time: "Upcoming Matchday", date: "future" },
+    { id: "seriea-fix-3", homeTeam: { name: "Lazio", logo: "🦅🔵" }, awayTeam: { name: "AC Milan", logo: "🔴⚫👿" }, league: "Serie A", leagueEmoji: "🇮🇹", time: "Upcoming Matchday", date: "future" },
+    { id: "seriea-fix-4", homeTeam: { name: "Napoli", logo: "🔵👑" }, awayTeam: { name: "Parma", logo: "🟡🔵" }, league: "Serie A", leagueEmoji: "🇮🇹", time: "Upcoming Matchday", date: "future" },
+    { id: "seriea-fix-5", homeTeam: { name: "Fiorentina", logo: "🟣⚜️" }, awayTeam: { name: "Monza", logo: "🔴⚪" }, league: "Serie A", leagueEmoji: "🇮🇹", time: "Upcoming Matchday", date: "future" },
+    { id: "serieb-fix-1", homeTeam: { name: "Palermo", logo: "🌸⚫" }, awayTeam: { name: "Sampdoria", logo: "🔵⚪🔴" }, league: "Serie B", leagueEmoji: "🇮🇹", time: "Upcoming Matchday", date: "future" },
+
+    // ── Germany ──
+    { id: "bundes-fix-1", homeTeam: { name: "Bayern Munich", logo: "🔴⚪" }, awayTeam: { name: "Freiburg", logo: "⚫⚪" }, league: "Bundesliga", leagueEmoji: "🇩🇪", time: "Upcoming Matchday", date: "future" },
+    { id: "bundes-fix-2", homeTeam: { name: "Bayer Leverkusen", logo: "🔴⚫" }, awayTeam: { name: "RB Leipzig", logo: "⚪🔴" }, league: "Bundesliga", leagueEmoji: "🇩🇪", time: "Upcoming Matchday", date: "future" },
+    { id: "bundes-fix-3", homeTeam: { name: "Frankfurt", logo: "🦅🔴⚫" }, awayTeam: { name: "Hoffenheim", logo: "🔵⚪" }, league: "Bundesliga", leagueEmoji: "🇩🇪", time: "Upcoming Matchday", date: "future" },
+    { id: "bundes-fix-4", homeTeam: { name: "Borussia Dortmund", logo: "🟡⚫" }, awayTeam: { name: "Heidenheim", logo: "🔴🔵" }, league: "Bundesliga", leagueEmoji: "🇩🇪", time: "Upcoming Matchday", date: "future" },
+    { id: "bundes-fix-5", homeTeam: { name: "Stuttgart", logo: "⚪🔴" }, awayTeam: { name: "Mainz 05", logo: "🔴⚪" }, league: "Bundesliga", leagueEmoji: "🇩🇪", time: "Upcoming Matchday", date: "future" },
+    { id: "bundes2-fix-1", homeTeam: { name: "Hamburger SV", logo: "🔵⚪⚫" }, awayTeam: { name: "Schalke 04", logo: "🔵⚪" }, league: "2. Bundesliga", leagueEmoji: "🇩🇪", time: "Upcoming Matchday", date: "future" },
+
+    // ── France ──
+    { id: "ligue1-fix-1", homeTeam: { name: "PSG", logo: "🔵🔴🗼" }, awayTeam: { name: "Montpellier", logo: "🟠🔵" }, league: "Ligue 1", leagueEmoji: "🇫🇷", time: "Upcoming Matchday", date: "future" },
+    { id: "ligue1-fix-2", homeTeam: { name: "Lille", logo: "🔴⚪🐕" }, awayTeam: { name: "Strasbourg", logo: "🔵⚪" }, league: "Ligue 1", leagueEmoji: "🇫🇷", time: "Upcoming Matchday", date: "future" },
+    { id: "ligue1-fix-3", homeTeam: { name: "Lyon", logo: "🔵🔴🦁" }, awayTeam: { name: "Lens", logo: "🔴🟡" }, league: "Ligue 1", leagueEmoji: "🇫🇷", time: "Upcoming Matchday", date: "future" },
+    { id: "ligue1-fix-4", homeTeam: { name: "Monaco", logo: "⚪🔴" }, awayTeam: { name: "Reims", logo: "🔴⚪" }, league: "Ligue 1", leagueEmoji: "🇫🇷", time: "Upcoming Matchday", date: "future" },
+    { id: "ligue1-fix-5", homeTeam: { name: "Marseille", logo: "⚪🔵" }, awayTeam: { name: "Nice", logo: "🔴⚫🦅" }, league: "Ligue 1", leagueEmoji: "🇫🇷", time: "Upcoming Matchday", date: "future" },
+
+    // ── Portugal & Netherlands ──
+    { id: "port-fix-1", homeTeam: { name: "Sporting CP", logo: "🟢⚪🦁" }, awayTeam: { name: "Porto", logo: "🔵⚪🐉" }, league: "Primeira Liga", leagueEmoji: "🇵🇹", time: "Upcoming Matchday", date: "future" },
     { id: "port-fix-2", homeTeam: { name: "Benfica", logo: "🔴⚪🦅" }, awayTeam: { name: "Santa Clara", logo: "🔴⚪" }, league: "Primeira Liga", leagueEmoji: "🇵🇹", time: "Upcoming Matchday", date: "future" },
-    // ── Süper Lig & Scottish Premiership ──
-    { id: "turk-fix-1", homeTeam: { name: "Galatasaray", logo: "🟡🔴🦁" }, awayTeam: { name: "Adana Demirspor", logo: "🔵⚪" }, league: "Süper Lig", leagueEmoji: "🇹🇷", time: "Today, 19:45", date: "today" },
-    { id: "turk-fix-2", homeTeam: { name: "Fenerbahçe", logo: "🟡🔵" }, awayTeam: { name: "Alanyaspor", logo: "🟠🟢" }, league: "Süper Lig", leagueEmoji: "🇹🇷", time: "Tomorrow, 19:00", date: "tomorrow" },
-    { id: "scot-fix-1", homeTeam: { name: "Celtic", logo: "🟢⚪🍀" }, awayTeam: { name: "Rangers", logo: "🔵⚪" }, league: "Scottish Premiership", leagueEmoji: "🏴󠁧󠁢󠁳󠁣󠁴󠁿", time: "Tomorrow, 12:30", date: "tomorrow" }
+    { id: "port-fix-3", homeTeam: { name: "Braga", logo: "🔴⚪" }, awayTeam: { name: "Vitoria Guimaraes", logo: "⚪⚫" }, league: "Primeira Liga", leagueEmoji: "🇵🇹", time: "Upcoming Matchday", date: "future" },
+    { id: "ered-fix-1", homeTeam: { name: "Feyenoord", logo: "🔴⚪" }, awayTeam: { name: "Ajax", logo: "⚪🔴⚪" }, league: "Eredivisie", leagueEmoji: "🇳🇱", time: "Upcoming Matchday", date: "future" },
+    { id: "ered-fix-2", homeTeam: { name: "PSV Eindhoven", logo: "🔴⚪" }, awayTeam: { name: "Go Ahead Eagles", logo: "🔴🟡" }, league: "Eredivisie", leagueEmoji: "🇳🇱", time: "Upcoming Matchday", date: "future" },
+    { id: "ered-fix-3", homeTeam: { name: "AZ Alkmaar", logo: "🔴⚪" }, awayTeam: { name: "FC Twente", logo: "🔴🐴" }, league: "Eredivisie", leagueEmoji: "🇳🇱", time: "Upcoming Matchday", date: "future" },
+
+    // ── Turkey, Scotland, Belgium, Poland ──
+    { id: "turk-fix-1", homeTeam: { name: "Galatasaray", logo: "🟡🔴🦁" }, awayTeam: { name: "Adana Demirspor", logo: "🔵⚪" }, league: "Süper Lig", leagueEmoji: "🇹🇷", time: "Upcoming Matchday", date: "future" },
+    { id: "turk-fix-2", homeTeam: { name: "Fenerbahçe", logo: "🟡🔵" }, awayTeam: { name: "Alanyaspor", logo: "🟠🟢" }, league: "Süper Lig", leagueEmoji: "🇹🇷", time: "Upcoming Matchday", date: "future" },
+    { id: "turk-fix-3", homeTeam: { name: "Besiktas", logo: "🦅⚫⚪" }, awayTeam: { name: "Trabzonspor", logo: "🍷🔵" }, league: "Süper Lig", leagueEmoji: "🇹🇷", time: "Upcoming Matchday", date: "future" },
+    { id: "scot-fix-1", homeTeam: { name: "Celtic", logo: "🟢⚪🍀" }, awayTeam: { name: "Rangers", logo: "🔵⚪" }, league: "Scottish Premiership", leagueEmoji: "🏴󠁧󠁢󠁳󠁣󠁴󠁿", time: "Upcoming Matchday", date: "future" },
+    { id: "belg-fix-1", homeTeam: { name: "Club Brugge", logo: "🔵⚫" }, awayTeam: { name: "KRC Genk", logo: "🔵⚪" }, league: "Belgian Pro League", leagueEmoji: "🇧🇪", time: "Upcoming Matchday", date: "future" },
+    { id: "belg-fix-2", homeTeam: { name: "Anderlecht", logo: "🟣⚪" }, awayTeam: { name: "Union Saint-Gilloise", logo: "🟡🔵" }, league: "Belgian Pro League", leagueEmoji: "🇧🇪", time: "Upcoming Matchday", date: "future" },
+    { id: "pol-fix-1", homeTeam: { name: "Lech Poznan", logo: "🔵⚪" }, awayTeam: { name: "Legia Warsaw", logo: "🟢⚪⚫" }, league: "Ekstraklasa", leagueEmoji: "🇵🇱", time: "Upcoming Matchday", date: "future" },
+    { id: "swiss-fix-1", homeTeam: { name: "Young Boys", logo: "🟡⚫" }, awayTeam: { name: "FC Basel", logo: "🔴🔵" }, league: "Swiss Super League", leagueEmoji: "🇨🇭", time: "Upcoming Matchday", date: "future" },
+    { id: "aust-fix-1", homeTeam: { name: "Red Bull Salzburg", logo: "🔴⚪🐂" }, awayTeam: { name: "Sturm Graz", logo: "⚫⚪" }, league: "Austrian Bundesliga", leagueEmoji: "🇦🇹", time: "Upcoming Matchday", date: "future" },
+    { id: "greek-fix-1", homeTeam: { name: "Olympiacos", logo: "🔴⚪" }, awayTeam: { name: "Panathinaikos", logo: "🟢⚪☘️" }, league: "Greek Super League", leagueEmoji: "🇬🇷", time: "Upcoming Matchday", date: "future" },
+    { id: "czech-fix-1", homeTeam: { name: "Sparta Prague", logo: "🔴⚪" }, awayTeam: { name: "Slavia Prague", logo: "🔴⚪⭐" }, league: "Czech First League", leagueEmoji: "🇨🇿", time: "Upcoming Matchday", date: "future" },
+    { id: "cro-fix-1", homeTeam: { name: "Dinamo Zagreb", logo: "🔵" }, awayTeam: { name: "Hajduk Split", logo: "⚪🔵" }, league: "Croatian League (HNL)", leagueEmoji: "🇭🇷", time: "Upcoming Matchday", date: "future" },
+    { id: "serb-fix-1", homeTeam: { name: "Red Star Belgrade", logo: "🔴⚪⭐" }, awayTeam: { name: "Partizan Belgrade", logo: "⚫⚪" }, league: "Serbian SuperLiga", leagueEmoji: "🇷🇸", time: "Upcoming Matchday", date: "future" },
+    { id: "nor-fix-1", homeTeam: { name: "Bodo/Glimt", logo: "🟡" }, awayTeam: { name: "Molde", logo: "🔵⚪" }, league: "Eliteserien", leagueEmoji: "🇳🇴", time: "Upcoming Matchday", date: "future" },
+    { id: "swe-fix-1", homeTeam: { name: "Malmo FF", logo: "🔵⚪" }, awayTeam: { name: "AIK", logo: "⚫🟡" }, league: "Allsvenskan", leagueEmoji: "🇸🇪", time: "Upcoming Matchday", date: "future" },
+    { id: "den-fix-1", homeTeam: { name: "FC Copenhagen", logo: "⚪🔵" }, awayTeam: { name: "Brondby", logo: "🟡🔵" }, league: "Superliga", leagueEmoji: "🇩🇰", time: "Upcoming Matchday", date: "future" },
+
+    // ── Africa (CAF) ──
+    { id: "npfl-fix-1", homeTeam: { name: "Enyimba", logo: "🔵🐘" }, awayTeam: { name: "Heartland", logo: "🔴⚪" }, league: "NPFL", leagueEmoji: "🇳🇬", time: "Upcoming Matchday", date: "future" },
+    { id: "npfl-fix-2", homeTeam: { name: "Rivers United", logo: "🔵⚪🐬" }, awayTeam: { name: "Bendel Insurance", logo: "🟢⚪" }, league: "NPFL", leagueEmoji: "🇳🇬", time: "Upcoming Matchday", date: "future" },
+    { id: "npfl-fix-3", homeTeam: { name: "Remo Stars", logo: "🔵⭐" }, awayTeam: { name: "Rangers Int", logo: "🟢⚪" }, league: "NPFL", leagueEmoji: "🇳🇬", time: "Upcoming Matchday", date: "future" },
+    { id: "npfl-fix-4", homeTeam: { name: "Kano Pillars", logo: "🟡🟢" }, awayTeam: { name: "Shooting Stars", logo: "🔵⚪⭐" }, league: "NPFL", leagueEmoji: "🇳🇬", time: "Upcoming Matchday", date: "future" },
+    { id: "psl-fix-1", homeTeam: { name: "Mamelodi Sundowns", logo: "🟡🔵👆" }, awayTeam: { name: "SuperSport Utd", logo: "🔵⚪" }, league: "South African PSL", leagueEmoji: "🇿🇦", time: "Upcoming Matchday", date: "future" },
+    { id: "psl-fix-2", homeTeam: { name: "Orlando Pirates", logo: "☠️⚫⚪" }, awayTeam: { name: "Polokwane City", logo: "🟠⚪" }, league: "South African PSL", leagueEmoji: "🇿🇦", time: "Upcoming Matchday", date: "future" },
+    { id: "psl-fix-3", homeTeam: { name: "Kaizer Chiefs", logo: "🟡⚫" }, awayTeam: { name: "Stellenbosch", logo: "🍷🟡" }, league: "South African PSL", leagueEmoji: "🇿🇦", time: "Upcoming Matchday", date: "future" },
+    { id: "egypt-fix-1", homeTeam: { name: "Al Ahly", logo: "🔴🦅" }, awayTeam: { name: "Smouha", logo: "🔵⚪" }, league: "Egyptian Premier League", leagueEmoji: "🇪🇬", time: "Upcoming Matchday", date: "future" },
+    { id: "egypt-fix-2", homeTeam: { name: "Zamalek", logo: "⚪🔴🏹" }, awayTeam: { name: "Pyramids FC", logo: "🔵⚪" }, league: "Egyptian Premier League", leagueEmoji: "🇪🇬", time: "Upcoming Matchday", date: "future" },
+    { id: "moroc-fix-1", homeTeam: { name: "Raja Casablanca", logo: "🟢⚪🦅" }, awayTeam: { name: "Wydad AC", logo: "🔴⚪" }, league: "Moroccan Botola", leagueEmoji: "🇲🇦", time: "Upcoming Matchday", date: "future" },
+    { id: "moroc-fix-2", homeTeam: { name: "AS FAR", logo: "🟢⚫🔴" }, awayTeam: { name: "RS Berkane", logo: "🟠⚫" }, league: "Moroccan Botola", leagueEmoji: "🇲🇦", time: "Upcoming Matchday", date: "future" },
+    { id: "alg-fix-1", homeTeam: { name: "MC Alger", logo: "🟢🔴" }, awayTeam: { name: "CR Belouizdad", logo: "🔴⚪" }, league: "Algerian Ligue 1", leagueEmoji: "🇩🇿", time: "Upcoming Matchday", date: "future" },
+    { id: "tanz-fix-1", homeTeam: { name: "Simba SC", logo: "🔴🦁" }, awayTeam: { name: "Young Africans (Yanga)", logo: "🟢🟡" }, league: "Tanzanian Premier League", leagueEmoji: "🇹🇿", time: "Upcoming Matchday", date: "future" },
+    { id: "tunis-fix-1", homeTeam: { name: "Esperance Tunis", logo: "🔴🟡" }, awayTeam: { name: "Club Africain", logo: "🔴⚪" }, league: "Tunisian Ligue 1", leagueEmoji: "🇹🇳", time: "Upcoming Matchday", date: "future" },
+    { id: "ghana-fix-1", homeTeam: { name: "Asante Kotoko", logo: "🔴🦔" }, awayTeam: { name: "Hearts of Oak", logo: "🔴🟡🔵" }, league: "Ghana Premier League", leagueEmoji: "🇬🇭", time: "Upcoming Matchday", date: "future" },
+
+    // ── Middle East & Asia ──
+    { id: "saudi-fix-1", homeTeam: { name: "Al Hilal", logo: "🔵🌙" }, awayTeam: { name: "Damac", logo: "🔴🟡" }, league: "Saudi Pro League", leagueEmoji: "🇸🇦", time: "Upcoming Matchday", date: "future" },
+    { id: "saudi-fix-2", homeTeam: { name: "Al Nassr", logo: "🟡🔵👑" }, awayTeam: { name: "Al Ahli", logo: "🟢⚪" }, league: "Saudi Pro League", leagueEmoji: "🇸🇦", time: "Upcoming Matchday", date: "future" },
+    { id: "saudi-fix-3", homeTeam: { name: "Al Ittihad", logo: "🟡⚫🐯" }, awayTeam: { name: "Al Taawoun", logo: "🟡🔵" }, league: "Saudi Pro League", leagueEmoji: "🇸🇦", time: "Upcoming Matchday", date: "future" },
+    { id: "uae-fix-1", homeTeam: { name: "Al Ain", logo: "🟣⚪" }, awayTeam: { name: "Shabab Al Ahli", logo: "🔴🟢" }, league: "UAE Pro League", leagueEmoji: "🇦🇪", time: "Upcoming Matchday", date: "future" },
+    { id: "qatar-fix-1", homeTeam: { name: "Al Sadd", logo: "⚫⚪" }, awayTeam: { name: "Al Duhail", logo: "🔴⚪" }, league: "Qatar Stars League", leagueEmoji: "🇶🇦", time: "Upcoming Matchday", date: "future" },
+    { id: "jleague-fix-1", homeTeam: { name: "Vissel Kobe", logo: "🍷⚫" }, awayTeam: { name: "Yokohama F. Marinos", logo: "🔵⚪🔴" }, league: "J-League", leagueEmoji: "🇯🇵", time: "Upcoming Matchday", date: "future" },
+    { id: "kleague-fix-1", homeTeam: { name: "Ulsan HD", logo: "🔵🐯" }, awayTeam: { name: "Jeonbuk Motors", logo: "🟢⚪" }, league: "K-League", leagueEmoji: "🇰🇷", time: "Upcoming Matchday", date: "future" },
+    { id: "aleague-fix-1", homeTeam: { name: "Sydney FC", logo: "🔵⚪" }, awayTeam: { name: "Melbourne Victory", logo: "🔵⚪" }, league: "A-League", leagueEmoji: "🇦🇺", time: "Upcoming Matchday", date: "future" },
+
+    // ── Americas (MLS, Liga MX, Brazil, Argentina, CONMEBOL) ──
+    { id: "mls-fix-1", homeTeam: { name: "Inter Miami", logo: "🦩🌸" }, awayTeam: { name: "Chicago Fire", logo: "🔴⚪🔵" }, league: "MLS", leagueEmoji: "🇺🇸", time: "Upcoming Matchday", date: "future" },
+    { id: "mls-fix-2", homeTeam: { name: "LA Galaxy", logo: "⭐⚪🔵" }, awayTeam: { name: "St. Louis City", logo: "🔴🔵" }, league: "MLS", leagueEmoji: "🇺🇸", time: "Upcoming Matchday", date: "future" },
+    { id: "mls-fix-3", homeTeam: { name: "Columbus Crew", logo: "🟡⚫" }, awayTeam: { name: "NYCFC", logo: "🔵⚪" }, league: "MLS", leagueEmoji: "🇺🇸", time: "Upcoming Matchday", date: "future" },
+    { id: "ligamx-fix-1", homeTeam: { name: "Club America", logo: "🦅🟡🔵" }, awayTeam: { name: "Guadalajara (Chivas)", logo: "🔴⚪🐐" }, league: "Liga MX", leagueEmoji: "🇲🇽", time: "Upcoming Matchday", date: "future" },
+    { id: "ligamx-fix-2", homeTeam: { name: "Cruz Azul", logo: "🔵🚂" }, awayTeam: { name: "Monterrey", logo: "🔵⚪" }, league: "Liga MX", leagueEmoji: "🇲🇽", time: "Upcoming Matchday", date: "future" },
+    { id: "ligamx-fix-3", homeTeam: { name: "Tigres UANL", logo: "🟡🔵🐯" }, awayTeam: { name: "Toluca", logo: "🔴⚪" }, league: "Liga MX", leagueEmoji: "🇲🇽", time: "Upcoming Matchday", date: "future" },
+    { id: "br-fix-1", homeTeam: { name: "Flamengo", logo: "🔴⚫" }, awayTeam: { name: "Corinthians", logo: "⚪⚫" }, league: "Brasileirão Série A", leagueEmoji: "🇧🇷", time: "Upcoming Matchday", date: "future" },
+    { id: "br-fix-2", homeTeam: { name: "Palmeiras", logo: "🟢⚪" }, awayTeam: { name: "Athletico PR", logo: "🔴⚫" }, league: "Brasileirão Série A", leagueEmoji: "🇧🇷", time: "Upcoming Matchday", date: "future" },
+    { id: "br-fix-3", homeTeam: { name: "Botafogo", logo: "⚫⚪⭐" }, awayTeam: { name: "Fortaleza", logo: "🔵🔴⚪" }, league: "Brasileirão Série A", leagueEmoji: "🇧🇷", time: "Upcoming Matchday", date: "future" },
+    { id: "br-fix-4", homeTeam: { name: "São Paulo", logo: "🔴⚪⚫" }, awayTeam: { name: "Fluminense", logo: "🟢🔴⚪" }, league: "Brasileirão Série A", leagueEmoji: "🇧🇷", time: "Upcoming Matchday", date: "future" },
+    { id: "br-fix-5", homeTeam: { name: "Cruzeiro", logo: "🔵⭐" }, awayTeam: { name: "Atletico Mineiro", logo: "⚫⚪🐔" }, league: "Brasileirão Série A", leagueEmoji: "🇧🇷", time: "Upcoming Matchday", date: "future" },
+    { id: "arg-fix-1", homeTeam: { name: "River Plate", logo: "⚪🔴" }, awayTeam: { name: "Boca Juniors", logo: "🔵🟡" }, league: "Liga Profesional", leagueEmoji: "🇦🇷", time: "Upcoming Matchday", date: "future" },
+    { id: "arg-fix-2", homeTeam: { name: "Racing Club", logo: "🔵⚪" }, awayTeam: { name: "Independiente", logo: "🔴⚪" }, league: "Liga Profesional", leagueEmoji: "🇦🇷", time: "Upcoming Matchday", date: "future" },
+    { id: "arg-fix-3", homeTeam: { name: "San Lorenzo", logo: "🔵🔴" }, awayTeam: { name: "Huracan", logo: "⚪🎈" }, league: "Liga Profesional", leagueEmoji: "🇦🇷", time: "Upcoming Matchday", date: "future" }
   ];
 
   authenticTopLeaguesFixtures.forEach(m => {
     const key = `${m.homeTeam.name.toLowerCase()}-${m.awayTeam.name.toLowerCase()}`;
     if (!seenMatchKeys.has(key)) {
       seenMatchKeys.add(key);
-      activePool.push(m);
+      rawPool.push(m);
     }
   });
 
-  // 3. Strict Chronological Priority Sorting: Live In-Play first -> Today -> Tomorrow -> Future
-  activePool.sort((a, b) => {
+  // 3. Strict Chronological Priority Sorting: Live In-Play first -> Scheduled Today -> Tomorrow -> Future
+  rawPool.sort((a, b) => {
     if (a.isLive && !b.isLive) return -1;
     if (!a.isLive && b.isLive) return 1;
     if (a.date === 'today' && b.date !== 'today') return -1;
@@ -336,7 +381,7 @@ function generateScoutAccumulator(count = 40) {
     return 0;
   });
 
-  // 4. Build Active Betslip Selections with Smart Market Insights
+  // 4. Build Active Betslip Selections with STRICT CLUB UNIQUENESS (Zero duplicate teams)
   if (!window.appState) window.appState = {};
   window.appState.betslip = [];
 
@@ -346,27 +391,42 @@ function generateScoutAccumulator(count = 40) {
     "Under 3.5 Goals", "Multi-Goals 2-4", "Over 0.5 HT Goals", "Corners Over 8.5"
   ];
 
-  for (let i = 0; i < reqCount; i++) {
-    const match = activePool[i % activePool.length];
-    const tip = marketOptions[i % marketOptions.length];
-    const homeName = (match.homeTeam && match.homeTeam.name) ? match.homeTeam.name : "Home Team";
-    const awayName = (match.awayTeam && match.awayTeam.name) ? match.awayTeam.name : "Away Team";
+  const seenClubs = new Set();
+  let addedCount = 0;
+
+  for (let i = 0; i < rawPool.length && addedCount < reqCount; i++) {
+    const match = rawPool[i];
+    const homeName = (match.homeTeam && match.homeTeam.name) ? match.homeTeam.name.trim() : (typeof match.homeTeam === 'string' ? match.homeTeam.trim() : "Home Team");
+    const awayName = (match.awayTeam && match.awayTeam.name) ? match.awayTeam.name.trim() : (typeof match.awayTeam === 'string' ? match.awayTeam.trim() : "Away Team");
+
+    const hKey = homeName.toLowerCase();
+    const aKey = awayName.toLowerCase();
+
+    // STRICT CHECK: Neither team can already be in this accumulator
+    if (seenClubs.has(hKey) || seenClubs.has(aKey)) {
+      continue;
+    }
+
+    seenClubs.add(hKey);
+    seenClubs.add(aKey);
+
+    const tip = marketOptions[addedCount % marketOptions.length];
     
     let timeDisplay = match.time;
     if (!timeDisplay || timeDisplay.trim() === '') {
       if (match.isLive) timeDisplay = 'Live In-Play';
-      else if (match.date === 'today') timeDisplay = 'Today, 18:00';
-      else if (match.date === 'tomorrow') timeDisplay = 'Tomorrow, 20:00';
+      else if (match.date === 'today') timeDisplay = 'Scheduled Today';
+      else if (match.date === 'tomorrow') timeDisplay = 'Scheduled Tomorrow';
       else timeDisplay = 'Upcoming Matchday';
     }
 
-    const hash = (homeName + awayName + i);
+    const hash = (homeName + awayName + addedCount);
     let h = 0;
     for (let j = 0; j < hash.length; j++) h = hash.charCodeAt(j) + ((h << 5) - h);
     const odds = parseFloat((1.35 + (Math.abs(h) % 18) * 0.05).toFixed(2));
 
     window.appState.betslip.push({
-      matchId: `scout-acc-${i}-${match.id || i}`,
+      matchId: `scout-acc-${addedCount}-${match.id || addedCount}`,
       match: {
         ...match,
         homeTeam: { name: homeName, logo: match.homeTeam?.logo || '⚽' },
@@ -376,6 +436,8 @@ function generateScoutAccumulator(count = 40) {
       tip,
       odds
     });
+
+    addedCount++;
   }
 
   // 5. Render betslip and open drawer
@@ -386,7 +448,7 @@ function generateScoutAccumulator(count = 40) {
   if (drawer) drawer.classList.add("open");
 
   if (typeof showAppNotification === 'function') {
-    showAppNotification(`🎯 AI Scout synchronized ${reqCount} active future & live match selections!`);
+    showAppNotification(`🎯 AI Scout synchronized ${addedCount} active future & live match selections!`);
   }
   return window.appState.betslip;
 }
@@ -2220,7 +2282,7 @@ function quickPromptScout(text, autoOpenModal = true) {
     const hName = s.match?.homeTeam?.name || 'Home Team';
     const aName = s.match?.awayTeam?.name || 'Away Team';
     const leagueName = s.match?.league || 'Football League';
-    const timeStr = s.match?.time || (s.match?.date === 'today' ? 'Today, 18:00' : (s.match?.date === 'tomorrow' ? 'Tomorrow, 20:00' : 'Upcoming'));
+    const timeStr = s.match?.time || (s.match?.date === 'today' ? 'Scheduled Today' : (s.match?.date === 'tomorrow' ? 'Scheduled Tomorrow' : 'Upcoming Matchday'));
     const isLive = s.match?.isLive || (timeStr && timeStr.toLowerCase().includes('live'));
     const oddVal = (s.odds || 1.45).toFixed(2);
     return `
