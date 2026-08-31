@@ -1,36 +1,36 @@
 const MATCH_DATA = [
   {
     id: "match-1",
-    date: "today",
+    date: "future",
     league: "Premier League",
     leagueEmoji: "🏴󠁧󠁢󠁥󠁮󠁧󠁿",
-    time: "Live 72'",
-    isLive: true,
+    time: "Matchday 5 Clash",
+    isLive: false,
     homeTeam: {
+      name: "Manchester City",
+      logo: "🔵",
+      form: ["W", "D", "W", "W", "W"]
+    },
+    awayTeam: {
       name: "Arsenal",
       logo: "🔴",
       form: ["W", "W", "D", "W", "L"]
     },
-    awayTeam: {
-      name: "Man City",
-      logo: "🔵",
-      form: ["W", "D", "W", "W", "W"]
-    },
-    scores: { home: 2, away: 1 },
-    predictions: { home: 48, draw: 22, away: 30 },
+    scores: { home: null, away: null },
+    predictions: { home: 48, draw: 26, away: 26 },
     confidence: "high",
     confidenceVal: 88,
-    insight: "Arsenal is dominating possession (58%) with high-pressing triggers.",
+    insight: "Premier League title showdown at Etihad Stadium between Manchester City and Arsenal.",
     isPremium: false,
-    aiAnalysis: "This fixture is playing out exactly as the model projected. Arsenal's high block has disrupted City's buildup phase. Expect Man City to push aggressively in the final 15 minutes, making Over 3.5 total match goals a high-probability in-play angle. Arsenal's home advantage and 2-1 lead put them in a very strong position to secure all 3 points.",
-    topTips: ["uo15", "uo35", "uoht05", "uo2h15", "c75", "c85"]
+    aiAnalysis: "Tactical preview: Arsenal's structured mid-block against City's positional play. High stakes Premier League clash with major title race implications.",
+    topTips: ["uo15", "uo25", "btts", "c75", "c85"]
   },
   {
     id: "match-2",
-    date: "tomorrow",
+    date: "future",
     league: "La Liga",
     leagueEmoji: "🇪🇸",
-    time: "Tomorrow, 20:00",
+    time: "El Clásico",
     isLive: false,
     homeTeam: {
       name: "Real Madrid",
@@ -53,10 +53,10 @@ const MATCH_DATA = [
   },
   {
     id: "match-3",
-    date: "today",
+    date: "future",
     league: "Premier League",
     leagueEmoji: "🏴󠁧󠁢󠁥󠁮󠁧󠁿",
-    time: "Today, 17:30",
+    time: "Matchday 8",
     isLive: false,
     homeTeam: {
       name: "Liverpool",
@@ -79,10 +79,10 @@ const MATCH_DATA = [
   },
   {
     id: "match-4",
-    date: "today",
+    date: "future",
     league: "Bundesliga",
     leagueEmoji: "🇩🇪",
-    time: "Today, 15:30",
+    time: "Der Klassiker",
     isLive: false,
     homeTeam: {
       name: "Bayern Munich",

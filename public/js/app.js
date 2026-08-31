@@ -615,7 +615,7 @@ function renderBetslip() {
         const awayName = item.match?.awayTeam?.name || item.match?.awayTeam || item.awayTeam || 'Away';
         const leagueName = item.match?.league || '';
         const timeStr = item.match?.time || (item.match?.date === 'today' ? 'Today' : (item.match?.date === 'tomorrow' ? 'Tomorrow' : 'Upcoming'));
-        const isLive = item.match?.isLive || (timeStr && timeStr.toLowerCase().includes('live'));
+        const isLive = !!(item.match?.isLive && item.match?.rawDate && new Date(item.match.rawDate).toDateString() === new Date().toDateString());
         const tipVal = item.tip || item.market || '1X';
 
         const row = document.createElement("div");
@@ -2283,7 +2283,7 @@ function quickPromptScout(text, autoOpenModal = true) {
     const aName = s.match?.awayTeam?.name || 'Away Team';
     const leagueName = s.match?.league || 'Football League';
     const timeStr = s.match?.time || (s.match?.date === 'today' ? 'Scheduled Today' : (s.match?.date === 'tomorrow' ? 'Scheduled Tomorrow' : 'Upcoming Matchday'));
-    const isLive = s.match?.isLive || (timeStr && timeStr.toLowerCase().includes('live'));
+    const isLive = !!(s.match?.isLive && s.match?.rawDate && new Date(s.match.rawDate).toDateString() === new Date().toDateString());
     const oddVal = (s.odds || 1.45).toFixed(2);
     return `
       <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid rgba(255,255,255,0.08); padding: 8px 0; font-size:0.8rem; gap: 8px;">
