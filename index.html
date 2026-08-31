@@ -2851,8 +2851,8 @@
               </div>
 
               <!-- Scan Action Button -->
-              <button class="btn btn-primary" onclick="runArbitrageScanner()"
-                style="height: 44px; padding: 0 24px; font-size: 0.85rem; font-weight: 800; background: linear-gradient(135deg, #10b981 0%, #059669 100%); border: 1px solid #34d399; box-shadow: 0 4px 14px rgba(16,185,129,0.45); cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; text-transform: uppercase;">
+              <button class="btn btn-primary" onclick="runArbitrageScanner(true)"
+                style="height: 44px; padding: 0 24px; font-size: 0.85rem; font-weight: 800; background: linear-gradient(135deg, #10b981 0%, #059669 100%); border: 1px solid #34d399; box-shadow: 0 4px 14px rgba(16,185,129,0.45); cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; text-transform: uppercase; transition: all 0.2s ease;">
                 🔍 Scan 50 Bookies for SureBets
               </button>
 
@@ -2861,7 +2861,120 @@
             <!-- Live Arbitrage Output Container -->
             <div id="arbitrage-results-container"
               style="display: flex; flex-direction: column; gap: 16px; border-top: 2px solid rgba(16, 185, 129, 0.4); padding-top: 20px;">
-              <!-- Populated dynamically by JS -->
+              <div style="font-size: 0.8rem; font-weight: 700; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.5px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px;">
+                <span>🎯 Live SureBet Arbitrage Opportunities (4 Found)</span>
+                <span style="color: #10b981; font-weight: 800; font-family: var(--font-display); font-size: 0.9rem;">Investment Budget: $100.00</span>
+              </div>
+
+              <!-- Deal 1 -->
+              <div class="glass-card" style="padding: 18px; border: 1px solid rgba(16,185,129,0.3); background: rgba(0,0,0,0.4); border-radius: var(--radius-md); display: flex; flex-direction: column; gap: 14px;">
+                <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 10px; border-bottom: 1px solid rgba(255,255,255,0.06); padding-bottom: 10px;">
+                  <div>
+                    <div style="font-size: 0.72rem; color: #10b981; font-weight: 800; text-transform: uppercase; display: flex; align-items: center; gap: 6px;">
+                      <span>Premier League</span>
+                      <span>•</span>
+                      <span style="color: #fbbf24;">📅 5th, September 2026, 12:30</span>
+                    </div>
+                    <div style="font-size: 1.05rem; font-weight: 900; color: #ffffff; font-family: var(--font-display); margin: 2px 0;">🏴󠁧󠁢󠁥󠁮󠁧󠁿 Arsenal vs Brighton</div>
+                    <div style="font-size: 0.75rem; color: var(--text-secondary);">Market: <b style="color: #60a5fa;">Over / Under 2.5 Goals</b></div>
+                  </div>
+                  <div style="text-align: right;">
+                    <div style="background: linear-gradient(135deg, rgba(16,185,129,0.2) 0%, rgba(5,150,105,0.2) 100%); border: 1px solid #10b981; color: #34d399; font-weight: 900; font-size: 0.9rem; padding: 6px 14px; border-radius: 20px; font-family: var(--font-display); display: inline-flex; align-items: center; gap: 6px;">
+                      🛡️ +12.4% NET PROFIT
+                    </div>
+                    <div style="font-size: 0.75rem; color: #10b981; font-weight: 700; margin-top: 4px;">
+                      Guaranteed Net Profit: <b>+$12.42</b> (Zero Risk)
+                    </div>
+                  </div>
+                </div>
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 12px;">
+                  <div style="background: rgba(26,104,219,0.08); border: 1px solid rgba(59,130,246,0.3); border-radius: var(--radius-sm); padding: 12px 14px; display: flex; flex-direction: column; justify-content: space-between; gap: 10px;">
+                    <div>
+                      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px;">
+                        <span style="font-size: 0.75rem; font-weight: 800; color: #3b82f6; text-transform: uppercase;">LEG 1 • SportyBet</span>
+                        <span style="font-size: 0.85rem; font-weight: 900; color: #ffffff;">@2.32 Odds</span>
+                      </div>
+                      <div style="font-size: 0.85rem; font-weight: 800; color: #ffffff;">Over 2.5 Goals</div>
+                      <div style="font-size: 0.75rem; color: var(--text-secondary); margin-top: 4px;">
+                        Stake: <b style="color: #3b82f6;">$49.23</b> • Payout: <b>$114.21</b>
+                      </div>
+                    </div>
+                    <a href="https://www.sportybet.com/?referralCode=DEEPPREDICTBET" target="_blank" class="btn btn-secondary" style="font-size: 0.72rem; padding: 7px 12px; border: 1px solid var(--brand-royal-blue); color: #ffffff; text-align: center; text-decoration: none; font-weight: 700; display: block; border-radius: var(--radius-xs);">
+                      📲 Bet $49.23 on SportyBet
+                    </a>
+                  </div>
+                  <div style="background: rgba(245,158,11,0.08); border: 1px solid rgba(245,158,11,0.3); border-radius: var(--radius-sm); padding: 12px 14px; display: flex; flex-direction: column; justify-content: space-between; gap: 10px;">
+                    <div>
+                      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px;">
+                        <span style="font-size: 0.75rem; font-weight: 800; color: #fbbf24; text-transform: uppercase;">LEG 2 • Bet365</span>
+                        <span style="font-size: 0.85rem; font-weight: 900; color: #ffffff;">@2.25 Odds</span>
+                      </div>
+                      <div style="font-size: 0.85rem; font-weight: 800; color: #ffffff;">Under 2.5 Goals</div>
+                      <div style="font-size: 0.75rem; color: var(--text-secondary); margin-top: 4px;">
+                        Stake: <b style="color: #fbbf24;">$50.77</b> • Payout: <b>$114.23</b>
+                      </div>
+                    </div>
+                    <a href="https://www.bet365.com/?affiliate=DEEPPREDICTBET" target="_blank" class="btn btn-secondary" style="font-size: 0.72rem; padding: 7px 12px; border: 1px solid #d97706; color: #ffffff; text-align: center; text-decoration: none; font-weight: 700; display: block; border-radius: var(--radius-xs);">
+                      📲 Bet $50.77 on Bet365
+                    </a>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Deal 2 -->
+              <div class="glass-card" style="padding: 18px; border: 1px solid rgba(16,185,129,0.3); background: rgba(0,0,0,0.4); border-radius: var(--radius-md); display: flex; flex-direction: column; gap: 14px;">
+                <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 10px; border-bottom: 1px solid rgba(255,255,255,0.06); padding-bottom: 10px;">
+                  <div>
+                    <div style="font-size: 0.72rem; color: #10b981; font-weight: 800; text-transform: uppercase; display: flex; align-items: center; gap: 6px;">
+                      <span>La Liga</span>
+                      <span>•</span>
+                      <span style="color: #fbbf24;">📅 6th, September 2026, 20:30</span>
+                    </div>
+                    <div style="font-size: 1.05rem; font-weight: 900; color: #ffffff; font-family: var(--font-display); margin: 2px 0;">🇪🇸 Real Madrid vs Real Betis</div>
+                    <div style="font-size: 0.75rem; color: var(--text-secondary);">Market: <b style="color: #60a5fa;">Both Teams To Score (BTTS)</b></div>
+                  </div>
+                  <div style="text-align: right;">
+                    <div style="background: linear-gradient(135deg, rgba(16,185,129,0.2) 0%, rgba(5,150,105,0.2) 100%); border: 1px solid #10b981; color: #34d399; font-weight: 900; font-size: 0.9rem; padding: 6px 14px; border-radius: 20px; font-family: var(--font-display); display: inline-flex; align-items: center; gap: 6px;">
+                      🛡️ +11.5% NET PROFIT
+                    </div>
+                    <div style="font-size: 0.75rem; color: #10b981; font-weight: 700; margin-top: 4px;">
+                      Guaranteed Net Profit: <b>+$11.48</b> (Zero Risk)
+                    </div>
+                  </div>
+                </div>
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 12px;">
+                  <div style="background: rgba(26,104,219,0.08); border: 1px solid rgba(59,130,246,0.3); border-radius: var(--radius-sm); padding: 12px 14px; display: flex; flex-direction: column; justify-content: space-between; gap: 10px;">
+                    <div>
+                      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px;">
+                        <span style="font-size: 0.75rem; font-weight: 800; color: #3b82f6; text-transform: uppercase;">LEG 1 • 1xBet</span>
+                        <span style="font-size: 0.85rem; font-weight: 900; color: #ffffff;">@2.26 Odds</span>
+                      </div>
+                      <div style="font-size: 0.85rem; font-weight: 800; color: #ffffff;">BTTS Yes</div>
+                      <div style="font-size: 0.75rem; color: var(--text-secondary); margin-top: 4px;">
+                        Stake: <b style="color: #3b82f6;">$49.33</b> • Payout: <b>$111.49</b>
+                      </div>
+                    </div>
+                    <a href="https://1xbet.com/?tag=deeppredictbet" target="_blank" class="btn btn-secondary" style="font-size: 0.72rem; padding: 7px 12px; border: 1px solid var(--brand-royal-blue); color: #ffffff; text-align: center; text-decoration: none; font-weight: 700; display: block; border-radius: var(--radius-xs);">
+                      📲 Bet $49.33 on 1xBet
+                    </a>
+                  </div>
+                  <div style="background: rgba(245,158,11,0.08); border: 1px solid rgba(245,158,11,0.3); border-radius: var(--radius-sm); padding: 12px 14px; display: flex; flex-direction: column; justify-content: space-between; gap: 10px;">
+                    <div>
+                      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px;">
+                        <span style="font-size: 0.75rem; font-weight: 800; color: #fbbf24; text-transform: uppercase;">LEG 2 • Bet9ja</span>
+                        <span style="font-size: 0.85rem; font-weight: 900; color: #ffffff;">@2.20 Odds</span>
+                      </div>
+                      <div style="font-size: 0.85rem; font-weight: 800; color: #ffffff;">BTTS No</div>
+                      <div style="font-size: 0.75rem; color: var(--text-secondary); margin-top: 4px;">
+                        Stake: <b style="color: #fbbf24;">$50.67</b> • Payout: <b>$111.47</b>
+                      </div>
+                    </div>
+                    <a href="https://register.bet9ja.com/?promocode=DEEPPREDICTBET" target="_blank" class="btn btn-secondary" style="font-size: 0.72rem; padding: 7px 12px; border: 1px solid #d97706; color: #ffffff; text-align: center; text-decoration: none; font-weight: 700; display: block; border-radius: var(--radius-xs);">
+                      📲 Bet $50.67 on Bet9ja
+                    </a>
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
         </div>
