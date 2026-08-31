@@ -7098,20 +7098,32 @@ function toggleScannedBookiesList() {
 function openScannedBookmakersModal() {
   const modal = document.getElementById("scanned-bookmakers-modal");
   if (!modal) return;
+  modal.classList.add("active");
   modal.style.display = "flex";
+  modal.style.opacity = "1";
+  modal.style.pointerEvents = "all";
+  modal.style.visibility = "visible";
+  document.body.style.overflow = "hidden";
   renderScannedBookmakersModal();
   const search = document.getElementById("search-bookmakers-modal-input");
   if (search) {
     search.value = "";
-    search.focus();
+    setTimeout(() => {
+      try { search.focus(); } catch (err) {}
+    }, 60);
   }
 }
 
 function closeScannedBookmakersModal(e, force = false) {
   const modal = document.getElementById("scanned-bookmakers-modal");
   if (!modal) return;
-  if (force || e.target === modal) {
+  if (force || !e || e.target === modal) {
+    modal.classList.remove("active");
     modal.style.display = "none";
+    modal.style.opacity = "0";
+    modal.style.pointerEvents = "none";
+    modal.style.visibility = "hidden";
+    document.body.style.overflow = "";
   }
 }
 
