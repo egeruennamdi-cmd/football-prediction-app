@@ -7080,13 +7080,9 @@ function resolveConverterInputs() {
   const mainTgt = document.getElementById("betcode-tgt-select")?.value || "";
   const heroTgt = document.getElementById("hero-betcode-target-select")?.value || "";
 
-  let code = mainCode || heroCode || "5P69RVW";
+  let code = mainCode || heroCode || "";
   let src = mainSrc || heroSrc || "bet9ja";
   let tgt = mainTgt || heroTgt || "sportybet:ng";
-
-  // Sync inputs across cards
-  if (mainCodeEl && !mainCodeEl.value) mainCodeEl.value = code;
-  if (heroCodeEl && !heroCodeEl.value) heroCodeEl.value = code;
 
   return { code, src, tgt };
 }
@@ -7102,13 +7098,15 @@ function executeHeroBetCodeConversion() {
 }
 
 async function convertBetCode(code, src, target) {
-  const sourceCode = (code || "BC9P2XZ").toUpperCase().trim();
+  const sourceCode = (code || "").toUpperCase().trim();
   const sourceBookie = src || "bet9ja";
   const targetBookie = target || "sportybet:ng";
 
   if (!sourceCode) {
-    if (typeof showAppNotification === 'function') showAppNotification("Please enter a valid booking code.", "warning");
-    else alert("Please enter a valid booking code.");
+    if (typeof showAppNotification === 'function') showAppNotification("Please enter a booking code to convert.", "warning");
+    else alert("Please enter a booking code to convert.");
+    const inputEl = document.getElementById("betcode-src-code") || document.getElementById("hero-betcode-src-code");
+    if (inputEl) inputEl.focus();
     return;
   }
 
