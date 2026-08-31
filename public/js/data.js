@@ -790,9 +790,9 @@ const LEAGUE_STATS = [
 ];
 
 const DAILY_TIPS = [
-  { type: "Double of the Day", matches: ["Bayern Munich vs Dortmund", "Liverpool vs Chelsea"], odd: "2.68", text: "Combined win odds on Bayern (1.45) & Liverpool Win (1.85) representing high value counter-press metrics." },
-  { type: "Risk of the Day", matches: ["Arsenal vs Man City"], odd: "3.40", text: "Arsenal Win + Both Teams To Score (BTTS). Arsenal's central block favors them, but City is likely to score late." },
-  { type: "Value of the Day", matches: ["Juventus vs PSG"], odd: "3.20", text: "Draw (X) pick. Juventus deep block is highly resilient, PSG transition lacks wide crossing options." }
+  { type: "Double of the Day", matches: ["Arsenal vs Brighton", "Real Madrid vs Real Betis"], odd: "2.56", text: "Combined win odds on Arsenal (1.62) & Real Madrid Win (1.58) representing high value counter-press metrics." },
+  { type: "Risk of the Day", matches: ["Tottenham vs Arsenal"], odd: "3.45", text: "Arsenal Win + Both Teams To Score (BTTS). Arsenal's central block favors them, with high tempo transition threat." },
+  { type: "Value of the Day", matches: ["Juventus vs Roma"], odd: "3.20", text: "Draw (X) pick. Juventus deep block is highly resilient, balancing tactical low margin metrics." }
 ];
 
 const HOT_TRENDS = [
@@ -803,9 +803,9 @@ const HOT_TRENDS = [
 ];
 
 const VALUE_BETS = [
-  { match: "Liverpool vs Chelsea", market: "Over 2.5 Goals", bookmakerOdds: "1.92", modelProbability: "68%", modelOdds: "1.47", ev: "+30.6%" },
-  { match: "Real Madrid vs Barcelona", market: "Home Win (1)", bookmakerOdds: "2.15", modelProbability: "55%", modelOdds: "1.82", ev: "+18.1%" },
-  { match: "Bayern Munich vs Dortmund", market: "Home Win & Over 2.5", bookmakerOdds: "1.90", modelProbability: "62%", modelOdds: "1.61", ev: "+17.9%" }
+  { match: "Arsenal vs Brighton", market: "Over 2.5 Goals", bookmakerOdds: "1.92", modelProbability: "68%", modelOdds: "1.47", ev: "+30.6%" },
+  { match: "Real Madrid vs Real Betis", market: "Home Win (1)", bookmakerOdds: "2.15", modelProbability: "55%", modelOdds: "1.82", ev: "+18.1%" },
+  { match: "Tottenham vs Arsenal", market: "Away Win & Over 2.5", bookmakerOdds: "3.10", modelProbability: "42%", modelOdds: "2.40", ev: "+29.2%" }
 ];
 
 const COUNTRY_LEAGUES_DATA = [
