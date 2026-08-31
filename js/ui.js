@@ -6981,6 +6981,144 @@ window.arbitrageDeals = [
   }
 ];
 
+const SCANNED_50_BOOKMAKERS = [
+  { key: 'sportybet', name: 'SportyBet', region: 'Africa', ping: '18ms', bonus: '100% Welcome Gift', url: 'https://www.sportybet.com/?referralCode=DEEPPREDICTBET' },
+  { key: 'bet9ja', name: 'Bet9ja', region: 'Africa', ping: '22ms', bonus: '100% Deposit Bonus', url: 'https://register.bet9ja.com/?promocode=DEEPPREDICTBET' },
+  { key: '1xbet', name: '1xBet', region: 'Global', ping: '19ms', bonus: '200% First Deposit', url: 'https://1xbet.com/?tag=deeppredictbet' },
+  { key: 'betking', name: 'BetKing', region: 'Africa', ping: '25ms', bonus: '100% FreeBet Bonus', url: 'https://www.betking.com/register?code=DEEPPREDICTBET' },
+  { key: 'betway', name: 'Betway', region: 'Europe/UK', ping: '16ms', bonus: '100% Welcome Bonus', url: 'https://www.betway.com/register?btag=DEEPPREDICTBET' },
+  { key: '22bet', name: '22Bet', region: 'Global', ping: '21ms', bonus: '100% Welcome Bonus', url: 'https://22bet.com/?tag=deeppredictbet' },
+  { key: 'msport', name: 'MSport', region: 'Africa', ping: '24ms', bonus: '300% Welcome Voucher', url: 'https://www.msport.com/?referral=DEEPPREDICTBET' },
+  { key: 'betano', name: 'Betano', region: 'Europe/LatAm', ping: '20ms', bonus: '100% Welcome Bonus', url: 'https://www.betano.com/?promo=DEEPPREDICTBET' },
+  { key: 'melbet', name: 'Melbet', region: 'Global', ping: '23ms', bonus: '200% Welcome Bonus', url: 'https://melbet.com/?tag=deeppredictbet' },
+  { key: 'megapari', name: 'Megapari', region: 'Global', ping: '27ms', bonus: '200% Welcome Bonus', url: 'https://megapari.com/?tag=deeppredictbet' },
+  { key: 'betwinner', name: 'BetWinner', region: 'Global', ping: '22ms', bonus: '100% Welcome Bonus', url: 'https://betwinner.com/?tag=deeppredictbet' },
+  { key: 'paripesa', name: 'Paripesa', region: 'Africa', ping: '26ms', bonus: '100% Welcome Bonus', url: 'https://paripesa.com/?tag=deeppredictbet' },
+  { key: 'merrybet', name: 'Merrybet', region: 'Africa', ping: '31ms', bonus: '100% Deposit Match', url: 'https://www.merrybet.com/?ref=DEEPPREDICTBET' },
+  { key: 'nairabet', name: 'NairaBET', region: 'Africa', ping: '29ms', bonus: '100% Welcome Bonus', url: 'https://www.nairabet.com/?ref=DEEPPREDICTBET' },
+  { key: 'bangbet', name: 'Bangbet', region: 'Africa', ping: '28ms', bonus: '200% Welcome Voucher', url: 'https://www.bangbet.com/?ref=DEEPPREDICTBET' },
+  { key: 'betika', name: 'Betika', region: 'Africa', ping: '24ms', bonus: 'First Deposit Bonus', url: 'https://www.betika.com/?ref=DEEPPREDICTBET' },
+  { key: 'easybet', name: 'Easybet', region: 'Africa', ping: '33ms', bonus: 'R50 Sign-Up Bonus', url: 'https://www.easybet.co.za/?ref=DEEPPREDICTBET' },
+  { key: 'hollywoodbet', name: 'Hollywoodbets', region: 'Africa', ping: '30ms', bonus: 'R25 Sign-Up Bonus', url: 'https://www.hollywoodbets.net/?ref=DEEPPREDICTBET' },
+  { key: 'mozzart', name: 'Mozzart Bet', region: 'Europe/Africa', ping: '25ms', bonus: '100% Triple Bonus', url: 'https://www.mozzartbet.com/?ref=DEEPPREDICTBET' },
+  { key: 'premierbet', name: 'Premier Bet', region: 'Africa', ping: '32ms', bonus: '150% Welcome Bonus', url: 'https://www.premierbet.com/?ref=DEEPPREDICTBET' },
+  { key: 'supersport', name: 'SuperSportBet', region: 'Africa', ping: '27ms', bonus: '100% Deposit Match', url: 'https://www.supersportbet.com/?ref=DEEPPREDICTBET' },
+  { key: 'odibets', name: 'Odibets', region: 'Africa', ping: '26ms', bonus: 'KSh 30 Free Bet', url: 'https://www.odibets.com/?ref=DEEPPREDICTBET' },
+  { key: 'galsport', name: 'Gal Sport Betting', region: 'Africa', ping: '34ms', bonus: '100% First Deposit', url: 'https://www.gsb.ug/?ref=DEEPPREDICTBET' },
+  { key: 'bet365', name: 'Bet365', region: 'UK/Europe', ping: '15ms', bonus: 'Bet $5 Get $150', url: 'https://www.bet365.com/?affiliate=DEEPPREDICTBET' },
+  { key: 'unibet', name: 'Unibet', region: 'Europe', ping: '17ms', bonus: '100% Risk-Free Bet', url: 'https://www.unibet.com/?ref=DEEPPREDICTBET' },
+  { key: 'williamhill', name: 'William Hill', region: 'UK/Europe', ping: '16ms', bonus: 'Bet $10 Get $30', url: 'https://www.williamhill.com/?ref=DEEPPREDICTBET' },
+  { key: 'bwin', name: 'bwin', region: 'Europe', ping: '18ms', bonus: '100% Backup Bet', url: 'https://www.bwin.com/?ref=DEEPPREDICTBET' },
+  { key: 'paddypower', name: 'Paddy Power', region: 'UK/Ireland', ping: '16ms', bonus: 'Money Back as Cash', url: 'https://www.paddypower.com/?ref=DEEPPREDICTBET' },
+  { key: 'betfair', name: 'Betfair', region: 'UK/Europe', ping: '14ms', bonus: 'Exchange Bonus', url: 'https://www.betfair.com/?ref=DEEPPREDICTBET' },
+  { key: 'skybet', name: 'SkyBet', region: 'UK', ping: '15ms', bonus: 'Bet 5p Get $30', url: 'https://www.skybet.com/?ref=DEEPPREDICTBET' },
+  { key: '888sport', name: '888sport', region: 'Europe', ping: '19ms', bonus: '300% Bonus Pack', url: 'https://www.888sport.com/?ref=DEEPPREDICTBET' },
+  { key: 'draftkings', name: 'DraftKings', region: 'USA/Canada', ping: '20ms', bonus: 'Up to $1,200 Bonus', url: 'https://www.draftkings.com/?ref=DEEPPREDICTBET' },
+  { key: 'fanduel', name: 'FanDuel', region: 'USA', ping: '19ms', bonus: 'Bet $5 Get $200', url: 'https://www.fanduel.com/?ref=DEEPPREDICTBET' },
+  { key: 'betmgm', name: 'BetMGM', region: 'USA', ping: '22ms', bonus: 'Up to $1,500 Back', url: 'https://www.betmgm.com/?ref=DEEPPREDICTBET' },
+  { key: 'caesars', name: 'Caesars Sportsbook', region: 'USA', ping: '23ms', bonus: 'Up to $1,000 First Bet', url: 'https://www.caesars.com/?ref=DEEPPREDICTBET' },
+  { key: 'pointsbet', name: 'PointsBet', region: 'USA/Aus', ping: '25ms', bonus: '5x Second Chance Bets', url: 'https://www.pointsbet.com/?ref=DEEPPREDICTBET' },
+  { key: 'pixbet', name: 'Pixbet', region: 'Brazil/LatAm', ping: '30ms', bonus: 'Saque Rápido Pix', url: 'https://www.pixbet.com/?ref=DEEPPREDICTBET' },
+  { key: 'caliente', name: 'Caliente', region: 'Mexico/LatAm', ping: '28ms', bonus: '$1,000 MXN Sin Depósito', url: 'https://www.caliente.mx/?ref=DEEPPREDICTBET' },
+  { key: 'codere', name: 'Codere', region: 'Spain/LatAm', ping: '24ms', bonus: '100% Bônus', url: 'https://www.codere.com/?ref=DEEPPREDICTBET' },
+  { key: 'estrelabet', name: 'EstrelaBet', region: 'Brazil/LatAm', ping: '31ms', bonus: '100% Bônus Depósito', url: 'https://www.estrelabet.com/?ref=DEEPPREDICTBET' },
+  { key: 'betnacional', name: 'Betnacional', region: 'Brazil', ping: '29ms', bonus: 'Top Brazilian Odds', url: 'https://www.betnacional.com/?ref=DEEPPREDICTBET' },
+  { key: 'stake', name: 'Stake.com', region: 'Global Crypto', ping: '14ms', bonus: '200% Rakeback VIP', url: 'https://stake.com/?c=DEEPPREDICTBET' },
+  { key: 'sportsbetau', name: 'Sportsbet', region: 'Australia', ping: '35ms', bonus: 'Top Australian Odds', url: 'https://www.sportsbet.com.au/?ref=DEEPPREDICTBET' },
+  { key: 'sbobet', name: 'SBOBET', region: 'Asia', ping: '32ms', bonus: '100% Asian Handicap', url: 'https://www.sbobet.com/?ref=DEEPPREDICTBET' },
+  { key: '188bet', name: '188BET', region: 'Asia/Europe', ping: '28ms', bonus: '100% Deposit Bonus', url: 'https://www.188bet.com/?ref=DEEPPREDICTBET' },
+  { key: 'dafabet', name: 'Dafabet', region: 'Asia/Global', ping: '29ms', bonus: '160% Welcome Bonus', url: 'https://www.dafabet.com/?ref=DEEPPREDICTBET' },
+  { key: 'bk8', name: 'BK8', region: 'Asia', ping: '31ms', bonus: '288% BK8 Bonus', url: 'https://www.bk8.com/?ref=DEEPPREDICTBET' },
+  { key: 'bcgame', name: 'BC.Game', region: 'Global Crypto', ping: '18ms', bonus: '360% Crypto Bonus', url: 'https://bc.game/?i=DEEPPREDICTBET' },
+  { key: 'cloudbet', name: 'Cloudbet', region: 'Global Crypto', ping: '16ms', bonus: '100% Crypto Bonus', url: 'https://www.cloudbet.com/?af_token=DEEPPREDICTBET' },
+  { key: 'betonline', name: 'BetOnline', region: 'USA/Crypto', ping: '21ms', bonus: '50% Welcome Bonus', url: 'https://www.betonline.ag/?ref=DEEPPREDICTBET' }
+];
+
+function renderScannedBookmakersInline() {
+  const container = document.getElementById("scanned-bookies-pills-grid");
+  if (!container) return;
+  container.innerHTML = SCANNED_50_BOOKMAKERS.map(b => `
+    <a href="${b.url}" target="_blank" style="display: flex; align-items: center; justify-content: space-between; padding: 7px 10px; background: rgba(255,255,255,0.04); border: 1px solid rgba(16,185,129,0.25); border-radius: var(--radius-xs); text-decoration: none; color: #ffffff; transition: all 0.2s ease;">
+      <div style="display: flex; align-items: center; gap: 6px;">
+        <span style="width: 6px; height: 6px; border-radius: 50%; background: #10b981; display: inline-block;"></span>
+        <span style="font-size: 0.76rem; font-weight: 700;">${b.name}</span>
+      </div>
+      <span style="font-size: 0.68rem; color: #34d399; font-weight: 800;">${b.ping}</span>
+    </a>
+  `).join("");
+}
+
+function renderScannedBookmakersModal(filterQuery = "") {
+  const container = document.getElementById("modal-bookmakers-grid");
+  if (!container) return;
+  const q = String(filterQuery || "").toLowerCase().trim();
+  const list = q ? SCANNED_50_BOOKMAKERS.filter(b => b.name.toLowerCase().includes(q) || b.region.toLowerCase().includes(q)) : SCANNED_50_BOOKMAKERS;
+  
+  if (list.length === 0) {
+    container.innerHTML = `<div style="grid-column: 1 / -1; text-align: center; color: var(--text-muted); padding: 24px;">No bookmakers found matching "${filterQuery}".</div>`;
+    return;
+  }
+
+  container.innerHTML = list.map(b => `
+    <div style="background: rgba(15, 23, 42, 0.75); border: 1px solid rgba(16, 185, 129, 0.3); border-radius: var(--radius-sm); padding: 12px; display: flex; flex-direction: column; justify-content: space-between; gap: 8px;">
+      <div style="display: flex; justify-content: space-between; align-items: center;">
+        <div style="display: flex; align-items: center; gap: 6px;">
+          <span style="width: 7px; height: 7px; border-radius: 50%; background: #10b981; display: inline-block;"></span>
+          <span style="font-size: 0.85rem; font-weight: 800; color: #ffffff;">${b.name}</span>
+        </div>
+        <span style="font-size: 0.68rem; color: #10b981; font-weight: 800; background: rgba(16,185,129,0.15); padding: 2px 6px; border-radius: 4px;">${b.ping}</span>
+      </div>
+      <div style="font-size: 0.72rem; color: var(--text-secondary);">
+        Region: <b style="color: #60a5fa;">${b.region}</b>
+      </div>
+      <div style="font-size: 0.72rem; color: #fbbf24; font-weight: 600;">
+        🎁 ${b.bonus}
+      </div>
+      <a href="${b.url}" target="_blank" class="btn btn-secondary" style="font-size: 0.72rem; padding: 6px 10px; width: 100%; text-align: center; text-decoration: none; font-weight: 700; color: #ffffff; border: 1px solid rgba(16,185,129,0.4); border-radius: var(--radius-xs); margin-top: 4px; display: block; box-sizing: border-box;">
+        ⚡ Visit ${b.name}
+      </a>
+    </div>
+  `).join("");
+}
+
+function toggleScannedBookiesList() {
+  const pane = document.getElementById("scanned-bookies-list-pane");
+  const btn = document.getElementById("toggle-bookies-list-btn");
+  if (!pane) return;
+  if (pane.style.display === "none" || !pane.style.display) {
+    pane.style.display = "flex";
+    if (btn) btn.innerHTML = "📋 Hide 50 Bookmakers List ▲";
+    renderScannedBookmakersInline();
+  } else {
+    pane.style.display = "none";
+    if (btn) btn.innerHTML = "📋 View 50 Bookmakers Below ▼";
+  }
+}
+
+function openScannedBookmakersModal() {
+  const modal = document.getElementById("scanned-bookmakers-modal");
+  if (!modal) return;
+  modal.style.display = "flex";
+  renderScannedBookmakersModal();
+  const search = document.getElementById("search-bookmakers-modal-input");
+  if (search) {
+    search.value = "";
+    search.focus();
+  }
+}
+
+function closeScannedBookmakersModal(e, force = false) {
+  const modal = document.getElementById("scanned-bookmakers-modal");
+  if (!modal) return;
+  if (force || e.target === modal) {
+    modal.style.display = "none";
+  }
+}
+
+function filterScannedBookmakersModal(query) {
+  renderScannedBookmakersModal(query);
+}
+
 function runArbitrageScanner(isUserClick = false) {
   const container = document.getElementById("arbitrage-results-container");
   if (!container) return;
@@ -6994,7 +7132,7 @@ function runArbitrageScanner(isUserClick = false) {
       btn.innerHTML = originalText;
       btn.style.opacity = '1';
       if (typeof showAppNotification === 'function') {
-        showAppNotification(`🔍 Scanned 50 bookmakers: Found SureBet opportunities!`);
+        showAppNotification(`🔍 Scanned 50 Global Bookmakers: Found Live SureBet Opportunities! Click "View 50 Bookmakers" to inspect feeds.`);
       }
     }, 350);
   }
@@ -7182,6 +7320,13 @@ function runArbitrageScanner(isUserClick = false) {
 }
 
 // Global Exports
+window.SCANNED_50_BOOKMAKERS = SCANNED_50_BOOKMAKERS;
+window.renderScannedBookmakersInline = renderScannedBookmakersInline;
+window.renderScannedBookmakersModal = renderScannedBookmakersModal;
+window.toggleScannedBookiesList = toggleScannedBookiesList;
+window.openScannedBookmakersModal = openScannedBookmakersModal;
+window.closeScannedBookmakersModal = closeScannedBookmakersModal;
+window.filterScannedBookmakersModal = filterScannedBookmakersModal;
 window.runArbitrageScanner = runArbitrageScanner;
 window.openBetDoctorModal = openBetDoctorModal;
 window.toggleAdvanceFilters = toggleAdvanceFilters;

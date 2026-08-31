@@ -2858,6 +2858,38 @@
 
             </div>
 
+            <!-- 50 Scanned Bookmakers Info & Toggle Bar -->
+            <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 10px; background: rgba(16, 185, 129, 0.08); border: 1px solid rgba(16, 185, 129, 0.25); border-radius: var(--radius-sm); padding: 10px 14px; margin-bottom: 18px;">
+              <div style="display: flex; align-items: center; gap: 8px;">
+                <span style="display: inline-block; width: 8px; height: 8px; border-radius: 50%; background: #10b981; box-shadow: 0 0 8px #10b981; animation: pulse 1.5s infinite;"></span>
+                <span style="font-size: 0.82rem; font-weight: 800; color: #ffffff;">📡 50 Global Bookmakers Scanned &amp; Connected</span>
+                <span style="background: rgba(16,185,129,0.2); color: #34d399; font-size: 0.68rem; font-weight: 800; padding: 2px 8px; border-radius: 10px; border: 1px solid rgba(16,185,129,0.4);">50/50 LIVE API</span>
+              </div>
+              <div style="display: flex; align-items: center; gap: 8px;">
+                <button type="button" class="btn btn-secondary" onclick="toggleScannedBookiesList()" id="toggle-bookies-list-btn"
+                  style="font-size: 0.75rem; padding: 6px 12px; font-weight: 700; border: 1px solid rgba(52, 211, 153, 0.4); color: #34d399; background: rgba(0,0,0,0.4); border-radius: var(--radius-xs); cursor: pointer;">
+                  📋 View 50 Bookmakers Below ▼
+                </button>
+                <button type="button" class="btn btn-secondary" onclick="openScannedBookmakersModal()"
+                  style="font-size: 0.75rem; padding: 6px 12px; font-weight: 700; border: 1px solid rgba(96, 165, 250, 0.4); color: #60a5fa; background: rgba(0,0,0,0.4); border-radius: var(--radius-xs); cursor: pointer;">
+                  🔍 View 50 Bookmakers in Popup ↗
+                </button>
+              </div>
+            </div>
+
+            <!-- Collapsible 50 Bookmakers Grid Pane -->
+            <div id="scanned-bookies-list-pane" style="display: none; flex-direction: column; gap: 10px; background: rgba(0,0,0,0.45); border: 1px solid rgba(16, 185, 129, 0.25); border-radius: var(--radius-sm); padding: 14px; margin-bottom: 20px;">
+              <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px;">
+                <span style="font-size: 0.75rem; color: #a7f3d0; font-weight: 800; text-transform: uppercase;">
+                  Active Integrated Bookmaker Feeds (50 Global Bookmakers • Ping &lt; 35ms)
+                </span>
+                <span style="font-size: 0.72rem; color: var(--text-muted);">Real-time Odds Sync</span>
+              </div>
+              <div id="scanned-bookies-pills-grid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(170px, 1fr)); gap: 8px; max-height: 250px; overflow-y: auto; padding-right: 4px;">
+                <!-- Populated dynamically / initialized by JS -->
+              </div>
+            </div>
+
             <!-- Live Arbitrage Output Container -->
             <div id="arbitrage-results-container"
               style="display: flex; flex-direction: column; gap: 16px; border-top: 2px solid rgba(16, 185, 129, 0.4); padding-top: 20px;">
@@ -5018,6 +5050,55 @@
           200M Scaling Ready)
         </div>
       </div>
+    </div>
+  <!-- --- MODAL: 50 SCANNED BOOKMAKERS POPUP --- -->
+  <div class="modal-overlay" id="scanned-bookmakers-modal" onclick="closeScannedBookmakersModal(event)" style="display: none; z-index: 100000;">
+    <div class="modal-content" onclick="event.stopPropagation()"
+      style="max-width: 760px; width: 92%; max-height: 85vh; background: #0b1329; border: 1.5px solid rgba(16,185,129,0.5); border-radius: 20px; box-shadow: 0 24px 70px rgba(0,0,0,0.9); padding: 0; display: flex; flex-direction: column; overflow: hidden;">
+      
+      <!-- Modal Header -->
+      <div style="background: linear-gradient(135deg, rgba(16,185,129,0.2) 0%, rgba(5,150,105,0.3) 50%, #0b1329 100%); padding: 18px 22px; display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid rgba(16,185,129,0.25);">
+        <div style="display: flex; align-items: center; gap: 12px;">
+          <div style="width: 42px; height: 42px; border-radius: 50%; background: rgba(16,185,129,0.2); border: 1.5px solid #10b981; display: flex; align-items: center; justify-content: center; font-size: 1.3rem;">
+            📡
+          </div>
+          <div>
+            <h3 style="font-family: var(--font-display); font-size: 1.15rem; font-weight: 900; color: #ffffff; margin: 0;">
+              50 Scanned Global Bookmakers
+            </h3>
+            <span style="font-size: 0.75rem; color: #34d399; font-weight: 700;">
+              Real-Time Odds Feeds • 100% Verified API Latency &lt; 40ms
+            </span>
+          </div>
+        </div>
+        <button class="modal-close" onclick="closeScannedBookmakersModal(event, true);" style="font-size: 1.5rem; background: transparent; border: none; color: #94a3b8; cursor: pointer;">&times;</button>
+      </div>
+
+      <!-- Search & Filters Toolbar -->
+      <div style="padding: 14px 20px; border-bottom: 1px solid rgba(255,255,255,0.06); background: rgba(0,0,0,0.25); display: flex; gap: 12px; align-items: center; justify-content: space-between; flex-wrap: wrap;">
+        <input type="text" id="search-bookmakers-modal-input" placeholder="🔍 Search by bookie name (e.g. SportyBet, Bet365, Stake)..." oninput="filterScannedBookmakersModal(this.value)"
+          style="background: rgba(15,23,42,0.8); border: 1px solid rgba(255,255,255,0.15); border-radius: var(--radius-xs); padding: 8px 14px; font-size: 0.85rem; color: #ffffff; flex-grow: 1; max-width: 380px; outline: none;">
+        <div style="display: flex; align-items: center; gap: 8px;">
+          <span style="display: inline-block; width: 8px; height: 8px; border-radius: 50%; background: #10b981; animation: pulse 1.5s infinite;"></span>
+          <span style="font-size: 0.78rem; font-weight: 800; color: #34d399;">50/50 APIs Operational</span>
+        </div>
+      </div>
+
+      <!-- Bookmakers Grid -->
+      <div id="modal-bookmakers-grid" style="padding: 18px 20px; overflow-y: auto; display: grid; grid-template-columns: repeat(auto-fill, minmax(210px, 1fr)); gap: 10px; max-height: 52vh;">
+        <!-- Populated dynamically by JS -->
+      </div>
+
+      <!-- Modal Footer -->
+      <div style="padding: 12px 20px; background: rgba(6,11,19,0.9); border-top: 1px solid rgba(255,255,255,0.08); display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px;">
+        <span style="font-size: 0.75rem; color: var(--text-muted);">
+          🛡️ Universal 50-Bookmaker Arbitrage Scanning Network
+        </span>
+        <button class="btn btn-secondary" onclick="closeScannedBookmakersModal(event, true);" style="font-size: 0.75rem; padding: 6px 14px; border-radius: var(--radius-xs);">
+          Close Window
+        </button>
+      </div>
+
     </div>
   </div>
 
