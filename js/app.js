@@ -229,12 +229,20 @@ function generateScoutAccumulator(count = 40) {
     (typeof MATCH_DATA !== 'undefined' && Array.isArray(MATCH_DATA)) ? MATCH_DATA : []
   ];
 
+  const _todayStr = new Date().toDateString();
   liveCandidateLists.forEach(list => {
     list.forEach(m => {
       if (!m) return;
       const isFinished = m.isFT || m.status === 'FT' || m.statusShort === 'FT' || m.isYesterday || m.date === 'yesterday';
       if (isFinished) return;
       if (m.time && (m.time.includes('FT') || m.time.includes('Yesterday') || m.time.includes('Days Ago') || m.time.includes('Weeks Ago'))) return;
+      // STRICT: If flagged live by the API, it MUST have a rawDate matching today — reject stale/phantom live matches
+      if (m.isLive && m.rawDate) {
+        const matchDateStr = new Date(m.rawDate).toDateString();
+        if (matchDateStr !== _todayStr) return;
+      }
+      // Also reject if date field says future/tomorrow but isLive is true (API inconsistency)
+      if (m.isLive && m.date && m.date !== 'today') return;
 
       const hName = m.homeTeam?.name || m.homeTeam || '';
       const aName = m.awayTeam?.name || m.awayTeam || '';
