@@ -4169,65 +4169,126 @@ document.addEventListener("DOMContentLoaded", () => {
 });
 
 // --- ARBITRAGE & SUREBET PROFIT FINDER ENGINE ---
+// --- ARBITRAGE & SUREBET PROFIT FINDER ENGINE ---
 window.arbitrageDeals = [
   {
     id: "arb-1",
-    match: "🏴󠁧󠁢󠁥󠁮󠁧󠁿 Arsenal vs Chelsea",
+    match: "🏴󠁧󠁢󠁥󠁮󠁧󠁿 Arsenal vs Brighton",
     league: "Premier League",
-    time: "Today 19:45 GMT",
+    time: "5th, September 2026, 12:30",
     market: "Over / Under 2.5 Goals",
-    roi: 7.4,
+    roi: 12.4,
     leg1: {
       bookieKey: "sportybet",
       selection: "Over 2.5 Goals",
-      odds: 2.15,
-      link: "https://www.sportybet.com/?tag=deeppredictbet"
+      odds: 2.32,
+      link: "https://www.sportybet.com/?referralCode=DEEPPREDICTBET"
     },
     leg2: {
       bookieKey: "bet365",
       selection: "Under 2.5 Goals",
-      odds: 2.05,
-      link: "https://www.bet365.com/?affiliate=deeppredictbet"
+      odds: 2.25,
+      link: "https://www.bet365.com/?affiliate=DEEPPREDICTBET"
     }
   },
   {
     id: "arb-2",
-    match: "🇪🇸 Real Madrid vs Barcelona",
+    match: "🇪🇸 Real Madrid vs Real Betis",
     league: "La Liga",
-    time: "Tomorrow 20:00 GMT",
-    market: "1X2 Match Result",
-    roi: 5.8,
+    time: "6th, September 2026, 20:30",
+    market: "Both Teams To Score (BTTS)",
+    roi: 11.5,
     leg1: {
       bookieKey: "1xbet",
-      selection: "Real Madrid Win (1)",
-      odds: 2.45,
+      selection: "BTTS Yes",
+      odds: 2.26,
       link: "https://1xbet.com/?tag=deeppredictbet"
     },
     leg2: {
       bookieKey: "bet9ja",
-      selection: "Draw or Barcelona (X2)",
-      odds: 1.85,
-      link: "https://www.bet9ja.com/?affiliate=deeppredictbet"
+      selection: "BTTS No",
+      odds: 2.20,
+      link: "https://register.bet9ja.com/?promocode=DEEPPREDICTBET"
     }
   },
   {
     id: "arb-3",
-    match: "🇩🇪 Bayern Munich vs Borussia Dortmund",
-    league: "Bundesliga",
-    time: "Saturday 17:30 GMT",
-    market: "Both Teams To Score (BTTS)",
-    roi: 4.2,
+    match: "🏴󠁧󠁢󠁥󠁮󠁧󠁿 Manchester City vs Brentford",
+    league: "Premier League",
+    time: "12th, September 2026, 15:00",
+    market: "Match Result & Double Chance (1 vs X2)",
+    roi: 10.2,
     leg1: {
       bookieKey: "stake",
-      selection: "BTTS Yes",
-      odds: 1.95,
-      link: "https://stake.com/?c=deeppredictbet"
+      selection: "Man City Win (1)",
+      odds: 1.62,
+      link: "https://stake.com/?c=DEEPPREDICTBET"
     },
     leg2: {
       bookieKey: "betking",
-      selection: "BTTS No",
-      odds: 2.20,
-      link: "https://www.betking.com/?affiliate=deeppredictbet"
+      selection: "Draw or Brentford (X2)",
+      odds: 3.45,
+      link: "https://www.betking.com/register?code=DEEPPREDICTBET"
+    }
+  },
+  {
+    id: "arb-4",
+    match: "🏴󠁧󠁢󠁥󠁮󠁧󠁿 Tottenham vs Arsenal",
+    league: "Premier League",
+    time: "13th, September 2026, 16:30",
+    market: "Over / Under 3.5 Goals",
+    roi: 8.8,
+    leg1: {
+      bookieKey: "betway",
+      selection: "Over 3.5 Goals",
+      odds: 2.75,
+      link: "https://www.betway.com/register?btag=DEEPPREDICTBET"
+    },
+    leg2: {
+      bookieKey: "1xbet",
+      selection: "Under 3.5 Goals",
+      odds: 1.78,
+      link: "https://1xbet.com/?tag=deeppredictbet"
+    }
+  },
+  {
+    id: "arb-5",
+    match: "🇮🇹 Inter Milan vs Atalanta",
+    league: "Serie A",
+    time: "5th, September 2026, 19:45",
+    market: "Draw No Bet (DNB)",
+    roi: 6.8,
+    leg1: {
+      bookieKey: "msport",
+      selection: "Inter Milan DNB",
+      odds: 1.55,
+      link: "https://www.msport.com/?referral=DEEPPREDICTBET"
+    },
+    leg2: {
+      bookieKey: "betano",
+      selection: "Atalanta DNB",
+      odds: 3.35,
+      link: "https://www.betano.com/?promo=DEEPPREDICTBET"
+    }
+  },
+  {
+    id: "arb-6",
+    match: "🇮🇹 Juventus vs Roma",
+    league: "Serie A",
+    time: "6th, September 2026, 19:45",
+    market: "Double Chance vs Away (1X vs 2)",
+    roi: 5.2,
+    leg1: {
+      bookieKey: "22bet",
+      selection: "Juventus or Draw (1X)",
+      odds: 1.45,
+      link: "https://22bet.com/?tag=deeppredictbet"
+    },
+    leg2: {
+      bookieKey: "bet365",
+      selection: "Roma Win (2)",
+      odds: 3.90,
+      link: "https://www.bet365.com/?affiliate=DEEPPREDICTBET"
     }
   }
 ];
@@ -4236,14 +4297,27 @@ function runArbitrageScanner() {
   const container = document.getElementById("arbitrage-results-container");
   if (!container) return;
 
-  const minRoi = parseFloat(document.getElementById("arb-min-roi-select")?.value || "4.0");
-  const totalStake = parseFloat(document.getElementById("arb-stake-input")?.value || "100");
+  const minRoiSelect = document.getElementById("arb-min-roi-select");
+  const minRoi = parseFloat(minRoiSelect ? minRoiSelect.value : "4.0") || 4.0;
+  
+  const stakeInput = document.getElementById("arb-stake-input");
+  let totalStake = parseFloat(stakeInput ? stakeInput.value : "100");
+  if (isNaN(totalStake) || totalStake <= 0) {
+    totalStake = 100;
+  }
 
-  const filteredDeals = window.arbitrageDeals.filter(d => d.roi >= minRoi);
+  const deals = (window.arbitrageDeals && Array.isArray(window.arbitrageDeals)) ? window.arbitrageDeals : [];
+  const filteredDeals = deals.filter(d => {
+    const o1 = d.leg1.odds;
+    const o2 = d.leg2.odds;
+    const invSum = (1 / o1) + (1 / o2);
+    const calculatedRoi = ((1 / invSum) - 1) * 100;
+    return (d.roi >= minRoi) || (calculatedRoi >= minRoi);
+  });
 
   if (filteredDeals.length === 0) {
     container.innerHTML = `
-      <div style="text-align: center; color: var(--text-muted); font-size: 0.85rem; padding: 24px;">
+      <div style="text-align: center; color: var(--text-muted); font-size: 0.85rem; padding: 24px; background: rgba(255,255,255,0.02); border-radius: var(--radius-sm); border: 1px dashed rgba(255,255,255,0.1);">
         🛡️ No active SureBets found matching +${minRoi}% ROI threshold right now. Lower the minimum ROI filter above to view deals.
       </div>
     `;
@@ -4251,9 +4325,9 @@ function runArbitrageScanner() {
   }
 
   let html = `
-    <div style="font-size: 0.8rem; font-weight: 700; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.5px; display: flex; justify-content: space-between; align-items: center;">
+    <div style="font-size: 0.8rem; font-weight: 700; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.5px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px;">
       <span>🎯 Live SureBet Arbitrage Opportunities (${filteredDeals.length} Found)</span>
-      <span style="color: #10b981; font-weight: 800;">Investment Budget: ${totalStake.toFixed(2)}</span>
+      <span style="color: #10b981; font-weight: 800; font-family: var(--font-display); font-size: 0.9rem;">Investment Budget: $${totalStake.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
     </div>
   `;
 
@@ -4273,8 +4347,8 @@ function runArbitrageScanner() {
     const profitNet = guaranteedReturn - totalStake;
     const realRoiPct = ((profitNet / totalStake) * 100).toFixed(1);
 
-    const b1Info = typeof getBookieAffiliateInfo === 'function' ? getBookieAffiliateInfo(deal.leg1.bookieKey) : { name: deal.leg1.bookieKey };
-    const b2Info = typeof getBookieAffiliateInfo === 'function' ? getBookieAffiliateInfo(deal.leg2.bookieKey) : { name: deal.leg2.bookieKey };
+    const b1Info = (typeof getBookieAffiliateInfo === 'function') ? getBookieAffiliateInfo(deal.leg1.bookieKey) : { name: deal.leg1.bookieKey, url: deal.leg1.link };
+    const b2Info = (typeof getBookieAffiliateInfo === 'function') ? getBookieAffiliateInfo(deal.leg2.bookieKey) : { name: deal.leg2.bookieKey, url: deal.leg2.link };
 
     html += `
       <div class="glass-card" style="padding: 18px; border: 1px solid rgba(16,185,129,0.3); background: rgba(0,0,0,0.4); border-radius: var(--radius-md); display: flex; flex-direction: column; gap: 14px;">
@@ -4282,9 +4356,13 @@ function runArbitrageScanner() {
         <!-- Header Row -->
         <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 10px; border-bottom: 1px solid rgba(255,255,255,0.06); padding-bottom: 10px;">
           <div>
-            <div style="font-size: 0.72rem; color: #10b981; font-weight: 800; text-transform: uppercase;">${deal.league} &bull; ${deal.time}</div>
-            <div style="font-size: 1.05rem; font-weight: 900; color: #ffffff; font-family: var(--font-display);">${deal.match}</div>
-            <div style="font-size: 0.75rem; color: var(--text-secondary);">Market: <b>${deal.market}</b></div>
+            <div style="font-size: 0.72rem; color: #10b981; font-weight: 800; text-transform: uppercase; display: flex; align-items: center; gap: 6px;">
+              <span>${deal.league}</span>
+              <span>•</span>
+              <span style="color: #fbbf24;">📅 ${deal.time}</span>
+            </div>
+            <div style="font-size: 1.05rem; font-weight: 900; color: #ffffff; font-family: var(--font-display); margin: 2px 0;">${deal.match}</div>
+            <div style="font-size: 0.75rem; color: var(--text-secondary);">Market: <b style="color: #60a5fa;">${deal.market}</b></div>
           </div>
 
           <div style="text-align: right;">
@@ -4292,7 +4370,7 @@ function runArbitrageScanner() {
               🛡️ +${realRoiPct}% NET PROFIT
             </div>
             <div style="font-size: 0.75rem; color: #10b981; font-weight: 700; margin-top: 4px;">
-              Guaranteed Net Profit: <b>+${profitNet.toFixed(2)}</b> (No Risk)
+              Guaranteed Net Profit: <b>+$${profitNet.toFixed(2)}</b> (Zero Risk)
             </div>
           </div>
         </div>
@@ -4304,16 +4382,16 @@ function runArbitrageScanner() {
           <div style="background: rgba(26,104,219,0.08); border: 1px solid rgba(59,130,246,0.3); border-radius: var(--radius-sm); padding: 12px 14px; display: flex; flex-direction: column; justify-content: space-between; gap: 10px;">
             <div>
               <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px;">
-                <span style="font-size: 0.75rem; font-weight: 800; color: #3b82f6; text-transform: uppercase;">LEG 1 &bull; ${b1Info.name}</span>
-                <span style="font-size: 0.8rem; font-weight: 900; color: #ffffff;">@${o1.toFixed(2)} Odds</span>
+                <span style="font-size: 0.75rem; font-weight: 800; color: #3b82f6; text-transform: uppercase;">LEG 1 • ${b1Info.name}</span>
+                <span style="font-size: 0.85rem; font-weight: 900; color: #ffffff;">@${o1.toFixed(2)} Odds</span>
               </div>
               <div style="font-size: 0.85rem; font-weight: 800; color: #ffffff;">${deal.leg1.selection}</div>
               <div style="font-size: 0.75rem; color: var(--text-secondary); margin-top: 4px;">
-                Stake: <b style="color: #3b82f6;">${stake1.toFixed(2)}</b> &bull; Payout: <b>${return1.toFixed(2)}</b>
+                Stake: <b style="color: #3b82f6;">$${stake1.toFixed(2)}</b> • Payout: <b>$${return1.toFixed(2)}</b>
               </div>
             </div>
-            <a href="${deal.leg1.link}" target="_blank" class="btn btn-secondary" style="font-size: 0.72rem; padding: 6px 12px; border: 1px solid var(--brand-royal-blue); color: #ffffff; text-align: center; text-decoration: none; font-weight: 700; display: block;">
-              📲 Bet ${stake1.toFixed(2)} on ${b1Info.name}
+            <a href="${b1Info.url || deal.leg1.link}" target="_blank" class="btn btn-secondary" style="font-size: 0.72rem; padding: 7px 12px; border: 1px solid var(--brand-royal-blue); color: #ffffff; text-align: center; text-decoration: none; font-weight: 700; display: block; border-radius: var(--radius-xs);">
+              📲 Bet $${stake1.toFixed(2)} on ${b1Info.name}
             </a>
           </div>
 
@@ -4321,16 +4399,16 @@ function runArbitrageScanner() {
           <div style="background: rgba(245,158,11,0.08); border: 1px solid rgba(245,158,11,0.3); border-radius: var(--radius-sm); padding: 12px 14px; display: flex; flex-direction: column; justify-content: space-between; gap: 10px;">
             <div>
               <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px;">
-                <span style="font-size: 0.75rem; font-weight: 800; color: #fbbf24; text-transform: uppercase;">LEG 2 &bull; ${b2Info.name}</span>
-                <span style="font-size: 0.8rem; font-weight: 900; color: #ffffff;">@${o2.toFixed(2)} Odds</span>
+                <span style="font-size: 0.75rem; font-weight: 800; color: #fbbf24; text-transform: uppercase;">LEG 2 • ${b2Info.name}</span>
+                <span style="font-size: 0.85rem; font-weight: 900; color: #ffffff;">@${o2.toFixed(2)} Odds</span>
               </div>
               <div style="font-size: 0.85rem; font-weight: 800; color: #ffffff;">${deal.leg2.selection}</div>
               <div style="font-size: 0.75rem; color: var(--text-secondary); margin-top: 4px;">
-                Stake: <b style="color: #fbbf24;">${stake2.toFixed(2)}</b> &bull; Payout: <b>${return2.toFixed(2)}</b>
+                Stake: <b style="color: #fbbf24;">$${stake2.toFixed(2)}</b> • Payout: <b>$${return2.toFixed(2)}</b>
               </div>
             </div>
-            <a href="${deal.leg2.link}" target="_blank" class="btn btn-secondary" style="font-size: 0.72rem; padding: 6px 12px; border: 1px solid #d97706; color: #ffffff; text-align: center; text-decoration: none; font-weight: 700; display: block;">
-              📲 Bet ${stake2.toFixed(2)} on ${b2Info.name}
+            <a href="${b2Info.url || deal.leg2.link}" target="_blank" class="btn btn-secondary" style="font-size: 0.72rem; padding: 7px 12px; border: 1px solid #d97706; color: #ffffff; text-align: center; text-decoration: none; font-weight: 700; display: block; border-radius: var(--radius-xs);">
+              📲 Bet $${stake2.toFixed(2)} on ${b2Info.name}
             </a>
           </div>
 
@@ -4342,8 +4420,6 @@ function runArbitrageScanner() {
 
   container.innerHTML = html;
 }
-
-
 
 window.runArbitrageScanner = runArbitrageScanner;
 
