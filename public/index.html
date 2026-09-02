@@ -2250,13 +2250,13 @@
           <h2 class="section-title">DeepPredict Betting Suite</h2>
         </div>
         <div class="tabs-container">
-          <button class="tab-btn active" onclick="switchTool('machine', this)">Bet Generator</button>
-          <button class="tab-btn" onclick="switchTool('doctor', this)">🩺 AI Bet Doctor</button>
-          <button class="tab-btn" onclick="switchTool('arbitrage', this)">🛡️ Arbitrage Finder</button>
-          <button class="tab-btn" onclick="switchTool('backtester', this)">Backtester</button>
-          <button class="tab-btn" onclick="switchTool('toptips', this)">Top Tips Tracker</button>
-          <button class="tab-btn" onclick="switchTool('filters', this)">Advance Filters</button>
-          <button class="tab-btn" onclick="switchTool('valuebot', this)">Value Bet Bot</button>
+          <button class="tab-btn active" id="tool-tab-machine" onclick="switchTool('machine', this)">Bet Generator</button>
+          <button class="tab-btn" id="tool-tab-doctor" onclick="switchTool('doctor', this)">🩺 AI Bet Doctor</button>
+          <button class="tab-btn" id="tool-tab-arbitrage" onclick="switchTool('arbitrage', this)">🛡️ Arbitrage Finder</button>
+          <button class="tab-btn" id="tool-tab-backtester" onclick="switchTool('backtester', this)">Backtester</button>
+          <button class="tab-btn" id="tool-tab-toptips" onclick="switchTool('toptips', this)">Top Tips Tracker</button>
+          <button class="tab-btn" id="tool-tab-filters" onclick="switchTool('filters', this)">Advance Filters</button>
+          <button class="tab-btn" id="tool-tab-valuebot" onclick="switchTool('valuebot', this)">Value Bet Bot</button>
         </div>
       </div>
 
@@ -4095,6 +4095,11 @@
           <span>⚡ Instant Activation</span>
           <span>•</span>
           <span>🛡️ 100% Satisfaction Guarantee</span>
+        <!-- VIP Feature Customization Link -->
+        <div style="text-align: center; margin-top: 14px; padding-bottom: 8px;">
+          <button type="button" onclick="openVipFeatureManager()" style="background: none; border: 1px dashed rgba(168,85,247,0.4); color: #c084fc; border-radius: 20px; padding: 6px 16px; font-size: 0.78rem; font-weight: 700; cursor: pointer; display: inline-flex; align-items: center; gap: 6px; transition: all 0.2s;">
+            <span>⚙️</span> Manage VIP-Protected Features
+          </button>
         </div>
 
       </div>
@@ -4542,6 +4547,16 @@
           </div>
         </div>
 
+        <!-- Feature Unlock Callout Banner -->
+        <div id="vip-feature-unlock-callout" style="display: none; background: rgba(16, 185, 129, 0.15); border: 1.5px solid #10b981; border-radius: 14px; padding: 12px 16px; margin: 0 20px 14px; text-align: center; box-shadow: 0 4px 15px rgba(16, 185, 129, 0.2);">
+          <div style="display: flex; align-items: center; justify-content: center; gap: 8px;">
+            <span style="font-size: 1.1rem;">🔒</span>
+            <span id="vip-feature-unlock-text" style="font-size: 0.84rem; font-weight: 800; color: #34d399; line-height: 1.35;">
+              This feature is exclusive to VIP Club. Subscribe to unlock!
+            </span>
+          </div>
+        </div>
+
         <!-- Winning Slips Proof Showcase Carousel -->
         <div class="vip-slips-container">
           <!-- Slip 1 -->
@@ -4886,6 +4901,58 @@
     </div>
   </div>
 
+  <!-- ==========================================================================
+       VIP FEATURE ACCESS MANAGER MODAL (DYNAMIC ADD / REMOVE FEATURES)
+       ========================================================================== -->
+  <div class="modal-overlay" id="vip-feature-manager-modal" style="display: none; position: fixed; inset: 0; z-index: 10000002; align-items: center; justify-content: center; background: rgba(8, 11, 17, 0.88); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);" onclick="closeVipFeatureManager(event)">
+    <div class="modal-content" onclick="event.stopPropagation()" style="max-width: 580px; width: 95%; max-height: 90vh; overflow-y: auto; background: #0f172a; border: 1.5px solid rgba(168, 85, 247, 0.4); border-radius: 24px; box-shadow: 0 25px 60px -12px rgba(0, 0, 0, 0.75), 0 0 35px rgba(168, 85, 247, 0.2); position: relative; padding: 0;">
+      
+      <!-- Modal Header -->
+      <div style="background: linear-gradient(135deg, #581c87 0%, #3b0764 100%); padding: 20px; display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid rgba(255, 255, 255, 0.1);">
+        <div style="display: flex; align-items: center; gap: 12px;">
+          <div style="width: 42px; height: 42px; border-radius: 50%; background: rgba(255, 255, 255, 0.15); border: 1.5px solid rgba(255, 255, 255, 0.3); display: flex; align-items: center; justify-content: center; font-size: 1.3rem;">
+            ⚙️
+          </div>
+          <div>
+            <h3 style="font-family: var(--font-display); font-size: 1.2rem; font-weight: 900; color: #ffffff; margin: 0;">VIP Feature Manager</h3>
+            <span style="font-size: 0.75rem; color: #d8b4fe; font-weight: 600;">Add or remove features from VIP Packages & VIP Club</span>
+          </div>
+        </div>
+        <button class="modal-close" onclick="closeVipFeatureManager(event, true)" style="background: rgba(255, 255, 255, 0.12); border: 1px solid rgba(255, 255, 255, 0.2); border-radius: 50%; width: 34px; height: 34px; font-size: 1.1rem; color: #ffffff; cursor: pointer; display: flex; align-items: center; justify-content: center;">&times;</button>
+      </div>
+
+      <!-- Modal Body -->
+      <div style="padding: 20px;">
+        <div style="background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.08); border-radius: 12px; padding: 12px 16px; margin-bottom: 16px; font-size: 0.8rem; color: #94a3b8; line-height: 1.45;">
+          💡 When a feature is enabled as <b style="color: #34d399;">VIP</b>, any user without an active VIP pass who clicks on it will instantly be prompted with the <b>👑 VIP Packages & VIP Club</b> subscription paywall. Turn features on or off below:
+        </div>
+
+        <!-- Features List Container -->
+        <div id="vip-features-list-container" style="display: flex; flex-direction: column; gap: 10px; margin-bottom: 20px;">
+          <!-- Dynamically populated by renderVipFeatureManagerList() -->
+        </div>
+
+        <!-- Quick Batch Controls -->
+        <div style="display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 16px;">
+          <button type="button" onclick="batchToggleVipFeatures(true)" style="flex: 1; min-width: 130px; background: rgba(16,185,129,0.15); border: 1px solid rgba(16,185,129,0.4); color: #34d399; font-weight: 800; font-size: 0.78rem; padding: 10px 8px; border-radius: 10px; cursor: pointer;">
+            👑 Set All as VIP
+          </button>
+          <button type="button" onclick="batchToggleVipFeatures(false)" style="flex: 1; min-width: 130px; background: rgba(239,68,68,0.15); border: 1px solid rgba(239,68,68,0.4); color: #f87171; font-weight: 800; font-size: 0.78rem; padding: 10px 8px; border-radius: 10px; cursor: pointer;">
+            🔓 Set All as Free
+          </button>
+          <button type="button" onclick="resetVipFeaturesToDefault()" style="flex: 1; min-width: 130px; background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.15); color: #cbd5e1; font-weight: 700; font-size: 0.78rem; padding: 10px 8px; border-radius: 10px; cursor: pointer;">
+            🔄 Reset Defaults
+          </button>
+        </div>
+
+        <button type="button" onclick="closeVipFeatureManager(null, true)" class="vip-continue-btn" style="width: 100%; padding: 12px; font-size: 0.9rem;">
+          Save & Apply Changes
+        </button>
+      </div>
+
+    </div>
+  </div>
+
   <!-- --- MINES COINS STORE & SHOP MODAL --- -->
   <div class="modal-overlay" id="store-modal" onclick="closeStoreModal(event)">
     <div class="modal-content" onclick="event.stopPropagation()" style="max-width: 600px;">
@@ -5132,6 +5199,9 @@
           </button>
           <button id="prof-vip-cancel-btn" type="button" onclick="openEasyToCancelModal()" style="display: none; background: none; border: 1px solid rgba(239,68,68,0.3); color: #f87171; border-radius: 10px; padding: 10px; font-weight: 700; font-size: 0.78rem; cursor: pointer;">
             🛡️ Manage / Cancel Subscription (Easy to Cancel)
+          </button>
+          <button id="prof-vip-manager-btn" type="button" onclick="closeProfileModal(null, true); openVipFeatureManager();" style="background: rgba(168,85,247,0.15); border: 1px solid rgba(168,85,247,0.4); color: #c084fc; border-radius: 10px; padding: 10px; font-weight: 800; font-size: 0.82rem; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px;">
+            ⚙️ Manage VIP Features (Add or Remove)
           </button>
         </div>
       </div>
@@ -5641,21 +5711,23 @@
   </nav>
 
   <!-- --- LOAD SCRIPTS (Classic Day 1 Architecture) --- -->
-  <script src="js/data.js?v=20261026_vip3"></script>
-  <script src="js/ui.js?v=20261026_vip3"></script>
-  <script src="js/router.js?v=20261026_vip3"></script>
-  <script src="js/app.js?v=20261026_vip3"></script>
-  <script src="js/liveFixtures.js?v=20261026_vip3"></script>
+  <script src="js/data.js?v=20261026_vip4"></script>
+  <script src="js/vipManager.js?v=20261026_vip4"></script>
+  <script src="js/ui.js?v=20261026_vip4"></script>
+  <script src="js/router.js?v=20261026_vip4"></script>
+  <script src="js/app.js?v=20261026_vip4"></script>
+  <script src="js/liveFixtures.js?v=20261026_vip4"></script>
   <script>
     // Clean global helper bindings
     window.addEventListener('DOMContentLoaded', () => {
       if (typeof renderSidebarTopLeagues === 'function') renderSidebarTopLeagues();
       if (typeof renderSidebarCountries === 'function') renderSidebarCountries();
+      if (typeof refreshVipFeatureBadges === 'function') refreshVipFeatureBadges();
     });
 
     // Foolproof VIP Modal Controller (Guaranteed Immediate Execution)
     (function () {
-      function showVipModal(tier) {
+      function showVipModal(tier, triggerFeature) {
         var modal = document.getElementById('vip-subscription-modal');
         if (!modal) return;
         var paywallPane = document.getElementById('vip-pane-paywall');
@@ -5664,6 +5736,16 @@
         if (paywallPane) paywallPane.style.display = 'block';
         if (paymentPane) paymentPane.style.display = 'none';
         if (successPane) successPane.style.display = 'none';
+
+        var featCallout = document.getElementById('vip-feature-unlock-callout');
+        var featText = document.getElementById('vip-feature-unlock-text');
+        var feat = triggerFeature || window.currentVipTriggerFeature;
+        if (feat && feat.name) {
+          if (featCallout) featCallout.style.display = 'block';
+          if (featText) featText.innerText = '👑 "' + feat.name + '" is locked. Choose a VIP plan below to unlock!';
+        } else {
+          if (featCallout) featCallout.style.display = 'none';
+        }
 
         if (typeof selectVipPackage === 'function') {
           selectVipPackage(tier || 'annual');
@@ -5682,6 +5764,9 @@
         var modal = document.getElementById('vip-subscription-modal');
         if (!modal) return;
         if (force || (e && (e.target === modal || (e.target && e.target.classList && e.target.classList.contains('modal-close')) || (e.target && e.target.closest && e.target.closest('.modal-close'))))) {
+          window.currentVipTriggerFeature = null;
+          var featCallout = document.getElementById('vip-feature-unlock-callout');
+          if (featCallout) featCallout.style.display = 'none';
           modal.classList.remove('active');
           modal.style.display = 'none';
           modal.style.opacity = '0';

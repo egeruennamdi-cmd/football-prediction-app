@@ -606,6 +606,11 @@ function toggleCheckboxCard(card, event) {
 
 // Switch between tools in DeepPredict Betting Suite
 window.switchTool = function switchTool(toolId, btn) {
+  // VIP Feature Access Gate
+  if (typeof checkFeatureVipAccess === 'function' && !checkFeatureVipAccess(toolId)) {
+    return false;
+  }
+
   // If user is on another view, ensure view-generator is active
   const genView = document.getElementById("view-generator");
   if (genView && !genView.classList.contains("active")) {

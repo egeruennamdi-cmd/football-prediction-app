@@ -56,6 +56,19 @@
       }
     });
 
+    // Check VIP feature protection
+    if (['arbitrage', 'valuebot', 'backtester', 'doctor', 'viptips'].includes(route)) {
+      if (typeof checkFeatureVipAccess === 'function' && !checkFeatureVipAccess(route)) {
+        // Intercepted by VIP Paywall
+        const predView = document.getElementById('view-predictions');
+        if (predView) {
+          views.forEach(v => v.classList.remove('active'));
+          predView.classList.add('active');
+        }
+        return;
+      }
+    }
+
     // Trigger tool-specific initializers if opening generator tools
     if (targetViewId === 'view-generator') {
       const toolSubRoute = ['machine', 'doctor', 'arbitrage', 'backtester', 'toptips', 'filters', 'valuebot'].includes(route) ? route : 'machine';

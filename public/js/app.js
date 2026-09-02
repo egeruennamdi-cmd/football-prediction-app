@@ -7493,7 +7493,7 @@ function setStoredVipSubscription(sub) {
   syncVipSubscriptionUI();
 }
 
-function openVipSubscriptionModal(preferredTier = 'annual') {
+function openVipSubscriptionModal(preferredTier = 'annual', triggerFeature = null) {
   const modal = document.getElementById('vip-subscription-modal');
   if (!modal) return;
   
@@ -7505,6 +7505,17 @@ function openVipSubscriptionModal(preferredTier = 'annual') {
   if (paymentPane) paymentPane.style.display = 'none';
   if (successPane) successPane.style.display = 'none';
 
+  // Feature unlock contextual callout
+  const featCallout = document.getElementById('vip-feature-unlock-callout');
+  const featText = document.getElementById('vip-feature-unlock-text');
+  const feat = triggerFeature || window.currentVipTriggerFeature;
+  if (feat && feat.name) {
+    if (featCallout) featCallout.style.display = 'block';
+    if (featText) featText.innerText = `👑 "${feat.name}" is locked. Choose a VIP plan below to unlock!`;
+  } else {
+    if (featCallout) featCallout.style.display = 'none';
+  }
+
   selectVipPackage(preferredTier || 'annual');
 
   modal.classList.add('active');
@@ -7512,7 +7523,7 @@ function openVipSubscriptionModal(preferredTier = 'annual') {
   modal.style.opacity = '1';
   modal.style.pointerEvents = 'all';
   modal.style.visibility = 'visible';
-  modal.style.zIndex = '1000000';
+  modal.style.zIndex = '10000000';
   document.body.style.overflow = 'hidden';
 }
 window.openVipSubscriptionModal = openVipSubscriptionModal;
