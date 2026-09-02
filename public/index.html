@@ -4524,8 +4524,8 @@
   <!-- ==========================================================================
        PUNTERS VIP SUBSCRIPTION MODAL (MATCHING REFERENCE DESIGN)
        ========================================================================== -->
-  <div class="modal-overlay" id="vip-subscription-modal" onclick="closeVipSubscriptionModal(event)">
-    <div class="modal-content" onclick="event.stopPropagation()" style="max-width: 580px; width: 95%;">
+  <div class="modal-overlay" id="vip-subscription-modal" style="display: none; position: fixed; inset: 0; z-index: 10000000; align-items: center; justify-content: center; background: rgba(8, 11, 17, 0.88); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);" onclick="closeVipSubscriptionModal(event)">
+    <div class="modal-content" onclick="event.stopPropagation()" style="max-width: 580px; width: 95%; max-height: 90vh; overflow-y: auto; -webkit-overflow-scrolling: touch; background: #0f172a; border: 1px solid rgba(16, 185, 129, 0.35); border-radius: 24px; box-shadow: 0 25px 60px -12px rgba(0, 0, 0, 0.75), 0 0 35px rgba(16, 185, 129, 0.15); position: relative;">
 
       <!-- PANE 1: MAIN VIP PAYWALL SCREEN -->
       <div id="vip-pane-paywall" style="display: block;">
@@ -5641,17 +5641,83 @@
   </nav>
 
   <!-- --- LOAD SCRIPTS (Classic Day 1 Architecture) --- -->
-  <script src="js/data.js?v=20261025"></script>
-  <script src="js/ui.js?v=20261025"></script>
-  <script src="js/router.js?v=20261025"></script>
-  <script src="js/app.js?v=20261025"></script>
-  <script src="js/liveFixtures.js?v=20261025"></script>
+  <script src="js/data.js?v=20261026_vip3"></script>
+  <script src="js/ui.js?v=20261026_vip3"></script>
+  <script src="js/router.js?v=20261026_vip3"></script>
+  <script src="js/app.js?v=20261026_vip3"></script>
+  <script src="js/liveFixtures.js?v=20261026_vip3"></script>
   <script>
     // Clean global helper bindings
     window.addEventListener('DOMContentLoaded', () => {
       if (typeof renderSidebarTopLeagues === 'function') renderSidebarTopLeagues();
       if (typeof renderSidebarCountries === 'function') renderSidebarCountries();
     });
+
+    // Foolproof VIP Modal Controller (Guaranteed Immediate Execution)
+    (function () {
+      function showVipModal(tier) {
+        var modal = document.getElementById('vip-subscription-modal');
+        if (!modal) return;
+        var paywallPane = document.getElementById('vip-pane-paywall');
+        var paymentPane = document.getElementById('vip-pane-payment');
+        var successPane = document.getElementById('vip-pane-success');
+        if (paywallPane) paywallPane.style.display = 'block';
+        if (paymentPane) paymentPane.style.display = 'none';
+        if (successPane) successPane.style.display = 'none';
+
+        if (typeof selectVipPackage === 'function') {
+          selectVipPackage(tier || 'annual');
+        }
+
+        modal.classList.add('active');
+        modal.style.display = 'flex';
+        modal.style.opacity = '1';
+        modal.style.pointerEvents = 'all';
+        modal.style.visibility = 'visible';
+        modal.style.zIndex = '10000000';
+        document.body.style.overflow = 'hidden';
+      }
+
+      function hideVipModal(e, force) {
+        var modal = document.getElementById('vip-subscription-modal');
+        if (!modal) return;
+        if (force || (e && (e.target === modal || (e.target && e.target.classList && e.target.classList.contains('modal-close')) || (e.target && e.target.closest && e.target.closest('.modal-close'))))) {
+          modal.classList.remove('active');
+          modal.style.display = 'none';
+          modal.style.opacity = '0';
+          modal.style.pointerEvents = 'none';
+          modal.style.visibility = 'hidden';
+          document.body.style.overflow = '';
+        }
+      }
+
+      window.openVipSubscriptionModal = showVipModal;
+      window.closeVipSubscriptionModal = hideVipModal;
+
+      function bindVipTriggers() {
+        var pkgBtn = document.getElementById('footer-vip-packages-btn');
+        var clubBtn = document.getElementById('footer-vip-btn');
+        if (pkgBtn) {
+          pkgBtn.onclick = function (e) {
+            if (e) { e.preventDefault(); e.stopPropagation(); }
+            showVipModal('annual');
+          };
+        }
+        if (clubBtn) {
+          clubBtn.onclick = function (e) {
+            if (e) { e.preventDefault(); e.stopPropagation(); }
+            showVipModal('annual');
+          };
+        }
+      }
+
+      if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', bindVipTriggers);
+      } else {
+        bindVipTriggers();
+      }
+      window.addEventListener('load', bindVipTriggers);
+    })();
   </script>
 </body>
 
