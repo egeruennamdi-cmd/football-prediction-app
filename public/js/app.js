@@ -7506,7 +7506,13 @@ function openVipSubscriptionModal(preferredTier = 'annual') {
   if (successPane) successPane.style.display = 'none';
 
   selectVipPackage(preferredTier || 'annual');
+
+  modal.classList.add('active');
   modal.style.display = 'flex';
+  modal.style.opacity = '1';
+  modal.style.pointerEvents = 'all';
+  modal.style.visibility = 'visible';
+  modal.style.zIndex = '1000000';
   document.body.style.overflow = 'hidden';
 }
 window.openVipSubscriptionModal = openVipSubscriptionModal;
@@ -7514,8 +7520,12 @@ window.openVipSubscriptionModal = openVipSubscriptionModal;
 function closeVipSubscriptionModal(e, force = false) {
   const modal = document.getElementById('vip-subscription-modal');
   if (!modal) return;
-  if (force || (e && e.target === modal)) {
+  if (force || (e && (e.target === modal || (e.target && e.target.classList && e.target.classList.contains('modal-close'))))) {
+    modal.classList.remove('active');
     modal.style.display = 'none';
+    modal.style.opacity = '0';
+    modal.style.pointerEvents = 'none';
+    modal.style.visibility = 'hidden';
     document.body.style.overflow = '';
   }
 }
@@ -7682,7 +7692,12 @@ function openEasyToCancelModal() {
     cancelActionContainer.style.display = (sub && sub.active && sub.status === 'active') ? 'block' : 'none';
   }
 
+  modal.classList.add('active');
   modal.style.display = 'flex';
+  modal.style.opacity = '1';
+  modal.style.pointerEvents = 'all';
+  modal.style.visibility = 'visible';
+  modal.style.zIndex = '1000000';
   document.body.style.overflow = 'hidden';
 }
 window.openEasyToCancelModal = openEasyToCancelModal;
@@ -7690,8 +7705,12 @@ window.openEasyToCancelModal = openEasyToCancelModal;
 function closeEasyToCancelModal(e, force = false) {
   const modal = document.getElementById('vip-cancel-modal');
   if (!modal) return;
-  if (force || (e && e.target === modal)) {
+  if (force || (e && (e.target === modal || (e.target && e.target.classList && e.target.classList.contains('modal-close'))))) {
+    modal.classList.remove('active');
     modal.style.display = 'none';
+    modal.style.opacity = '0';
+    modal.style.pointerEvents = 'none';
+    modal.style.visibility = 'hidden';
     document.body.style.overflow = '';
   }
 }
@@ -7718,7 +7737,12 @@ window.confirmCancelVipSubscription = confirmCancelVipSubscription;
 function openVipTipsHub() {
   const modal = document.getElementById('vip-tips-hub-modal');
   if (!modal) return;
+  modal.classList.add('active');
   modal.style.display = 'flex';
+  modal.style.opacity = '1';
+  modal.style.pointerEvents = 'all';
+  modal.style.visibility = 'visible';
+  modal.style.zIndex = '1000000';
   document.body.style.overflow = 'hidden';
 }
 window.openVipTipsHub = openVipTipsHub;
@@ -7726,8 +7750,12 @@ window.openVipTipsHub = openVipTipsHub;
 function closeVipTipsHub(e, force = false) {
   const modal = document.getElementById('vip-tips-hub-modal');
   if (!modal) return;
-  if (force || (e && e.target === modal)) {
+  if (force || (e && (e.target === modal || (e.target && e.target.classList && e.target.classList.contains('modal-close'))))) {
+    modal.classList.remove('active');
     modal.style.display = 'none';
+    modal.style.opacity = '0';
+    modal.style.pointerEvents = 'none';
+    modal.style.visibility = 'hidden';
     document.body.style.overflow = '';
   }
 }
