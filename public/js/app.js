@@ -7769,22 +7769,26 @@ function syncVipSubscriptionUI() {
   const sub = getStoredVipSubscription();
   const navVipBtnText = document.getElementById('nav-vip-btn-text');
   const navVipBtn = document.getElementById('nav-vip-btn');
+  const footerVipBtnText = document.getElementById('footer-vip-btn-text');
+  const footerVipBtn = document.getElementById('footer-vip-btn');
 
-  if (sub && sub.active) {
-    if (navVipBtnText) navVipBtnText.innerText = 'VIP Active';
-    if (navVipBtn) {
-      navVipBtn.style.background = 'linear-gradient(135deg, #10b981 0%, #059669 100%)';
-      navVipBtn.style.boxShadow = '0 0 15px rgba(16, 185, 129, 0.5)';
-      navVipBtn.onclick = () => openVipTipsHub();
+  const updateVipBtnElement = (btn, textEl) => {
+    if (!btn) return;
+    if (sub && sub.active) {
+      if (textEl) textEl.innerText = 'VIP Active';
+      btn.style.background = 'linear-gradient(135deg, #10b981 0%, #059669 100%)';
+      btn.style.boxShadow = '0 0 15px rgba(16, 185, 129, 0.5)';
+      btn.onclick = () => openVipTipsHub();
+    } else {
+      if (textEl) textEl.innerText = 'VIP Club';
+      btn.style.background = 'linear-gradient(135deg, #15803d 0%, #166534 100%)';
+      btn.style.boxShadow = '0 2px 10px rgba(34, 197, 94, 0.35)';
+      btn.onclick = () => openVipSubscriptionModal();
     }
-  } else {
-    if (navVipBtnText) navVipBtnText.innerText = 'VIP Club';
-    if (navVipBtn) {
-      navVipBtn.style.background = 'linear-gradient(135deg, #15803d 0%, #166534 100%)';
-      navVipBtn.style.boxShadow = '0 2px 10px rgba(34, 197, 94, 0.35)';
-      navVipBtn.onclick = () => openVipSubscriptionModal();
-    }
-  }
+  };
+
+  updateVipBtnElement(navVipBtn, navVipBtnText);
+  updateVipBtnElement(footerVipBtn, footerVipBtnText);
 
   renderVipProfileStatus();
 }
