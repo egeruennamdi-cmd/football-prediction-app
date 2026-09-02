@@ -299,6 +299,7 @@
             </div>
           </li>
 
+          <li><a href="#vip-packages-section" class="nav-link" style="color: #34d399; font-weight: 800; display: flex; align-items: center; gap: 4px;">👑 VIP Packages</a></li>
           <li><a href="#predictions" class="nav-link">Leagues Directory</a></li>
 
 
@@ -323,6 +324,12 @@
           onclick="openStoreModal('shop')" title="Mines Coins Store">
           <span>🪙</span> <span id="header-coins-count">500</span>
         </div>
+
+        <!-- Punters VIP Button -->
+        <button id="nav-vip-btn" class="btn" onclick="openVipSubscriptionModal()"
+          style="background: linear-gradient(135deg, #15803d 0%, #166534 100%); color: #ffffff; border: 1px solid #22c55e; font-weight: 800; font-size: 0.78rem; padding: 5px 12px; border-radius: 20px; display: inline-flex; align-items: center; gap: 5px; box-shadow: 0 2px 10px rgba(34, 197, 94, 0.35); cursor: pointer; transition: all 0.2s ease;">
+          <span style="font-size: 0.85rem;">👑</span> <span id="nav-vip-btn-text">VIP Club</span>
+        </button>
 
         <!-- Login / Profile Trigger Button (Top Mobile, Tablet & Desktop Header) -->
         <div id="nav-auth-container" onclick="openAuthModal('login')"
@@ -385,6 +392,19 @@
     <!-- Tools & Navigation Section -->
     <div
       style="padding: 16px 18px 80px; display: flex; flex-direction: column; gap: 8px; flex-grow: 1; background: #ffffff;">
+
+      <!-- Punters VIP Club Quick Access Banner -->
+      <div onclick="openVipSubscriptionModal(); toggleMobileDrawer();"
+        style="background: linear-gradient(135deg, #15803d 0%, #166534 100%); border: 1.5px solid #22c55e; border-radius: 14px; padding: 12px 14px; color: #ffffff; cursor: pointer; display: flex; align-items: center; justify-content: space-between; box-shadow: 0 4px 14px rgba(21, 128, 61, 0.35); margin-bottom: 4px;">
+        <div style="display: flex; align-items: center; gap: 10px;">
+          <span style="font-size: 1.4rem;">👑</span>
+          <div>
+            <div style="font-weight: 900; font-size: 0.92rem; font-family: var(--font-display); line-height: 1.2;">Punters VIP Club</div>
+            <div style="font-size: 0.72rem; color: #bbf7d0; font-weight: 600;">Weekly · Monthly · Yearly VIP</div>
+          </div>
+        </div>
+        <span style="background: #ffffff; color: #15803d; font-weight: 900; font-size: 0.72rem; padding: 4px 10px; border-radius: 20px; box-shadow: 0 2px 6px rgba(0,0,0,0.15);">JOIN VIP</span>
+      </div>
 
       <!-- Section Header 1: Main Navigation -->
       <div style="display: flex; align-items: center; justify-content: space-between; margin: 4px 0 6px;">
@@ -3999,6 +4019,100 @@
       </div>
     </section>
 
+    <!-- --- PUNTERS VIP SUBSCRIPTION PACKAGES SECTION (FEATURED ON-PAGE) --- -->
+    <section id="vip-packages-section" class="container" style="margin-bottom: 60px;">
+      <div style="background: linear-gradient(180deg, #0f172a 0%, #1e293b 100%); border: 1.5px solid rgba(16, 185, 129, 0.4); border-radius: 24px; box-shadow: 0 20px 50px rgba(0,0,0,0.5), 0 0 30px rgba(16, 185, 129, 0.15); overflow: hidden; max-width: 680px; margin: 0 auto;">
+        
+        <!-- Header -->
+        <div class="vip-paywall-header" style="padding: 32px 24px 16px;">
+          <h2 class="vip-paywall-title" style="font-size: 2.1rem;">Bet smarter. Win more.</h2>
+          <div class="vip-social-proof">
+            <span class="vip-stars">★★★★★</span>
+            <span>4.8 · 20,000 App Store Reviews</span>
+          </div>
+        </div>
+
+        <!-- Winning Slips Proof Showcase Carousel -->
+        <div class="vip-slips-container" style="padding: 10px 24px 16px;">
+          <div class="vip-winning-slip">
+            <div class="vip-slip-badge">🏆 X1.83</div>
+            <div class="vip-slip-teams">Celta Vigo vs Sevilla</div>
+            <div class="vip-slip-picks">
+              <div class="vip-slip-pick-item"><span class="check-icon">✔</span> 1 - 0</div>
+              <div class="vip-slip-pick-item"><span class="check-icon">✔</span> Under 2.5 Goals</div>
+              <div class="vip-slip-pick-item"><span class="check-icon">✔</span> Home Win</div>
+            </div>
+          </div>
+          <div class="vip-winning-slip">
+            <div class="vip-slip-badge">🏆 X1.55</div>
+            <div class="vip-slip-teams">Real Madrid vs Athletic Club</div>
+            <div class="vip-slip-picks">
+              <div class="vip-slip-pick-item"><span class="check-icon">✔</span> 1 - 3</div>
+              <div class="vip-slip-pick-item"><span class="check-icon">✔</span> Over 2.5 Goals</div>
+              <div class="vip-slip-pick-item"><span class="check-icon">✔</span> Away Win</div>
+            </div>
+          </div>
+          <div class="vip-winning-slip">
+            <div class="vip-slip-badge">🏆 X2.10</div>
+            <div class="vip-slip-teams">Arsenal vs Brighton</div>
+            <div class="vip-slip-picks">
+              <div class="vip-slip-pick-item"><span class="check-icon">✔</span> 2 - 1</div>
+              <div class="vip-slip-pick-item"><span class="check-icon">✔</span> Over 1.5 Goals</div>
+              <div class="vip-slip-pick-item"><span class="check-icon">✔</span> Home Win</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 3-Package Subscription Selector Grid -->
+        <div class="vip-plans-grid" style="padding: 6px 24px 22px;">
+          <!-- Weekly VIP -->
+          <div class="vip-plan-card" id="page-vip-card-weekly" onclick="selectPageVipPackage('weekly')">
+            <div class="vip-plan-price">₦10,000.00</div>
+            <div class="vip-plan-daily">₦1,429 / day</div>
+            <div class="vip-save-placeholder"></div>
+            <div class="vip-plan-label-block">Weekly VIP</div>
+          </div>
+
+          <!-- Monthly VIP -->
+          <div class="vip-plan-card" id="page-vip-card-monthly" onclick="selectPageVipPackage('monthly')">
+            <div class="vip-plan-price">₦27,000.00</div>
+            <div class="vip-plan-daily">₦900 / day</div>
+            <div class="vip-save-pill">Save 32%</div>
+            <div class="vip-plan-label-block">Monthly VIP</div>
+          </div>
+
+          <!-- Annual VIP (Best Value) -->
+          <div class="vip-plan-card selected" id="page-vip-card-annual" onclick="selectPageVipPackage('annual')">
+            <div class="vip-best-value-pill">BEST VALUE</div>
+            <div class="vip-plan-price">₦149,500.00</div>
+            <div class="vip-plan-daily">₦410 / day</div>
+            <div class="vip-save-pill">Save 71%</div>
+            <div class="vip-plan-label-block">Annual VIP</div>
+          </div>
+        </div>
+
+        <!-- Continue Action & Cancellation Reassurance -->
+        <div class="vip-actions-wrapper" style="padding: 0 24px 26px;">
+          <button class="vip-continue-btn" id="page-vip-continue-btn" onclick="openVipSubscriptionModal(window.pageSelectedVipTier || 'annual'); proceedToVipPayment();">
+            CONTINUE &rarr;
+          </button>
+          <button type="button" class="vip-cancel-guarantee" onclick="openEasyToCancelModal()">
+            <span>🛡️</span> Easy to cancel
+          </button>
+        </div>
+
+        <!-- Trust Guarantee Footer -->
+        <div class="vip-trust-footer">
+          <span>🔒 256-Bit SSL Encrypted</span>
+          <span>•</span>
+          <span>⚡ Instant Activation</span>
+          <span>•</span>
+          <span>🛡️ 100% Satisfaction Guarantee</span>
+        </div>
+
+      </div>
+    </section>
+
     <!-- --- VIP TELEGRAM CHANNEL BANNER --- -->
     <section id="telegram-vip-section" class="container" style="margin-bottom: 60px;">
       <div class="glass-card"
@@ -4410,6 +4524,371 @@
     </div>
   </div>
 
+  <!-- ==========================================================================
+       PUNTERS VIP SUBSCRIPTION MODAL (MATCHING REFERENCE DESIGN)
+       ========================================================================== -->
+  <div class="modal-overlay" id="vip-subscription-modal" onclick="closeVipSubscriptionModal(event)">
+    <div class="modal-content" onclick="event.stopPropagation()" style="max-width: 580px; width: 95%;">
+
+      <!-- PANE 1: MAIN VIP PAYWALL SCREEN -->
+      <div id="vip-pane-paywall" style="display: block;">
+        <!-- Close Button -->
+        <button class="modal-close" onclick="closeVipSubscriptionModal(event, true)"
+          style="position: absolute; top: 16px; right: 18px; width: 34px; height: 34px; border-radius: 50%; background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.15); color: #ffffff; font-size: 1.2rem; cursor: pointer; display: flex; align-items: center; justify-content: center; z-index: 10; transition: all 0.2s ease;">&times;</button>
+
+        <!-- Header -->
+        <div class="vip-paywall-header">
+          <h2 class="vip-paywall-title">Bet smarter. Win more.</h2>
+          <div class="vip-social-proof">
+            <span class="vip-stars">★★★★★</span>
+            <span>4.8 · 20,000 App Store Reviews</span>
+          </div>
+        </div>
+
+        <!-- Winning Slips Proof Showcase Carousel -->
+        <div class="vip-slips-container">
+          <!-- Slip 1 -->
+          <div class="vip-winning-slip">
+            <div class="vip-slip-badge">🏆 X1.83</div>
+            <div class="vip-slip-teams">Celta Vigo vs Sevilla</div>
+            <div class="vip-slip-picks">
+              <div class="vip-slip-pick-item"><span class="check-icon">✔</span> 1 - 0</div>
+              <div class="vip-slip-pick-item"><span class="check-icon">✔</span> Under 2.5 Goals</div>
+              <div class="vip-slip-pick-item"><span class="check-icon">✔</span> Home Win</div>
+            </div>
+          </div>
+          <!-- Slip 2 -->
+          <div class="vip-winning-slip">
+            <div class="vip-slip-badge">🏆 X1.55</div>
+            <div class="vip-slip-teams">Real Madrid vs Athletic Club</div>
+            <div class="vip-slip-picks">
+              <div class="vip-slip-pick-item"><span class="check-icon">✔</span> 1 - 3</div>
+              <div class="vip-slip-pick-item"><span class="check-icon">✔</span> Over 2.5 Goals</div>
+              <div class="vip-slip-pick-item"><span class="check-icon">✔</span> Away Win</div>
+            </div>
+          </div>
+          <!-- Slip 3 -->
+          <div class="vip-winning-slip">
+            <div class="vip-slip-badge">🏆 X2.10</div>
+            <div class="vip-slip-teams">Arsenal vs Brighton</div>
+            <div class="vip-slip-picks">
+              <div class="vip-slip-pick-item"><span class="check-icon">✔</span> 2 - 1</div>
+              <div class="vip-slip-pick-item"><span class="check-icon">✔</span> Over 1.5 Goals</div>
+              <div class="vip-slip-pick-item"><span class="check-icon">✔</span> Home Win</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 3-Package Subscription Selector Grid -->
+        <div class="vip-plans-grid">
+          <!-- Plan 1: Weekly VIP -->
+          <div class="vip-plan-card" id="vip-card-weekly" onclick="selectVipPackage('weekly')">
+            <div class="vip-plan-price" id="vip-price-weekly">₦10,000.00</div>
+            <div class="vip-plan-daily">₦1,429 / day</div>
+            <div class="vip-save-placeholder"></div>
+            <div class="vip-plan-label-block">Weekly VIP</div>
+          </div>
+
+          <!-- Plan 2: Monthly VIP -->
+          <div class="vip-plan-card" id="vip-card-monthly" onclick="selectVipPackage('monthly')">
+            <div class="vip-plan-price" id="vip-price-monthly">₦27,000.00</div>
+            <div class="vip-plan-daily">₦900 / day</div>
+            <div class="vip-save-pill">Save 32%</div>
+            <div class="vip-plan-label-block">Monthly VIP</div>
+          </div>
+
+          <!-- Plan 3: Annual VIP (Best Value) -->
+          <div class="vip-plan-card selected" id="vip-card-annual" onclick="selectVipPackage('annual')">
+            <div class="vip-best-value-pill">BEST VALUE</div>
+            <div class="vip-plan-price" id="vip-price-annual">₦149,500.00</div>
+            <div class="vip-plan-daily">₦410 / day</div>
+            <div class="vip-save-pill">Save 71%</div>
+            <div class="vip-plan-label-block">Annual VIP</div>
+          </div>
+        </div>
+
+        <!-- Continue Action & Cancellation Reassurance -->
+        <div class="vip-actions-wrapper">
+          <button class="vip-continue-btn" id="vip-continue-btn" onclick="proceedToVipPayment()">
+            CONTINUE &rarr;
+          </button>
+          <button type="button" class="vip-cancel-guarantee" onclick="openEasyToCancelModal()">
+            <span>🛡️</span> Easy to cancel
+          </button>
+        </div>
+
+        <!-- Trust Guarantee Footer -->
+        <div class="vip-trust-footer">
+          <span>🔒 256-Bit SSL</span>
+          <span>•</span>
+          <span>⚡ Instant Activation</span>
+          <span>•</span>
+          <span>🛡️ 100% Satisfaction</span>
+        </div>
+      </div>
+
+      <!-- PANE 2: SECURE PAYMENT CHECKOUT SCREEN -->
+      <div id="vip-pane-payment" style="display: none;">
+        <!-- Header -->
+        <div style="padding: 18px 20px; border-bottom: 1px solid rgba(255,255,255,0.08); display: flex; align-items: center; justify-content: space-between;">
+          <button onclick="backToVipPaywall()"
+            style="background: none; border: none; color: #94a3b8; font-weight: 700; font-size: 0.82rem; cursor: pointer; display: flex; align-items: center; gap: 6px;">
+            &larr; Back to Packages
+          </button>
+          <h3 style="font-family: var(--font-display); font-size: 1.05rem; font-weight: 800; color: #ffffff; margin: 0;">Secure Checkout</h3>
+          <button onclick="closeVipSubscriptionModal(event, true)"
+            style="background: none; border: none; color: #94a3b8; font-size: 1.2rem; cursor: pointer;">&times;</button>
+        </div>
+
+        <div class="vip-payment-wrapper">
+          <!-- Selected Plan Summary Card -->
+          <div class="vip-order-summary">
+            <div>
+              <div style="font-size: 0.72rem; color: #10b981; font-weight: 800; text-transform: uppercase;">Selected Package</div>
+              <div style="font-size: 1rem; font-weight: 800; color: #ffffff;" id="vip-checkout-plan-name">Annual VIP Pass (365 Days)</div>
+              <div style="font-size: 0.72rem; color: #94a3b8;" id="vip-checkout-plan-daily">Billed at ₦410 / day</div>
+            </div>
+            <div style="text-align: right;">
+              <div style="font-size: 1.25rem; font-weight: 900; color: #34d399; font-family: var(--font-display);" id="vip-checkout-plan-price">₦149,500.00</div>
+              <span style="font-size: 0.65rem; color: #10b981; background: rgba(16,185,129,0.15); padding: 2px 6px; border-radius: 4px; font-weight: 700;">Instant Access</span>
+            </div>
+          </div>
+
+          <!-- Payment Method Tabs -->
+          <div>
+            <div style="font-size: 0.75rem; color: #94a3b8; font-weight: 700; margin-bottom: 6px; text-transform: uppercase;">Select Payment Method</div>
+            <div class="vip-payment-methods">
+              <button class="vip-pay-method-btn active" id="vip-method-card-btn" onclick="switchVipPaymentMethod('card')">
+                <span style="font-size: 1.1rem;">💳</span>
+                <span>Debit/Card</span>
+              </button>
+              <button class="vip-pay-method-btn" id="vip-method-transfer-btn" onclick="switchVipPaymentMethod('transfer')">
+                <span style="font-size: 1.1rem;">🏦</span>
+                <span>Bank Transfer</span>
+              </button>
+              <button class="vip-pay-method-btn" id="vip-method-crypto-btn" onclick="switchVipPaymentMethod('crypto')">
+                <span style="font-size: 1.1rem;">🪙</span>
+                <span>Crypto USDT</span>
+              </button>
+            </div>
+          </div>
+
+          <!-- Method 1: Card Form -->
+          <div id="vip-form-card" style="display: flex; flex-direction: column; gap: 10px;">
+            <div style="display: flex; justify-content: space-between; align-items: center;">
+              <span style="font-size: 0.75rem; color: #cbd5e1; font-weight: 600;">Paystack / Flutterwave Secured</span>
+              <button type="button" onclick="fillVipDemoCard()" style="background: rgba(59,130,246,0.15); border: 1px solid rgba(59,130,246,0.3); color: #60a5fa; font-size: 0.68rem; font-weight: 700; padding: 2px 8px; border-radius: 4px; cursor: pointer;">Fill Demo Card</button>
+            </div>
+            <input type="text" id="vip-card-number" class="vip-pay-form-input" placeholder="Card Number (0000 0000 0000 0000)" maxlength="19">
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+              <input type="text" id="vip-card-expiry" class="vip-pay-form-input" placeholder="MM / YY" maxlength="5">
+              <input type="password" id="vip-card-cvv" class="vip-pay-form-input" placeholder="CVV (3 digits)" maxlength="4">
+            </div>
+            <input type="text" id="vip-card-name" class="vip-pay-form-input" placeholder="Cardholder Full Name">
+          </div>
+
+          <!-- Method 2: Bank Transfer Details -->
+          <div id="vip-form-transfer" style="display: none; flex-direction: column; gap: 10px; background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.08); padding: 14px; border-radius: 12px;">
+            <div style="font-size: 0.75rem; color: #cbd5e1; font-weight: 700;">Instant Virtual Bank Transfer</div>
+            <div style="display: flex; justify-content: space-between; align-items: center; background: rgba(0,0,0,0.3); padding: 10px 12px; border-radius: 8px;">
+              <div>
+                <div style="font-size: 0.68rem; color: #94a3b8;">Wema Bank / Moniepoint Virtual</div>
+                <div style="font-size: 1.15rem; font-weight: 900; color: #ffffff; letter-spacing: 1px;" id="vip-transfer-acct">9028471924</div>
+                <div style="font-size: 0.68rem; color: #34d399;">DeepPredictBet VIP Escrow</div>
+              </div>
+              <button type="button" onclick="copyVipAccount()" style="background: #10b981; border: none; color: #ffffff; font-weight: 800; font-size: 0.72rem; padding: 6px 12px; border-radius: 6px; cursor: pointer;">COPY</button>
+            </div>
+            <div style="font-size: 0.7rem; color: #94a3b8; text-align: center;">Transfers are verified automatically within 60 seconds.</div>
+          </div>
+
+          <!-- Method 3: Crypto USDT Details -->
+          <div id="vip-form-crypto" style="display: none; flex-direction: column; gap: 10px; background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.08); padding: 14px; border-radius: 12px; text-align: center;">
+            <div style="font-size: 0.75rem; color: #cbd5e1; font-weight: 700;">USDT (TRC-20) Global Web3 Checkout</div>
+            <div style="font-family: monospace; font-size: 0.76rem; color: #34d399; background: rgba(0,0,0,0.4); padding: 10px; border-radius: 8px; word-break: break-all;" id="vip-crypto-addr">
+              TYDzsXDvGf2YfJgU9KqwEw7Yv3z2r8Z9Nq
+            </div>
+            <button type="button" onclick="copyVipCrypto()" style="background: rgba(16,185,129,0.2); border: 1px solid #10b981; color: #34d399; font-weight: 800; font-size: 0.72rem; padding: 6px 12px; border-radius: 6px; cursor: pointer; align-self: center;">COPY USDT ADDRESS</button>
+          </div>
+
+          <!-- Pay Submit Button -->
+          <button class="vip-continue-btn" id="vip-submit-payment-btn" onclick="processVipPayment()">
+            Pay <span id="vip-btn-amount-text">₦149,500.00</span> Securely 🔒
+          </button>
+
+          <div style="font-size: 0.68rem; color: #64748b; text-align: center;">
+            🔒 256-Bit Bank Grade Encryption · 1-Click Cancellation Anytime · Instant Activation
+          </div>
+        </div>
+      </div>
+
+      <!-- PANE 3: VIP ACTIVATION SUCCESS SCREEN -->
+      <div id="vip-pane-success" style="display: none; padding: 32px 24px; text-align: center;">
+        <div style="width: 72px; height: 72px; border-radius: 50%; background: linear-gradient(135deg, #15803d 0%, #166534 100%); border: 3px solid #34d399; display: flex; align-items: center; justify-content: center; font-size: 2.2rem; margin: 0 auto 16px; box-shadow: 0 0 30px rgba(34,197,94,0.5);">
+          👑
+        </div>
+        <h2 style="font-family: var(--font-display); font-size: 1.6rem; font-weight: 900; color: #ffffff; margin: 0 0 6px;">VIP Membership Activated!</h2>
+        <p style="font-size: 0.85rem; color: #94a3b8; margin: 0 0 20px;">
+          Welcome to the DeepPredictBet Elite Punters Circle. Your <b style="color: #34d399;" id="vip-success-plan-label">Annual VIP</b> pass is now active.
+        </p>
+
+        <!-- Receipt Card -->
+        <div style="background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.08); border-radius: 14px; padding: 14px 18px; text-align: left; margin-bottom: 22px; font-size: 0.8rem; display: flex; flex-direction: column; gap: 8px;">
+          <div style="display: flex; justify-content: space-between;"><span style="color: #64748b;">Transaction ID:</span><span style="color: #ffffff; font-family: monospace;" id="vip-success-txid">DP-VIP-9941</span></div>
+          <div style="display: flex; justify-content: space-between;"><span style="color: #64748b;">Billing Cycle:</span><span style="color: #34d399; font-weight: 700;" id="vip-success-billing">Yearly VIP</span></div>
+          <div style="display: flex; justify-content: space-between;"><span style="color: #64748b;">Access Valid Until:</span><span style="color: #ffffff; font-weight: 700;" id="vip-success-expiry">September 2, 2027</span></div>
+          <div style="display: flex; justify-content: space-between;"><span style="color: #64748b;">Cancellation Policy:</span><span style="color: #fbbf24; font-weight: 700;">Easy 1-Click Cancel Anytime</span></div>
+        </div>
+
+        <div style="display: flex; flex-direction: column; gap: 10px;">
+          <button class="vip-continue-btn" onclick="openVipTipsHub(); closeVipSubscriptionModal(null, true);">
+            🔥 Open VIP Banker Tips Hub
+          </button>
+          <button class="btn btn-secondary" onclick="closeVipSubscriptionModal(null, true)" style="padding: 12px; font-weight: 700; font-size: 0.85rem;">
+            Continue Browsing
+          </button>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ==========================================================================
+       EASY TO CANCEL POLICY & MANAGEMENT MODAL
+       ========================================================================== -->
+  <div class="modal-overlay" id="vip-cancel-modal" onclick="closeEasyToCancelModal(event)">
+    <div class="modal-content" onclick="event.stopPropagation()" style="max-width: 480px; width: 92%; background: #0f172a; border: 1px solid rgba(255,255,255,0.12); border-radius: 20px; padding: 24px;">
+      <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px;">
+        <div style="display: flex; align-items: center; gap: 10px;">
+          <span style="font-size: 1.5rem;">🛡️</span>
+          <h3 style="font-family: var(--font-display); font-size: 1.15rem; font-weight: 900; color: #ffffff; margin: 0;">Easy to Cancel Policy</h3>
+        </div>
+        <button onclick="closeEasyToCancelModal(event, true)" style="background: none; border: none; color: #94a3b8; font-size: 1.2rem; cursor: pointer;">&times;</button>
+      </div>
+
+      <p style="font-size: 0.82rem; color: #94a3b8; line-height: 1.5; margin-bottom: 16px;">
+        At DeepPredictBet, punters are always in full control of their subscription. There are no lock-in contracts, no awkward phone calls, and no cancellation penalties.
+      </p>
+
+      <div style="display: flex; flex-direction: column; gap: 12px; margin-bottom: 20px;">
+        <div style="display: flex; gap: 10px; background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.06); padding: 12px; border-radius: 10px;">
+          <span style="color: #10b981; font-size: 1.1rem;">⚡</span>
+          <div>
+            <div style="font-weight: 800; font-size: 0.84rem; color: #f8fafc;">1-Click Instant Cancellation</div>
+            <div style="font-size: 0.74rem; color: #94a3b8;">Cancel anytime right from your User Hub Profile with a single tap.</div>
+          </div>
+        </div>
+        <div style="display: flex; gap: 10px; background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.06); padding: 12px; border-radius: 10px;">
+          <span style="color: #10b981; font-size: 1.1rem;">📅</span>
+          <div>
+            <div style="font-weight: 800; font-size: 0.84rem; color: #f8fafc;">Keep Access Till Expiry</div>
+            <div style="font-size: 0.74rem; color: #94a3b8;">If you cancel, you keep full VIP predictions access until the end of your prepaid period.</div>
+          </div>
+        </div>
+        <div style="display: flex; gap: 10px; background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.06); padding: 12px; border-radius: 10px;">
+          <span style="color: #10b981; font-size: 1.1rem;">💳</span>
+          <div>
+            <div style="font-weight: 800; font-size: 0.84rem; color: #f8fafc;">Zero Hidden Charges</div>
+            <div style="font-size: 0.74rem; color: #94a3b8;">No unannounced renewals. Full billing receipt provided after every payment.</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Active Subscription Cancel Trigger (if currently VIP) -->
+      <div id="vip-cancel-action-container" style="display: none; margin-bottom: 16px;">
+        <div style="background: rgba(239,68,68,0.1); border: 1px solid rgba(239,68,68,0.3); border-radius: 10px; padding: 12px; text-align: center;">
+          <div style="font-size: 0.78rem; color: #f87171; font-weight: 700; margin-bottom: 8px;">Active Subscription Found</div>
+          <button type="button" onclick="confirmCancelVipSubscription()" style="background: #ef4444; border: none; color: #ffffff; font-weight: 800; font-size: 0.8rem; padding: 8px 16px; border-radius: 8px; cursor: pointer;">
+            Cancel My VIP Subscription Now
+          </button>
+        </div>
+      </div>
+
+      <button class="btn btn-primary" onclick="closeEasyToCancelModal(event, true)" style="width: 100%; padding: 12px; font-weight: 800; font-size: 0.85rem;">
+        Understood, Close
+      </button>
+    </div>
+  </div>
+
+  <!-- ==========================================================================
+       EXCLUSIVE VIP BANKER TIPS HUB MODAL
+       ========================================================================== -->
+  <div class="modal-overlay" id="vip-tips-hub-modal" onclick="closeVipTipsHub(event)">
+    <div class="modal-content" onclick="event.stopPropagation()" style="max-width: 620px; width: 95%; background: #0f172a; border: 1px solid rgba(16,185,129,0.35); border-radius: 20px; overflow: hidden; padding: 0;">
+      <!-- Modal Header -->
+      <div style="background: linear-gradient(135deg, #15803d 0%, #166534 50%, #0f172a 100%); padding: 20px; display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid rgba(255,255,255,0.1);">
+        <div style="display: flex; align-items: center; gap: 12px;">
+          <div style="width: 42px; height: 42px; border-radius: 50%; background: rgba(255,255,255,0.15); display: flex; align-items: center; justify-content: center; font-size: 1.3rem;">👑</div>
+          <div>
+            <h3 style="font-family: var(--font-display); font-size: 1.15rem; font-weight: 900; color: #ffffff; margin: 0;">VIP Banker Predictions Hub</h3>
+            <span style="font-size: 0.72rem; color: #bbf7d0; font-weight: 600;">89.4% Verified Win Rate · High-Stakes Banker Tickets</span>
+          </div>
+        </div>
+        <button onclick="closeVipTipsHub(event, true)" style="background: rgba(255,255,255,0.15); border: none; width: 30px; height: 30px; border-radius: 50%; color: #fff; cursor: pointer; font-size: 1rem;">&times;</button>
+      </div>
+
+      <!-- Modal Body -->
+      <div style="padding: 20px; max-height: 480px; overflow-y: auto; display: flex; flex-direction: column; gap: 14px;">
+        
+        <!-- Daily Banker 1 -->
+        <div style="background: rgba(255,255,255,0.03); border: 1.5px solid rgba(16,185,129,0.3); border-radius: 14px; padding: 14px; position: relative;">
+          <div style="position: absolute; top: -10px; left: 14px; background: #15803d; color: #ffffff; font-size: 0.65rem; font-weight: 900; padding: 2px 8px; border-radius: 4px; text-transform: uppercase;">
+            👑 BANKER OF THE DAY (94% CONFIDENCE)
+          </div>
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 4px;">
+            <div>
+              <div style="font-size: 0.7rem; color: #94a3b8; text-transform: uppercase;">🇪🇸 La Liga · 6th, September 2026, 20:30</div>
+              <div style="font-size: 1rem; font-weight: 900; color: #ffffff; margin: 2px 0;">Real Madrid vs Real Betis</div>
+              <div style="font-size: 0.78rem; color: #34d399; font-weight: 700;">Tip: Over 2.5 Goals + Home Win</div>
+            </div>
+            <div style="font-family: var(--font-display); font-size: 1.3rem; font-weight: 900; color: #fbbf24;">@1.65</div>
+          </div>
+        </div>
+
+        <!-- Daily Banker 2 -->
+        <div style="background: rgba(255,255,255,0.03); border: 1.5px solid rgba(59,130,246,0.3); border-radius: 14px; padding: 14px; position: relative;">
+          <div style="position: absolute; top: -10px; left: 14px; background: #2563eb; color: #ffffff; font-size: 0.65rem; font-weight: 900; padding: 2px 8px; border-radius: 4px; text-transform: uppercase;">
+            💎 GOLDEN DOUBLE ACCUMULATOR
+          </div>
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 4px;">
+            <div>
+              <div style="font-size: 0.7rem; color: #94a3b8; text-transform: uppercase;">🏴󠁧󠁢󠁥󠁮󠁧󠁿 EPL + 🇮🇹 Serie A (5th Sept)</div>
+              <div style="font-size: 0.95rem; font-weight: 900; color: #ffffff; margin: 2px 0;">Arsenal Win (1) & Inter vs Atalanta BTTS</div>
+              <div style="font-size: 0.78rem; color: #60a5fa; font-weight: 700;">Combined Probability: 78.4%</div>
+            </div>
+            <div style="font-family: var(--font-display); font-size: 1.3rem; font-weight: 900; color: #fbbf24;">@2.55</div>
+          </div>
+        </div>
+
+        <!-- 1-Click Booking Codes Section -->
+        <div style="background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.08); border-radius: 14px; padding: 14px;">
+          <div style="font-size: 0.78rem; font-weight: 800; color: #f8fafc; margin-bottom: 10px; display: flex; align-items: center; justify-content: space-between;">
+            <span>🎟️ 1-Click Booking Codes for Today's VIP Slip</span>
+            <span style="font-size: 0.68rem; color: #34d399;">Active & Loaded</span>
+          </div>
+          <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px;">
+            <button onclick="copyBookingCode('BC-VIP8941', 'SportyBet')" style="background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.1); color: #fff; padding: 8px 10px; border-radius: 8px; font-size: 0.75rem; font-weight: 700; cursor: pointer; display: flex; justify-content: space-between; align-items: center;">
+              <span>🔴 SportyBet:</span>
+              <span style="color: #fbbf24; font-family: monospace;">BC-VIP8941 📋</span>
+            </button>
+            <button onclick="copyBookingCode('B9-9941X', 'Bet9ja')" style="background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.1); color: #fff; padding: 8px 10px; border-radius: 8px; font-size: 0.75rem; font-weight: 700; cursor: pointer; display: flex; justify-content: space-between; align-items: center;">
+              <span>🟢 Bet9ja:</span>
+              <span style="color: #fbbf24; font-family: monospace;">B9-9941X 📋</span>
+            </button>
+            <button onclick="copyBookingCode('1X-7740Z', '1xBet')" style="background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.1); color: #fff; padding: 8px 10px; border-radius: 8px; font-size: 0.75rem; font-weight: 700; cursor: pointer; display: flex; justify-content: space-between; align-items: center;">
+              <span>🔵 1xBet:</span>
+              <span style="color: #fbbf24; font-family: monospace;">1X-7740Z 📋</span>
+            </button>
+            <button onclick="copyBookingCode('B3-5589Q', 'Bet365')" style="background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.1); color: #fff; padding: 8px 10px; border-radius: 8px; font-size: 0.75rem; font-weight: 700; cursor: pointer; display: flex; justify-content: space-between; align-items: center;">
+              <span>🟡 Bet365:</span>
+              <span style="color: #fbbf24; font-family: monospace;">B3-5589Q 📋</span>
+            </button>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
   <!-- --- MINES COINS STORE & SHOP MODAL --- -->
   <div class="modal-overlay" id="store-modal" onclick="closeStoreModal(event)">
     <div class="modal-content" onclick="event.stopPropagation()" style="max-width: 600px;">
@@ -4526,9 +5005,11 @@
 
       <!-- Tab Buttons -->
       <div
-        style="display: flex; gap: 8px; margin: 16px 20px 0; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 8px;">
+        style="display: flex; gap: 8px; margin: 16px 20px 0; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 8px; overflow-x: auto;">
         <button class="tab-btn active" id="prof-tab-info" onclick="switchProfileTab('info')"
           style="padding: 8px 14px; font-size: 0.82rem; font-weight: 800; border-radius: 8px;">Profile Stats</button>
+        <button class="tab-btn" id="prof-tab-vip" onclick="switchProfileTab('vip')"
+          style="padding: 8px 14px; font-size: 0.82rem; font-weight: 800; border-radius: 8px; color: #34d399;">👑 VIP Pass</button>
         <button class="tab-btn" id="prof-tab-alerts" onclick="switchProfileTab('alerts')"
           style="padding: 8px 14px; font-size: 0.82rem; font-weight: 800; border-radius: 8px;">Custom Alerts</button>
         <button class="tab-btn" id="prof-tab-history" onclick="switchProfileTab('history')"
@@ -4621,6 +5102,40 @@
           <div style="text-align: center; font-size: 0.8rem; color: var(--text-muted); padding: 20px;">
             No saved tickets in history yet. Open the DeepPredict Machine to build and save.
           </div>
+        </div>
+      </div>
+
+      <!-- VIP Pass Pane -->
+      <div id="prof-pane-vip" class="modal-tab-pane"
+        style="display: none; padding: 20px; max-height: 380px; overflow-y: auto;">
+        <div style="background: rgba(255,255,255,0.03); border: 1px solid rgba(16,185,129,0.3); border-radius: 14px; padding: 18px; margin-bottom: 16px;">
+          <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 12px;">
+            <div>
+              <div style="font-size: 0.72rem; color: #10b981; font-weight: 800; text-transform: uppercase;">Membership Status</div>
+              <h4 id="prof-vip-status-heading" style="font-family: var(--font-display); font-size: 1.25rem; font-weight: 900; color: #ffffff; margin: 4px 0 2px;">👑 Free Member</h4>
+              <div id="prof-vip-status-sub" style="font-size: 0.78rem; color: #94a3b8;">Upgrade to access high-roller banker tips.</div>
+            </div>
+            <span id="prof-vip-badge-pill" style="background: rgba(255,255,255,0.08); color: #94a3b8; font-size: 0.68rem; font-weight: 800; padding: 4px 10px; border-radius: 9999px; text-transform: uppercase;">BASIC</span>
+          </div>
+
+          <div id="prof-vip-details-box" style="display: none; border-top: 1px solid rgba(255,255,255,0.08); padding-top: 12px; margin-top: 12px; font-size: 0.78rem; color: #cbd5e1;">
+            <div style="display: flex; justify-content: space-between; margin-bottom: 6px;"><span>Active Plan:</span><b style="color: #34d399;" id="prof-vip-plan-name">Annual VIP</b></div>
+            <div style="display: flex; justify-content: space-between; margin-bottom: 6px;"><span>Valid Until:</span><b style="color: #ffffff;" id="prof-vip-expiry-date">-</b></div>
+            <div style="display: flex; justify-content: space-between;"><span>Auto-Renewal:</span><b style="color: #fbbf24;" id="prof-vip-cancel-state">Active (Cancel Anytime)</b></div>
+          </div>
+        </div>
+
+        <!-- VIP Actions -->
+        <div style="display: flex; flex-direction: column; gap: 10px;">
+          <button id="prof-vip-primary-btn" class="vip-continue-btn" onclick="closeProfileModal(null, true); openVipSubscriptionModal();" style="padding: 12px 16px; font-size: 0.9rem;">
+            👑 Upgrade to VIP (Weekly · Monthly · Yearly)
+          </button>
+          <button id="prof-vip-tips-btn" class="btn btn-primary" onclick="closeProfileModal(null, true); openVipTipsHub();" style="display: none; padding: 12px; font-weight: 800; font-size: 0.85rem;">
+            🔥 Open VIP Banker Predictions Hub
+          </button>
+          <button id="prof-vip-cancel-btn" type="button" onclick="openEasyToCancelModal()" style="display: none; background: none; border: 1px solid rgba(239,68,68,0.3); color: #f87171; border-radius: 10px; padding: 10px; font-weight: 700; font-size: 0.78rem; cursor: pointer;">
+            🛡️ Manage / Cancel Subscription (Easy to Cancel)
+          </button>
         </div>
       </div>
     </div>
@@ -5102,12 +5617,38 @@
     </div>
   </div>
 
+  <!-- --- MOBILE APP BOTTOM NAVIGATION BAR (MATCHING REFERENCE SCREENSHOT) --- -->
+  <nav id="mobile-app-bottom-nav" class="mobile-bottom-nav">
+    <a href="#predictions" class="bottom-nav-item" onclick="if(typeof scrollToSection==='function') scrollToSection('predictions');">
+      <span class="bottom-nav-icon">⚽</span>
+      <span class="bottom-nav-label">Leagues</span>
+    </a>
+    <a href="javascript:void(0)" class="bottom-nav-item active" onclick="openVipSubscriptionModal()">
+      <div class="bottom-nav-vip-badge">
+        <span class="bottom-nav-icon">🔥</span>
+      </div>
+      <span class="bottom-nav-label" style="color: #15803d; font-weight: 800;">VIP Tips</span>
+    </a>
+    <a href="#generator" class="bottom-nav-item" onclick="if(typeof switchTool==='function') switchTool('machine');">
+      <span class="bottom-nav-icon">👥</span>
+      <span class="bottom-nav-label">Teams</span>
+    </a>
+    <a href="#scanner" class="bottom-nav-item">
+      <span class="bottom-nav-icon">📺</span>
+      <span class="bottom-nav-label">Live</span>
+    </a>
+    <a href="javascript:void(0)" class="bottom-nav-item" onclick="if(typeof openProfileModal==='function') openProfileModal('history');">
+      <span class="bottom-nav-icon">⭐</span>
+      <span class="bottom-nav-label">Favorites</span>
+    </a>
+  </nav>
+
   <!-- --- LOAD SCRIPTS (Classic Day 1 Architecture) --- -->
-  <script src="js/data.js"></script>
-  <script src="js/ui.js"></script>
-  <script src="js/router.js"></script>
-  <script src="js/app.js"></script>
-  <script src="js/liveFixtures.js"></script>
+  <script src="js/data.js?v=20261025"></script>
+  <script src="js/ui.js?v=20261025"></script>
+  <script src="js/router.js?v=20261025"></script>
+  <script src="js/app.js?v=20261025"></script>
+  <script src="js/liveFixtures.js?v=20261025"></script>
   <script>
     // Clean global helper bindings
     window.addEventListener('DOMContentLoaded', () => {

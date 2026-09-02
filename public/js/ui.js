@@ -2591,10 +2591,13 @@ function formatStandardMatchDateString(rawTime, rawDate, isLive) {
     const trimmed = rawTime.trim();
     if (trimmed.length > 0) {
       if (/\d+(?:st|nd|rd|th),\s+[A-Za-z]+\s+\d{4},\s+\d{1,2}:\d{2}/.test(trimmed)) {
+        if (trimmed.includes('26th, October 2026') || trimmed.includes('26th October 2026')) {
+          return '25th, October 2026, 21:00';
+        }
         return trimmed;
       }
       if (trimmed.toLowerCase().includes('matchday 5')) return '20th, September 2026, 16:30';
-      if (trimmed.toLowerCase().includes('clásico') || trimmed.toLowerCase().includes('clasico')) return '26th, October 2026, 20:00';
+      if (trimmed.toLowerCase().includes('clásico') || trimmed.toLowerCase().includes('clasico')) return '25th, October 2026, 21:00';
       if (trimmed.toLowerCase().includes('matchday 8')) return '19th, October 2026, 16:30';
       if (trimmed.toLowerCase().includes('klassiker')) return '30th, November 2026, 17:30';
       if (trimmed.toLowerCase().includes('matchday 3')) return '5th, September 2026, 12:30';
@@ -2700,6 +2703,7 @@ function generateScoutAccumulator(count = 40) {
     { id: "laliga-fix-6", homeTeam: { name: "Villarreal", logo: "🟡" }, awayTeam: { name: "Barcelona", logo: "🔵🔴" }, league: "La Liga", leagueEmoji: "🇪🇸", time: "21st, September 2026, 17:30", dateSlot: "2026-09-21-1730-b", date: "future" },
     { id: "laliga-fix-7", homeTeam: { name: "Athletic Bilbao", logo: "🔴⚪🦁" }, awayTeam: { name: "Atletico Madrid", logo: "🔴⚪" }, league: "La Liga", leagueEmoji: "🇪🇸", time: "5th, September 2026, 18:00", dateSlot: "2026-09-05-1800", date: "future" },
     { id: "laliga-fix-8", homeTeam: { name: "Sevilla", logo: "⚪🔴" }, awayTeam: { name: "Getafe", logo: "🔵" }, league: "La Liga", leagueEmoji: "🇪🇸", time: "13th, September 2026, 17:30", dateSlot: "2026-09-13-1730", date: "future" },
+    { id: "laliga-fix-9", homeTeam: { name: "Barcelona", logo: "🔵🔴" }, awayTeam: { name: "Real Madrid", logo: "⚪👑" }, league: "La Liga", leagueEmoji: "🇪🇸", time: "25th, October 2026, 21:00", dateSlot: "2026-10-25-2100", date: "future" },
 
     // ── Serie A ──
     { id: "seriea-fix-1", homeTeam: { name: "Inter Milan", logo: "🔵⚫🐍" }, awayTeam: { name: "Atalanta", logo: "🔵⚫" }, league: "Serie A", leagueEmoji: "🇮🇹", time: "5th, September 2026, 19:45", dateSlot: "2026-09-05-1945", date: "future" },
@@ -2795,7 +2799,17 @@ function generateScoutAccumulator(count = 40) {
 
     const hKey = homeName.toLowerCase();
     const aKey = awayName.toLowerCase();
-    const matchupKey = `${hKey}-vs-${aKey}`;
+
+    // Normalizer safeguard for El Clasico fixture direction
+    const isClasicoPair = (hKey.includes('real madrid') && aKey.includes('barcelona')) || (hKey.includes('barcelona') && aKey.includes('real madrid'));
+    let normalizedHomeName = homeName;
+    let normalizedAwayName = awayName;
+    if (isClasicoPair && (match.time && (match.time.includes('October 2026') || match.time.includes('26th') || match.time.includes('25th')))) {
+      normalizedHomeName = 'Barcelona';
+      normalizedAwayName = 'Real Madrid';
+    }
+
+    const matchupKey = `${normalizedHomeName.toLowerCase()}-vs-${normalizedAwayName.toLowerCase()}`;
 
     // Never repeat the exact same matchup
     if (selectedMatchupKeys.has(matchupKey)) {
@@ -2829,8 +2843,8 @@ function generateScoutAccumulator(count = 40) {
       matchId: `scout-acc-${addedCount}-${match.id || addedCount}`,
       match: {
         ...match,
-        homeTeam: { name: homeName, logo: match.homeTeam?.logo || '⚽' },
-        awayTeam: { name: awayName, logo: match.awayTeam?.logo || '⚽' },
+        homeTeam: { name: normalizedHomeName, logo: (normalizedHomeName === 'Barcelona' ? '🔵🔴' : (normalizedHomeName === 'Real Madrid' ? '⚪👑' : (match.homeTeam?.logo || '⚽'))) },
+        awayTeam: { name: normalizedAwayName, logo: (normalizedAwayName === 'Real Madrid' ? '⚪👑' : (normalizedAwayName === 'Barcelona' ? '🔵🔴' : (match.awayTeam?.logo || '⚽'))) },
         time: timeDisplay
       },
       tip,
@@ -2966,12 +2980,19 @@ function renderBetslip() {
         const itemOdds = (typeof item.odds === 'number' && !isNaN(item.odds)) ? item.odds : 1.45;
         totalOdds *= itemOdds;
         
-        const homeName = item.match?.homeTeam?.name || item.match?.homeTeam || item.homeTeam || 'Home';
-        const awayName = item.match?.awayTeam?.name || item.match?.awayTeam || item.awayTeam || 'Away';
+        let homeName = item.match?.homeTeam?.name || item.match?.homeTeam || item.homeTeam || 'Home';
+        let awayName = item.match?.awayTeam?.name || item.match?.awayTeam || item.awayTeam || 'Away';
         const leagueName = item.match?.league || '';
         const isLive = !!(item.match?.isLive && item.match?.rawDate && new Date(item.match.rawDate).toDateString() === new Date().toDateString());
-        const timeStr = formatStandardMatchDateString(item.match?.time, item.match?.rawDate, isLive);
+        let timeStr = formatStandardMatchDateString(item.match?.time, item.match?.rawDate, isLive);
         const tipVal = item.tip || item.market || '1X';
+
+        const isClasicoPair = (homeName.toLowerCase().includes('real madrid') && awayName.toLowerCase().includes('barcelona')) || (homeName.toLowerCase().includes('barcelona') && awayName.toLowerCase().includes('real madrid'));
+        if (isClasicoPair && (timeStr.includes('October 2026') || timeStr.includes('26th') || timeStr.includes('25th'))) {
+          homeName = 'Barcelona';
+          awayName = 'Real Madrid';
+          timeStr = '25th, October 2026, 21:00';
+        }
 
         const row = document.createElement("div");
         row.className = "betslip-item";
@@ -4368,7 +4389,7 @@ function generateMachineTicket() {
     } else {
       matchesSource = [
         { id: "m1", homeTeam: { name: "Arsenal" }, awayTeam: { name: "Man City" }, league: "Premier League", leagueEmoji: "🏴󠁧󠁢󠁥󠁮󠁧󠁿" },
-        { id: "m2", homeTeam: { name: "Real Madrid" }, awayTeam: { name: "Barcelona" }, league: "La Liga", leagueEmoji: "🇪🇸" },
+        { id: "m2", homeTeam: { name: "Barcelona" }, awayTeam: { name: "Real Madrid" }, league: "La Liga", leagueEmoji: "🇪🇸" },
         { id: "m3", homeTeam: { name: "Bayern Munich" }, awayTeam: { name: "Dortmund" }, league: "Bundesliga", leagueEmoji: "🇩🇪" },
         { id: "m4", homeTeam: { name: "Inter Milan" }, awayTeam: { name: "AC Milan" }, league: "Serie A", leagueEmoji: "🇮🇹" },
         { id: "m5", homeTeam: { name: "PSG" }, awayTeam: { name: "Marseille" }, league: "Ligue 1", leagueEmoji: "🇫🇷" },
@@ -4615,7 +4636,7 @@ function runEngineConversion() {
       ? window.appState.betslip
       : [
           { match: { homeTeam: { name: "Arsenal" }, awayTeam: { name: "Man City" } }, tip: "Home Win (1)", odds: 1.85 },
-          { match: { homeTeam: { name: "Real Madrid" }, awayTeam: { name: "Barcelona" } }, tip: "Over 2.5 Goals", odds: 1.65 },
+          { match: { homeTeam: { name: "Barcelona" }, awayTeam: { name: "Real Madrid" } }, tip: "Over 2.5 Goals", odds: 1.65 },
           { match: { homeTeam: { name: "Bayern Munich" }, awayTeam: { name: "Dortmund" } }, tip: "Both Teams To Score", odds: 1.55 }
         ];
 
@@ -5340,15 +5361,17 @@ function closeProfileModal(event, force) {
 
 function switchProfileTab(tab) {
   const infoBtn = document.getElementById("prof-tab-info");
+  const vipBtn = document.getElementById("prof-tab-vip");
   const alertsBtn = document.getElementById("prof-tab-alerts");
   const historyBtn = document.getElementById("prof-tab-history");
 
   const infoPane = document.getElementById("prof-pane-info");
+  const vipPane = document.getElementById("prof-pane-vip");
   const alertsPane = document.getElementById("prof-pane-alerts");
   const historyPane = document.getElementById("prof-pane-history");
 
-  const btns = [infoBtn, alertsBtn, historyBtn];
-  const panes = [infoPane, alertsPane, historyPane];
+  const btns = [infoBtn, vipBtn, alertsBtn, historyBtn];
+  const panes = [infoPane, vipPane, alertsPane, historyPane];
 
   btns.forEach(b => { if (b) b.classList.remove("active"); });
   panes.forEach(p => { if (p) p.style.display = "none"; });
@@ -5356,6 +5379,10 @@ function switchProfileTab(tab) {
   if (tab === 'info') {
     if (infoBtn) infoBtn.classList.add("active");
     if (infoPane) infoPane.style.display = "block";
+  } else if (tab === 'vip') {
+    if (vipBtn) vipBtn.classList.add("active");
+    if (vipPane) vipPane.style.display = "block";
+    if (typeof renderVipProfileStatus === 'function') renderVipProfileStatus();
   } else if (tab === 'alerts') {
     if (alertsBtn) alertsBtn.classList.add("active");
     if (alertsPane) alertsPane.style.display = "block";
@@ -7377,6 +7404,24 @@ window.getMatchTip = getMatchTip;
 window.renderMatchCards = renderMatchCards;
 if (typeof filterMarketSubmenu === 'function') window.filterMarketSubmenu = filterMarketSubmenu;
 if (typeof filterTopTip === 'function') window.filterTopTip = filterTopTip;
+
+// VIP Subscription global bindings
+if (typeof openVipSubscriptionModal === 'function') window.openVipSubscriptionModal = openVipSubscriptionModal;
+if (typeof closeVipSubscriptionModal === 'function') window.closeVipSubscriptionModal = closeVipSubscriptionModal;
+if (typeof selectVipPackage === 'function') window.selectVipPackage = selectVipPackage;
+if (typeof selectPageVipPackage === 'function') window.selectPageVipPackage = selectPageVipPackage;
+if (typeof proceedToVipPayment === 'function') window.proceedToVipPayment = proceedToVipPayment;
+if (typeof backToVipPaywall === 'function') window.backToVipPaywall = backToVipPaywall;
+if (typeof switchVipPaymentMethod === 'function') window.switchVipPaymentMethod = switchVipPaymentMethod;
+if (typeof processVipPayment === 'function') window.processVipPayment = processVipPayment;
+if (typeof openEasyToCancelModal === 'function') window.openEasyToCancelModal = openEasyToCancelModal;
+if (typeof closeEasyToCancelModal === 'function') window.closeEasyToCancelModal = closeEasyToCancelModal;
+if (typeof confirmCancelVipSubscription === 'function') window.confirmCancelVipSubscription = confirmCancelVipSubscription;
+if (typeof openVipTipsHub === 'function') window.openVipTipsHub = openVipTipsHub;
+if (typeof closeVipTipsHub === 'function') window.closeVipTipsHub = closeVipTipsHub;
+if (typeof copyBookingCode === 'function') window.copyBookingCode = copyBookingCode;
+if (typeof syncVipSubscriptionUI === 'function') window.syncVipSubscriptionUI = syncVipSubscriptionUI;
+
 if (typeof document !== 'undefined') {
   if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', () => {

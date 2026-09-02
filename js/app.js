@@ -234,10 +234,13 @@ function formatStandardMatchDateString(rawTime, rawDate, isLive) {
     const trimmed = rawTime.trim();
     if (trimmed.length > 0) {
       if (/\d+(?:st|nd|rd|th),\s+[A-Za-z]+\s+\d{4},\s+\d{1,2}:\d{2}/.test(trimmed)) {
+        if (trimmed.includes('26th, October 2026') || trimmed.includes('26th October 2026')) {
+          return '25th, October 2026, 21:00';
+        }
         return trimmed;
       }
       if (trimmed.toLowerCase().includes('matchday 5')) return '20th, September 2026, 16:30';
-      if (trimmed.toLowerCase().includes('clásico') || trimmed.toLowerCase().includes('clasico')) return '26th, October 2026, 20:00';
+      if (trimmed.toLowerCase().includes('clásico') || trimmed.toLowerCase().includes('clasico')) return '25th, October 2026, 21:00';
       if (trimmed.toLowerCase().includes('matchday 8')) return '19th, October 2026, 16:30';
       if (trimmed.toLowerCase().includes('klassiker')) return '30th, November 2026, 17:30';
       if (trimmed.toLowerCase().includes('matchday 3')) return '5th, September 2026, 12:30';
@@ -343,6 +346,7 @@ function generateScoutAccumulator(count = 40) {
     { id: "laliga-fix-6", homeTeam: { name: "Villarreal", logo: "🟡" }, awayTeam: { name: "Barcelona", logo: "🔵🔴" }, league: "La Liga", leagueEmoji: "🇪🇸", time: "21st, September 2026, 17:30", dateSlot: "2026-09-21-1730-b", date: "future" },
     { id: "laliga-fix-7", homeTeam: { name: "Athletic Bilbao", logo: "🔴⚪🦁" }, awayTeam: { name: "Atletico Madrid", logo: "🔴⚪" }, league: "La Liga", leagueEmoji: "🇪🇸", time: "5th, September 2026, 18:00", dateSlot: "2026-09-05-1800", date: "future" },
     { id: "laliga-fix-8", homeTeam: { name: "Sevilla", logo: "⚪🔴" }, awayTeam: { name: "Getafe", logo: "🔵" }, league: "La Liga", leagueEmoji: "🇪🇸", time: "13th, September 2026, 17:30", dateSlot: "2026-09-13-1730", date: "future" },
+    { id: "laliga-fix-9", homeTeam: { name: "Barcelona", logo: "🔵🔴" }, awayTeam: { name: "Real Madrid", logo: "⚪👑" }, league: "La Liga", leagueEmoji: "🇪🇸", time: "25th, October 2026, 21:00", dateSlot: "2026-10-25-2100", date: "future" },
 
     // ── Serie A ──
     { id: "seriea-fix-1", homeTeam: { name: "Inter Milan", logo: "🔵⚫🐍" }, awayTeam: { name: "Atalanta", logo: "🔵⚫" }, league: "Serie A", leagueEmoji: "🇮🇹", time: "5th, September 2026, 19:45", dateSlot: "2026-09-05-1945", date: "future" },
@@ -438,7 +442,17 @@ function generateScoutAccumulator(count = 40) {
 
     const hKey = homeName.toLowerCase();
     const aKey = awayName.toLowerCase();
-    const matchupKey = `${hKey}-vs-${aKey}`;
+
+    // Normalizer safeguard for El Clasico fixture direction
+    const isClasicoPair = (hKey.includes('real madrid') && aKey.includes('barcelona')) || (hKey.includes('barcelona') && aKey.includes('real madrid'));
+    let normalizedHomeName = homeName;
+    let normalizedAwayName = awayName;
+    if (isClasicoPair && (match.time && (match.time.includes('October 2026') || match.time.includes('26th') || match.time.includes('25th')))) {
+      normalizedHomeName = 'Barcelona';
+      normalizedAwayName = 'Real Madrid';
+    }
+
+    const matchupKey = `${normalizedHomeName.toLowerCase()}-vs-${normalizedAwayName.toLowerCase()}`;
 
     // Never repeat the exact same matchup
     if (selectedMatchupKeys.has(matchupKey)) {
@@ -472,8 +486,8 @@ function generateScoutAccumulator(count = 40) {
       matchId: `scout-acc-${addedCount}-${match.id || addedCount}`,
       match: {
         ...match,
-        homeTeam: { name: homeName, logo: match.homeTeam?.logo || '⚽' },
-        awayTeam: { name: awayName, logo: match.awayTeam?.logo || '⚽' },
+        homeTeam: { name: normalizedHomeName, logo: (normalizedHomeName === 'Barcelona' ? '🔵🔴' : (normalizedHomeName === 'Real Madrid' ? '⚪👑' : (match.homeTeam?.logo || '⚽'))) },
+        awayTeam: { name: normalizedAwayName, logo: (normalizedAwayName === 'Real Madrid' ? '⚪👑' : (normalizedAwayName === 'Barcelona' ? '🔵🔴' : (match.awayTeam?.logo || '⚽'))) },
         time: timeDisplay
       },
       tip,
@@ -654,12 +668,19 @@ function renderBetslip() {
         const itemOdds = (typeof item.odds === 'number' && !isNaN(item.odds)) ? item.odds : 1.45;
         totalOdds *= itemOdds;
         
-        const homeName = item.match?.homeTeam?.name || item.match?.homeTeam || item.homeTeam || 'Home';
-        const awayName = item.match?.awayTeam?.name || item.match?.awayTeam || item.awayTeam || 'Away';
+        let homeName = item.match?.homeTeam?.name || item.match?.homeTeam || item.homeTeam || 'Home';
+        let awayName = item.match?.awayTeam?.name || item.match?.awayTeam || item.awayTeam || 'Away';
         const leagueName = item.match?.league || '';
         const isLive = !!(item.match?.isLive && item.match?.rawDate && new Date(item.match.rawDate).toDateString() === new Date().toDateString());
-        const timeStr = formatStandardMatchDateString(item.match?.time, item.match?.rawDate, isLive);
+        let timeStr = formatStandardMatchDateString(item.match?.time, item.match?.rawDate, isLive);
         const tipVal = item.tip || item.market || '1X';
+
+        const isClasicoPair = (homeName.toLowerCase().includes('real madrid') && awayName.toLowerCase().includes('barcelona')) || (homeName.toLowerCase().includes('barcelona') && awayName.toLowerCase().includes('real madrid'));
+        if (isClasicoPair && (timeStr.includes('October 2026') || timeStr.includes('26th') || timeStr.includes('25th'))) {
+          homeName = 'Barcelona';
+          awayName = 'Real Madrid';
+          timeStr = '25th, October 2026, 21:00';
+        }
 
         const row = document.createElement("div");
         row.className = "betslip-item";
@@ -4111,7 +4132,7 @@ function runBetDoctorAudit() {
       <!-- Match 2: Trap Match -->
       <div style="background: ${isOptimized ? 'rgba(16,185,129,0.04)' : 'rgba(239,68,68,0.05)'}; border: 1px solid ${isOptimized ? 'rgba(16,185,129,0.2)' : 'rgba(239,68,68,0.3)'}; border-radius: var(--radius-sm); padding: 12px 16px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px;">
         <div>
-          <div style="font-weight: 800; font-size: 0.88rem; color: #ffffff;">🇪🇸 Real Madrid vs Barcelona</div>
+          <div style="font-weight: 800; font-size: 0.88rem; color: #ffffff;">🇪🇸 Barcelona vs Real Madrid</div>
           <div style="font-size: 0.75rem; color: var(--text-secondary);">Selection: <b>${isOptimized ? 'Double Chance 1X (Prescribed)' : 'Away Win (2) - TRAP PICK'}</b> @ ${isOptimized ? '1.38' : '2.40'} odds</div>
         </div>
         <div style="text-align: right;">
@@ -4150,7 +4171,7 @@ function runBetDoctorAudit() {
           <span>💡</span> AI Doctor Recommended Prescriptions
         </div>
         <div style="font-size: 0.75rem; color: var(--text-primary); display: flex; flex-direction: column; gap: 6px;">
-          <div>• <b>Prescription 1:</b> Replace <i>Real Madrid vs Barca [Away Win]</i> ➡️ <b>[Double Chance 1X]</b> (+28% Win Rate)</div>
+          <div>• <b>Prescription 1:</b> Replace <i>Barca vs Real Madrid [Away Win]</i> ➡️ <b>[Double Chance 1X]</b> (+28% Win Rate)</div>
           <div>• <b>Prescription 2:</b> Lower <i>Bayern vs Dortmund [Over 3.5]</i> ➡️ <b>[Over 2.5 Goals]</b> (+21% Win Rate)</div>
         </div>
         <button onclick="applyDoctorPrescription()" class="btn btn-primary" style="margin-top: 6px; background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%); border: 1px solid #fbbf24; color: #000; font-weight: 800; font-size: 0.8rem; padding: 10px 18px; align-self: flex-start; cursor: pointer;">
@@ -4884,7 +4905,7 @@ function generateMachineTicket() {
     } else {
       matchesSource = [
         { id: "m1", homeTeam: { name: "Arsenal" }, awayTeam: { name: "Man City" }, league: "Premier League", leagueEmoji: "🏴󠁧󠁢󠁥󠁮󠁧󠁿" },
-        { id: "m2", homeTeam: { name: "Real Madrid" }, awayTeam: { name: "Barcelona" }, league: "La Liga", leagueEmoji: "🇪🇸" },
+        { id: "m2", homeTeam: { name: "Barcelona" }, awayTeam: { name: "Real Madrid" }, league: "La Liga", leagueEmoji: "🇪🇸" },
         { id: "m3", homeTeam: { name: "Bayern Munich" }, awayTeam: { name: "Dortmund" }, league: "Bundesliga", leagueEmoji: "🇩🇪" },
         { id: "m4", homeTeam: { name: "Inter Milan" }, awayTeam: { name: "AC Milan" }, league: "Serie A", leagueEmoji: "🇮🇹" },
         { id: "m5", homeTeam: { name: "PSG" }, awayTeam: { name: "Marseille" }, league: "Ligue 1", leagueEmoji: "🇫🇷" },
@@ -5123,7 +5144,7 @@ function runEngineConversion() {
       ? window.appState.betslip
       : [
           { match: { homeTeam: { name: "Arsenal" }, awayTeam: { name: "Man City" } }, tip: "Home Win (1)", odds: 1.85 },
-          { match: { homeTeam: { name: "Real Madrid" }, awayTeam: { name: "Barcelona" } }, tip: "Over 2.5 Goals", odds: 1.65 },
+          { match: { homeTeam: { name: "Barcelona" }, awayTeam: { name: "Real Madrid" } }, tip: "Over 2.5 Goals", odds: 1.65 },
           { match: { homeTeam: { name: "Bayern Munich" }, awayTeam: { name: "Dortmund" } }, tip: "Both Teams To Score", odds: 1.55 }
         ];
 
@@ -5897,15 +5918,17 @@ function closeProfileModal(event, force) {
 
 function switchProfileTab(tab) {
   const infoBtn = document.getElementById("prof-tab-info");
+  const vipBtn = document.getElementById("prof-tab-vip");
   const alertsBtn = document.getElementById("prof-tab-alerts");
   const historyBtn = document.getElementById("prof-tab-history");
 
   const infoPane = document.getElementById("prof-pane-info");
+  const vipPane = document.getElementById("prof-pane-vip");
   const alertsPane = document.getElementById("prof-pane-alerts");
   const historyPane = document.getElementById("prof-pane-history");
 
-  const btns = [infoBtn, alertsBtn, historyBtn];
-  const panes = [infoPane, alertsPane, historyPane];
+  const btns = [infoBtn, vipBtn, alertsBtn, historyBtn];
+  const panes = [infoPane, vipPane, alertsPane, historyPane];
 
   btns.forEach(b => { if (b) b.classList.remove("active"); });
   panes.forEach(p => { if (p) p.style.display = "none"; });
@@ -5913,6 +5936,10 @@ function switchProfileTab(tab) {
   if (tab === 'info') {
     if (infoBtn) infoBtn.classList.add("active");
     if (infoPane) infoPane.style.display = "block";
+  } else if (tab === 'vip') {
+    if (vipBtn) vipBtn.classList.add("active");
+    if (vipPane) vipPane.style.display = "block";
+    if (typeof renderVipProfileStatus === 'function') renderVipProfileStatus();
   } else if (tab === 'alerts') {
     if (alertsBtn) alertsBtn.classList.add("active");
     if (alertsPane) alertsPane.style.display = "block";
@@ -7410,3 +7437,414 @@ window.convertBetCode = convertBetCode;
 window.copyTargetBookingCode = copyTargetBookingCode;
 window.copyHeroConvertedCode = copyHeroConvertedCode;
 window.closeConversionResultModal = closeConversionResultModal;
+
+// ==========================================================================
+// PUNTERS VIP SUBSCRIPTION USER JOURNEY & PAYMENT CONTROLLER
+// ==========================================================================
+
+const VIP_PACKAGES = {
+  weekly: {
+    id: 'weekly',
+    name: 'Weekly VIP Pass',
+    billingLabel: 'Weekly VIP',
+    durationDays: 7,
+    price: '₦10,000.00',
+    priceNum: 10000,
+    dailyText: '₦1,429 / day',
+    saveText: ''
+  },
+  monthly: {
+    id: 'monthly',
+    name: 'Monthly VIP Pass',
+    billingLabel: 'Monthly VIP',
+    durationDays: 30,
+    price: '₦27,000.00',
+    priceNum: 27000,
+    dailyText: '₦900 / day',
+    saveText: 'Save 32%'
+  },
+  annual: {
+    id: 'annual',
+    name: 'Annual VIP Pass',
+    billingLabel: 'Yearly VIP',
+    durationDays: 365,
+    price: '₦149,500.00',
+    priceNum: 149500,
+    dailyText: '₦410 / day',
+    saveText: 'Save 71%'
+  }
+};
+
+let currentSelectedVipTier = 'annual';
+let currentVipPaymentMethod = 'card';
+
+function getStoredVipSubscription() {
+  try {
+    const raw = localStorage.getItem('deeppredictbet_vip');
+    if (raw) return JSON.parse(raw);
+  } catch (e) {}
+  return { active: false, tier: 'none', expiresAt: null, status: 'inactive' };
+}
+
+function setStoredVipSubscription(sub) {
+  try {
+    localStorage.setItem('deeppredictbet_vip', JSON.stringify(sub));
+  } catch (e) {}
+  syncVipSubscriptionUI();
+}
+
+function openVipSubscriptionModal(preferredTier = 'annual') {
+  const modal = document.getElementById('vip-subscription-modal');
+  if (!modal) return;
+  
+  // Reset panes
+  const paywallPane = document.getElementById('vip-pane-paywall');
+  const paymentPane = document.getElementById('vip-pane-payment');
+  const successPane = document.getElementById('vip-pane-success');
+  if (paywallPane) paywallPane.style.display = 'block';
+  if (paymentPane) paymentPane.style.display = 'none';
+  if (successPane) successPane.style.display = 'none';
+
+  selectVipPackage(preferredTier || 'annual');
+  modal.style.display = 'flex';
+  document.body.style.overflow = 'hidden';
+}
+window.openVipSubscriptionModal = openVipSubscriptionModal;
+
+function closeVipSubscriptionModal(e, force = false) {
+  const modal = document.getElementById('vip-subscription-modal');
+  if (!modal) return;
+  if (force || (e && e.target === modal)) {
+    modal.style.display = 'none';
+    document.body.style.overflow = '';
+  }
+}
+window.closeVipSubscriptionModal = closeVipSubscriptionModal;
+
+function selectVipPackage(tierKey) {
+  const pkg = VIP_PACKAGES[tierKey] || VIP_PACKAGES.annual;
+  currentSelectedVipTier = pkg.id;
+
+  const cardWeekly = document.getElementById('vip-card-weekly');
+  const cardMonthly = document.getElementById('vip-card-monthly');
+  const cardAnnual = document.getElementById('vip-card-annual');
+
+  if (cardWeekly) cardWeekly.classList.toggle('selected', pkg.id === 'weekly');
+  if (cardMonthly) cardMonthly.classList.toggle('selected', pkg.id === 'monthly');
+  if (cardAnnual) cardAnnual.classList.toggle('selected', pkg.id === 'annual');
+
+  const continueBtn = document.getElementById('vip-continue-btn');
+  if (continueBtn) {
+    continueBtn.innerHTML = `CONTINUE &rarr;`;
+  }
+}
+window.selectVipPackage = selectVipPackage;
+
+function selectPageVipPackage(tierKey) {
+  window.pageSelectedVipTier = tierKey;
+  const cardWeekly = document.getElementById('page-vip-card-weekly');
+  const cardMonthly = document.getElementById('page-vip-card-monthly');
+  const cardAnnual = document.getElementById('page-vip-card-annual');
+
+  if (cardWeekly) cardWeekly.classList.toggle('selected', tierKey === 'weekly');
+  if (cardMonthly) cardMonthly.classList.toggle('selected', tierKey === 'monthly');
+  if (cardAnnual) cardAnnual.classList.toggle('selected', tierKey === 'annual');
+
+  const continueBtn = document.getElementById('page-vip-continue-btn');
+  if (continueBtn) {
+    continueBtn.innerHTML = `CONTINUE &rarr;`;
+  }
+}
+window.selectPageVipPackage = selectPageVipPackage;
+
+function proceedToVipPayment() {
+  const pkg = VIP_PACKAGES[currentSelectedVipTier] || VIP_PACKAGES.annual;
+
+  const paywallPane = document.getElementById('vip-pane-paywall');
+  const paymentPane = document.getElementById('vip-pane-payment');
+  if (paywallPane) paywallPane.style.display = 'none';
+  if (paymentPane) paymentPane.style.display = 'block';
+
+  const checkoutPlanName = document.getElementById('vip-checkout-plan-name');
+  const checkoutPlanDaily = document.getElementById('vip-checkout-plan-daily');
+  const checkoutPlanPrice = document.getElementById('vip-checkout-plan-price');
+  const btnAmountText = document.getElementById('vip-btn-amount-text');
+
+  if (checkoutPlanName) checkoutPlanName.innerText = `${pkg.name} (${pkg.durationDays} Days)`;
+  if (checkoutPlanDaily) checkoutPlanDaily.innerText = `Billed at ${pkg.dailyText}`;
+  if (checkoutPlanPrice) checkoutPlanPrice.innerText = pkg.price;
+  if (btnAmountText) btnAmountText.innerText = pkg.price;
+}
+window.proceedToVipPayment = proceedToVipPayment;
+
+function backToVipPaywall() {
+  const paywallPane = document.getElementById('vip-pane-paywall');
+  const paymentPane = document.getElementById('vip-pane-payment');
+  if (paywallPane) paywallPane.style.display = 'block';
+  if (paymentPane) paymentPane.style.display = 'none';
+}
+window.backToVipPaywall = backToVipPaywall;
+
+function switchVipPaymentMethod(method) {
+  currentVipPaymentMethod = method;
+  const cardBtn = document.getElementById('vip-method-card-btn');
+  const transferBtn = document.getElementById('vip-method-transfer-btn');
+  const cryptoBtn = document.getElementById('vip-method-crypto-btn');
+
+  const cardForm = document.getElementById('vip-form-card');
+  const transferForm = document.getElementById('vip-form-transfer');
+  const cryptoForm = document.getElementById('vip-form-crypto');
+
+  if (cardBtn) cardBtn.classList.toggle('active', method === 'card');
+  if (transferBtn) transferBtn.classList.toggle('active', method === 'transfer');
+  if (cryptoBtn) cryptoBtn.classList.toggle('active', method === 'crypto');
+
+  if (cardForm) cardForm.style.display = method === 'card' ? 'flex' : 'none';
+  if (transferForm) transferForm.style.display = method === 'transfer' ? 'flex' : 'none';
+  if (cryptoForm) cryptoForm.style.display = method === 'crypto' ? 'flex' : 'none';
+}
+window.switchVipPaymentMethod = switchVipPaymentMethod;
+
+function fillVipDemoCard() {
+  const num = document.getElementById('vip-card-number');
+  const exp = document.getElementById('vip-card-expiry');
+  const cvv = document.getElementById('vip-card-cvv');
+  const name = document.getElementById('vip-card-name');
+
+  if (num) num.value = '5399 8214 0092 7741';
+  if (exp) exp.value = '10/28';
+  if (cvv) cvv.value = '824';
+  if (name) name.value = 'Egeruennamdi Punters';
+}
+window.fillVipDemoCard = fillVipDemoCard;
+
+function processVipPayment() {
+  const pkg = VIP_PACKAGES[currentSelectedVipTier] || VIP_PACKAGES.annual;
+  const submitBtn = document.getElementById('vip-submit-payment-btn');
+  
+  if (submitBtn) {
+    submitBtn.disabled = true;
+    submitBtn.innerText = 'Verifying with Bank Network ⏳...';
+  }
+
+  setTimeout(() => {
+    if (submitBtn) {
+      submitBtn.disabled = false;
+      submitBtn.innerText = `Pay ${pkg.price} Securely 🔒`;
+    }
+
+    const expiryDate = new Date();
+    expiryDate.setDate(expiryDate.getDate() + pkg.durationDays);
+
+    const subscriptionData = {
+      active: true,
+      tier: pkg.id,
+      name: pkg.name,
+      billingLabel: pkg.billingLabel,
+      price: pkg.price,
+      activatedAt: new Date().toISOString(),
+      expiresAt: expiryDate.toISOString(),
+      status: 'active',
+      txId: `DP-VIP-${Math.floor(100000 + Math.random() * 900000)}`
+    };
+
+    setStoredVipSubscription(subscriptionData);
+
+    const paymentPane = document.getElementById('vip-pane-payment');
+    const successPane = document.getElementById('vip-pane-success');
+    if (paymentPane) paymentPane.style.display = 'none';
+    if (successPane) successPane.style.display = 'block';
+
+    const successPlanLabel = document.getElementById('vip-success-plan-label');
+    const successTxId = document.getElementById('vip-success-txid');
+    const successBilling = document.getElementById('vip-success-billing');
+    const successExpiry = document.getElementById('vip-success-expiry');
+
+    if (successPlanLabel) successPlanLabel.innerText = pkg.name;
+    if (successTxId) successTxId.innerText = subscriptionData.txId;
+    if (successBilling) successBilling.innerText = pkg.billingLabel;
+    if (successExpiry) successExpiry.innerText = expiryDate.toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' });
+
+    const msg = `🎉 VIP Membership Activated! Welcome to ${pkg.name}.`;
+    if (typeof showAppNotification === 'function') showAppNotification(msg);
+    else if (typeof showToast === 'function') showToast(msg);
+  }, 900);
+}
+window.processVipPayment = processVipPayment;
+
+function openEasyToCancelModal() {
+  const modal = document.getElementById('vip-cancel-modal');
+  if (!modal) return;
+
+  const cancelActionContainer = document.getElementById('vip-cancel-action-container');
+  const sub = getStoredVipSubscription();
+  if (cancelActionContainer) {
+    cancelActionContainer.style.display = (sub && sub.active && sub.status === 'active') ? 'block' : 'none';
+  }
+
+  modal.style.display = 'flex';
+  document.body.style.overflow = 'hidden';
+}
+window.openEasyToCancelModal = openEasyToCancelModal;
+
+function closeEasyToCancelModal(e, force = false) {
+  const modal = document.getElementById('vip-cancel-modal');
+  if (!modal) return;
+  if (force || (e && e.target === modal)) {
+    modal.style.display = 'none';
+    document.body.style.overflow = '';
+  }
+}
+window.closeEasyToCancelModal = closeEasyToCancelModal;
+
+function confirmCancelVipSubscription() {
+  const sub = getStoredVipSubscription();
+  if (!sub || !sub.active) return;
+
+  sub.status = 'cancelled';
+  setStoredVipSubscription(sub);
+  closeEasyToCancelModal(null, true);
+
+  const expiryDate = new Date(sub.expiresAt).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' });
+  const msg = `🛡️ Auto-renewal cancelled. You still have full VIP access until ${expiryDate}.`;
+  if (typeof showAppNotification === 'function') showAppNotification(msg);
+  else if (typeof showToast === 'function') showToast(msg);
+  else alert(msg);
+
+  renderVipProfileStatus();
+}
+window.confirmCancelVipSubscription = confirmCancelVipSubscription;
+
+function openVipTipsHub() {
+  const modal = document.getElementById('vip-tips-hub-modal');
+  if (!modal) return;
+  modal.style.display = 'flex';
+  document.body.style.overflow = 'hidden';
+}
+window.openVipTipsHub = openVipTipsHub;
+
+function closeVipTipsHub(e, force = false) {
+  const modal = document.getElementById('vip-tips-hub-modal');
+  if (!modal) return;
+  if (force || (e && e.target === modal)) {
+    modal.style.display = 'none';
+    document.body.style.overflow = '';
+  }
+}
+window.closeVipTipsHub = closeVipTipsHub;
+
+function copyBookingCode(code, platform) {
+  navigator.clipboard.writeText(code).then(() => {
+    const msg = `📋 ${platform} VIP booking code [${code}] copied to clipboard!`;
+    if (typeof showAppNotification === 'function') showAppNotification(msg);
+    else if (typeof showToast === 'function') showToast(msg);
+    else alert(msg);
+  }).catch(() => {
+    alert(`Code: ${code}`);
+  });
+}
+window.copyBookingCode = copyBookingCode;
+
+function copyVipAccount() {
+  const acct = document.getElementById('vip-transfer-acct')?.innerText.trim() || '9028471924';
+  navigator.clipboard.writeText(acct).then(() => {
+    const msg = `📋 Account number [${acct}] copied to clipboard!`;
+    if (typeof showAppNotification === 'function') showAppNotification(msg);
+    else alert(msg);
+  });
+}
+window.copyVipAccount = copyVipAccount;
+
+function copyVipCrypto() {
+  const addr = document.getElementById('vip-crypto-addr')?.innerText.trim() || 'TYDzsXDvGf2YfJgU9KqwEw7Yv3z2r8Z9Nq';
+  navigator.clipboard.writeText(addr).then(() => {
+    const msg = `📋 USDT TRC20 address copied to clipboard!`;
+    if (typeof showAppNotification === 'function') showAppNotification(msg);
+    else alert(msg);
+  });
+}
+window.copyVipCrypto = copyVipCrypto;
+
+function syncVipSubscriptionUI() {
+  const sub = getStoredVipSubscription();
+  const navVipBtnText = document.getElementById('nav-vip-btn-text');
+  const navVipBtn = document.getElementById('nav-vip-btn');
+
+  if (sub && sub.active) {
+    if (navVipBtnText) navVipBtnText.innerText = 'VIP Active';
+    if (navVipBtn) {
+      navVipBtn.style.background = 'linear-gradient(135deg, #10b981 0%, #059669 100%)';
+      navVipBtn.style.boxShadow = '0 0 15px rgba(16, 185, 129, 0.5)';
+      navVipBtn.onclick = () => openVipTipsHub();
+    }
+  } else {
+    if (navVipBtnText) navVipBtnText.innerText = 'VIP Club';
+    if (navVipBtn) {
+      navVipBtn.style.background = 'linear-gradient(135deg, #15803d 0%, #166534 100%)';
+      navVipBtn.style.boxShadow = '0 2px 10px rgba(34, 197, 94, 0.35)';
+      navVipBtn.onclick = () => openVipSubscriptionModal();
+    }
+  }
+
+  renderVipProfileStatus();
+}
+window.syncVipSubscriptionUI = syncVipSubscriptionUI;
+
+function renderVipProfileStatus() {
+  const sub = getStoredVipSubscription();
+  const heading = document.getElementById('prof-vip-status-heading');
+  const subText = document.getElementById('prof-vip-status-sub');
+  const badgePill = document.getElementById('prof-vip-badge-pill');
+  const detailsBox = document.getElementById('prof-vip-details-box');
+  const planName = document.getElementById('prof-vip-plan-name');
+  const expiryDate = document.getElementById('prof-vip-expiry-date');
+  const cancelState = document.getElementById('prof-vip-cancel-state');
+  const primaryBtn = document.getElementById('prof-vip-primary-btn');
+  const tipsBtn = document.getElementById('prof-vip-tips-btn');
+  const cancelBtn = document.getElementById('prof-vip-cancel-btn');
+
+  if (sub && sub.active) {
+    const expStr = sub.expiresAt ? new Date(sub.expiresAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : '1 Year';
+    if (heading) heading.innerText = `👑 ${sub.name || 'VIP Member'}`;
+    if (subText) subText.innerText = sub.status === 'cancelled' ? `Subscription cancelled. Access remains active until ${expStr}.` : `Full unrestricted access to VIP banker picks.`;
+    if (badgePill) {
+      badgePill.innerText = sub.status === 'cancelled' ? 'EXPIRING' : 'VIP ACTIVE';
+      badgePill.style.background = sub.status === 'cancelled' ? 'rgba(239,68,68,0.2)' : 'rgba(16,185,129,0.2)';
+      badgePill.style.color = sub.status === 'cancelled' ? '#f87171' : '#34d399';
+    }
+    if (detailsBox) detailsBox.style.display = 'block';
+    if (planName) planName.innerText = sub.name || 'Annual VIP';
+    if (expiryDate) expiryDate.innerText = expStr;
+    if (cancelState) {
+      cancelState.innerText = sub.status === 'cancelled' ? 'Cancelled (No further billing)' : 'Active (Easy to cancel)';
+      cancelState.style.color = sub.status === 'cancelled' ? '#f87171' : '#fbbf24';
+    }
+
+    if (primaryBtn) primaryBtn.style.display = 'none';
+    if (tipsBtn) tipsBtn.style.display = 'block';
+    if (cancelBtn) {
+      cancelBtn.style.display = sub.status === 'cancelled' ? 'none' : 'block';
+    }
+  } else {
+    if (heading) heading.innerText = '👑 Free Member';
+    if (subText) subText.innerText = 'Upgrade to access high-roller banker tips.';
+    if (badgePill) {
+      badgePill.innerText = 'BASIC';
+      badgePill.style.background = 'rgba(255,255,255,0.08)';
+      badgePill.style.color = '#94a3b8';
+    }
+    if (detailsBox) detailsBox.style.display = 'none';
+    if (primaryBtn) primaryBtn.style.display = 'block';
+    if (tipsBtn) tipsBtn.style.display = 'none';
+    if (cancelBtn) cancelBtn.style.display = 'none';
+  }
+}
+window.renderVipProfileStatus = renderVipProfileStatus;
+
+// Auto-run on load
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', syncVipSubscriptionUI);
+} else {
+  syncVipSubscriptionUI();
+}
+window.addEventListener('load', syncVipSubscriptionUI);

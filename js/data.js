@@ -30,25 +30,25 @@ const MATCH_DATA = [
     date: "future",
     league: "La Liga",
     leagueEmoji: "🇪🇸",
-    time: "26th, October 2026, 20:00",
+    time: "25th, October 2026, 21:00",
     isLive: false,
     homeTeam: {
-      name: "Real Madrid",
-      logo: "⚪",
-      form: ["W", "W", "W", "L", "W"]
-    },
-    awayTeam: {
       name: "Barcelona",
       logo: "🔵🔴",
       form: ["W", "W", "W", "W", "D"]
+    },
+    awayTeam: {
+      name: "Real Madrid",
+      logo: "⚪",
+      form: ["W", "W", "W", "L", "W"]
     },
     scores: { home: null, away: null },
     predictions: { home: 44, draw: 26, away: 30 },
     confidence: "medium",
     confidenceVal: 72,
-    insight: "El Clásico. Real Madrid is undefeated in their last 15 home fixtures.",
+    insight: "El Clásico at Spotify Camp Nou. Barcelona are unbeaten in their last 9 home fixtures.",
     isPremium: true,
-    aiAnalysis: "PREMIUM SCOUT REPORT: Real Madrid is entering this Clásico with a slight tactical edge due to Barcelona's recent defensive vulnerabilities in wide areas against transitions. Real Madrid's transition efficiency index is 9.4/10 compared to Barcelona's transition defense rating of 6.2/10. Recommended Pick: Real Madrid to win (Draw No Bet) or BTTS (Both Teams To Score) as a banker option.",
+    aiAnalysis: "PREMIUM SCOUT REPORT: Barcelona host Real Madrid at the Spotify Camp Nou on 25th October 2026. Barcelona's home form gives them a structural advantage. Real Madrid's transition efficiency index is 9.4/10 but faces Barcelona's defensive press rated 8.1/10 at home. Recommended Pick: Draw No Bet (Barcelona) or BTTS (Both Teams To Score) as a banker option.",
     topTips: ["uo15", "uoht05", "bttsht", "c75", "c85", "c95"]
   },
   {

@@ -299,6 +299,7 @@
             </div>
           </li>
 
+          <li><a href="#vip-packages-section" class="nav-link" style="color: #34d399; font-weight: 800; display: flex; align-items: center; gap: 4px;">👑 VIP Packages</a></li>
           <li><a href="#predictions" class="nav-link">Leagues Directory</a></li>
 
 
@@ -323,6 +324,12 @@
           onclick="openStoreModal('shop')" title="Mines Coins Store">
           <span>🪙</span> <span id="header-coins-count">500</span>
         </div>
+
+        <!-- Punters VIP Button -->
+        <button id="nav-vip-btn" class="btn" onclick="openVipSubscriptionModal()"
+          style="background: linear-gradient(135deg, #15803d 0%, #166534 100%); color: #ffffff; border: 1px solid #22c55e; font-weight: 800; font-size: 0.78rem; padding: 5px 12px; border-radius: 20px; display: inline-flex; align-items: center; gap: 5px; box-shadow: 0 2px 10px rgba(34, 197, 94, 0.35); cursor: pointer; transition: all 0.2s ease;">
+          <span style="font-size: 0.85rem;">👑</span> <span id="nav-vip-btn-text">VIP Club</span>
+        </button>
 
         <!-- Login / Profile Trigger Button (Top Mobile, Tablet & Desktop Header) -->
         <div id="nav-auth-container" onclick="openAuthModal('login')"
@@ -385,6 +392,19 @@
     <!-- Tools & Navigation Section -->
     <div
       style="padding: 16px 18px 80px; display: flex; flex-direction: column; gap: 8px; flex-grow: 1; background: #ffffff;">
+
+      <!-- Punters VIP Club Quick Access Banner -->
+      <div onclick="openVipSubscriptionModal(); toggleMobileDrawer();"
+        style="background: linear-gradient(135deg, #15803d 0%, #166534 100%); border: 1.5px solid #22c55e; border-radius: 14px; padding: 12px 14px; color: #ffffff; cursor: pointer; display: flex; align-items: center; justify-content: space-between; box-shadow: 0 4px 14px rgba(21, 128, 61, 0.35); margin-bottom: 4px;">
+        <div style="display: flex; align-items: center; gap: 10px;">
+          <span style="font-size: 1.4rem;">👑</span>
+          <div>
+            <div style="font-weight: 900; font-size: 0.92rem; font-family: var(--font-display); line-height: 1.2;">Punters VIP Club</div>
+            <div style="font-size: 0.72rem; color: #bbf7d0; font-weight: 600;">Weekly · Monthly · Yearly VIP</div>
+          </div>
+        </div>
+        <span style="background: #ffffff; color: #15803d; font-weight: 900; font-size: 0.72rem; padding: 4px 10px; border-radius: 20px; box-shadow: 0 2px 6px rgba(0,0,0,0.15);">JOIN VIP</span>
+      </div>
 
       <!-- Section Header 1: Main Navigation -->
       <div style="display: flex; align-items: center; justify-content: space-between; margin: 4px 0 6px;">
@@ -659,7 +679,7 @@
         <p
           style="font-family: var(--font-body); font-size: 0.95rem; font-weight: 600; color: #e2e8f0; line-height: 1.6; margin: 0 0 16px 0; text-shadow: 0 2px 8px rgba(0,0,0,0.5);">
           Access <span style="color: #38bdf8; font-weight: 800;">Real-Time Match Predictions</span>, <span
-            style="color: #60a5fa; font-weight: 800;">90 Bookmakers Booking Code Converter</span>, <span
+            style="color: #60a5fa; font-weight: 800;">Booking Code Converter</span>, <span
             style="color: #34d399; font-weight: 800;">Bet Generator</span>, <span
             style="color: #f472b6; font-weight: 800;">AI Bet-Doctor Diagnostics</span>, <span
             style="color: #fbbf24; font-weight: 800;">Arbitrage Finder</span>, <span
@@ -678,7 +698,7 @@
             Match Predictions</span>
           <span onclick="window.location.hash='#converter'"
             style="background: rgba(96, 165, 250, 0.12); border: 1px solid rgba(96, 165, 250, 0.35); color: #60a5fa; font-size: 0.72rem; font-weight: 800; padding: 4px 10px; border-radius: 12px; cursor: pointer; transition: all 0.2s ease;">🎫
-            90 Bookmakers Converter</span>
+            Booking Code Converter</span>
           <span onclick="triggerToolRoute('generator')"
             style="background: rgba(52, 211, 153, 0.12); border: 1px solid rgba(52, 211, 153, 0.35); color: #34d399; font-size: 0.72rem; font-weight: 800; padding: 4px 10px; border-radius: 12px; cursor: pointer; transition: all 0.2s ease;">⚡
             Bet Generator</span>
@@ -757,508 +777,6 @@
         <!-- Inline Result Output Container for Instant Hero Feedback -->
         <div id="hero-scout-results"
           style="display: none; margin-top: 14px; padding: 14px; background: rgba(15, 23, 42, 0.9); border: 1.5px solid rgba(59, 130, 246, 0.5); border-radius: var(--radius-sm); box-shadow: 0 0 20px rgba(37, 99, 235, 0.25);">
-        </div>
-      </div>
-
-      <!-- --- PROMINENT HERO BET CODE CONVERTER ENGINE CARD --- -->
-      <div style="max-width: 680px; margin: 0 auto 24px;">
-        <div class="betcode-converter-card">
-          <!-- Card Header -->
-          <div
-            style="padding: 20px 24px 16px; border-bottom: 1px solid rgba(59, 130, 246, 0.3); background: rgba(0,0,0,0.3); text-align: left; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px;">
-            <div>
-              <div
-                style="color: #3b82f6; font-weight: 800; text-transform: uppercase; letter-spacing: 1.2px; font-size: 0.85rem; display: flex; align-items: center; gap: 6px; font-family: var(--font-display);">
-                <span>🚀</span> MULTI-BOOKMAKER ENGINE
-              </div>
-              <h2
-                style="font-family: var(--font-display); font-size: 1.8rem; font-weight: 900; background: linear-gradient(135deg, #ffffff 30%, #3b82f6 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; text-shadow: 0 0 20px rgba(59, 130, 246, 0.35); margin: 2px 0 0 0;">
-                Bet Code Converter
-              </h2>
-            </div>
-
-            <!-- Header Badges -->
-            <div class="betcode-badges-row" style="margin-bottom: 0;">
-              <span class="betcode-badge active" onclick="triggerToolRoute('machine')">✨ Bet editor</span>
-              <span class="betcode-badge" onclick="openGeneralScout()">👁️ Bet viewer</span>
-              <span class="betcode-badge" onclick="window.location.hash='#predictions'">💡 Free Tips</span>
-              <span class="betcode-badge" onclick="triggerToolRoute('scanner-live')">🔔 Alerts Rules</span>
-              <span class="betcode-badge" onclick="triggerWatchlistFilter()">⭐ Watchlist</span>
-              <span class="betcode-badge" onclick="openStoreModal()">🏪 Store</span>
-            </div>
-          </div>
-
-          <!-- Main Converter Form Block -->
-          <div class="betcode-card-body">
-            <!-- Code Input -->
-            <div class="betcode-form-group">
-              <label class="betcode-label" for="hero-betcode-src-code">Enter Booking</label>
-              <input type="text" class="betcode-input" id="hero-betcode-src-code" placeholder="Enter Booking Code here"
-                value="BC9P2XZ">
-            </div>
-
-            <!-- Select Row -->
-            <div class="betcode-select-row" style="position: relative;">
-              <div class="betcode-select-col">
-                <label class="betcode-label" for="hero-betcode-src-select">Convert From</label>
-                <select class="betcode-select" id="hero-betcode-src-select">
-                  <option value="1xbet:bf">🇧🇫 1xbet -Burkina Faso</option>
-                  <option value="1xbet:bj">🇧🇯 1xbet -Benin</option>
-                  <option value="1xbet:ci">🇨🇮 1xbet -Côte D'Ivoire</option>
-                  <option value="1xbet:cm">🇨🇲 1xbet -Cameroon</option>
-                  <option value="1xbet:et">🇪🇹 1xbet -Ethiopia</option>
-                  <option value="1xbet:gh">🇬🇭 1xbet -Ghana</option>
-                  <option value="1xbet:in">🇮🇳 1xbet -India</option>
-                  <option value="1xbet:ke">🇰🇪 1xbet -Kenya</option>
-                  <option value="1xbet:ml">🇲🇱 1xbet -Mali</option>
-                  <option value="1xbet:mw">🇲🇼 1xbet -Malawi</option>
-                  <option value="1xbet:mz">🇲🇿 1xbet -Mozambique</option>
-                  <option value="1xbet:ng">🇳🇬 1xbet -Nigeria</option>
-                  <option value="1xbet:rw">🇷🇼 1xbet -Rwanda</option>
-                  <option value="1xbet:sn">🇸🇳 1xbet -Senegal</option>
-                  <option value="1xbet:tz">🇹🇿 1xbet -Tanzania</option>
-                  <option value="1xbet:ug">🇺🇬 1xbet -Uganda</option>
-                  <option value="1xbet:xx">🌐 1xbet -Global</option>
-                  <option value="1xbet:za">🇿🇦 1xbet -South Africa</option>
-                  <option value="1xbet:zm">🇿🇲 1xbet -Zambia</option>
-                  <option value="1xbit">💎 1xbit -Crypto</option>
-                  <option value="20bet:xx">🌐 20bet -Global</option>
-                  <option value="22bet">🌐 22bet -Global</option>
-                  <option value="_22bet_gh">🇬🇭 22bet -Ghana</option>
-                  <option value="_22bet_ke">🇰🇪 22bet -Kenya</option>
-                  <option value="_22bet_ng">🇳🇬 22bet -Nigeria</option>
-                  <option value="888sport">🇬🇧 888sport -Global</option>
-                  <option value="888starz:xx">🌐 888starz -Global</option>
-                  <option value="afropari">🌍 Afropari -Africa</option>
-                  <option value="bangbet:gh">🇬🇭 Bangbet -Ghana</option>
-                  <option value="bangbet:ke">🇰🇪 Bangbet -Kenya</option>
-                  <option value="bangbet:ng">🇳🇬 Bangbet -Nigeria</option>
-                  <option value="bcgame">💎 BC.Game -Crypto</option>
-                  <option value="bet365">🇬🇧 Bet365 -Global/UK</option>
-                  <option value="bet9ja">🇳🇬 Bet9ja -Nigeria</option>
-                  <option value="betano:br">🇧🇷 Betano -Brazil</option>
-                  <option value="betano:ng">🇳🇬 Betano -Nigeria</option>
-                  <option value="betano:pt">🇵🇹 Betano -Portugal/Europe</option>
-                  <option value="betandyou">🌐 Betandyou -Global</option>
-                  <option value="betclic:fr">🇫🇷 Betclic -France</option>
-                  <option value="betclic:pt">🇵🇹 Betclic -Portugal</option>
-                  <option value="betfair">🇬🇧 Betfair Exchange</option>
-                  <option value="betgr8:xx">🌐 Betgr8 -Global</option>
-                  <option value="betika:cd">🇨🇩 Betika -Congo</option>
-                  <option value="betika:et">🇪🇹 Betika -Ethiopia</option>
-                  <option value="betika:gh">🇬🇭 Betika -Ghana</option>
-                  <option value="betika:ke">🇰🇪 Betika -Kenya</option>
-                  <option value="betika:mz">🇲🇿 Betika -Mozambique</option>
-                  <option value="betika:tz">🇹🇿 Betika -Tanzania</option>
-                  <option value="betika:zm">🇿🇲 Betika -Zambia</option>
-                  <option value="betjam">🌐 Betjam -Global</option>
-                  <option value="betking:gh">🇬🇭 BetKing -Ghana</option>
-                  <option value="betking:ke">🇰🇪 BetKing -Kenya</option>
-                  <option value="betking:ng">🇳🇬 BetKing -Nigeria</option>
-                  <option value="betlion:ke">🇰🇪 BetLion -Kenya</option>
-                  <option value="betlion:zm">🇿🇲 BetLion -Zambia</option>
-                  <option value="betmgm">🇺🇸 BetMGM -USA</option>
-                  <option value="betnacional">🇧🇷 Betnacional -Brazil</option>
-                  <option value="betpawa:gh">🇬🇭 Betpawa -Ghana</option>
-                  <option value="betpawa:ke">🇰🇪 Betpawa -Kenya</option>
-                  <option value="betpawa:ng">🇳🇬 Betpawa -Nigeria</option>
-                  <option value="betpawa:tz">🇹🇿 Betpawa -Tanzania</option>
-                  <option value="betpawa:ug">🇺🇬 Betpawa -Uganda</option>
-                  <option value="betpawa:zm">🇿🇲 Betpawa -Zambia</option>
-                  <option value="betway:gh">🇬🇭 Betway -Ghana</option>
-                  <option value="betway:ke">🇰🇪 Betway -Kenya</option>
-                  <option value="betway:ng">🇳🇬 Betway -Nigeria</option>
-                  <option value="betway:tz">🇹🇿 Betway -Tanzania</option>
-                  <option value="betway:ug">🇺🇬 Betway -Uganda</option>
-                  <option value="betway:uk">🇬🇧 Betway -UK</option>
-                  <option value="betway:za">🇿🇦 Betway -South Africa</option>
-                  <option value="betway:zm">🇿🇲 Betway -Zambia</option>
-                  <option value="betwinner:gh">🇬🇭 BetWinner -Ghana</option>
-                  <option value="betwinner:ke">🇰🇪 BetWinner -Kenya</option>
-                  <option value="betwinner:ng">🇳🇬 BetWinner -Nigeria</option>
-                  <option value="betwinner:ug">🇺🇬 BetWinner -Uganda</option>
-                  <option value="betwinner:xx">🌐 BetWinner -Global</option>
-                  <option value="bk8">🌏 BK8 -Southeast Asia</option>
-                  <option value="bovada">🇺🇸 Bovada -USA</option>
-                  <option value="bwin">🇩🇪 bwin -Germany/Europe</option>
-                  <option value="caesars">🇺🇸 Caesars Sportsbook -USA</option>
-                  <option value="caliente">🇲🇽 Caliente -Mexico</option>
-                  <option value="cloudbet">💎 Cloudbet -Crypto</option>
-                  <option value="codere:es">🇪🇸 Codere -Spain</option>
-                  <option value="codere:mx">🇲🇽 Codere -Mexico</option>
-                  <option value="dafabet">🌏 Dafabet -Asia</option>
-                  <option value="db_bet">🌐 Db Bet -Global</option>
-                  <option value="draftkings">🇺🇸 DraftKings -USA</option>
-                  <option value="easybet:za">🇿🇦 Easybet -South Africa</option>
-                  <option value="easywin:ng">🇳🇬 Easywin -Nigeria</option>
-                  <option value="estrelabet">🇧🇷 EstrelaBet -Brazil</option>
-                  <option value="fanduel">🇺🇸 FanDuel -USA</option>
-                  <option value="fansport:ng">🇳🇬 Fansport -Nigeria</option>
-                  <option value="football:gh">🇬🇭 Football -Ghana</option>
-                  <option value="football:ng">🇳🇬 Football -Nigeria</option>
-                  <option value="fortebet:ug">🇺🇬 ForteBet -Uganda</option>
-                  <option value="galsport:tz">🇹🇿 Gal Sport Betting -Tanzania</option>
-                  <option value="galsport:ug">🇺🇬 Gal Sport Betting -Uganda</option>
-                  <option value="galsport:zm">🇿🇲 Gal Sport Betting -Zambia</option>
-                  <option value="goldpari">🌐 Goldpari -Global</option>
-                  <option value="gsb:tz">🇹🇿 Gsb -Tanzania</option>
-                  <option value="gsb:ug">🇺🇬 Gsb -Uganda</option>
-                  <option value="gsb:zm">🇿🇲 Gsb -Zambia</option>
-                  <option value="helabet:ke">🇰🇪 Helabet -Kenya</option>
-                  <option value="helabet:xx">🌐 Helabet -Global</option>
-                  <option value="hollywoodbet:mz">🇲🇿 Hollywoodbets -Mozambique</option>
-                  <option value="hollywoodbet:uk">🇬🇧 Hollywoodbets -UK</option>
-                  <option value="hollywoodbet:za">🇿🇦 Hollywoodbets -South Africa</option>
-                  <option value="ilot:ng">🇳🇬 iLOT Bet -Nigeria</option>
-                  <option value="interbet:za">🇿🇦 Interbet -South Africa</option>
-                  <option value="ladbrokes">🇬🇧 Ladbrokes -UK</option>
-                  <option value="linebet:in">🇮🇳 Linebet -India</option>
-                  <option value="linebet:ng">🇳🇬 Linebet -Nigeria</option>
-                  <option value="linebet:xx">🌐 Linebet -Global</option>
-                  <option value="livescorebet:ng">🇳🇬 LiveScore Bet -Nigeria</option>
-                  <option value="livescorebet:uk">🇬🇧 LiveScore Bet -UK</option>
-                  <option value="luckybet:ng">🇳🇬 Luckybet -Nigeria</option>
-                  <option value="luckypari:ke">🇰🇪 Luckypari -Kenya</option>
-                  <option value="luckypari:ng">🇳🇬 Luckypari -Nigeria</option>
-                  <option value="marathonbet">🌐 Marathonbet -Global</option>
-                  <option value="megapari:gh">🇬🇭 Megapari -Ghana</option>
-                  <option value="megapari:ng">🇳🇬 Megapari -Nigeria</option>
-                  <option value="megapari:xx">🌐 Megapari -Global</option>
-                  <option value="melbet:bj">🇧🇯 Melbet -Benin</option>
-                  <option value="melbet:gh">🇬🇭 Melbet -Ghana</option>
-                  <option value="melbet:ke">🇰🇪 Melbet -Kenya</option>
-                  <option value="melbet:ng">🇳🇬 Melbet -Nigeria</option>
-                  <option value="melbet:ug">🇺🇬 Melbet -Uganda</option>
-                  <option value="melbet:xx">🌐 Melbet -Global</option>
-                  <option value="melbet:zm">🇿🇲 Melbet -Zambia</option>
-                  <option value="meridianbet:ng">🇳🇬 Meridianbet -Nigeria</option>
-                  <option value="meridianbet:tz">🇹🇿 Meridianbet -Tanzania</option>
-                  <option value="merrybet">🇳🇬 Merrybet -Nigeria</option>
-                  <option value="mozzart:ke">🇰🇪 Mozzart Bet -Kenya</option>
-                  <option value="mozzart:ng">🇳🇬 Mozzart Bet -Nigeria</option>
-                  <option value="mozzart:rs">🇷🇸 Mozzart Bet -Serbia</option>
-                  <option value="msport:gh">🇬🇭 MSport -Ghana</option>
-                  <option value="msport:ng">🇳🇬 MSport -Nigeria</option>
-                  <option value="msport:ug">🇺🇬 MSport -Uganda</option>
-                  <option value="mybetafrica:gh">🇬🇭 Mybetafrica -Ghana</option>
-                  <option value="mzansibet:za">🇿🇦 Mzansibet -South Africa</option>
-                  <option value="nairabet">🇳🇬 NairaBET -Nigeria</option>
-                  <option value="novibet:gr">🇬🇷 Novibet -Greece/Europe</option>
-                  <option value="novibet:uk">🇬🇧 Novibet -UK</option>
-                  <option value="odibets:gh">🇬🇭 Odibets -Ghana</option>
-                  <option value="odibets:ke">🇰🇪 Odibets -Kenya</option>
-                  <option value="paddypower">🇮🇪 Paddy Power -UK/Ireland</option>
-                  <option value="parimatch:cy">🇨🇾 PariMatch -Cyprus</option>
-                  <option value="parimatch:in">🇮🇳 PariMatch -India</option>
-                  <option value="parimatch:tz">🇹🇿 PariMatch -Tanzania</option>
-                  <option value="parimatch:ua">🇺🇦 PariMatch -Ukraine</option>
-                  <option value="parimatch:uk">🇬🇧 PariMatch -UK</option>
-                  <option value="paripesa:gh">🇬🇭 Paripesa -Ghana</option>
-                  <option value="paripesa:ke">🇰🇪 Paripesa -Kenya</option>
-                  <option value="paripesa:ng">🇳🇬 Paripesa -Nigeria</option>
-                  <option value="paripesa:xx">🌐 Paripesa -Global</option>
-                  <option value="paripulse:in">🇮🇳 Paripulse -India</option>
-                  <option value="paripulse:ng">🇳🇬 Paripulse -Nigeria</option>
-                  <option value="pixbet">🇧🇷 Pixbet -Brazil</option>
-                  <option value="planbet:xx">🌐 Planbet -Global</option>
-                  <option value="playabetcoza:za">🇿🇦 Playabetcoza -South Africa</option>
-                  <option value="pointsbet">🇺🇸 PointsBet -USA</option>
-                  <option value="premierbet:ao">🇦🇴 Premier Bet -Angola</option>
-                  <option value="premierbet:cm">🇨🇲 Premier Bet -Cameroon</option>
-                  <option value="premierbet:cd">🇨🇩 Premier Bet -Congo</option>
-                  <option value="premierbet:gh">🇬🇭 Premier Bet -Ghana</option>
-                  <option value="premierbet:mw">🇲🇼 Premier Bet -Malawi</option>
-                  <option value="premierbet:mz">🇲🇿 Premier Bet -Mozambique</option>
-                  <option value="premierbet:sn">🇸🇳 Premier Bet -Senegal</option>
-                  <option value="premierbet:tz">🇹🇿 Premier Bet -Tanzania</option>
-                  <option value="premierbet:ug">🇺🇬 Premier Bet -Uganda</option>
-                  <option value="premierbet:zm">🇿🇲 Premier Bet -Zambia</option>
-                  <option value="sbobet">🌏 SBOBET -Asia</option>
-                  <option value="secretbet">🌐 Secretbet -Global</option>
-                  <option value="skybet">🇬🇧 SkyBet -UK</option>
-                  <option value="soccabet:gh">🇬🇭 Soccabet -Ghana</option>
-                  <option value="sportingbet:br">🇧🇷 Sportingbet -Brazil</option>
-                  <option value="sportingbet:za">🇿🇦 Sportingbet -South Africa</option>
-                  <option value="sportpesa:ke">🇰🇪 Sportpesa -Kenya</option>
-                  <option value="sportpesa:tz">🇹🇿 Sportpesa -Tanzania</option>
-                  <option value="sportpesa:uk">🇬🇧 Sportpesa -UK</option>
-                  <option value="sportpesa:xx">🌐 Sportpesa -Global</option>
-                  <option value="sportpesa:za">🇿🇦 Sportpesa -South Africa</option>
-                  <option value="sportsbetau">🇦🇺 Sportsbet -Australia</option>
-                  <option value="sportybet:gh">🇬🇭 SportyBet -Ghana</option>
-                  <option value="sportybet:ke">🇰🇪 SportyBet -Kenya</option>
-                  <option value="sportybet:mx">🇲🇽 SportyBet -Mexico</option>
-                  <option value="sportybet:ng" selected>🇳🇬 SportyBet -Nigeria</option>
-                  <option value="sportybet:tz">🇹🇿 SportyBet -Tanzania</option>
-                  <option value="sportybet:ug">🇺🇬 SportyBet -Uganda</option>
-                  <option value="sportybet:za">🇿🇦 SportyBet -South Africa</option>
-                  <option value="sportybet:zm">🇿🇲 SportyBet -Zambia</option>
-                  <option value="stake">💎 Stake.com -Crypto</option>
-                  <option value="sunbet:za">🇿🇦 Sunbet -South Africa</option>
-                  <option value="supersport">🇿🇦 SuperSportBet -South Africa</option>
-                  <option value="unibet:au">🇦🇺 Unibet -Australia</option>
-                  <option value="unibet:eu">🇪🇺 Unibet -Europe</option>
-                  <option value="unibet:uk">🇬🇧 Unibet -UK</option>
-                  <option value="vascobet:br">🇧🇷 Vascobet -Brazil</option>
-                  <option value="wasafibet:tz">🇹🇿 Wasafibet -Tanzania</option>
-                  <option value="williamhill:es">🇪🇸 William Hill -Spain</option>
-                  <option value="williamhill:it">🇮🇹 William Hill -Italy</option>
-                  <option value="williamhill:uk">🇬🇧 William Hill -UK</option>
-                  <option value="winmasters:gr">🇬🇷 Winmasters -Greece</option>
-                  <option value="winmasters:ro">🇷🇴 Winmasters -Romania</option>
-                  <option value="winna:ke">🇰🇪 Winna -Kenya</option>
-                  <option value="winwin">🌐 Winwin -Global</option>
-                  <option value="worldsportsbetting:za">🇿🇦 World Sports Betting -South Africa</option>
-                  <option value="xparibet">🌐 Xparibet -Global</option>
-                  <option value="yesplay:za">🇿🇦 YesPlay -South Africa</option>
-                </select>
-              </div>
-
-              <div class="betcode-select-col">
-                <label class="betcode-label" for="hero-betcode-target-select">Convert To</label>
-                <select class="betcode-select" id="hero-betcode-target-select">
-                  <option value="1xbet:bf">🇧🇫 1xbet -Burkina Faso</option>
-                  <option value="1xbet:bj">🇧🇯 1xbet -Benin</option>
-                  <option value="1xbet:ci">🇨🇮 1xbet -Côte D'Ivoire</option>
-                  <option value="1xbet:cm">🇨🇲 1xbet -Cameroon</option>
-                  <option value="1xbet:et">🇪🇹 1xbet -Ethiopia</option>
-                  <option value="1xbet:gh">🇬🇭 1xbet -Ghana</option>
-                  <option value="1xbet:in">🇮🇳 1xbet -India</option>
-                  <option value="1xbet:ke">🇰🇪 1xbet -Kenya</option>
-                  <option value="1xbet:ml">🇲🇱 1xbet -Mali</option>
-                  <option value="1xbet:mw">🇲🇼 1xbet -Malawi</option>
-                  <option value="1xbet:mz">🇲🇿 1xbet -Mozambique</option>
-                  <option value="1xbet:ng" selected>🇳🇬 1xbet -Nigeria</option>
-                  <option value="1xbet:rw">🇷🇼 1xbet -Rwanda</option>
-                  <option value="1xbet:sn">🇸🇳 1xbet -Senegal</option>
-                  <option value="1xbet:tz">🇹🇿 1xbet -Tanzania</option>
-                  <option value="1xbet:ug">🇺🇬 1xbet -Uganda</option>
-                  <option value="1xbet:xx">🌐 1xbet -Global</option>
-                  <option value="1xbet:za">🇿🇦 1xbet -South Africa</option>
-                  <option value="1xbet:zm">🇿🇲 1xbet -Zambia</option>
-                  <option value="1xbit">💎 1xbit -Crypto</option>
-                  <option value="20bet:xx">🌐 20bet -Global</option>
-                  <option value="22bet">🌐 22bet -Global</option>
-                  <option value="_22bet_gh">🇬🇭 22bet -Ghana</option>
-                  <option value="_22bet_ke">🇰🇪 22bet -Kenya</option>
-                  <option value="_22bet_ng">🇳🇬 22bet -Nigeria</option>
-                  <option value="888sport">🇬🇧 888sport -Global</option>
-                  <option value="888starz:xx">🌐 888starz -Global</option>
-                  <option value="afropari">🌍 Afropari -Africa</option>
-                  <option value="bangbet:gh">🇬🇭 Bangbet -Ghana</option>
-                  <option value="bangbet:ke">🇰🇪 Bangbet -Kenya</option>
-                  <option value="bangbet:ng">🇳🇬 Bangbet -Nigeria</option>
-                  <option value="bcgame">💎 BC.Game -Crypto</option>
-                  <option value="bet365">🇬🇧 Bet365 -Global/UK</option>
-                  <option value="bet9ja">🇳🇬 Bet9ja -Nigeria</option>
-                  <option value="betano:br">🇧🇷 Betano -Brazil</option>
-                  <option value="betano:ng">🇳🇬 Betano -Nigeria</option>
-                  <option value="betano:pt">🇵🇹 Betano -Portugal/Europe</option>
-                  <option value="betandyou">🌐 Betandyou -Global</option>
-                  <option value="betclic:fr">🇫🇷 Betclic -France</option>
-                  <option value="betclic:pt">🇵🇹 Betclic -Portugal</option>
-                  <option value="betfair">🇬🇧 Betfair Exchange</option>
-                  <option value="betgr8:xx">🌐 Betgr8 -Global</option>
-                  <option value="betika:cd">🇨🇩 Betika -Congo</option>
-                  <option value="betika:et">🇪🇹 Betika -Ethiopia</option>
-                  <option value="betika:gh">🇬🇭 Betika -Ghana</option>
-                  <option value="betika:ke">🇰🇪 Betika -Kenya</option>
-                  <option value="betika:mz">🇲🇿 Betika -Mozambique</option>
-                  <option value="betika:tz">🇹🇿 Betika -Tanzania</option>
-                  <option value="betika:zm">🇿🇲 Betika -Zambia</option>
-                  <option value="betjam">🌐 Betjam -Global</option>
-                  <option value="betking:gh">🇬🇭 BetKing -Ghana</option>
-                  <option value="betking:ke">🇰🇪 BetKing -Kenya</option>
-                  <option value="betking:ng">🇳🇬 BetKing -Nigeria</option>
-                  <option value="betlion:ke">🇰🇪 BetLion -Kenya</option>
-                  <option value="betlion:zm">🇿🇲 BetLion -Zambia</option>
-                  <option value="betmgm">🇺🇸 BetMGM -USA</option>
-                  <option value="betnacional">🇧🇷 Betnacional -Brazil</option>
-                  <option value="betpawa:gh">🇬🇭 Betpawa -Ghana</option>
-                  <option value="betpawa:ke">🇰🇪 Betpawa -Kenya</option>
-                  <option value="betpawa:ng">🇳🇬 Betpawa -Nigeria</option>
-                  <option value="betpawa:tz">🇹🇿 Betpawa -Tanzania</option>
-                  <option value="betpawa:ug">🇺🇬 Betpawa -Uganda</option>
-                  <option value="betpawa:zm">🇿🇲 Betpawa -Zambia</option>
-                  <option value="betway:gh">🇬🇭 Betway -Ghana</option>
-                  <option value="betway:ke">🇰🇪 Betway -Kenya</option>
-                  <option value="betway:ng">🇳🇬 Betway -Nigeria</option>
-                  <option value="betway:tz">🇹🇿 Betway -Tanzania</option>
-                  <option value="betway:ug">🇺🇬 Betway -Uganda</option>
-                  <option value="betway:uk">🇬🇧 Betway -UK</option>
-                  <option value="betway:za">🇿🇦 Betway -South Africa</option>
-                  <option value="betway:zm">🇿🇲 Betway -Zambia</option>
-                  <option value="betwinner:gh">🇬🇭 BetWinner -Ghana</option>
-                  <option value="betwinner:ke">🇰🇪 BetWinner -Kenya</option>
-                  <option value="betwinner:ng">🇳🇬 BetWinner -Nigeria</option>
-                  <option value="betwinner:ug">🇺🇬 BetWinner -Uganda</option>
-                  <option value="betwinner:xx">🌐 BetWinner -Global</option>
-                  <option value="bk8">🌏 BK8 -Southeast Asia</option>
-                  <option value="bovada">🇺🇸 Bovada -USA</option>
-                  <option value="bwin">🇩🇪 bwin -Germany/Europe</option>
-                  <option value="caesars">🇺🇸 Caesars Sportsbook -USA</option>
-                  <option value="caliente">🇲🇽 Caliente -Mexico</option>
-                  <option value="cloudbet">💎 Cloudbet -Crypto</option>
-                  <option value="codere:es">🇪🇸 Codere -Spain</option>
-                  <option value="codere:mx">🇲🇽 Codere -Mexico</option>
-                  <option value="dafabet">🌏 Dafabet -Asia</option>
-                  <option value="db_bet">🌐 Db Bet -Global</option>
-                  <option value="draftkings">🇺🇸 DraftKings -USA</option>
-                  <option value="easybet:za">🇿🇦 Easybet -South Africa</option>
-                  <option value="easywin:ng">🇳🇬 Easywin -Nigeria</option>
-                  <option value="estrelabet">🇧🇷 EstrelaBet -Brazil</option>
-                  <option value="fanduel">🇺🇸 FanDuel -USA</option>
-                  <option value="fansport:ng">🇳🇬 Fansport -Nigeria</option>
-                  <option value="football:gh">🇬🇭 Football -Ghana</option>
-                  <option value="football:ng">🇳🇬 Football -Nigeria</option>
-                  <option value="fortebet:ug">🇺🇬 ForteBet -Uganda</option>
-                  <option value="galsport:tz">🇹🇿 Gal Sport Betting -Tanzania</option>
-                  <option value="galsport:ug">🇺🇬 Gal Sport Betting -Uganda</option>
-                  <option value="galsport:zm">🇿🇲 Gal Sport Betting -Zambia</option>
-                  <option value="goldpari">🌐 Goldpari -Global</option>
-                  <option value="gsb:tz">🇹🇿 Gsb -Tanzania</option>
-                  <option value="gsb:ug">🇺🇬 Gsb -Uganda</option>
-                  <option value="gsb:zm">🇿🇲 Gsb -Zambia</option>
-                  <option value="helabet:ke">🇰🇪 Helabet -Kenya</option>
-                  <option value="helabet:xx">🌐 Helabet -Global</option>
-                  <option value="hollywoodbet:mz">🇲🇿 Hollywoodbets -Mozambique</option>
-                  <option value="hollywoodbet:uk">🇬🇧 Hollywoodbets -UK</option>
-                  <option value="hollywoodbet:za">🇿🇦 Hollywoodbets -South Africa</option>
-                  <option value="ilot:ng">🇳🇬 iLOT Bet -Nigeria</option>
-                  <option value="interbet:za">🇿🇦 Interbet -South Africa</option>
-                  <option value="ladbrokes">🇬🇧 Ladbrokes -UK</option>
-                  <option value="linebet:in">🇮🇳 Linebet -India</option>
-                  <option value="linebet:ng">🇳🇬 Linebet -Nigeria</option>
-                  <option value="linebet:xx">🌐 Linebet -Global</option>
-                  <option value="livescorebet:ng">🇳🇬 LiveScore Bet -Nigeria</option>
-                  <option value="livescorebet:uk">🇬🇧 LiveScore Bet -UK</option>
-                  <option value="luckybet:ng">🇳🇬 Luckybet -Nigeria</option>
-                  <option value="luckypari:ke">🇰🇪 Luckypari -Kenya</option>
-                  <option value="luckypari:ng">🇳🇬 Luckypari -Nigeria</option>
-                  <option value="marathonbet">🌐 Marathonbet -Global</option>
-                  <option value="megapari:gh">🇬🇭 Megapari -Ghana</option>
-                  <option value="megapari:ng">🇳🇬 Megapari -Nigeria</option>
-                  <option value="megapari:xx">🌐 Megapari -Global</option>
-                  <option value="melbet:bj">🇧🇯 Melbet -Benin</option>
-                  <option value="melbet:gh">🇬🇭 Melbet -Ghana</option>
-                  <option value="melbet:ke">🇰🇪 Melbet -Kenya</option>
-                  <option value="melbet:ng">🇳🇬 Melbet -Nigeria</option>
-                  <option value="melbet:ug">🇺🇬 Melbet -Uganda</option>
-                  <option value="melbet:xx">🌐 Melbet -Global</option>
-                  <option value="melbet:zm">🇿🇲 Melbet -Zambia</option>
-                  <option value="meridianbet:ng">🇳🇬 Meridianbet -Nigeria</option>
-                  <option value="meridianbet:tz">🇹🇿 Meridianbet -Tanzania</option>
-                  <option value="merrybet">🇳🇬 Merrybet -Nigeria</option>
-                  <option value="mozzart:ke">🇰🇪 Mozzart Bet -Kenya</option>
-                  <option value="mozzart:ng">🇳🇬 Mozzart Bet -Nigeria</option>
-                  <option value="mozzart:rs">🇷🇸 Mozzart Bet -Serbia</option>
-                  <option value="msport:gh">🇬🇭 MSport -Ghana</option>
-                  <option value="msport:ng">🇳🇬 MSport -Nigeria</option>
-                  <option value="msport:ug">🇺🇬 MSport -Uganda</option>
-                  <option value="mybetafrica:gh">🇬🇭 Mybetafrica -Ghana</option>
-                  <option value="mzansibet:za">🇿🇦 Mzansibet -South Africa</option>
-                  <option value="nairabet">🇳🇬 NairaBET -Nigeria</option>
-                  <option value="novibet:gr">🇬🇷 Novibet -Greece/Europe</option>
-                  <option value="novibet:uk">🇬🇧 Novibet -UK</option>
-                  <option value="odibets:gh">🇬🇭 Odibets -Ghana</option>
-                  <option value="odibets:ke">🇰🇪 Odibets -Kenya</option>
-                  <option value="paddypower">🇮🇪 Paddy Power -UK/Ireland</option>
-                  <option value="parimatch:cy">🇨🇾 PariMatch -Cyprus</option>
-                  <option value="parimatch:in">🇮🇳 PariMatch -India</option>
-                  <option value="parimatch:tz">🇹🇿 PariMatch -Tanzania</option>
-                  <option value="parimatch:ua">🇺🇦 PariMatch -Ukraine</option>
-                  <option value="parimatch:uk">🇬🇧 PariMatch -UK</option>
-                  <option value="paripesa:gh">🇬🇭 Paripesa -Ghana</option>
-                  <option value="paripesa:ke">🇰🇪 Paripesa -Kenya</option>
-                  <option value="paripesa:ng">🇳🇬 Paripesa -Nigeria</option>
-                  <option value="paripesa:xx">🌐 Paripesa -Global</option>
-                  <option value="paripulse:in">🇮🇳 Paripulse -India</option>
-                  <option value="paripulse:ng">🇳🇬 Paripulse -Nigeria</option>
-                  <option value="pixbet">🇧🇷 Pixbet -Brazil</option>
-                  <option value="planbet:xx">🌐 Planbet -Global</option>
-                  <option value="playabetcoza:za">🇿🇦 Playabetcoza -South Africa</option>
-                  <option value="pointsbet">🇺🇸 PointsBet -USA</option>
-                  <option value="premierbet:ao">🇦🇴 Premier Bet -Angola</option>
-                  <option value="premierbet:cm">🇨🇲 Premier Bet -Cameroon</option>
-                  <option value="premierbet:cd">🇨🇩 Premier Bet -Congo</option>
-                  <option value="premierbet:gh">🇬🇭 Premier Bet -Ghana</option>
-                  <option value="premierbet:mw">🇲🇼 Premier Bet -Malawi</option>
-                  <option value="premierbet:mz">🇲🇿 Premier Bet -Mozambique</option>
-                  <option value="premierbet:sn">🇸🇳 Premier Bet -Senegal</option>
-                  <option value="premierbet:tz">🇹🇿 Premier Bet -Tanzania</option>
-                  <option value="premierbet:ug">🇺🇬 Premier Bet -Uganda</option>
-                  <option value="premierbet:zm">🇿🇲 Premier Bet -Zambia</option>
-                  <option value="sbobet">🌏 SBOBET -Asia</option>
-                  <option value="secretbet">🌐 Secretbet -Global</option>
-                  <option value="skybet">🇬🇧 SkyBet -UK</option>
-                  <option value="soccabet:gh">🇬🇭 Soccabet -Ghana</option>
-                  <option value="sportingbet:br">🇧🇷 Sportingbet -Brazil</option>
-                  <option value="sportingbet:za">🇿🇦 Sportingbet -South Africa</option>
-                  <option value="sportpesa:ke">🇰🇪 Sportpesa -Kenya</option>
-                  <option value="sportpesa:tz">🇹🇿 Sportpesa -Tanzania</option>
-                  <option value="sportpesa:uk">🇬🇧 Sportpesa -UK</option>
-                  <option value="sportpesa:xx">🌐 Sportpesa -Global</option>
-                  <option value="sportpesa:za">🇿🇦 Sportpesa -South Africa</option>
-                  <option value="sportsbetau">🇦🇺 Sportsbet -Australia</option>
-                  <option value="sportybet:gh">🇬🇭 SportyBet -Ghana</option>
-                  <option value="sportybet:ke">🇰🇪 SportyBet -Kenya</option>
-                  <option value="sportybet:mx">🇲🇽 SportyBet -Mexico</option>
-                  <option value="sportybet:ng">🇳🇬 SportyBet -Nigeria</option>
-                  <option value="sportybet:tz">🇹🇿 SportyBet -Tanzania</option>
-                  <option value="sportybet:ug">🇺🇬 SportyBet -Uganda</option>
-                  <option value="sportybet:za">🇿🇦 SportyBet -South Africa</option>
-                  <option value="sportybet:zm">🇿🇲 SportyBet -Zambia</option>
-                  <option value="stake">💎 Stake.com -Crypto</option>
-                  <option value="sunbet:za">🇿🇦 Sunbet -South Africa</option>
-                  <option value="supersport">🇿🇦 SuperSportBet -South Africa</option>
-                  <option value="unibet:au">🇦🇺 Unibet -Australia</option>
-                  <option value="unibet:eu">🇪🇺 Unibet -Europe</option>
-                  <option value="unibet:uk">🇬🇧 Unibet -UK</option>
-                  <option value="vascobet:br">🇧🇷 Vascobet -Brazil</option>
-                  <option value="wasafibet:tz">🇹🇿 Wasafibet -Tanzania</option>
-                  <option value="williamhill:es">🇪🇸 William Hill -Spain</option>
-                  <option value="williamhill:it">🇮🇹 William Hill -Italy</option>
-                  <option value="williamhill:uk">🇬🇧 William Hill -UK</option>
-                  <option value="winmasters:gr">🇬🇷 Winmasters -Greece</option>
-                  <option value="winmasters:ro">🇷🇴 Winmasters -Romania</option>
-                  <option value="winna:ke">🇰🇪 Winna -Kenya</option>
-                  <option value="winwin">🌐 Winwin -Global</option>
-                  <option value="worldsportsbetting:za">🇿🇦 World Sports Betting -South Africa</option>
-                  <option value="xparibet">🌐 Xparibet -Global</option>
-                  <option value="yesplay:za">🇿🇦 YesPlay -South Africa</option>
-                </select>
-              </div>
-            </div>
-
-            <!-- Convert Button -->
-            <button type="button" class="betcode-convert-btn" onclick="executeHeroBetCodeConversion()"
-              style="margin-top: 16px;">
-              <span>CONVERT</span>
-            </button>
-
-            <!-- Converted Booking Code Display Card (Matching attached user design) -->
-            <div id="hero-betcode-result-container" style="margin-top: 20px;">
-              <div
-                style="background: rgba(15, 23, 42, 0.85); border: 1.5px solid #10b981; border-radius: 14px; padding: 20px 16px; text-align: center; box-shadow: 0 6px 24px rgba(16, 185, 129, 0.18);">
-                <div
-                  style="font-size: 0.8rem; color: #34d399; font-weight: 800; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 6px;">
-                  CONVERTED BOOKING CODE</div>
-                <div id="hero-converted-code"
-                  style="font-size: 2.3rem; font-weight: 900; color: #ffffff; font-family: monospace; letter-spacing: 3px; margin: 4px 0 8px;">
-                  FZK5P9</div>
-                <div id="hero-converted-subtext" style="font-size: 0.82rem; color: #94a3b8; margin-bottom: 16px;">
-                  Converted from <b>SportyBet</b> (BC9P2XZ) to <b>1xBet</b></div>
-                <div style="display: flex; gap: 12px; justify-content: center; flex-wrap: wrap;">
-                  <button type="button" onclick="copyHeroConvertedCode()"
-                    style="background: #10b981; color: #ffffff; font-weight: 800; font-size: 0.85rem; padding: 10px 22px; border: none; border-radius: 8px; cursor: pointer; display: inline-flex; align-items: center; gap: 6px; transition: transform 0.15s ease, background 0.15s ease;">📋
-                    Copy Code</button>
-                  <a id="hero-converted-bet-btn" href="https://1xbet.ng" target="_blank"
-                    style="background: #2563eb; color: #ffffff; font-weight: 800; font-size: 0.85rem; padding: 10px 22px; border-radius: 8px; text-decoration: none; display: inline-flex; align-items: center; gap: 6px; transition: transform 0.15s ease, background 0.15s ease;">⚡
-                    Bet on 1xBet</a>
-                </div>
-              </div>
-            </div>
-          </div>
         </div>
       </div>
 
@@ -1632,23 +1150,28 @@
               DOUBLE OF THE DAY
             </span>
             <span style="font-family: var(--font-display); font-weight: 800; color: #10b981; font-size: 1.15rem;">
-              @2.68
+              @2.56
             </span>
           </div>
           <div>
-            <div style="font-size: 0.78rem; color: var(--text-muted); margin-bottom: 4px; font-weight: 600;">Selected
-              Matches</div>
-            <div style="font-weight: 700; font-size: 0.95rem; color: #ffffff;">
-              Bayern Munich vs Dortmund &amp; Liverpool vs Chelsea
+            <div style="font-size: 0.75rem; color: var(--text-muted); margin-bottom: 4px; font-weight: 600; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 4px;">
+              <span>Selected Matches</span>
+              <span style="color: #fbbf24; font-weight: 700; font-size: 0.7rem;">📅 5th, September 2026, 12:30 • 6th, September 2026, 20:30</span>
+            </div>
+            <div style="font-weight: 700; font-size: 0.95rem; color: #ffffff; line-height: 1.35;">
+              Arsenal vs Brighton &amp; Real Madrid vs Real Betis
+            </div>
+            <div style="font-size: 0.78rem; color: #60a5fa; font-weight: 600; margin-top: 4px;">
+              Tips: Arsenal Win (1.62) &amp; Real Madrid Win (1.58)
             </div>
           </div>
           <p style="font-size: 0.82rem; color: rgba(255,255,255,0.75); line-height: 1.45; flex-grow: 1; margin: 0;">
-            Combined win odds on Bayern (1.45) &amp; Liverpool Win (1.85) representing high value counter-press metrics.
+            Algorithmic high-probability double on Arsenal &amp; Real Madrid backed by high-pressing possession metrics and expected goals (xG) dominance.
           </p>
           <button class="btn btn-secondary"
             style="font-size: 0.8rem; padding: 8px 14px; width: 100%; border-radius: var(--radius-md); font-weight: 700; background: rgba(255,255,255,0.06); color: #ffffff; border: 1px solid rgba(255,255,255,0.12); cursor: pointer;"
-            onclick="copyDailyTipOdds('2.68')">
-            📋 Copy Selection Odds (@2.68)
+            onclick="copyDailyTipOdds('2.56')">
+            📋 Copy Selection Odds (@2.56)
           </button>
         </div>
 
@@ -1660,24 +1183,28 @@
               RISK OF THE DAY
             </span>
             <span style="font-family: var(--font-display); font-weight: 800; color: #10b981; font-size: 1.15rem;">
-              @3.40
+              @3.45
             </span>
           </div>
           <div>
-            <div style="font-size: 0.78rem; color: var(--text-muted); margin-bottom: 4px; font-weight: 600;">Selected
-              Matches</div>
-            <div style="font-weight: 700; font-size: 0.95rem; color: #ffffff;">
-              Arsenal vs Man City
+            <div style="font-size: 0.75rem; color: var(--text-muted); margin-bottom: 4px; font-weight: 600; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 4px;">
+              <span>Selected Matches</span>
+              <span style="color: #fbbf24; font-weight: 700; font-size: 0.7rem;">📅 13th, September 2026, 16:30</span>
+            </div>
+            <div style="font-weight: 700; font-size: 0.95rem; color: #ffffff; line-height: 1.35;">
+              Tottenham vs Arsenal
+            </div>
+            <div style="font-size: 0.78rem; color: #60a5fa; font-weight: 600; margin-top: 4px;">
+              Prediction: Arsenal Win + BTTS Yes (@3.45)
             </div>
           </div>
           <p style="font-size: 0.82rem; color: rgba(255,255,255,0.75); line-height: 1.45; flex-grow: 1; margin: 0;">
-            Arsenal Win + Both Teams To Score (BTTS). Arsenal's central block favors them, but City is likely to score
-            late.
+            Arsenal Win + Both Teams To Score (BTTS). High transition tempo favors Arsenal, with Tottenham's home attacking threat ensuring goals on both ends.
           </p>
           <button class="btn btn-secondary"
             style="font-size: 0.8rem; padding: 8px 14px; width: 100%; border-radius: var(--radius-md); font-weight: 700; background: rgba(255,255,255,0.06); color: #ffffff; border: 1px solid rgba(255,255,255,0.12); cursor: pointer;"
-            onclick="copyDailyTipOdds('3.40')">
-            📋 Copy Selection Odds (@3.40)
+            onclick="copyDailyTipOdds('3.45')">
+            📋 Copy Selection Odds (@3.45)
           </button>
         </div>
 
@@ -1693,14 +1220,19 @@
             </span>
           </div>
           <div>
-            <div style="font-size: 0.78rem; color: var(--text-muted); margin-bottom: 4px; font-weight: 600;">Selected
-              Matches</div>
-            <div style="font-weight: 700; font-size: 0.95rem; color: #ffffff;">
-              Juventus vs PSG
+            <div style="font-size: 0.75rem; color: var(--text-muted); margin-bottom: 4px; font-weight: 600; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 4px;">
+              <span>Selected Matches</span>
+              <span style="color: #fbbf24; font-weight: 700; font-size: 0.7rem;">📅 6th, September 2026, 19:45</span>
+            </div>
+            <div style="font-weight: 700; font-size: 0.95rem; color: #ffffff; line-height: 1.35;">
+              Juventus vs Roma
+            </div>
+            <div style="font-size: 0.78rem; color: #60a5fa; font-weight: 600; margin-top: 4px;">
+              Prediction: Draw (X) / Under 2.5 Goals (@3.20)
             </div>
           </div>
           <p style="font-size: 0.82rem; color: rgba(255,255,255,0.75); line-height: 1.45; flex-grow: 1; margin: 0;">
-            Draw (X) pick. Juventus deep block is highly resilient, PSG transition lacks wide crossing options.
+            Positive Expected Value (+EV) model opportunity on Draw / Tactical Low Margin. Juventus disciplined low block balances Roma's direct transition play.
           </p>
           <button class="btn btn-secondary"
             style="font-size: 0.8rem; padding: 8px 14px; width: 100%; border-radius: var(--radius-md); font-weight: 700; background: rgba(255,255,255,0.06); color: #ffffff; border: 1px solid rgba(255,255,255,0.12); cursor: pointer;"
@@ -2114,9 +1646,9 @@
 
           <!-- Code Input -->
           <div class="betcode-form-group">
-            <label class="betcode-label" for="betcode-src-code">Enter Booking</label>
-            <input type="text" class="betcode-input" id="betcode-src-code" placeholder="Enter Booking Code here"
-              value="BC9P2XZ">
+            <label class="betcode-label" for="betcode-src-code">Enter Booking Code</label>
+            <input type="text" class="betcode-input" id="betcode-src-code" placeholder="Enter Booking Code Here"
+              value="">
           </div>
 
           <!-- Select Row -->
@@ -2125,6 +1657,7 @@
               <label class="betcode-label" for="betcode-src-select">Convert From</label>
               <select class="betcode-select" id="betcode-src-select"
                 onchange="selectConverterBookmaker('src', this.value)">
+                <option value="" disabled selected>Select Source Bookmaker</option>
                 <option value="1xbet:bf">🇧🇫 1xbet -Burkina Faso</option>
                 <option value="1xbet:bj">🇧🇯 1xbet -Benin</option>
                 <option value="1xbet:ci">🇨🇮 1xbet -Côte D'Ivoire</option>
@@ -2311,7 +1844,7 @@
                 <option value="sportybet:gh">🇬🇭 SportyBet -Ghana</option>
                 <option value="sportybet:ke">🇰🇪 SportyBet -Kenya</option>
                 <option value="sportybet:mx">🇲🇽 SportyBet -Mexico</option>
-                <option value="sportybet:ng" selected>🇳🇬 SportyBet -Nigeria</option>
+                <option value="sportybet:ng">🇳🇬 SportyBet -Nigeria</option>
                 <option value="sportybet:tz">🇹🇿 SportyBet -Tanzania</option>
                 <option value="sportybet:ug">🇺🇬 SportyBet -Uganda</option>
                 <option value="sportybet:za">🇿🇦 SportyBet -South Africa</option>
@@ -2340,6 +1873,7 @@
               <label class="betcode-label" for="betcode-tgt-select">Convert To</label>
               <select class="betcode-select" id="betcode-tgt-select"
                 onchange="selectConverterBookmaker('tgt', this.value)">
+                <option value="" disabled selected>Select Target Bookmaker</option>
                 <option value="1xbet:bf">🇧🇫 1xbet -Burkina Faso</option>
                 <option value="1xbet:bj">🇧🇯 1xbet -Benin</option>
                 <option value="1xbet:ci">🇨🇮 1xbet -Côte D'Ivoire</option>
@@ -2351,7 +1885,7 @@
                 <option value="1xbet:ml">🇲🇱 1xbet -Mali</option>
                 <option value="1xbet:mw">🇲🇼 1xbet -Malawi</option>
                 <option value="1xbet:mz">🇲🇿 1xbet -Mozambique</option>
-                <option value="1xbet:ng" selected>🇳🇬 1xbet -Nigeria</option>
+                <option value="1xbet:ng">🇳🇬 1xbet -Nigeria</option>
                 <option value="1xbet:rw">🇷🇼 1xbet -Rwanda</option>
                 <option value="1xbet:sn">🇸🇳 1xbet -Senegal</option>
                 <option value="1xbet:tz">🇹🇿 1xbet -Tanzania</option>
@@ -2558,29 +2092,8 @@
             Convert
           </button>
 
-          <!-- Converted Booking Code Display Card (Matching attached user design) -->
-          <div id="standalone-betcode-result-container" style="margin-top: 20px;">
-            <div
-              style="background: rgba(15, 23, 42, 0.85); border: 1.5px solid #10b981; border-radius: 14px; padding: 20px 16px; text-align: center; box-shadow: 0 6px 24px rgba(16, 185, 129, 0.18);">
-              <div
-                style="font-size: 0.8rem; color: #34d399; font-weight: 800; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 6px;">
-                CONVERTED BOOKING CODE</div>
-              <div id="standalone-converted-code"
-                style="font-size: 2.3rem; font-weight: 900; color: #ffffff; font-family: monospace; letter-spacing: 3px; margin: 4px 0 8px;">
-                FZK5P9</div>
-              <div id="standalone-converted-subtext" style="font-size: 0.82rem; color: #94a3b8; margin-bottom: 16px;">
-                Converted from <b>SportyBet</b> (BC9P2XZ) to <b>1xBet</b></div>
-              <div style="display: flex; gap: 12px; justify-content: center; flex-wrap: wrap;">
-                <button type="button" onclick="copyStandaloneConvertedCode()"
-                  style="background: #10b981; color: #ffffff; font-weight: 800; font-size: 0.85rem; padding: 10px 22px; border: none; border-radius: 8px; cursor: pointer; display: inline-flex; align-items: center; gap: 6px; transition: transform 0.15s ease, background 0.15s ease;">📋
-                  Copy Code</button>
-                <a id="standalone-converted-bet-btn" href="https://1xbet.ng" target="_blank"
-                  style="background: #2563eb; color: #ffffff; font-weight: 800; font-size: 0.85rem; padding: 10px 22px; border-radius: 8px; text-decoration: none; display: inline-flex; align-items: center; gap: 6px; transition: transform 0.15s ease, background 0.15s ease;">⚡
-                  Bet on 1xBet</a>
-              </div>
-            </div>
-          </div>
-
+          <!-- Converted Booking Code Display Card (Populated Dynamically) -->
+          <div id="standalone-betcode-result-container" style="display: none; margin-top: 20px;"></div>
         </div>
 
 
@@ -3358,17 +2871,162 @@
               </div>
 
               <!-- Scan Action Button -->
-              <button class="btn btn-primary" onclick="runArbitrageScanner()"
-                style="height: 44px; padding: 0 24px; font-size: 0.85rem; font-weight: 800; background: linear-gradient(135deg, #10b981 0%, #059669 100%); border: 1px solid #34d399; box-shadow: 0 4px 14px rgba(16,185,129,0.45); cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; text-transform: uppercase;">
+              <button class="btn btn-primary" onclick="runArbitrageScanner(true)"
+                style="height: 44px; padding: 0 24px; font-size: 0.85rem; font-weight: 800; background: linear-gradient(135deg, #10b981 0%, #059669 100%); border: 1px solid #34d399; box-shadow: 0 4px 14px rgba(16,185,129,0.45); cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; text-transform: uppercase; transition: all 0.2s ease;">
                 🔍 Scan 50 Bookies for SureBets
               </button>
 
             </div>
 
+            <!-- 50 Scanned Bookmakers Info & Toggle Bar -->
+            <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 10px; background: rgba(16, 185, 129, 0.08); border: 1px solid rgba(16, 185, 129, 0.25); border-radius: var(--radius-sm); padding: 10px 14px; margin-bottom: 18px;">
+              <div style="display: flex; align-items: center; gap: 8px;">
+                <span style="display: inline-block; width: 8px; height: 8px; border-radius: 50%; background: #10b981; box-shadow: 0 0 8px #10b981; animation: pulse 1.5s infinite;"></span>
+                <span style="font-size: 0.82rem; font-weight: 800; color: #ffffff;">📡 50 Global Bookmakers Scanned &amp; Connected</span>
+                <span style="background: rgba(16,185,129,0.2); color: #34d399; font-size: 0.68rem; font-weight: 800; padding: 2px 8px; border-radius: 10px; border: 1px solid rgba(16,185,129,0.4);">50/50 LIVE API</span>
+              </div>
+              <div style="display: flex; align-items: center; gap: 8px;">
+                <button type="button" class="btn btn-secondary" onclick="toggleScannedBookiesList()" id="toggle-bookies-list-btn"
+                  style="font-size: 0.75rem; padding: 6px 12px; font-weight: 700; border: 1px solid rgba(52, 211, 153, 0.4); color: #34d399; background: rgba(0,0,0,0.4); border-radius: var(--radius-xs); cursor: pointer;">
+                  📋 View 50 Bookmakers Below ▼
+                </button>
+                <button type="button" class="btn btn-secondary" onclick="openScannedBookmakersModal()"
+                  style="font-size: 0.75rem; padding: 6px 12px; font-weight: 700; border: 1px solid rgba(96, 165, 250, 0.4); color: #60a5fa; background: rgba(0,0,0,0.4); border-radius: var(--radius-xs); cursor: pointer;">
+                  🔍 View 50 Bookmakers in Popup ↗
+                </button>
+              </div>
+            </div>
+
+            <!-- Collapsible 50 Bookmakers Grid Pane -->
+            <div id="scanned-bookies-list-pane" style="display: none; flex-direction: column; gap: 10px; background: rgba(0,0,0,0.45); border: 1px solid rgba(16, 185, 129, 0.25); border-radius: var(--radius-sm); padding: 14px; margin-bottom: 20px;">
+              <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px;">
+                <span style="font-size: 0.75rem; color: #a7f3d0; font-weight: 800; text-transform: uppercase;">
+                  Active Integrated Bookmaker Feeds (50 Global Bookmakers • Ping &lt; 35ms)
+                </span>
+                <span style="font-size: 0.72rem; color: var(--text-muted);">Real-time Odds Sync</span>
+              </div>
+              <div id="scanned-bookies-pills-grid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(170px, 1fr)); gap: 8px; max-height: 250px; overflow-y: auto; padding-right: 4px;">
+                <!-- Populated dynamically / initialized by JS -->
+              </div>
+            </div>
+
             <!-- Live Arbitrage Output Container -->
             <div id="arbitrage-results-container"
               style="display: flex; flex-direction: column; gap: 16px; border-top: 2px solid rgba(16, 185, 129, 0.4); padding-top: 20px;">
-              <!-- Populated dynamically by JS -->
+              <div style="font-size: 0.8rem; font-weight: 700; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.5px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px;">
+                <span>🎯 Live SureBet Arbitrage Opportunities (4 Found)</span>
+                <span style="color: #10b981; font-weight: 800; font-family: var(--font-display); font-size: 0.9rem;">Investment Budget: $100.00</span>
+              </div>
+
+              <!-- Deal 1 -->
+              <div class="glass-card" style="padding: 18px; border: 1px solid rgba(16,185,129,0.3); background: rgba(0,0,0,0.4); border-radius: var(--radius-md); display: flex; flex-direction: column; gap: 14px;">
+                <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 10px; border-bottom: 1px solid rgba(255,255,255,0.06); padding-bottom: 10px;">
+                  <div>
+                    <div style="font-size: 0.72rem; color: #10b981; font-weight: 800; text-transform: uppercase; display: flex; align-items: center; gap: 6px;">
+                      <span>Premier League</span>
+                      <span>•</span>
+                      <span style="color: #fbbf24;">📅 5th, September 2026, 12:30</span>
+                    </div>
+                    <div style="font-size: 1.05rem; font-weight: 900; color: #ffffff; font-family: var(--font-display); margin: 2px 0;">🏴󠁧󠁢󠁥󠁮󠁧󠁿 Arsenal vs Brighton</div>
+                    <div style="font-size: 0.75rem; color: var(--text-secondary);">Market: <b style="color: #60a5fa;">Over / Under 2.5 Goals</b></div>
+                  </div>
+                  <div style="text-align: right;">
+                    <div style="background: linear-gradient(135deg, rgba(16,185,129,0.2) 0%, rgba(5,150,105,0.2) 100%); border: 1px solid #10b981; color: #34d399; font-weight: 900; font-size: 0.9rem; padding: 6px 14px; border-radius: 20px; font-family: var(--font-display); display: inline-flex; align-items: center; gap: 6px;">
+                      🛡️ +12.4% NET PROFIT
+                    </div>
+                    <div style="font-size: 0.75rem; color: #10b981; font-weight: 700; margin-top: 4px;">
+                      Guaranteed Net Profit: <b>+$12.42</b> (Zero Risk)
+                    </div>
+                  </div>
+                </div>
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 12px;">
+                  <div style="background: rgba(26,104,219,0.08); border: 1px solid rgba(59,130,246,0.3); border-radius: var(--radius-sm); padding: 12px 14px; display: flex; flex-direction: column; justify-content: space-between; gap: 10px;">
+                    <div>
+                      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px;">
+                        <span style="font-size: 0.75rem; font-weight: 800; color: #3b82f6; text-transform: uppercase;">LEG 1 • SportyBet</span>
+                        <span style="font-size: 0.85rem; font-weight: 900; color: #ffffff;">@2.32 Odds</span>
+                      </div>
+                      <div style="font-size: 0.85rem; font-weight: 800; color: #ffffff;">Over 2.5 Goals</div>
+                      <div style="font-size: 0.75rem; color: var(--text-secondary); margin-top: 4px;">
+                        Stake: <b style="color: #3b82f6;">$49.23</b> • Payout: <b>$114.21</b>
+                      </div>
+                    </div>
+                    <a href="https://www.sportybet.com/?referralCode=DEEPPREDICTBET" target="_blank" class="btn btn-secondary" style="font-size: 0.72rem; padding: 7px 12px; border: 1px solid var(--brand-royal-blue); color: #ffffff; text-align: center; text-decoration: none; font-weight: 700; display: block; border-radius: var(--radius-xs);">
+                      📲 Bet $49.23 on SportyBet
+                    </a>
+                  </div>
+                  <div style="background: rgba(245,158,11,0.08); border: 1px solid rgba(245,158,11,0.3); border-radius: var(--radius-sm); padding: 12px 14px; display: flex; flex-direction: column; justify-content: space-between; gap: 10px;">
+                    <div>
+                      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px;">
+                        <span style="font-size: 0.75rem; font-weight: 800; color: #fbbf24; text-transform: uppercase;">LEG 2 • Bet365</span>
+                        <span style="font-size: 0.85rem; font-weight: 900; color: #ffffff;">@2.25 Odds</span>
+                      </div>
+                      <div style="font-size: 0.85rem; font-weight: 800; color: #ffffff;">Under 2.5 Goals</div>
+                      <div style="font-size: 0.75rem; color: var(--text-secondary); margin-top: 4px;">
+                        Stake: <b style="color: #fbbf24;">$50.77</b> • Payout: <b>$114.23</b>
+                      </div>
+                    </div>
+                    <a href="https://www.bet365.com/?affiliate=DEEPPREDICTBET" target="_blank" class="btn btn-secondary" style="font-size: 0.72rem; padding: 7px 12px; border: 1px solid #d97706; color: #ffffff; text-align: center; text-decoration: none; font-weight: 700; display: block; border-radius: var(--radius-xs);">
+                      📲 Bet $50.77 on Bet365
+                    </a>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Deal 2 -->
+              <div class="glass-card" style="padding: 18px; border: 1px solid rgba(16,185,129,0.3); background: rgba(0,0,0,0.4); border-radius: var(--radius-md); display: flex; flex-direction: column; gap: 14px;">
+                <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 10px; border-bottom: 1px solid rgba(255,255,255,0.06); padding-bottom: 10px;">
+                  <div>
+                    <div style="font-size: 0.72rem; color: #10b981; font-weight: 800; text-transform: uppercase; display: flex; align-items: center; gap: 6px;">
+                      <span>La Liga</span>
+                      <span>•</span>
+                      <span style="color: #fbbf24;">📅 6th, September 2026, 20:30</span>
+                    </div>
+                    <div style="font-size: 1.05rem; font-weight: 900; color: #ffffff; font-family: var(--font-display); margin: 2px 0;">🇪🇸 Real Madrid vs Real Betis</div>
+                    <div style="font-size: 0.75rem; color: var(--text-secondary);">Market: <b style="color: #60a5fa;">Both Teams To Score (BTTS)</b></div>
+                  </div>
+                  <div style="text-align: right;">
+                    <div style="background: linear-gradient(135deg, rgba(16,185,129,0.2) 0%, rgba(5,150,105,0.2) 100%); border: 1px solid #10b981; color: #34d399; font-weight: 900; font-size: 0.9rem; padding: 6px 14px; border-radius: 20px; font-family: var(--font-display); display: inline-flex; align-items: center; gap: 6px;">
+                      🛡️ +11.5% NET PROFIT
+                    </div>
+                    <div style="font-size: 0.75rem; color: #10b981; font-weight: 700; margin-top: 4px;">
+                      Guaranteed Net Profit: <b>+$11.48</b> (Zero Risk)
+                    </div>
+                  </div>
+                </div>
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 12px;">
+                  <div style="background: rgba(26,104,219,0.08); border: 1px solid rgba(59,130,246,0.3); border-radius: var(--radius-sm); padding: 12px 14px; display: flex; flex-direction: column; justify-content: space-between; gap: 10px;">
+                    <div>
+                      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px;">
+                        <span style="font-size: 0.75rem; font-weight: 800; color: #3b82f6; text-transform: uppercase;">LEG 1 • 1xBet</span>
+                        <span style="font-size: 0.85rem; font-weight: 900; color: #ffffff;">@2.26 Odds</span>
+                      </div>
+                      <div style="font-size: 0.85rem; font-weight: 800; color: #ffffff;">BTTS Yes</div>
+                      <div style="font-size: 0.75rem; color: var(--text-secondary); margin-top: 4px;">
+                        Stake: <b style="color: #3b82f6;">$49.33</b> • Payout: <b>$111.49</b>
+                      </div>
+                    </div>
+                    <a href="https://1xbet.com/?tag=deeppredictbet" target="_blank" class="btn btn-secondary" style="font-size: 0.72rem; padding: 7px 12px; border: 1px solid var(--brand-royal-blue); color: #ffffff; text-align: center; text-decoration: none; font-weight: 700; display: block; border-radius: var(--radius-xs);">
+                      📲 Bet $49.33 on 1xBet
+                    </a>
+                  </div>
+                  <div style="background: rgba(245,158,11,0.08); border: 1px solid rgba(245,158,11,0.3); border-radius: var(--radius-sm); padding: 12px 14px; display: flex; flex-direction: column; justify-content: space-between; gap: 10px;">
+                    <div>
+                      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px;">
+                        <span style="font-size: 0.75rem; font-weight: 800; color: #fbbf24; text-transform: uppercase;">LEG 2 • Bet9ja</span>
+                        <span style="font-size: 0.85rem; font-weight: 900; color: #ffffff;">@2.20 Odds</span>
+                      </div>
+                      <div style="font-size: 0.85rem; font-weight: 800; color: #ffffff;">BTTS No</div>
+                      <div style="font-size: 0.75rem; color: var(--text-secondary); margin-top: 4px;">
+                        Stake: <b style="color: #fbbf24;">$50.67</b> • Payout: <b>$111.47</b>
+                      </div>
+                    </div>
+                    <a href="https://register.bet9ja.com/?promocode=DEEPPREDICTBET" target="_blank" class="btn btn-secondary" style="font-size: 0.72rem; padding: 7px 12px; border: 1px solid #d97706; color: #ffffff; text-align: center; text-decoration: none; font-weight: 700; display: block; border-radius: var(--radius-xs);">
+                      📲 Bet $50.67 on Bet9ja
+                    </a>
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
         </div>
@@ -4361,6 +4019,100 @@
       </div>
     </section>
 
+    <!-- --- PUNTERS VIP SUBSCRIPTION PACKAGES SECTION (FEATURED ON-PAGE) --- -->
+    <section id="vip-packages-section" class="container" style="margin-bottom: 60px;">
+      <div style="background: linear-gradient(180deg, #0f172a 0%, #1e293b 100%); border: 1.5px solid rgba(16, 185, 129, 0.4); border-radius: 24px; box-shadow: 0 20px 50px rgba(0,0,0,0.5), 0 0 30px rgba(16, 185, 129, 0.15); overflow: hidden; max-width: 680px; margin: 0 auto;">
+        
+        <!-- Header -->
+        <div class="vip-paywall-header" style="padding: 32px 24px 16px;">
+          <h2 class="vip-paywall-title" style="font-size: 2.1rem;">Bet smarter. Win more.</h2>
+          <div class="vip-social-proof">
+            <span class="vip-stars">★★★★★</span>
+            <span>4.8 · 20,000 App Store Reviews</span>
+          </div>
+        </div>
+
+        <!-- Winning Slips Proof Showcase Carousel -->
+        <div class="vip-slips-container" style="padding: 10px 24px 16px;">
+          <div class="vip-winning-slip">
+            <div class="vip-slip-badge">🏆 X1.83</div>
+            <div class="vip-slip-teams">Celta Vigo vs Sevilla</div>
+            <div class="vip-slip-picks">
+              <div class="vip-slip-pick-item"><span class="check-icon">✔</span> 1 - 0</div>
+              <div class="vip-slip-pick-item"><span class="check-icon">✔</span> Under 2.5 Goals</div>
+              <div class="vip-slip-pick-item"><span class="check-icon">✔</span> Home Win</div>
+            </div>
+          </div>
+          <div class="vip-winning-slip">
+            <div class="vip-slip-badge">🏆 X1.55</div>
+            <div class="vip-slip-teams">Real Madrid vs Athletic Club</div>
+            <div class="vip-slip-picks">
+              <div class="vip-slip-pick-item"><span class="check-icon">✔</span> 1 - 3</div>
+              <div class="vip-slip-pick-item"><span class="check-icon">✔</span> Over 2.5 Goals</div>
+              <div class="vip-slip-pick-item"><span class="check-icon">✔</span> Away Win</div>
+            </div>
+          </div>
+          <div class="vip-winning-slip">
+            <div class="vip-slip-badge">🏆 X2.10</div>
+            <div class="vip-slip-teams">Arsenal vs Brighton</div>
+            <div class="vip-slip-picks">
+              <div class="vip-slip-pick-item"><span class="check-icon">✔</span> 2 - 1</div>
+              <div class="vip-slip-pick-item"><span class="check-icon">✔</span> Over 1.5 Goals</div>
+              <div class="vip-slip-pick-item"><span class="check-icon">✔</span> Home Win</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 3-Package Subscription Selector Grid -->
+        <div class="vip-plans-grid" style="padding: 6px 24px 22px;">
+          <!-- Weekly VIP -->
+          <div class="vip-plan-card" id="page-vip-card-weekly" onclick="selectPageVipPackage('weekly')">
+            <div class="vip-plan-price">₦10,000.00</div>
+            <div class="vip-plan-daily">₦1,429 / day</div>
+            <div class="vip-save-placeholder"></div>
+            <div class="vip-plan-label-block">Weekly VIP</div>
+          </div>
+
+          <!-- Monthly VIP -->
+          <div class="vip-plan-card" id="page-vip-card-monthly" onclick="selectPageVipPackage('monthly')">
+            <div class="vip-plan-price">₦27,000.00</div>
+            <div class="vip-plan-daily">₦900 / day</div>
+            <div class="vip-save-pill">Save 32%</div>
+            <div class="vip-plan-label-block">Monthly VIP</div>
+          </div>
+
+          <!-- Annual VIP (Best Value) -->
+          <div class="vip-plan-card selected" id="page-vip-card-annual" onclick="selectPageVipPackage('annual')">
+            <div class="vip-best-value-pill">BEST VALUE</div>
+            <div class="vip-plan-price">₦149,500.00</div>
+            <div class="vip-plan-daily">₦410 / day</div>
+            <div class="vip-save-pill">Save 71%</div>
+            <div class="vip-plan-label-block">Annual VIP</div>
+          </div>
+        </div>
+
+        <!-- Continue Action & Cancellation Reassurance -->
+        <div class="vip-actions-wrapper" style="padding: 0 24px 26px;">
+          <button class="vip-continue-btn" id="page-vip-continue-btn" onclick="openVipSubscriptionModal(window.pageSelectedVipTier || 'annual'); proceedToVipPayment();">
+            CONTINUE &rarr;
+          </button>
+          <button type="button" class="vip-cancel-guarantee" onclick="openEasyToCancelModal()">
+            <span>🛡️</span> Easy to cancel
+          </button>
+        </div>
+
+        <!-- Trust Guarantee Footer -->
+        <div class="vip-trust-footer">
+          <span>🔒 256-Bit SSL Encrypted</span>
+          <span>•</span>
+          <span>⚡ Instant Activation</span>
+          <span>•</span>
+          <span>🛡️ 100% Satisfaction Guarantee</span>
+        </div>
+
+      </div>
+    </section>
+
     <!-- --- VIP TELEGRAM CHANNEL BANNER --- -->
     <section id="telegram-vip-section" class="container" style="margin-bottom: 60px;">
       <div class="glass-card"
@@ -4772,6 +4524,371 @@
     </div>
   </div>
 
+  <!-- ==========================================================================
+       PUNTERS VIP SUBSCRIPTION MODAL (MATCHING REFERENCE DESIGN)
+       ========================================================================== -->
+  <div class="modal-overlay" id="vip-subscription-modal" onclick="closeVipSubscriptionModal(event)">
+    <div class="modal-content" onclick="event.stopPropagation()" style="max-width: 580px; width: 95%;">
+
+      <!-- PANE 1: MAIN VIP PAYWALL SCREEN -->
+      <div id="vip-pane-paywall" style="display: block;">
+        <!-- Close Button -->
+        <button class="modal-close" onclick="closeVipSubscriptionModal(event, true)"
+          style="position: absolute; top: 16px; right: 18px; width: 34px; height: 34px; border-radius: 50%; background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.15); color: #ffffff; font-size: 1.2rem; cursor: pointer; display: flex; align-items: center; justify-content: center; z-index: 10; transition: all 0.2s ease;">&times;</button>
+
+        <!-- Header -->
+        <div class="vip-paywall-header">
+          <h2 class="vip-paywall-title">Bet smarter. Win more.</h2>
+          <div class="vip-social-proof">
+            <span class="vip-stars">★★★★★</span>
+            <span>4.8 · 20,000 App Store Reviews</span>
+          </div>
+        </div>
+
+        <!-- Winning Slips Proof Showcase Carousel -->
+        <div class="vip-slips-container">
+          <!-- Slip 1 -->
+          <div class="vip-winning-slip">
+            <div class="vip-slip-badge">🏆 X1.83</div>
+            <div class="vip-slip-teams">Celta Vigo vs Sevilla</div>
+            <div class="vip-slip-picks">
+              <div class="vip-slip-pick-item"><span class="check-icon">✔</span> 1 - 0</div>
+              <div class="vip-slip-pick-item"><span class="check-icon">✔</span> Under 2.5 Goals</div>
+              <div class="vip-slip-pick-item"><span class="check-icon">✔</span> Home Win</div>
+            </div>
+          </div>
+          <!-- Slip 2 -->
+          <div class="vip-winning-slip">
+            <div class="vip-slip-badge">🏆 X1.55</div>
+            <div class="vip-slip-teams">Real Madrid vs Athletic Club</div>
+            <div class="vip-slip-picks">
+              <div class="vip-slip-pick-item"><span class="check-icon">✔</span> 1 - 3</div>
+              <div class="vip-slip-pick-item"><span class="check-icon">✔</span> Over 2.5 Goals</div>
+              <div class="vip-slip-pick-item"><span class="check-icon">✔</span> Away Win</div>
+            </div>
+          </div>
+          <!-- Slip 3 -->
+          <div class="vip-winning-slip">
+            <div class="vip-slip-badge">🏆 X2.10</div>
+            <div class="vip-slip-teams">Arsenal vs Brighton</div>
+            <div class="vip-slip-picks">
+              <div class="vip-slip-pick-item"><span class="check-icon">✔</span> 2 - 1</div>
+              <div class="vip-slip-pick-item"><span class="check-icon">✔</span> Over 1.5 Goals</div>
+              <div class="vip-slip-pick-item"><span class="check-icon">✔</span> Home Win</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 3-Package Subscription Selector Grid -->
+        <div class="vip-plans-grid">
+          <!-- Plan 1: Weekly VIP -->
+          <div class="vip-plan-card" id="vip-card-weekly" onclick="selectVipPackage('weekly')">
+            <div class="vip-plan-price" id="vip-price-weekly">₦10,000.00</div>
+            <div class="vip-plan-daily">₦1,429 / day</div>
+            <div class="vip-save-placeholder"></div>
+            <div class="vip-plan-label-block">Weekly VIP</div>
+          </div>
+
+          <!-- Plan 2: Monthly VIP -->
+          <div class="vip-plan-card" id="vip-card-monthly" onclick="selectVipPackage('monthly')">
+            <div class="vip-plan-price" id="vip-price-monthly">₦27,000.00</div>
+            <div class="vip-plan-daily">₦900 / day</div>
+            <div class="vip-save-pill">Save 32%</div>
+            <div class="vip-plan-label-block">Monthly VIP</div>
+          </div>
+
+          <!-- Plan 3: Annual VIP (Best Value) -->
+          <div class="vip-plan-card selected" id="vip-card-annual" onclick="selectVipPackage('annual')">
+            <div class="vip-best-value-pill">BEST VALUE</div>
+            <div class="vip-plan-price" id="vip-price-annual">₦149,500.00</div>
+            <div class="vip-plan-daily">₦410 / day</div>
+            <div class="vip-save-pill">Save 71%</div>
+            <div class="vip-plan-label-block">Annual VIP</div>
+          </div>
+        </div>
+
+        <!-- Continue Action & Cancellation Reassurance -->
+        <div class="vip-actions-wrapper">
+          <button class="vip-continue-btn" id="vip-continue-btn" onclick="proceedToVipPayment()">
+            CONTINUE &rarr;
+          </button>
+          <button type="button" class="vip-cancel-guarantee" onclick="openEasyToCancelModal()">
+            <span>🛡️</span> Easy to cancel
+          </button>
+        </div>
+
+        <!-- Trust Guarantee Footer -->
+        <div class="vip-trust-footer">
+          <span>🔒 256-Bit SSL</span>
+          <span>•</span>
+          <span>⚡ Instant Activation</span>
+          <span>•</span>
+          <span>🛡️ 100% Satisfaction</span>
+        </div>
+      </div>
+
+      <!-- PANE 2: SECURE PAYMENT CHECKOUT SCREEN -->
+      <div id="vip-pane-payment" style="display: none;">
+        <!-- Header -->
+        <div style="padding: 18px 20px; border-bottom: 1px solid rgba(255,255,255,0.08); display: flex; align-items: center; justify-content: space-between;">
+          <button onclick="backToVipPaywall()"
+            style="background: none; border: none; color: #94a3b8; font-weight: 700; font-size: 0.82rem; cursor: pointer; display: flex; align-items: center; gap: 6px;">
+            &larr; Back to Packages
+          </button>
+          <h3 style="font-family: var(--font-display); font-size: 1.05rem; font-weight: 800; color: #ffffff; margin: 0;">Secure Checkout</h3>
+          <button onclick="closeVipSubscriptionModal(event, true)"
+            style="background: none; border: none; color: #94a3b8; font-size: 1.2rem; cursor: pointer;">&times;</button>
+        </div>
+
+        <div class="vip-payment-wrapper">
+          <!-- Selected Plan Summary Card -->
+          <div class="vip-order-summary">
+            <div>
+              <div style="font-size: 0.72rem; color: #10b981; font-weight: 800; text-transform: uppercase;">Selected Package</div>
+              <div style="font-size: 1rem; font-weight: 800; color: #ffffff;" id="vip-checkout-plan-name">Annual VIP Pass (365 Days)</div>
+              <div style="font-size: 0.72rem; color: #94a3b8;" id="vip-checkout-plan-daily">Billed at ₦410 / day</div>
+            </div>
+            <div style="text-align: right;">
+              <div style="font-size: 1.25rem; font-weight: 900; color: #34d399; font-family: var(--font-display);" id="vip-checkout-plan-price">₦149,500.00</div>
+              <span style="font-size: 0.65rem; color: #10b981; background: rgba(16,185,129,0.15); padding: 2px 6px; border-radius: 4px; font-weight: 700;">Instant Access</span>
+            </div>
+          </div>
+
+          <!-- Payment Method Tabs -->
+          <div>
+            <div style="font-size: 0.75rem; color: #94a3b8; font-weight: 700; margin-bottom: 6px; text-transform: uppercase;">Select Payment Method</div>
+            <div class="vip-payment-methods">
+              <button class="vip-pay-method-btn active" id="vip-method-card-btn" onclick="switchVipPaymentMethod('card')">
+                <span style="font-size: 1.1rem;">💳</span>
+                <span>Debit/Card</span>
+              </button>
+              <button class="vip-pay-method-btn" id="vip-method-transfer-btn" onclick="switchVipPaymentMethod('transfer')">
+                <span style="font-size: 1.1rem;">🏦</span>
+                <span>Bank Transfer</span>
+              </button>
+              <button class="vip-pay-method-btn" id="vip-method-crypto-btn" onclick="switchVipPaymentMethod('crypto')">
+                <span style="font-size: 1.1rem;">🪙</span>
+                <span>Crypto USDT</span>
+              </button>
+            </div>
+          </div>
+
+          <!-- Method 1: Card Form -->
+          <div id="vip-form-card" style="display: flex; flex-direction: column; gap: 10px;">
+            <div style="display: flex; justify-content: space-between; align-items: center;">
+              <span style="font-size: 0.75rem; color: #cbd5e1; font-weight: 600;">Paystack / Flutterwave Secured</span>
+              <button type="button" onclick="fillVipDemoCard()" style="background: rgba(59,130,246,0.15); border: 1px solid rgba(59,130,246,0.3); color: #60a5fa; font-size: 0.68rem; font-weight: 700; padding: 2px 8px; border-radius: 4px; cursor: pointer;">Fill Demo Card</button>
+            </div>
+            <input type="text" id="vip-card-number" class="vip-pay-form-input" placeholder="Card Number (0000 0000 0000 0000)" maxlength="19">
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+              <input type="text" id="vip-card-expiry" class="vip-pay-form-input" placeholder="MM / YY" maxlength="5">
+              <input type="password" id="vip-card-cvv" class="vip-pay-form-input" placeholder="CVV (3 digits)" maxlength="4">
+            </div>
+            <input type="text" id="vip-card-name" class="vip-pay-form-input" placeholder="Cardholder Full Name">
+          </div>
+
+          <!-- Method 2: Bank Transfer Details -->
+          <div id="vip-form-transfer" style="display: none; flex-direction: column; gap: 10px; background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.08); padding: 14px; border-radius: 12px;">
+            <div style="font-size: 0.75rem; color: #cbd5e1; font-weight: 700;">Instant Virtual Bank Transfer</div>
+            <div style="display: flex; justify-content: space-between; align-items: center; background: rgba(0,0,0,0.3); padding: 10px 12px; border-radius: 8px;">
+              <div>
+                <div style="font-size: 0.68rem; color: #94a3b8;">Wema Bank / Moniepoint Virtual</div>
+                <div style="font-size: 1.15rem; font-weight: 900; color: #ffffff; letter-spacing: 1px;" id="vip-transfer-acct">9028471924</div>
+                <div style="font-size: 0.68rem; color: #34d399;">DeepPredictBet VIP Escrow</div>
+              </div>
+              <button type="button" onclick="copyVipAccount()" style="background: #10b981; border: none; color: #ffffff; font-weight: 800; font-size: 0.72rem; padding: 6px 12px; border-radius: 6px; cursor: pointer;">COPY</button>
+            </div>
+            <div style="font-size: 0.7rem; color: #94a3b8; text-align: center;">Transfers are verified automatically within 60 seconds.</div>
+          </div>
+
+          <!-- Method 3: Crypto USDT Details -->
+          <div id="vip-form-crypto" style="display: none; flex-direction: column; gap: 10px; background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.08); padding: 14px; border-radius: 12px; text-align: center;">
+            <div style="font-size: 0.75rem; color: #cbd5e1; font-weight: 700;">USDT (TRC-20) Global Web3 Checkout</div>
+            <div style="font-family: monospace; font-size: 0.76rem; color: #34d399; background: rgba(0,0,0,0.4); padding: 10px; border-radius: 8px; word-break: break-all;" id="vip-crypto-addr">
+              TYDzsXDvGf2YfJgU9KqwEw7Yv3z2r8Z9Nq
+            </div>
+            <button type="button" onclick="copyVipCrypto()" style="background: rgba(16,185,129,0.2); border: 1px solid #10b981; color: #34d399; font-weight: 800; font-size: 0.72rem; padding: 6px 12px; border-radius: 6px; cursor: pointer; align-self: center;">COPY USDT ADDRESS</button>
+          </div>
+
+          <!-- Pay Submit Button -->
+          <button class="vip-continue-btn" id="vip-submit-payment-btn" onclick="processVipPayment()">
+            Pay <span id="vip-btn-amount-text">₦149,500.00</span> Securely 🔒
+          </button>
+
+          <div style="font-size: 0.68rem; color: #64748b; text-align: center;">
+            🔒 256-Bit Bank Grade Encryption · 1-Click Cancellation Anytime · Instant Activation
+          </div>
+        </div>
+      </div>
+
+      <!-- PANE 3: VIP ACTIVATION SUCCESS SCREEN -->
+      <div id="vip-pane-success" style="display: none; padding: 32px 24px; text-align: center;">
+        <div style="width: 72px; height: 72px; border-radius: 50%; background: linear-gradient(135deg, #15803d 0%, #166534 100%); border: 3px solid #34d399; display: flex; align-items: center; justify-content: center; font-size: 2.2rem; margin: 0 auto 16px; box-shadow: 0 0 30px rgba(34,197,94,0.5);">
+          👑
+        </div>
+        <h2 style="font-family: var(--font-display); font-size: 1.6rem; font-weight: 900; color: #ffffff; margin: 0 0 6px;">VIP Membership Activated!</h2>
+        <p style="font-size: 0.85rem; color: #94a3b8; margin: 0 0 20px;">
+          Welcome to the DeepPredictBet Elite Punters Circle. Your <b style="color: #34d399;" id="vip-success-plan-label">Annual VIP</b> pass is now active.
+        </p>
+
+        <!-- Receipt Card -->
+        <div style="background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.08); border-radius: 14px; padding: 14px 18px; text-align: left; margin-bottom: 22px; font-size: 0.8rem; display: flex; flex-direction: column; gap: 8px;">
+          <div style="display: flex; justify-content: space-between;"><span style="color: #64748b;">Transaction ID:</span><span style="color: #ffffff; font-family: monospace;" id="vip-success-txid">DP-VIP-9941</span></div>
+          <div style="display: flex; justify-content: space-between;"><span style="color: #64748b;">Billing Cycle:</span><span style="color: #34d399; font-weight: 700;" id="vip-success-billing">Yearly VIP</span></div>
+          <div style="display: flex; justify-content: space-between;"><span style="color: #64748b;">Access Valid Until:</span><span style="color: #ffffff; font-weight: 700;" id="vip-success-expiry">September 2, 2027</span></div>
+          <div style="display: flex; justify-content: space-between;"><span style="color: #64748b;">Cancellation Policy:</span><span style="color: #fbbf24; font-weight: 700;">Easy 1-Click Cancel Anytime</span></div>
+        </div>
+
+        <div style="display: flex; flex-direction: column; gap: 10px;">
+          <button class="vip-continue-btn" onclick="openVipTipsHub(); closeVipSubscriptionModal(null, true);">
+            🔥 Open VIP Banker Tips Hub
+          </button>
+          <button class="btn btn-secondary" onclick="closeVipSubscriptionModal(null, true)" style="padding: 12px; font-weight: 700; font-size: 0.85rem;">
+            Continue Browsing
+          </button>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ==========================================================================
+       EASY TO CANCEL POLICY & MANAGEMENT MODAL
+       ========================================================================== -->
+  <div class="modal-overlay" id="vip-cancel-modal" onclick="closeEasyToCancelModal(event)">
+    <div class="modal-content" onclick="event.stopPropagation()" style="max-width: 480px; width: 92%; background: #0f172a; border: 1px solid rgba(255,255,255,0.12); border-radius: 20px; padding: 24px;">
+      <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px;">
+        <div style="display: flex; align-items: center; gap: 10px;">
+          <span style="font-size: 1.5rem;">🛡️</span>
+          <h3 style="font-family: var(--font-display); font-size: 1.15rem; font-weight: 900; color: #ffffff; margin: 0;">Easy to Cancel Policy</h3>
+        </div>
+        <button onclick="closeEasyToCancelModal(event, true)" style="background: none; border: none; color: #94a3b8; font-size: 1.2rem; cursor: pointer;">&times;</button>
+      </div>
+
+      <p style="font-size: 0.82rem; color: #94a3b8; line-height: 1.5; margin-bottom: 16px;">
+        At DeepPredictBet, punters are always in full control of their subscription. There are no lock-in contracts, no awkward phone calls, and no cancellation penalties.
+      </p>
+
+      <div style="display: flex; flex-direction: column; gap: 12px; margin-bottom: 20px;">
+        <div style="display: flex; gap: 10px; background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.06); padding: 12px; border-radius: 10px;">
+          <span style="color: #10b981; font-size: 1.1rem;">⚡</span>
+          <div>
+            <div style="font-weight: 800; font-size: 0.84rem; color: #f8fafc;">1-Click Instant Cancellation</div>
+            <div style="font-size: 0.74rem; color: #94a3b8;">Cancel anytime right from your User Hub Profile with a single tap.</div>
+          </div>
+        </div>
+        <div style="display: flex; gap: 10px; background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.06); padding: 12px; border-radius: 10px;">
+          <span style="color: #10b981; font-size: 1.1rem;">📅</span>
+          <div>
+            <div style="font-weight: 800; font-size: 0.84rem; color: #f8fafc;">Keep Access Till Expiry</div>
+            <div style="font-size: 0.74rem; color: #94a3b8;">If you cancel, you keep full VIP predictions access until the end of your prepaid period.</div>
+          </div>
+        </div>
+        <div style="display: flex; gap: 10px; background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.06); padding: 12px; border-radius: 10px;">
+          <span style="color: #10b981; font-size: 1.1rem;">💳</span>
+          <div>
+            <div style="font-weight: 800; font-size: 0.84rem; color: #f8fafc;">Zero Hidden Charges</div>
+            <div style="font-size: 0.74rem; color: #94a3b8;">No unannounced renewals. Full billing receipt provided after every payment.</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Active Subscription Cancel Trigger (if currently VIP) -->
+      <div id="vip-cancel-action-container" style="display: none; margin-bottom: 16px;">
+        <div style="background: rgba(239,68,68,0.1); border: 1px solid rgba(239,68,68,0.3); border-radius: 10px; padding: 12px; text-align: center;">
+          <div style="font-size: 0.78rem; color: #f87171; font-weight: 700; margin-bottom: 8px;">Active Subscription Found</div>
+          <button type="button" onclick="confirmCancelVipSubscription()" style="background: #ef4444; border: none; color: #ffffff; font-weight: 800; font-size: 0.8rem; padding: 8px 16px; border-radius: 8px; cursor: pointer;">
+            Cancel My VIP Subscription Now
+          </button>
+        </div>
+      </div>
+
+      <button class="btn btn-primary" onclick="closeEasyToCancelModal(event, true)" style="width: 100%; padding: 12px; font-weight: 800; font-size: 0.85rem;">
+        Understood, Close
+      </button>
+    </div>
+  </div>
+
+  <!-- ==========================================================================
+       EXCLUSIVE VIP BANKER TIPS HUB MODAL
+       ========================================================================== -->
+  <div class="modal-overlay" id="vip-tips-hub-modal" onclick="closeVipTipsHub(event)">
+    <div class="modal-content" onclick="event.stopPropagation()" style="max-width: 620px; width: 95%; background: #0f172a; border: 1px solid rgba(16,185,129,0.35); border-radius: 20px; overflow: hidden; padding: 0;">
+      <!-- Modal Header -->
+      <div style="background: linear-gradient(135deg, #15803d 0%, #166534 50%, #0f172a 100%); padding: 20px; display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid rgba(255,255,255,0.1);">
+        <div style="display: flex; align-items: center; gap: 12px;">
+          <div style="width: 42px; height: 42px; border-radius: 50%; background: rgba(255,255,255,0.15); display: flex; align-items: center; justify-content: center; font-size: 1.3rem;">👑</div>
+          <div>
+            <h3 style="font-family: var(--font-display); font-size: 1.15rem; font-weight: 900; color: #ffffff; margin: 0;">VIP Banker Predictions Hub</h3>
+            <span style="font-size: 0.72rem; color: #bbf7d0; font-weight: 600;">89.4% Verified Win Rate · High-Stakes Banker Tickets</span>
+          </div>
+        </div>
+        <button onclick="closeVipTipsHub(event, true)" style="background: rgba(255,255,255,0.15); border: none; width: 30px; height: 30px; border-radius: 50%; color: #fff; cursor: pointer; font-size: 1rem;">&times;</button>
+      </div>
+
+      <!-- Modal Body -->
+      <div style="padding: 20px; max-height: 480px; overflow-y: auto; display: flex; flex-direction: column; gap: 14px;">
+        
+        <!-- Daily Banker 1 -->
+        <div style="background: rgba(255,255,255,0.03); border: 1.5px solid rgba(16,185,129,0.3); border-radius: 14px; padding: 14px; position: relative;">
+          <div style="position: absolute; top: -10px; left: 14px; background: #15803d; color: #ffffff; font-size: 0.65rem; font-weight: 900; padding: 2px 8px; border-radius: 4px; text-transform: uppercase;">
+            👑 BANKER OF THE DAY (94% CONFIDENCE)
+          </div>
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 4px;">
+            <div>
+              <div style="font-size: 0.7rem; color: #94a3b8; text-transform: uppercase;">🇪🇸 La Liga · 6th, September 2026, 20:30</div>
+              <div style="font-size: 1rem; font-weight: 900; color: #ffffff; margin: 2px 0;">Real Madrid vs Real Betis</div>
+              <div style="font-size: 0.78rem; color: #34d399; font-weight: 700;">Tip: Over 2.5 Goals + Home Win</div>
+            </div>
+            <div style="font-family: var(--font-display); font-size: 1.3rem; font-weight: 900; color: #fbbf24;">@1.65</div>
+          </div>
+        </div>
+
+        <!-- Daily Banker 2 -->
+        <div style="background: rgba(255,255,255,0.03); border: 1.5px solid rgba(59,130,246,0.3); border-radius: 14px; padding: 14px; position: relative;">
+          <div style="position: absolute; top: -10px; left: 14px; background: #2563eb; color: #ffffff; font-size: 0.65rem; font-weight: 900; padding: 2px 8px; border-radius: 4px; text-transform: uppercase;">
+            💎 GOLDEN DOUBLE ACCUMULATOR
+          </div>
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 4px;">
+            <div>
+              <div style="font-size: 0.7rem; color: #94a3b8; text-transform: uppercase;">🏴󠁧󠁢󠁥󠁮󠁧󠁿 EPL + 🇮🇹 Serie A (5th Sept)</div>
+              <div style="font-size: 0.95rem; font-weight: 900; color: #ffffff; margin: 2px 0;">Arsenal Win (1) & Inter vs Atalanta BTTS</div>
+              <div style="font-size: 0.78rem; color: #60a5fa; font-weight: 700;">Combined Probability: 78.4%</div>
+            </div>
+            <div style="font-family: var(--font-display); font-size: 1.3rem; font-weight: 900; color: #fbbf24;">@2.55</div>
+          </div>
+        </div>
+
+        <!-- 1-Click Booking Codes Section -->
+        <div style="background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.08); border-radius: 14px; padding: 14px;">
+          <div style="font-size: 0.78rem; font-weight: 800; color: #f8fafc; margin-bottom: 10px; display: flex; align-items: center; justify-content: space-between;">
+            <span>🎟️ 1-Click Booking Codes for Today's VIP Slip</span>
+            <span style="font-size: 0.68rem; color: #34d399;">Active & Loaded</span>
+          </div>
+          <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px;">
+            <button onclick="copyBookingCode('BC-VIP8941', 'SportyBet')" style="background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.1); color: #fff; padding: 8px 10px; border-radius: 8px; font-size: 0.75rem; font-weight: 700; cursor: pointer; display: flex; justify-content: space-between; align-items: center;">
+              <span>🔴 SportyBet:</span>
+              <span style="color: #fbbf24; font-family: monospace;">BC-VIP8941 📋</span>
+            </button>
+            <button onclick="copyBookingCode('B9-9941X', 'Bet9ja')" style="background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.1); color: #fff; padding: 8px 10px; border-radius: 8px; font-size: 0.75rem; font-weight: 700; cursor: pointer; display: flex; justify-content: space-between; align-items: center;">
+              <span>🟢 Bet9ja:</span>
+              <span style="color: #fbbf24; font-family: monospace;">B9-9941X 📋</span>
+            </button>
+            <button onclick="copyBookingCode('1X-7740Z', '1xBet')" style="background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.1); color: #fff; padding: 8px 10px; border-radius: 8px; font-size: 0.75rem; font-weight: 700; cursor: pointer; display: flex; justify-content: space-between; align-items: center;">
+              <span>🔵 1xBet:</span>
+              <span style="color: #fbbf24; font-family: monospace;">1X-7740Z 📋</span>
+            </button>
+            <button onclick="copyBookingCode('B3-5589Q', 'Bet365')" style="background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.1); color: #fff; padding: 8px 10px; border-radius: 8px; font-size: 0.75rem; font-weight: 700; cursor: pointer; display: flex; justify-content: space-between; align-items: center;">
+              <span>🟡 Bet365:</span>
+              <span style="color: #fbbf24; font-family: monospace;">B3-5589Q 📋</span>
+            </button>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
   <!-- --- MINES COINS STORE & SHOP MODAL --- -->
   <div class="modal-overlay" id="store-modal" onclick="closeStoreModal(event)">
     <div class="modal-content" onclick="event.stopPropagation()" style="max-width: 600px;">
@@ -4888,9 +5005,11 @@
 
       <!-- Tab Buttons -->
       <div
-        style="display: flex; gap: 8px; margin: 16px 20px 0; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 8px;">
+        style="display: flex; gap: 8px; margin: 16px 20px 0; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 8px; overflow-x: auto;">
         <button class="tab-btn active" id="prof-tab-info" onclick="switchProfileTab('info')"
           style="padding: 8px 14px; font-size: 0.82rem; font-weight: 800; border-radius: 8px;">Profile Stats</button>
+        <button class="tab-btn" id="prof-tab-vip" onclick="switchProfileTab('vip')"
+          style="padding: 8px 14px; font-size: 0.82rem; font-weight: 800; border-radius: 8px; color: #34d399;">👑 VIP Pass</button>
         <button class="tab-btn" id="prof-tab-alerts" onclick="switchProfileTab('alerts')"
           style="padding: 8px 14px; font-size: 0.82rem; font-weight: 800; border-radius: 8px;">Custom Alerts</button>
         <button class="tab-btn" id="prof-tab-history" onclick="switchProfileTab('history')"
@@ -4983,6 +5102,40 @@
           <div style="text-align: center; font-size: 0.8rem; color: var(--text-muted); padding: 20px;">
             No saved tickets in history yet. Open the DeepPredict Machine to build and save.
           </div>
+        </div>
+      </div>
+
+      <!-- VIP Pass Pane -->
+      <div id="prof-pane-vip" class="modal-tab-pane"
+        style="display: none; padding: 20px; max-height: 380px; overflow-y: auto;">
+        <div style="background: rgba(255,255,255,0.03); border: 1px solid rgba(16,185,129,0.3); border-radius: 14px; padding: 18px; margin-bottom: 16px;">
+          <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 12px;">
+            <div>
+              <div style="font-size: 0.72rem; color: #10b981; font-weight: 800; text-transform: uppercase;">Membership Status</div>
+              <h4 id="prof-vip-status-heading" style="font-family: var(--font-display); font-size: 1.25rem; font-weight: 900; color: #ffffff; margin: 4px 0 2px;">👑 Free Member</h4>
+              <div id="prof-vip-status-sub" style="font-size: 0.78rem; color: #94a3b8;">Upgrade to access high-roller banker tips.</div>
+            </div>
+            <span id="prof-vip-badge-pill" style="background: rgba(255,255,255,0.08); color: #94a3b8; font-size: 0.68rem; font-weight: 800; padding: 4px 10px; border-radius: 9999px; text-transform: uppercase;">BASIC</span>
+          </div>
+
+          <div id="prof-vip-details-box" style="display: none; border-top: 1px solid rgba(255,255,255,0.08); padding-top: 12px; margin-top: 12px; font-size: 0.78rem; color: #cbd5e1;">
+            <div style="display: flex; justify-content: space-between; margin-bottom: 6px;"><span>Active Plan:</span><b style="color: #34d399;" id="prof-vip-plan-name">Annual VIP</b></div>
+            <div style="display: flex; justify-content: space-between; margin-bottom: 6px;"><span>Valid Until:</span><b style="color: #ffffff;" id="prof-vip-expiry-date">-</b></div>
+            <div style="display: flex; justify-content: space-between;"><span>Auto-Renewal:</span><b style="color: #fbbf24;" id="prof-vip-cancel-state">Active (Cancel Anytime)</b></div>
+          </div>
+        </div>
+
+        <!-- VIP Actions -->
+        <div style="display: flex; flex-direction: column; gap: 10px;">
+          <button id="prof-vip-primary-btn" class="vip-continue-btn" onclick="closeProfileModal(null, true); openVipSubscriptionModal();" style="padding: 12px 16px; font-size: 0.9rem;">
+            👑 Upgrade to VIP (Weekly · Monthly · Yearly)
+          </button>
+          <button id="prof-vip-tips-btn" class="btn btn-primary" onclick="closeProfileModal(null, true); openVipTipsHub();" style="display: none; padding: 12px; font-weight: 800; font-size: 0.85rem;">
+            🔥 Open VIP Banker Predictions Hub
+          </button>
+          <button id="prof-vip-cancel-btn" type="button" onclick="openEasyToCancelModal()" style="display: none; background: none; border: 1px solid rgba(239,68,68,0.3); color: #f87171; border-radius: 10px; padding: 10px; font-weight: 700; font-size: 0.78rem; cursor: pointer;">
+            🛡️ Manage / Cancel Subscription (Easy to Cancel)
+          </button>
         </div>
       </div>
     </div>
@@ -5413,14 +5566,89 @@
         </div>
       </div>
     </div>
+  <!-- --- MODAL: 50 SCANNED BOOKMAKERS POPUP --- -->
+  <div class="modal-overlay" id="scanned-bookmakers-modal" onclick="closeScannedBookmakersModal(event)">
+    <div class="modal-content" onclick="event.stopPropagation()"
+      style="max-width: 760px; width: 92%; max-height: 85vh; background: #0b1329; border: 1.5px solid rgba(16,185,129,0.5); border-radius: 20px; box-shadow: 0 24px 70px rgba(0,0,0,0.9); padding: 0; display: flex; flex-direction: column; overflow: hidden;">
+      
+      <!-- Modal Header -->
+      <div style="background: linear-gradient(135deg, rgba(16,185,129,0.2) 0%, rgba(5,150,105,0.3) 50%, #0b1329 100%); padding: 18px 22px; display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid rgba(16,185,129,0.25);">
+        <div style="display: flex; align-items: center; gap: 12px;">
+          <div style="width: 42px; height: 42px; border-radius: 50%; background: rgba(16,185,129,0.2); border: 1.5px solid #10b981; display: flex; align-items: center; justify-content: center; font-size: 1.3rem;">
+            📡
+          </div>
+          <div>
+            <h3 style="font-family: var(--font-display); font-size: 1.15rem; font-weight: 900; color: #ffffff; margin: 0;">
+              50 Scanned Global Bookmakers
+            </h3>
+            <span style="font-size: 0.75rem; color: #34d399; font-weight: 700;">
+              Real-Time Odds Feeds • 100% Verified API Latency &lt; 40ms
+            </span>
+          </div>
+        </div>
+        <button class="modal-close" onclick="closeScannedBookmakersModal(event, true);" style="font-size: 1.5rem; background: transparent; border: none; color: #94a3b8; cursor: pointer;">&times;</button>
+      </div>
+
+      <!-- Search & Filters Toolbar -->
+      <div style="padding: 14px 20px; border-bottom: 1px solid rgba(255,255,255,0.06); background: rgba(0,0,0,0.25); display: flex; gap: 12px; align-items: center; justify-content: space-between; flex-wrap: wrap;">
+        <input type="text" id="search-bookmakers-modal-input" placeholder="🔍 Search by bookie name (e.g. SportyBet, Bet365, Stake)..." oninput="filterScannedBookmakersModal(this.value)"
+          style="background: rgba(15,23,42,0.8); border: 1px solid rgba(255,255,255,0.15); border-radius: var(--radius-xs); padding: 8px 14px; font-size: 0.85rem; color: #ffffff; flex-grow: 1; max-width: 380px; outline: none;">
+        <div style="display: flex; align-items: center; gap: 8px;">
+          <span style="display: inline-block; width: 8px; height: 8px; border-radius: 50%; background: #10b981; animation: pulse 1.5s infinite;"></span>
+          <span style="font-size: 0.78rem; font-weight: 800; color: #34d399;">50/50 APIs Operational</span>
+        </div>
+      </div>
+
+      <!-- Bookmakers Grid -->
+      <div id="modal-bookmakers-grid" style="padding: 18px 20px; overflow-y: auto; display: grid; grid-template-columns: repeat(auto-fill, minmax(210px, 1fr)); gap: 10px; max-height: 52vh;">
+        <!-- Populated dynamically by JS -->
+      </div>
+
+      <!-- Modal Footer -->
+      <div style="padding: 12px 20px; background: rgba(6,11,19,0.9); border-top: 1px solid rgba(255,255,255,0.08); display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px;">
+        <span style="font-size: 0.75rem; color: var(--text-muted);">
+          🛡️ Universal 50-Bookmaker Arbitrage Scanning Network
+        </span>
+        <button class="btn btn-secondary" onclick="closeScannedBookmakersModal(event, true);" style="font-size: 0.75rem; padding: 6px 14px; border-radius: var(--radius-xs);">
+          Close Window
+        </button>
+      </div>
+
+    </div>
   </div>
 
+  <!-- --- MOBILE APP BOTTOM NAVIGATION BAR (MATCHING REFERENCE SCREENSHOT) --- -->
+  <nav id="mobile-app-bottom-nav" class="mobile-bottom-nav">
+    <a href="#predictions" class="bottom-nav-item" onclick="if(typeof scrollToSection==='function') scrollToSection('predictions');">
+      <span class="bottom-nav-icon">⚽</span>
+      <span class="bottom-nav-label">Leagues</span>
+    </a>
+    <a href="javascript:void(0)" class="bottom-nav-item active" onclick="openVipSubscriptionModal()">
+      <div class="bottom-nav-vip-badge">
+        <span class="bottom-nav-icon">🔥</span>
+      </div>
+      <span class="bottom-nav-label" style="color: #15803d; font-weight: 800;">VIP Tips</span>
+    </a>
+    <a href="#generator" class="bottom-nav-item" onclick="if(typeof switchTool==='function') switchTool('machine');">
+      <span class="bottom-nav-icon">👥</span>
+      <span class="bottom-nav-label">Teams</span>
+    </a>
+    <a href="#scanner" class="bottom-nav-item">
+      <span class="bottom-nav-icon">📺</span>
+      <span class="bottom-nav-label">Live</span>
+    </a>
+    <a href="javascript:void(0)" class="bottom-nav-item" onclick="if(typeof openProfileModal==='function') openProfileModal('history');">
+      <span class="bottom-nav-icon">⭐</span>
+      <span class="bottom-nav-label">Favorites</span>
+    </a>
+  </nav>
+
   <!-- --- LOAD SCRIPTS (Classic Day 1 Architecture) --- -->
-  <script src="js/data.js"></script>
-  <script src="js/ui.js"></script>
-  <script src="js/router.js"></script>
-  <script src="js/app.js"></script>
-  <script src="js/liveFixtures.js"></script>
+  <script src="js/data.js?v=20261025"></script>
+  <script src="js/ui.js?v=20261025"></script>
+  <script src="js/router.js?v=20261025"></script>
+  <script src="js/app.js?v=20261025"></script>
+  <script src="js/liveFixtures.js?v=20261025"></script>
   <script>
     // Clean global helper bindings
     window.addEventListener('DOMContentLoaded', () => {
