@@ -10,7 +10,7 @@ export class Bet9jaConnector implements IBookmakerConnector {
     // Bet9ja live source API lookup payload simulation & proxy handler
     return [
       { match: 'Arsenal vs Chelsea', homeTeam: 'Arsenal', awayTeam: 'Chelsea', marketRaw: '1', odds: 1.85 },
-      { match: 'Real Madrid vs Barcelona', homeTeam: 'Real Madrid', awayTeam: 'Barcelona', marketRaw: 'O2.5', odds: 1.68 },
+      { match: 'Barcelona vs Real Madrid', homeTeam: 'Barcelona', awayTeam: 'Real Madrid', marketRaw: 'O2.5', odds: 1.68 },
       { match: 'Bayern Munich vs Borussia Dortmund', homeTeam: 'Bayern Munich', awayTeam: 'Borussia Dortmund', marketRaw: 'GG', odds: 1.55 }
     ];
   }

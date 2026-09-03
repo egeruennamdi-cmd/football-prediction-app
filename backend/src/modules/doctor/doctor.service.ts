@@ -26,15 +26,15 @@ export class DoctorService {
           rationale: 'Both teams scored 2.4 avg goals in last 6 home/away matches.'
         },
         {
-          match: 'Real Madrid vs Barcelona',
-          pick: isRiskCode ? 'Away Win (2) - TRAP PICK' : 'Double Chance 1X',
+          match: 'Barcelona vs Real Madrid',
+          pick: isRiskCode ? 'Away Win (2) - TRAP PICK' : 'Double Chance X2',
           status: isRiskCode ? 'TRAP_MATCH' : 'SAFE',
           probability: isRiskCode ? 42 : 88,
-          rationale: isRiskCode ? 'Barca missing key midfielders; Real Madrid undefeated at home.' : 'Double chance covers home dominance.'
+          rationale: isRiskCode ? 'Real Madrid missing key players; Barcelona unbeaten at Camp Nou.' : 'Double chance covers Barcelona home advantage.'
         }
       ],
       prescriptions: isRiskCode ? [
-        'Replace Real Madrid vs Barca [Away Win] with [Double Chance 1X] (+28% Win Rate)',
+        'Replace Barca vs Real Madrid [Away Win] with [Double Chance X2] (+28% Win Rate)',
         'Lower Bayern vs Dortmund [Over 3.5] with [Over 2.5 Goals] (+21% Win Rate)'
       ] : []
     };

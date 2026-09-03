@@ -18,12 +18,12 @@ router.get('/scan', (req: Request, res: Response) => {
     },
     {
       id: 'arb-2',
-      match: 'Real Madrid vs Barcelona',
+      match: 'Barcelona vs Real Madrid',
       league: 'La Liga',
       market: '1X2 Match Result',
       roi: 5.8,
-      leg1: { bookie: '1xBet', selection: 'Real Madrid Win (1)', odds: 2.45 },
-      leg2: { bookie: 'Bet9ja', selection: 'Draw or Barca (X2)', odds: 1.85 }
+      leg1: { bookie: '1xBet', selection: 'Barcelona Win (1)', odds: 2.45 },
+      leg2: { bookie: 'Bet9ja', selection: 'Draw or Real Madrid (X2)', odds: 1.85 }
     }
   ].filter(d => d.roi >= minRoi);
 

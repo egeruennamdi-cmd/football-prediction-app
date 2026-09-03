@@ -9,7 +9,7 @@ export class SportyBetConnector implements IBookmakerConnector {
   public async fetchSourceCoupon(code: string): Promise<RawSelection[]> {
     return [
       { match: 'Arsenal vs Chelsea', homeTeam: 'Arsenal', awayTeam: 'Chelsea', marketRaw: '1', odds: 1.85 },
-      { match: 'Real Madrid vs Barcelona', homeTeam: 'Real Madrid', awayTeam: 'Barcelona', marketRaw: 'Over 2.5', odds: 1.68 },
+      { match: 'Barcelona vs Real Madrid', homeTeam: 'Barcelona', awayTeam: 'Real Madrid', marketRaw: 'Over 2.5', odds: 1.68 },
       { match: 'Inter Milan vs AC Milan', homeTeam: 'Inter Milan', awayTeam: 'AC Milan', marketRaw: '1X', odds: 1.35 }
     ];
   }

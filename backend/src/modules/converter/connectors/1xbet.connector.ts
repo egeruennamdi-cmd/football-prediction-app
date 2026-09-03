@@ -9,7 +9,7 @@ export class OneXBetConnector implements IBookmakerConnector {
   public async fetchSourceCoupon(code: string): Promise<RawSelection[]> {
     return [
       { match: 'Arsenal vs Chelsea', homeTeam: 'Arsenal', awayTeam: 'Chelsea', marketRaw: '1 (Home Win)', odds: 1.85 },
-      { match: 'Real Madrid vs Barcelona', homeTeam: 'Real Madrid', awayTeam: 'Barcelona', marketRaw: 'Total Over (2.5)', odds: 1.68 },
+      { match: 'Barcelona vs Real Madrid', homeTeam: 'Barcelona', awayTeam: 'Real Madrid', marketRaw: 'Total Over (2.5)', odds: 1.68 },
       { match: 'PSG vs Marseille', homeTeam: 'PSG', awayTeam: 'Marseille', marketRaw: 'Both Teams To Score - Yes', odds: 1.60 }
     ];
   }

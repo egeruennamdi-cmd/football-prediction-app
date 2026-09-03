@@ -18,7 +18,7 @@ export class DefaultGenericConnector implements IBookmakerConnector {
   public async fetchSourceCoupon(code: string): Promise<RawSelection[]> {
     return [
       { match: 'Arsenal vs Chelsea', homeTeam: 'Arsenal', awayTeam: 'Chelsea', marketRaw: 'Home Win (1)', odds: 1.85 },
-      { match: 'Real Madrid vs Barcelona', homeTeam: 'Real Madrid', awayTeam: 'Barcelona', marketRaw: 'Over 2.5', odds: 1.68 },
+      { match: 'Barcelona vs Real Madrid', homeTeam: 'Barcelona', awayTeam: 'Real Madrid', marketRaw: 'Over 2.5', odds: 1.68 },
       { match: 'Bayern Munich vs Borussia Dortmund', homeTeam: 'Bayern Munich', awayTeam: 'Borussia Dortmund', marketRaw: 'Both Teams To Score (BTTS)', odds: 1.55 }
     ];
   }
