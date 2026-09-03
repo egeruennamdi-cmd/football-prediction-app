@@ -659,6 +659,8 @@ window.switchTool = function switchTool(toolId, btn) {
       if (typeof syncBacktesterPremiumState === 'function') syncBacktesterPremiumState();
     } else if (toolId === 'machine' || toolId === 'generator') {
       if (typeof generateMachineTicket === 'function') generateMachineTicket();
+    } else if (toolId === 'doctor') {
+      if (typeof runBetDoctorAudit === 'function') runBetDoctorAudit();
     }
   }
 }
@@ -7428,11 +7430,15 @@ if (typeof copyBookingCode === 'function') window.copyBookingCode = copyBookingC
 if (typeof syncVipSubscriptionUI === 'function') window.syncVipSubscriptionUI = syncVipSubscriptionUI;
 
 if (typeof document !== 'undefined') {
+  const initTools = () => {
+    if (typeof runArbitrageScanner === 'function') runArbitrageScanner();
+    if (typeof runBetDoctorAudit === 'function') runBetDoctorAudit(false);
+  };
   if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', () => {
-      setTimeout(runArbitrageScanner, 200);
+      setTimeout(initTools, 200);
     });
   } else {
-    setTimeout(runArbitrageScanner, 200);
+    setTimeout(initTools, 200);
   }
 }

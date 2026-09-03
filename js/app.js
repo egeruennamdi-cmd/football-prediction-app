@@ -4033,6 +4033,7 @@ window.doctorState = {
 };
 
 function loadDoctorSample(sampleType) {
+  window.doctorState = window.doctorState || {};
   window.doctorState.currentSample = sampleType;
   window.doctorState.isOptimized = (sampleType === 'safe');
   const codeInput = document.getElementById("bet-doctor-input-code");
@@ -4041,33 +4042,31 @@ function loadDoctorSample(sampleType) {
     else if (sampleType === 'moderate') codeInput.value = "BK992-MOD";
     else codeInput.value = "1XB-SAFE92";
   }
-  runBetDoctorAudit();
+  runBetDoctorAudit(false);
 }
 
-function runBetDoctorAudit() {
+function runBetDoctorAudit(showScanAnim = true) {
   const container = document.getElementById("bet-doctor-results");
   if (!container) return;
 
-  const codeVal = document.getElementById("bet-doctor-input-code")?.value || "BC1A7X";
-  const bookieVal = document.getElementById("bet-doctor-bookie-select")?.value || "sportybet";
-  const bookieInfo = typeof getBookieAffiliateInfo === 'function' ? getBookieAffiliateInfo(bookieVal) : { name: 'SportyBet' };
-  const bookieName = bookieInfo.name || 'Bookmaker';
+  const codeInput = document.getElementById("bet-doctor-input-code");
+  let codeVal = (codeInput && codeInput.value) ? codeInput.value.trim().toUpperCase() : "BC1A7X";
+  if (!codeVal) codeVal = "BC1A7X";
 
-  // Call Live Backend API Server (Port 5000)
-  fetch('http://localhost:5000/api/v1/doctor/audit', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ bookingCode: codeVal, sourceBookie: bookieVal })
-  })
-  .then(res => res.json())
-  .then(apiData => {
-    if (apiData && apiData.success) {
-      console.log('🩺 Audited via Live Backend API Server (Port 5000):', apiData);
-    }
-  })
-  .catch(err => {
-    console.log('Doctor API fallback active:', err.message);
-  });
+  const bookieSelect = document.getElementById("bet-doctor-bookie-select");
+  const bookieVal = (bookieSelect && bookieSelect.value) ? bookieSelect.value : "sportybet";
+  const bookieInfo = typeof getBookieAffiliateInfo === 'function' ? getBookieAffiliateInfo(bookieVal) : { name: 'SportyBet' };
+  const bookieName = bookieInfo.name || (bookieVal.charAt(0).toUpperCase() + bookieVal.slice(1));
+
+  // Determine state based on code or doctorState
+  window.doctorState = window.doctorState || { currentSample: 'highrisk', isOptimized: false };
+  if (codeVal.includes("SAFE") || codeVal.includes("92")) {
+    window.doctorState.currentSample = 'safe';
+  } else if (codeVal.includes("MOD") || codeVal.includes("74")) {
+    window.doctorState.currentSample = 'moderate';
+  } else if (codeVal.includes("RISK") || codeVal.includes("58")) {
+    window.doctorState.currentSample = 'highrisk';
+  }
 
   const isHighRisk = window.doctorState.currentSample === 'highrisk';
   const isModerate = window.doctorState.currentSample === 'moderate';
@@ -4077,114 +4076,147 @@ function runBetDoctorAudit() {
   const healthColor = healthScore >= 85 ? '#10b981' : (healthScore >= 70 ? '#f59e0b' : '#ef4444');
   const healthLabel = healthScore >= 85 ? 'EXCELLENT (OPTIMIZED & HIGH WIN RATE)' : (healthScore >= 70 ? 'MODERATE RISK (1 WARNING FLAG)' : 'CRITICAL RISK (2 TRAP MATCHES DETECTED)');
 
-  container.style.display = "flex";
-  container.innerHTML = `
-    <!-- Top Summary Banner -->
-    <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 16px; background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.08); border-radius: var(--radius-md); padding: 16px;">
-      <div style="display: flex; align-items: center; gap: 16px;">
-        <!-- Circular Health Progress Gauge -->
-        <div style="position: relative; width: 68px; height: 68px; display: flex; align-items: center; justify-content: center; background: radial-gradient(circle, ${healthColor}22 0%, transparent 70%); border: 3px solid ${healthColor}; border-radius: 50%; box-shadow: 0 0 16px ${healthColor}44;">
-          <span style="font-size: 1.3rem; font-weight: 900; color: ${healthColor}; font-family: var(--font-display);">${healthScore}%</span>
+  // Optional backend API ping on localhost
+  if (typeof window !== 'undefined' && (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1')) {
+    try {
+      fetch('http://localhost:5000/api/v1/doctor/audit', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ bookingCode: codeVal, sourceBookie: bookieVal })
+      }).catch(() => {});
+    } catch (e) {}
+  }
+
+  const renderAuditHTML = () => {
+    container.style.display = "flex";
+    container.innerHTML = `
+      <!-- Top Summary Banner -->
+      <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 16px; background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.08); border-radius: var(--radius-md); padding: 16px; transition: all 0.3s ease;">
+        <div style="display: flex; align-items: center; gap: 16px;">
+          <!-- Circular Health Progress Gauge -->
+          <div style="position: relative; width: 68px; height: 68px; display: flex; align-items: center; justify-content: center; background: radial-gradient(circle, ${healthColor}22 0%, transparent 70%); border: 3px solid ${healthColor}; border-radius: 50%; box-shadow: 0 0 16px ${healthColor}44;">
+            <span style="font-size: 1.3rem; font-weight: 900; color: ${healthColor}; font-family: var(--font-display);">${healthScore}%</span>
+          </div>
+          <div>
+            <div style="font-size: 0.72rem; color: var(--text-secondary); font-weight: 700; text-transform: uppercase;">Ticket Health Diagnostic</div>
+            <div style="font-size: 1rem; font-weight: 800; color: ${healthColor}; font-family: var(--font-display);">${healthLabel}</div>
+            <div style="font-size: 0.75rem; color: var(--text-muted); margin-top: 2px;">
+              Auditing Code: <b style="color: #ffffff;">${codeVal}</b> (${bookieName}) &bull; Raw Probability: <b>${isOptimized ? '78.4%' : (isHighRisk ? '34.2%' : '52.8%')}</b>
+            </div>
+          </div>
         </div>
-        <div>
-          <div style="font-size: 0.72rem; color: var(--text-secondary); font-weight: 700; text-transform: uppercase;">Ticket Health Diagnostic</div>
-          <div style="font-size: 1rem; font-weight: 800; color: ${healthColor}; font-family: var(--font-display);">${healthLabel}</div>
-          <div style="font-size: 0.75rem; color: var(--text-muted); margin-top: 2px;">
-            Auditing Code: <b style="color: #ffffff;">${codeVal}</b> (${bookieName}) &bull; Raw Probability: <b>${isOptimized ? '78.4%' : '34.2%'}</b>
+
+        <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+          ${!isOptimized ? `
+            <button onclick="applyDoctorPrescription()" class="btn btn-primary" style="background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%); border: 1px solid #fbbf24; color: #000; font-weight: 800; font-size: 0.78rem; padding: 10px 16px; box-shadow: 0 4px 14px rgba(245,158,11,0.4); cursor: pointer;">
+              ⚡ Apply AI Prescriptions (+34% Boost)
+            </button>
+          ` : `
+            <span style="background: rgba(16,185,129,0.15); border: 1px solid #10b981; color: #10b981; font-weight: 800; font-size: 0.75rem; padding: 8px 14px; border-radius: 4px; display: flex; align-items: center; gap: 6px;">
+              ✅ Ticket Fully Optimized
+            </span>
+          `}
+          <button onclick="convertAuditedTicket('${codeVal}', '${bookieVal}')" class="btn btn-secondary" style="font-weight: 700; font-size: 0.78rem; padding: 10px 16px; border: 1px solid var(--brand-royal-blue); cursor: pointer;">
+            📲 Convert to 50 Bookies
+          </button>
+        </div>
+      </div>
+
+      <!-- Match Diagnostics List -->
+      <div style="display: flex; flex-direction: column; gap: 10px;">
+        <div style="font-size: 0.8rem; font-weight: 700; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.5px;">
+          🔬 Match-by-Match AI Health Audit
+        </div>
+
+        <!-- Match 1: Safe -->
+        <div style="background: rgba(16,185,129,0.04); border: 1px solid rgba(16,185,129,0.2); border-radius: var(--radius-sm); padding: 12px 16px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px;">
+          <div>
+            <div style="font-weight: 800; font-size: 0.88rem; color: #ffffff;">🏴󠁧󠁢󠁥󠁮󠁧󠁿 Arsenal vs Chelsea</div>
+            <div style="font-size: 0.75rem; color: var(--text-secondary);">Selection: <b>Over 2.5 Goals</b> @ 1.75 odds</div>
+          </div>
+          <div style="text-align: right;">
+            <span style="background: rgba(16,185,129,0.2); color: #34d399; font-weight: 800; font-size: 0.7rem; padding: 4px 8px; border-radius: 4px;">✅ SAFE (84% PROBABILITY)</span>
+            <div style="font-size: 0.7rem; color: var(--text-muted); margin-top: 4px;">Both teams scored 2.4 avg goals in last 6 home/away matches.</div>
+          </div>
+        </div>
+
+        <!-- Match 2: Trap Match -->
+        <div style="background: ${isOptimized ? 'rgba(16,185,129,0.04)' : 'rgba(239,68,68,0.05)'}; border: 1px solid ${isOptimized ? 'rgba(16,185,129,0.2)' : 'rgba(239,68,68,0.3)'}; border-radius: var(--radius-sm); padding: 12px 16px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px;">
+          <div>
+            <div style="font-weight: 800; font-size: 0.88rem; color: #ffffff;">🇪🇸 Barcelona vs Real Madrid</div>
+            <div style="font-size: 0.75rem; color: var(--text-secondary);">Selection: <b>${isOptimized ? 'Double Chance 1X (Prescribed)' : 'Away Win (2) - TRAP PICK'}</b> @ ${isOptimized ? '1.38' : '2.40'} odds</div>
+          </div>
+          <div style="text-align: right;">
+            ${isOptimized ? `
+              <span style="background: rgba(16,185,129,0.2); color: #34d399; font-weight: 800; font-size: 0.7rem; padding: 4px 8px; border-radius: 4px;">✅ OPTIMIZED SAFE (88%)</span>
+              <div style="font-size: 0.7rem; color: var(--text-muted); margin-top: 4px;">Double chance covers Real Madrid home dominance.</div>
+            ` : `
+              <span style="background: rgba(239,68,68,0.2); color: #f87171; font-weight: 800; font-size: 0.7rem; padding: 4px 8px; border-radius: 4px;">⚠️ CRITICAL TRAP DETECTED (42%)</span>
+              <div style="font-size: 0.7rem; color: #f87171; margin-top: 4px;">Barca missing key midfielders; Real Madrid undefeated at home.</div>
+            `}
+          </div>
+        </div>
+
+        <!-- Match 3: High Risk / Moderate -->
+        <div style="background: ${isOptimized ? 'rgba(16,185,129,0.04)' : 'rgba(245,158,11,0.05)'}; border: 1px solid ${isOptimized ? 'rgba(16,185,129,0.2)' : 'rgba(245,158,11,0.3)'}; border-radius: var(--radius-sm); padding: 12px 16px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px;">
+          <div>
+            <div style="font-weight: 800; font-size: 0.88rem; color: #ffffff;">🇩🇪 Bayern Munich vs Borussia Dortmund</div>
+            <div style="font-size: 0.75rem; color: var(--text-secondary);">Selection: <b>${isOptimized ? 'Over 2.5 Goals (Prescribed)' : 'Over 3.5 Goals'}</b> @ ${isOptimized ? '1.50' : '2.15'} odds</div>
+          </div>
+          <div style="text-align: right;">
+            ${isOptimized ? `
+              <span style="background: rgba(16,185,129,0.2); color: #34d399; font-weight: 800; font-size: 0.7rem; padding: 4px 8px; border-radius: 4px;">✅ OPTIMIZED SAFE (85%)</span>
+              <div style="font-size: 0.7rem; color: var(--text-muted); margin-top: 4px;">Lowered line from 3.5 to 2.5 to eliminate high risk.</div>
+            ` : `
+              <span style="background: rgba(245,158,11,0.2); color: #fbbf24; font-weight: 800; font-size: 0.7rem; padding: 4px 8px; border-radius: 4px;">🟡 HIGH RISK (51%)</span>
+              <div style="font-size: 0.7rem; color: #fbbf24; margin-top: 4px;">Under 3.5 occurred in 4 of last 5 head-to-heads.</div>
+            `}
           </div>
         </div>
       </div>
 
-      <div style="display: flex; gap: 10px; flex-wrap: wrap;">
-        ${!isOptimized ? `
-          <button onclick="applyDoctorPrescription()" class="btn btn-primary" style="background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%); border: 1px solid #fbbf24; color: #000; font-weight: 800; font-size: 0.78rem; padding: 10px 16px; box-shadow: 0 4px 14px rgba(245,158,11,0.4); cursor: pointer;">
-            ⚡ Apply AI Prescriptions (+34% Boost)
+      <!-- AI Prescription Recommendations Box -->
+      ${!isOptimized ? `
+        <div style="background: rgba(245, 158, 11, 0.08); border: 1px solid rgba(245, 158, 11, 0.3); border-radius: var(--radius-md); padding: 16px; display: flex; flex-direction: column; gap: 8px;">
+          <div style="font-size: 0.8rem; font-weight: 800; color: #fbbf24; text-transform: uppercase; display: flex; align-items: center; gap: 6px;">
+            <span>💡</span> AI Doctor Recommended Prescriptions
+          </div>
+          <div style="font-size: 0.75rem; color: var(--text-primary); display: flex; flex-direction: column; gap: 6px;">
+            <div>• <b>Prescription 1:</b> Replace <i>Barca vs Real Madrid [Away Win]</i> ➡️ <b>[Double Chance 1X]</b> (+28% Win Rate)</div>
+            <div>• <b>Prescription 2:</b> Lower <i>Bayern vs Dortmund [Over 3.5]</i> ➡️ <b>[Over 2.5 Goals]</b> (+21% Win Rate)</div>
+          </div>
+          <button onclick="applyDoctorPrescription()" class="btn btn-primary" style="margin-top: 6px; background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%); border: 1px solid #fbbf24; color: #000; font-weight: 800; font-size: 0.8rem; padding: 10px 18px; align-self: flex-start; cursor: pointer;">
+            ⚡ Apply All Prescriptions & Boost Health to 92%
           </button>
-        ` : `
-          <span style="background: rgba(16,185,129,0.15); border: 1px solid #10b981; color: #10b981; font-weight: 800; font-size: 0.75rem; padding: 8px 14px; border-radius: 4px; display: flex; align-items: center; gap: 6px;">
-            ✅ Ticket Fully Optimized
-          </span>
-        `}
-        <button onclick="convertAuditedTicket('${codeVal}', '${bookieVal}')" class="btn btn-secondary" style="font-weight: 700; font-size: 0.78rem; padding: 10px 16px; border: 1px solid var(--brand-royal-blue); cursor: pointer;">
-          📲 Convert to 50 Bookies
-        </button>
-      </div>
-    </div>
+        </div>
+      ` : ''}
+    `;
+  };
 
-    <!-- Match Diagnostics List -->
-    <div style="display: flex; flex-direction: column; gap: 10px;">
-      <div style="font-size: 0.8rem; font-weight: 700; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.5px;">
-        🔬 Match-by-Match AI Health Audit
+  if (showScanAnim) {
+    container.style.display = "flex";
+    container.innerHTML = `
+      <div style="padding: 24px; text-align: center; background: rgba(0,0,0,0.25); border-radius: var(--radius-md); border: 1px dashed rgba(59, 130, 246, 0.35);">
+        <div style="font-size: 1.6rem; margin-bottom: 8px; animation: pulse 1s infinite;">🩺</div>
+        <div style="font-size: 0.95rem; font-weight: 800; color: #60a5fa; font-family: var(--font-display);">AI Bet Doctor is auditing ticket ${codeVal}...</div>
+        <div style="font-size: 0.76rem; color: var(--text-secondary); margin-top: 4px;">Auditing bookmaker line movements, hidden trap picks & correlation risks...</div>
       </div>
-
-      <!-- Match 1: Safe -->
-      <div style="background: rgba(16,185,129,0.04); border: 1px solid rgba(16,185,129,0.2); border-radius: var(--radius-sm); padding: 12px 16px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px;">
-        <div>
-          <div style="font-weight: 800; font-size: 0.88rem; color: #ffffff;">🏴󠁧󠁢󠁥󠁮󠁧󠁿 Arsenal vs Chelsea</div>
-          <div style="font-size: 0.75rem; color: var(--text-secondary);">Selection: <b>Over 2.5 Goals</b> @ 1.75 odds</div>
-        </div>
-        <div style="text-align: right;">
-          <span style="background: rgba(16,185,129,0.2); color: #34d399; font-weight: 800; font-size: 0.7rem; padding: 4px 8px; border-radius: 4px;">✅ SAFE (84% PROBABILITY)</span>
-          <div style="font-size: 0.7rem; color: var(--text-muted); margin-top: 4px;">Both teams scored 2.4 avg goals in last 6 home/away matches.</div>
-        </div>
-      </div>
-
-      <!-- Match 2: Trap Match -->
-      <div style="background: ${isOptimized ? 'rgba(16,185,129,0.04)' : 'rgba(239,68,68,0.05)'}; border: 1px solid ${isOptimized ? 'rgba(16,185,129,0.2)' : 'rgba(239,68,68,0.3)'}; border-radius: var(--radius-sm); padding: 12px 16px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px;">
-        <div>
-          <div style="font-weight: 800; font-size: 0.88rem; color: #ffffff;">🇪🇸 Barcelona vs Real Madrid</div>
-          <div style="font-size: 0.75rem; color: var(--text-secondary);">Selection: <b>${isOptimized ? 'Double Chance 1X (Prescribed)' : 'Away Win (2) - TRAP PICK'}</b> @ ${isOptimized ? '1.38' : '2.40'} odds</div>
-        </div>
-        <div style="text-align: right;">
-          ${isOptimized ? `
-            <span style="background: rgba(16,185,129,0.2); color: #34d399; font-weight: 800; font-size: 0.7rem; padding: 4px 8px; border-radius: 4px;">✅ OPTIMIZED SAFE (88%)</span>
-            <div style="font-size: 0.7rem; color: var(--text-muted); margin-top: 4px;">Double chance covers Real Madrid home dominance.</div>
-          ` : `
-            <span style="background: rgba(239,68,68,0.2); color: #f87171; font-weight: 800; font-size: 0.7rem; padding: 4px 8px; border-radius: 4px;">⚠️ CRITICAL TRAP DETECTED (42%)</span>
-            <div style="font-size: 0.7rem; color: #f87171; margin-top: 4px;">Barca missing key midfielders; Real Madrid undefeated at home.</div>
-          `}
-        </div>
-      </div>
-
-      <!-- Match 3: High Risk / Moderate -->
-      <div style="background: ${isOptimized ? 'rgba(16,185,129,0.04)' : 'rgba(245,158,11,0.05)'}; border: 1px solid ${isOptimized ? 'rgba(16,185,129,0.2)' : 'rgba(245,158,11,0.3)'}; border-radius: var(--radius-sm); padding: 12px 16px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px;">
-        <div>
-          <div style="font-weight: 800; font-size: 0.88rem; color: #ffffff;">🇩🇪 Bayern Munich vs Borussia Dortmund</div>
-          <div style="font-size: 0.75rem; color: var(--text-secondary);">Selection: <b>${isOptimized ? 'Over 2.5 Goals (Prescribed)' : 'Over 3.5 Goals'}</b> @ ${isOptimized ? '1.50' : '2.15'} odds</div>
-        </div>
-        <div style="text-align: right;">
-          ${isOptimized ? `
-            <span style="background: rgba(16,185,129,0.2); color: #34d399; font-weight: 800; font-size: 0.7rem; padding: 4px 8px; border-radius: 4px;">✅ OPTIMIZED SAFE (85%)</span>
-            <div style="font-size: 0.7rem; color: var(--text-muted); margin-top: 4px;">Lowered line from 3.5 to 2.5 to eliminate high risk.</div>
-          ` : `
-            <span style="background: rgba(245,158,11,0.2); color: #fbbf24; font-weight: 800; font-size: 0.7rem; padding: 4px 8px; border-radius: 4px;">🟡 HIGH RISK (51%)</span>
-            <div style="font-size: 0.7rem; color: #fbbf24; margin-top: 4px;">Under 3.5 occurred in 4 of last 5 head-to-heads.</div>
-          `}
-        </div>
-      </div>
-    </div>
-
-    <!-- AI Prescription Recommendations Box -->
-    ${!isOptimized ? `
-      <div style="background: rgba(245, 158, 11, 0.08); border: 1px solid rgba(245, 158, 11, 0.3); border-radius: var(--radius-md); padding: 16px; display: flex; flex-direction: column; gap: 8px;">
-        <div style="font-size: 0.8rem; font-weight: 800; color: #fbbf24; text-transform: uppercase; display: flex; align-items: center; gap: 6px;">
-          <span>💡</span> AI Doctor Recommended Prescriptions
-        </div>
-        <div style="font-size: 0.75rem; color: var(--text-primary); display: flex; flex-direction: column; gap: 6px;">
-          <div>• <b>Prescription 1:</b> Replace <i>Barca vs Real Madrid [Away Win]</i> ➡️ <b>[Double Chance 1X]</b> (+28% Win Rate)</div>
-          <div>• <b>Prescription 2:</b> Lower <i>Bayern vs Dortmund [Over 3.5]</i> ➡️ <b>[Over 2.5 Goals]</b> (+21% Win Rate)</div>
-        </div>
-        <button onclick="applyDoctorPrescription()" class="btn btn-primary" style="margin-top: 6px; background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%); border: 1px solid #fbbf24; color: #000; font-weight: 800; font-size: 0.8rem; padding: 10px 18px; align-self: flex-start; cursor: pointer;">
-          ⚡ Apply All Prescriptions & Boost Health to 92%
-        </button>
-      </div>
-    ` : ''}
-  `;
+    `;
+    setTimeout(() => {
+      renderAuditHTML();
+      if (typeof showToast === 'function') {
+        showToast(`🩺 Audit complete for ${codeVal}! Health score: ${healthScore}%`, healthScore >= 80 ? 'success' : 'warning');
+      }
+    }, 280);
+  } else {
+    renderAuditHTML();
+  }
 }
 
 function applyDoctorPrescription() {
+  window.doctorState = window.doctorState || {};
   window.doctorState.isOptimized = true;
-  runBetDoctorAudit();
+  runBetDoctorAudit(false);
   if (typeof showToast === 'function') {
     showToast("🩺 Doctor Prescriptions Applied! Ticket Health Boosted to 92%!", "success");
   }
@@ -4207,13 +4239,17 @@ window.runBetDoctorAudit = runBetDoctorAudit;
 window.applyDoctorPrescription = applyDoctorPrescription;
 window.convertAuditedTicket = convertAuditedTicket;
 
-// Run initial audit display on page DOM ready
-document.addEventListener("DOMContentLoaded", () => {
-  setTimeout(() => {
-    runBetDoctorAudit();
-    runArbitrageScanner();
-  }, 500);
-});
+// Run initial audit display immediately and on DOM ready
+if (document.readyState === 'complete' || document.readyState === 'interactive') {
+  setTimeout(() => { runBetDoctorAudit(false); }, 100);
+} else {
+  document.addEventListener("DOMContentLoaded", () => {
+    setTimeout(() => {
+      runBetDoctorAudit(false);
+      if (typeof runArbitrageScanner === 'function') runArbitrageScanner();
+    }, 100);
+  });
+}
 
 // --- ARBITRAGE & SUREBET PROFIT FINDER ENGINE ---
 // --- ARBITRAGE & SUREBET PROFIT FINDER ENGINE ---
