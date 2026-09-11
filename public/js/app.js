@@ -126,35 +126,15 @@ function getMatchOdds(match) {
 
 function isMatchOutdated(match) {
   if (!match) return true;
-
-  // 1. Direct status flags
   if (match.isFT || match.isYesterday || match.date === 'yesterday') return true;
-  const status = String(match.status || match.statusShort || '').toUpperCase();
-  if (status === 'FT' || status === 'AET' || status === 'PEN' || status === 'CANC' || status === 'PST' || status === 'ABD') {
-    return true;
-  }
-
-  // 2. Time string indicators
+  const status = String(match.status || match.statusShort || '').toUpperCase().trim();
+  if (['FT', 'AET', 'PEN', 'CANC', 'PST', 'ABD', 'POSTPONED', 'CANCELLED', 'FINISHED'].includes(status)) return true;
   if (typeof match.time === 'string') {
-    const t = match.time.toLowerCase();
-    if (t.includes('ft') || t.includes('yesterday') || t.includes('days ago') || t.includes('weeks ago') || t.includes('finished')) {
+    const t = match.time.toLowerCase().trim();
+    if (t.includes('ft ·') || t.startsWith('ft') || t.includes('yesterday') || t.includes('finished') || t.includes('days ago') || t.includes('weeks ago')) {
       return true;
     }
   }
-
-  // 3. Final scores with non-live state
-  if (!match.isLive && match.scores && typeof match.scores.home === 'number' && typeof match.scores.away === 'number') {
-    if (match.scores.home > 0 || match.scores.away > 0) return true;
-  }
-
-  // 4. Past timestamp (older than 4 hours without isLive flag)
-  if (match.rawDate && !match.isLive) {
-    const d = new Date(match.rawDate).getTime();
-    if (!isNaN(d) && d < (Date.now() - 4 * 3600 * 1000)) {
-      return true;
-    }
-  }
-
   return false;
 }
 window.isMatchOutdated = isMatchOutdated;
@@ -268,16 +248,18 @@ function addActiveMatchToBetslip() {
 window.addActiveMatchToBetslip = addActiveMatchToBetslip;
 
 function addMatchCardToBetslip(matchId, e) {
-  if (e) {
-    if (typeof e.stopPropagation === 'function') e.stopPropagation();
-    if (typeof e.preventDefault === 'function') e.preventDefault();
+  const evt = e || (typeof window !== 'undefined' ? window.event : null);
+  if (evt) {
+    if (typeof evt.stopPropagation === 'function') evt.stopPropagation();
+    if (typeof evt.stopImmediatePropagation === 'function') evt.stopImmediatePropagation();
+    if (typeof evt.preventDefault === 'function') evt.preventDefault();
   }
 
   if (!window.appState) window.appState = { betslip: [] };
   if (!Array.isArray(window.appState.betslip)) window.appState.betslip = [];
 
-  const buttonEl = (e && e.target) ? (e.target.closest('button') || e.target) : null;
-  const match = findMatchAnywhere(matchId, e || buttonEl);
+  const buttonEl = (evt && evt.target) ? (evt.target.closest ? (evt.target.closest('button') || evt.target) : evt.target) : null;
+  const match = findMatchAnywhere(matchId, evt || buttonEl);
 
   if (!match) {
     if (typeof showAppNotification === 'function') {
@@ -286,37 +268,34 @@ function addMatchCardToBetslip(matchId, e) {
     return;
   }
 
-  // STRICT REQUIREMENT: Only future/upcoming and live matches can be added to the slip!
-  // Outdated or completed matches are strictly rejected.
+  // 1. STRICT REQUIREMENT: Only future/upcoming and live matches can be added to the slip!
   if (isMatchOutdated(match)) {
+    if (buttonEl) {
+      buttonEl.style.animation = 'shake 0.4s ease';
+      setTimeout(() => { buttonEl.style.animation = ''; }, 450);
+    }
+    const msg = "⚠️ Outdated or completed matches cannot be added to the active betslip.";
     if (typeof showAppNotification === 'function') {
-      showAppNotification("⚠️ Outdated or completed matches cannot be added to the active betslip.");
+      showAppNotification(msg);
     } else {
-      alert("⚠️ Outdated or completed matches cannot be added to the active betslip.");
+      alert(msg);
     }
     return;
   }
 
-  // Betslip capacity check (up to 50 selections)
-  if (window.appState.betslip.length >= 50) {
-    const drawer = document.getElementById("floating-betslip-drawer");
-    if (drawer && !drawer.classList.contains("open")) {
-      drawer.classList.add("open");
-    }
-    if (typeof showAppNotification === 'function') {
-      showAppNotification("⚠️ Maximum limit of 50 selections reached in your active betslip.");
-    } else {
-      alert("⚠️ Maximum limit of 50 selections reached in your active betslip.");
-    }
-    return;
-  }
-
-  // Duplicate selection detection
   const homeName = match.homeTeam?.name || 'Home';
   const awayName = match.awayTeam?.name || 'Away';
   const matchKey = `${homeName.toLowerCase()}-${awayName.toLowerCase()}`;
 
-  const alreadyInSlip = window.appState.betslip.some(item => {
+  const tip = match.tip || (typeof getMatchTip === 'function' ? getMatchTip(match) : 'Home Win (1)');
+  const odds = (typeof match.odds === 'number' && !isNaN(match.odds) && match.odds > 1.0)
+    ? match.odds
+    : (typeof getMatchOdds === 'function' ? getMatchOdds(match) : 1.85);
+
+  const drawer = document.getElementById("floating-betslip-drawer");
+
+  // 2. Duplicate Check: If already in slip, update selection and highlight it
+  const existingIdx = window.appState.betslip.findIndex(item => {
     if (String(item.matchId) === String(match.id)) return true;
     if (item.match && String(item.match.id) === String(match.id)) return true;
     const h = (item.match?.homeTeam?.name || item.homeTeam || '').toLowerCase();
@@ -324,24 +303,37 @@ function addMatchCardToBetslip(matchId, e) {
     return h && a && `${h}-${a}` === matchKey;
   });
 
-  if (alreadyInSlip) {
-    const drawer = document.getElementById("floating-betslip-drawer");
-    if (drawer && !drawer.classList.contains("open")) {
-      drawer.classList.add("open");
+  if (existingIdx !== -1) {
+    window.appState.betslip[existingIdx].tip = tip;
+    window.appState.betslip[existingIdx].odds = odds;
+    window.appState.betslip[existingIdx].match = match;
+
+    if (typeof renderBetslip === 'function') renderBetslip();
+    if (drawer && !drawer.classList.contains("open")) drawer.classList.add("open");
+
+    const container = document.getElementById("betslip-items-container");
+    if (container && container.children[existingIdx]) {
+      const el = container.children[existingIdx];
+      if (el.scrollIntoView) el.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+      el.style.transition = 'all 0.3s ease';
+      el.style.background = 'rgba(37, 99, 235, 0.25)';
+      setTimeout(() => { el.style.background = 'rgba(255, 255, 255, 0.02)'; }, 1200);
     }
+
     if (typeof showAppNotification === 'function') {
-      showAppNotification(`ℹ️ ${homeName} vs ${awayName} is already in your active betslip.`);
-    } else {
-      alert(`ℹ️ ${homeName} vs ${awayName} is already in your active betslip.`);
+      showAppNotification(`ℹ️ ${homeName} vs ${awayName} is already in your betslip (Selection #${existingIdx + 1}).`);
     }
     return;
   }
 
-  const tip = match.tip || (typeof getMatchTip === 'function' ? getMatchTip(match) : 'Home Win (1)');
-  const odds = (typeof match.odds === 'number' && !isNaN(match.odds) && match.odds > 1.0)
-    ? match.odds
-    : (typeof getMatchOdds === 'function' ? getMatchOdds(match) : 1.85);
+  // 3. Betslip Capacity Management (Max 50 selections)
+  // If at capacity (50), displace the oldest pick so the user's explicit action always adds the desired match!
+  let displacedPick = null;
+  if (window.appState.betslip.length >= 50) {
+    displacedPick = window.appState.betslip.shift();
+  }
 
+  // 4. Push new selection
   window.appState.betslip.push({
     matchId: String(match.id),
     match: match,
@@ -349,16 +341,32 @@ function addMatchCardToBetslip(matchId, e) {
     odds: odds
   });
 
+  // 5. Render betslip
   if (typeof renderBetslip === 'function') {
     renderBetslip();
   }
 
-  const drawer = document.getElementById("floating-betslip-drawer");
+  // 6. Open drawer
   if (drawer && !drawer.classList.contains("open")) {
     drawer.classList.add("open");
   }
 
-  // Visual interactive feedback on button
+  const itemsContainer = document.getElementById("betslip-items-container");
+  if (itemsContainer) {
+    setTimeout(() => {
+      itemsContainer.scrollTop = itemsContainer.scrollHeight;
+    }, 50);
+  }
+
+  // 7. Pulse Badge
+  const countBadge = document.getElementById("betslip-count-badge");
+  if (countBadge) {
+    countBadge.style.transition = 'transform 0.25s ease';
+    countBadge.style.transform = 'scale(1.35)';
+    setTimeout(() => { countBadge.style.transform = 'scale(1)'; }, 250);
+  }
+
+  // 8. Visual button feedback
   if (buttonEl) {
     const originalContent = buttonEl.innerHTML;
     buttonEl.innerHTML = `✓ Added`;
@@ -372,7 +380,11 @@ function addMatchCardToBetslip(matchId, e) {
   }
 
   if (typeof showAppNotification === 'function') {
-    showAppNotification(`✅ Added ${homeName} vs ${awayName} (@${odds.toFixed(2)}) to active betslip!`);
+    if (displacedPick) {
+      showAppNotification(`✅ Added ${homeName} vs ${awayName} (@${odds.toFixed(2)})! (Slip capped at 50; replaced oldest pick)`);
+    } else {
+      showAppNotification(`✅ Added ${homeName} vs ${awayName} (@${odds.toFixed(2)}) to active betslip!`);
+    }
   }
 }
 window.addMatchCardToBetslip = addMatchCardToBetslip;
@@ -8353,3 +8365,24 @@ if (typeof window.runAdvancedFilters === 'function') var runAdvancedFilters = wi
 if (typeof window.resetAdvancedFilters === 'function') var resetAdvancedFilters = window.resetAdvancedFilters;
 if (typeof window.renderAdvancedFilteredCards === 'function') var renderAdvancedFilteredCards = window.renderAdvancedFilteredCards;
 if (typeof window.buildMatchCardElement === 'function') var buildMatchCardElement = window.buildMatchCardElement;
+
+if (typeof document !== 'undefined' && !window._betslipAddCaptureListenerAttached) {
+  window._betslipAddCaptureListenerAttached = true;
+  const handleCaptureAddToSlip = function(e) {
+    const btn = e.target ? (e.target.closest ? e.target.closest('.add-to-slip-btn') : null) : null;
+    if (btn) {
+      if (typeof e.stopPropagation === 'function') e.stopPropagation();
+      if (typeof e.stopImmediatePropagation === 'function') e.stopImmediatePropagation();
+      if (typeof e.preventDefault === 'function') e.preventDefault();
+
+      const matchId = btn.getAttribute('data-match-id') || (btn.getAttribute('onclick') || '').match(/addMatchCardToBetslip\(['"]([^'"]+)['"]/)?.[1];
+      if (matchId && typeof window.addMatchCardToBetslip === 'function') {
+        window.addMatchCardToBetslip(matchId, e);
+      }
+    }
+  };
+
+  document.addEventListener('click', handleCaptureAddToSlip, true);
+  document.addEventListener('pointerup', handleCaptureAddToSlip, true);
+  document.addEventListener('touchend', handleCaptureAddToSlip, { capture: true, passive: false });
+}
