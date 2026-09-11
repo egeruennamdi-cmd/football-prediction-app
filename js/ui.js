@@ -1,23 +1,176 @@
 // UI Controller for KickAI
 
-// Helper to calculate DeepPredictBet-style tips dynamically based on selected market
+// --- FULL DEEPPREDICTBET MARKET TAXONOMY ENGINE (Attachment 2 Synchronization) ---
+
+function getMatchMarketPool(match) {
+  if (!match) return [];
+  const homeName = (match.homeTeam && match.homeTeam.name) ? match.homeTeam.name : 'Home';
+  const awayName = (match.awayTeam && match.awayTeam.name) ? match.awayTeam.name : 'Away';
+  const pHome = (match.predictions && typeof match.predictions.home === 'number') ? match.predictions.home : 45;
+  const pDraw = (match.predictions && typeof match.predictions.draw === 'number') ? match.predictions.draw : 25;
+  const pAway = (match.predictions && typeof match.predictions.away === 'number') ? match.predictions.away : 30;
+
+  const rawHash = (homeName + awayName + (match.id || '')).split('')
+    .reduce((acc, char) => acc + char.charCodeAt(0), 0);
+  const seed = Math.abs(rawHash);
+
+  // Derive realistic, bookmaker-grade odds dynamically based on true probability distribution
+  const homeOdds = parseFloat(Math.max(1.18, (100 / Math.max(10, pHome)) * 0.88).toFixed(2));
+  const drawOdds = parseFloat(Math.max(2.65, (100 / Math.max(10, pDraw)) * 0.88).toFixed(2));
+  const awayOdds = parseFloat(Math.max(1.22, (100 / Math.max(10, pAway)) * 0.88).toFixed(2));
+
+  // 1. 1X2 Market
+  let m1x2Tip = 'Home Win (1)';
+  let m1x2Odds = homeOdds;
+  let m1x2Conf = pHome;
+  if (pAway > pHome && pAway >= 35) {
+    m1x2Tip = 'Away Win (2)';
+    m1x2Odds = awayOdds;
+    m1x2Conf = pAway;
+  } else if (pDraw >= 35 && seed % 3 === 0) {
+    m1x2Tip = 'Draw (X)';
+    m1x2Odds = drawOdds;
+    m1x2Conf = pDraw;
+  }
+
+  // 2. Over / Under Goals
+  const uo25IsOver = (pHome + pAway > 58 || seed % 2 === 0);
+  const uoTip = uo25IsOver ? 'Over 2.5 Goals' : 'Under 2.5 Goals';
+  const uoOdds = uo25IsOver 
+    ? parseFloat((1.65 + (seed % 6) * 0.07).toFixed(2)) 
+    : parseFloat((1.75 + (seed % 5) * 0.08).toFixed(2));
+  const uoConf = uo25IsOver ? 78 : 74;
+
+  // 3. Both Teams to Score (BTTS / GG)
+  const bttsIsYes = (pHome >= 28 && pAway >= 24) || (seed % 3 !== 0);
+  const bttsTip = bttsIsYes ? 'BTTS / GG (Yes)' : 'BTTS No (NG)';
+  const bttsOdds = bttsIsYes 
+    ? parseFloat((1.60 + (seed % 6) * 0.06).toFixed(2)) 
+    : parseFloat((1.82 + (seed % 5) * 0.08).toFixed(2));
+  const bttsConf = bttsIsYes ? 76 : 72;
+
+  // 4. Double Chance (1X, 12, X2)
+  let dcTip = 'Double Chance: 1X';
+  if (pAway > pHome + 10) dcTip = 'Double Chance: X2';
+  else if (seed % 4 === 0) dcTip = 'Double Chance: 12';
+  const dcOdds = parseFloat((1.22 + (seed % 5) * 0.05).toFixed(2));
+
+  // 5. Draw No Bet (DNB)
+  const dnbTip = pHome >= pAway ? 'Draw No Bet (Home)' : 'Draw No Bet (Away)';
+  const dnbOdds = parseFloat((1.32 + (seed % 6) * 0.07).toFixed(2));
+
+  // 6. Combos (1X2 + Goals / GG)
+  const comboOptions = [
+    { tip: pHome >= pAway ? '1X & Over 1.5 Goals' : 'X2 & Over 1.5 Goals', odds: 1.48, conf: 82 },
+    { tip: pHome >= pAway ? '1 & Over 2.5 Goals' : '2 & Over 2.5 Goals', odds: 2.30, conf: 72 },
+    { tip: pHome >= pAway ? '1X & GG (BTTS)' : 'X2 & GG (BTTS)', odds: 1.95, conf: 74 },
+    { tip: 'Double Chance + Over 2.5', odds: 1.82, conf: 77 }
+  ];
+  const comboPick = comboOptions[seed % comboOptions.length];
+
+  // 7. Multi-Goals & Ranges
+  const mgOptions = [
+    { tip: 'Multi-Goals: 2-3 Goals', odds: 1.95, conf: 77 },
+    { tip: 'Multi-Goals: 2-4 Goals', odds: 1.55, conf: 83 },
+    { tip: 'Multi-Goals: 1-3 Goals', odds: 1.42, conf: 85 },
+    { tip: 'Multi-Goals: 2-5 Goals', odds: 1.35, conf: 88 }
+  ];
+  const mgPick = mgOptions[seed % mgOptions.length];
+
+  // 8. Half Time / Full Time (HT/FT)
+  let htftTip = 'HT/FT: 1/1 (Home/Home)';
+  if (pAway >= 50) htftTip = 'HT/FT: 2/2 (Away/Away)';
+  else if (seed % 3 === 0) htftTip = 'HT/FT: X/1 (Draw/Home)';
+  const htftOdds = parseFloat((2.35 + (seed % 7) * 0.14).toFixed(2));
+
+  // 9. Team Goals & Clean Sheet
+  const teamSpecTip = pHome >= pAway ? `${homeName} Over 1.5 Goals` : `${awayName} Over 1.5 Goals`;
+  const teamSpecOdds = parseFloat((1.65 + (seed % 5) * 0.08).toFixed(2));
+
+  // 10. Corners Tips
+  const cornerOpts = [
+    { tip: 'Total Corners: Over 8.5', odds: 1.75 },
+    { tip: 'Total Corners: Over 9.5', odds: 2.05 },
+    { tip: 'Total Corners: Over 7.5', odds: 1.52 },
+    { tip: 'Most Corners: Home', odds: 1.68 }
+  ];
+  const cornerPick = cornerOpts[seed % cornerOpts.length];
+
+  // 11. Cards & Bookings
+  const cardOpts = [
+    { tip: 'Total Cards: Over 3.5', odds: 1.68 },
+    { tip: 'Total Cards: Over 4.5', odds: 2.15 },
+    { tip: 'Red Card: No', odds: 1.25 }
+  ];
+  const cardPick = cardOpts[seed % cardOpts.length];
+
+  // 12. Asian / Euro Handicap
+  const handicapTip = pHome >= 50 ? `Asian Handicap: ${homeName} (-0.5)` : `Asian Handicap: ${awayName} (+0.5)`;
+  const handicapOdds = parseFloat((1.82 + (seed % 4) * 0.06).toFixed(2));
+
+  return [
+    { category: '1x2', categoryLabel: '1X2', icon: '⚽', tip: m1x2Tip, odds: m1x2Odds, confidence: m1x2Conf },
+    { category: 'overunder', categoryLabel: 'Goals', icon: '🎯', tip: uoTip, odds: uoOdds, confidence: uoConf },
+    { category: 'btts', categoryLabel: 'BTTS', icon: '🔄', tip: bttsTip, odds: bttsOdds, confidence: bttsConf },
+    { category: 'doublechance', categoryLabel: 'Double Chance', icon: '🛡️', tip: dcTip, odds: dcOdds, confidence: 86 },
+    { category: 'dnb', categoryLabel: 'DNB', icon: '⚖️', tip: dnbTip, odds: dnbOdds, confidence: 81 },
+    { category: 'multigoals', categoryLabel: 'Multi-Goals', icon: '📊', tip: mgPick.tip, odds: mgPick.odds, confidence: mgPick.conf },
+    { category: 'combo', categoryLabel: 'Combo', icon: '⚡', tip: comboPick.tip, odds: comboPick.odds, confidence: comboPick.conf },
+    { category: 'corners', categoryLabel: 'Corners', icon: '📐', tip: cornerPick.tip, odds: cornerPick.odds, confidence: 75 },
+    { category: 'teamspec', categoryLabel: 'Team Goals', icon: '🥅', tip: teamSpecTip, odds: teamSpecOdds, confidence: 79 },
+    { category: 'htft', categoryLabel: 'HT/FT', icon: '⏱️', tip: htftTip, odds: htftOdds, confidence: 68 },
+    { category: 'cards', categoryLabel: 'Cards', icon: '🟨', tip: cardPick.tip, odds: cardPick.odds, confidence: 73 },
+    { category: 'handicap', categoryLabel: 'Handicap', icon: '🏅', tip: handicapTip, odds: handicapOdds, confidence: 75 }
+  ];
+}
+window.getMatchMarketPool = getMatchMarketPool;
+
+// Accurate Odds Resolver for Match Tips
+function getMatchOdds(match, specificTip) {
+  if (!match) return 1.85;
+  if (typeof match.odds === 'number' && !isNaN(match.odds) && match.odds > 1.0 && !specificTip) {
+    return match.odds;
+  }
+  const pool = typeof getMatchMarketPool === 'function' ? getMatchMarketPool(match) : [];
+  const targetTip = specificTip || (typeof getMatchTip === 'function' ? getMatchTip(match) : match.tip);
+
+  if (targetTip && pool && pool.length > 0) {
+    const item = pool.find(p => p.tip === targetTip || targetTip.includes(p.tip) || p.tip.includes(targetTip));
+    if (item && item.odds) return item.odds;
+  }
+
+  const hashStr = ((match.homeTeam?.name || 'Home') + (match.awayTeam?.name || 'Away'));
+  let hash = 0;
+  for (let i = 0; i < hashStr.length; i++) {
+    hash = hashStr.charCodeAt(i) + ((hash << 5) - hash);
+  }
+  const seed = Math.abs(hash);
+  return parseFloat((1.45 + (seed % 11) * 0.1).toFixed(2));
+}
+window.getMatchOdds = getMatchOdds;
+
+// Helper to calculate DeepPredictBet-style tips dynamically synchronized to Attachment 2 taxonomy
 function getMatchTip(match) {
   if (!match) return 'Home Win (1)';
+
+  // 1. Explicit User Selection via Expandable Tray takes absolute precedence
+  if (match.selectedTip) return match.selectedTip;
+  if (match.tip && match.tip !== 'Home Win (1)') return match.tip;
+
   const market = window.appState ? (window.appState.activeMarketSubmenu || 'all') : 'all';
   const topTip = window.appState ? (window.appState.activeTopTip || 'all') : 'all';
 
+  const homeName = (match.homeTeam && match.homeTeam.name) ? match.homeTeam.name : 'Home';
+  const awayName = (match.awayTeam && match.awayTeam.name) ? match.awayTeam.name : 'Away';
   const pHome = match.predictions ? match.predictions.home : 45;
   const pDraw = match.predictions ? match.predictions.draw : 25;
   const pAway = match.predictions ? match.predictions.away : 30;
 
-  const homeName = (match.homeTeam && match.homeTeam.name) ? match.homeTeam.name : 'Home';
-  const awayName = (match.awayTeam && match.awayTeam.name) ? match.awayTeam.name : 'Away';
-
-  // Compute a deterministic seed from match id / team names for rich market variety
   const nameHash = (homeName + awayName + (match.id || '')).split('')
     .reduce((acc, char) => acc + char.charCodeAt(0), 0);
+  const seed = Math.abs(nameHash);
 
-  // If specific Top Tip is chosen
+  // 2. Specific Top Tip Filter chosen from the sub-market pills (Attachment 2)
   if (market === 'toptips' && topTip !== 'all') {
     switch (topTip) {
       case 'win1': return 'Home Win (1)';
@@ -102,69 +255,180 @@ function getMatchTip(match) {
     }
   }
 
-  // Category Markets
-  if (market === '1x2') {
-    if (pHome > 45) return 'Home Win (1)';
-    if (pAway > 45) return 'Away Win (2)';
-    if (pHome >= pAway) return 'Home Win (1)';
-    return 'Draw (X)';
-  }
-  if (market === 'overunder') {
-    return (pHome + pAway > 60 || nameHash % 2 === 0) ? 'Over 2.5 Goals' : 'Under 2.5 Goals';
-  }
-  if (market === 'btts') {
-    return (pHome > 35 && pAway > 25) ? 'BTTS - Yes' : 'BTTS - No';
-  }
-  if (market === 'doublechance') {
-    if (pHome > 40) return '1X (Home/Draw)';
-    if (pAway > 40) return 'X2 (Draw/Away)';
-    return '12 (Home/Away)';
-  }
-  if (market === 'dnb') {
-    return pHome >= pAway ? 'Draw No Bet (Home)' : 'Draw No Bet (Away)';
-  }
-  if (market === 'combo') {
-    if (pHome >= 50) return '1 & Over 2.5 Goals';
-    if (pAway >= 50) return '2 & Over 2.5 Goals';
-    return pHome >= pAway ? '1X & Over 1.5 Goals' : 'X2 & Over 1.5 Goals';
-  }
-  if (market === 'htft') {
-    if (pHome >= 50) return 'HT/FT: 1/1 (Home/Home)';
-    if (pAway >= 50) return 'HT/FT: 2/2 (Away/Away)';
-    return 'HT/FT: X/1 (Draw/Home)';
-  }
-  if (market === 'multigoals') {
-    const mgOptions = ['Multi-Goals: 2-4 Goals', 'Multi-Goals: 2-3 Goals', 'Multi-Goals: 1-3 Goals', 'Multi-Goals: 2-5 Goals'];
-    return mgOptions[nameHash % mgOptions.length];
-  }
-  if (market === 'teamspec') {
-    if (pHome >= 50) return 'Home Over 1.5 Goals';
-    if (pAway >= 50) return 'Away Over 1.5 Goals';
-    return pHome >= pAway ? 'Home Clean Sheet' : 'Away Clean Sheet';
-  }
-  if (market === 'corners') {
-    const cornerOpts = ['Corners Over 8.5', 'Corners Over 9.5', 'Corners Over 7.5', '1st Half Corners Over 4.5'];
-    return cornerOpts[nameHash % cornerOpts.length];
-  }
-  if (market === 'cards') {
-    const cardOpts = ['Total Cards Over 3.5', 'Total Cards Over 4.5', 'Total Cards Under 5.5', 'Red Card: No'];
-    return cardOpts[nameHash % cardOpts.length];
-  }
-  if (market === 'handicap') {
-    if (pHome >= 55) return 'Asian Handicap: Home (-1.0)';
-    if (pHome >= 45) return 'Asian Handicap: Home (-0.5)';
-    return 'Asian Handicap: Away (+0.5)';
+  // 3. Category Filter chosen from main category tabs (Attachment 2)
+  if (market !== 'all' && market !== 'toptips') {
+    const pool = getMatchMarketPool(match);
+    const catItem = pool.find(p => p.category === market);
+    if (catItem) return catItem.tip;
   }
 
-  // Fallback default tip mapping
-  if (match.id === 'match-1') return 'Home Win (1)';
-  if (match.id === 'match-2') return 'Home Win (1)';
-  if (match.id === 'match-3') return 'Over 2.5 Goals';
-  if (match.id === 'match-4') return '1 & Over 2.5';
-  if (match.id === 'match-5') return 'Home Win (1)';
-  if (match.id === 'match-6') return 'Under 2.5 Goals';
-  return pHome >= pAway ? 'Home Win (1)' : 'Over 1.5 Goals';
+  // 4. Default "All Markets" Mode:
+  // Randomly/deterministically select across the 13 categories from Attachment 2
+  // instead of static "Home Win (1)" on every card!
+  const pool = getMatchMarketPool(match);
+  if (pool && pool.length > 0) {
+    // Rotation indexes across top high-confidence markets:
+    // [Goals, BTTS, Double Chance, Multi-Goals, 1X2, DNB, Combos, Corners, Team Goals, HT/FT]
+    const diverseDistribution = [1, 2, 3, 5, 0, 4, 6, 7, 8, 9];
+    const chosenIndex = diverseDistribution[seed % diverseDistribution.length];
+    const chosenItem = pool[chosenIndex] || pool[0];
+    if (chosenItem && chosenItem.tip) return chosenItem.tip;
+  }
+
+  return 'Over 1.5 Goals';
 }
+window.getMatchTip = getMatchTip;
+
+// Expandable AI Tip Accordion Controller
+function toggleExpandAiTip(matchId, event) {
+  const evt = event || (typeof window !== 'undefined' ? window.event : null);
+  if (evt) {
+    if (typeof evt.stopPropagation === 'function') evt.stopPropagation();
+    if (typeof evt.stopImmediatePropagation === 'function') evt.stopImmediatePropagation();
+    if (typeof evt.preventDefault === 'function') evt.preventDefault();
+  }
+
+  const sId = String(matchId);
+  const tray = document.getElementById(`expanded-ai-tips-${sId}`);
+  const chevron = document.getElementById(`ai-tip-chevron-${sId}`);
+  const label = document.getElementById(`ai-tip-expand-label-${sId}`);
+
+  if (!tray) return;
+
+  const isOpen = tray.style.display !== 'none';
+  if (isOpen) {
+    tray.style.display = 'none';
+    if (chevron) chevron.style.transform = 'rotate(0deg)';
+    if (label) label.textContent = 'Markets';
+  } else {
+    tray.style.display = 'block';
+    if (chevron) chevron.style.transform = 'rotate(180deg)';
+    if (label) label.textContent = 'Close';
+  }
+}
+window.toggleExpandAiTip = toggleExpandAiTip;
+
+// Select Alternate Tip from Expanded Tray & Synchronize with Active Betslip
+function selectCardExpandedTip(matchId, tipText, odds, categoryLabel, event) {
+  const evt = event || (typeof window !== 'undefined' ? window.event : null);
+  if (evt) {
+    if (typeof evt.stopPropagation === 'function') evt.stopPropagation();
+    if (typeof evt.stopImmediatePropagation === 'function') evt.stopImmediatePropagation();
+    if (typeof evt.preventDefault === 'function') evt.preventDefault();
+  }
+
+  const sId = String(matchId);
+  const match = typeof findMatchAnywhere === 'function' ? findMatchAnywhere(sId, evt ? (evt.target || evt) : null) : null;
+
+  const parsedOdds = typeof odds === 'number' && odds > 1.0 ? odds : 1.85;
+
+  if (match) {
+    match.selectedTip = tipText;
+    match.tip = tipText;
+    match.odds = parsedOdds;
+    match.tipCategory = categoryLabel || 'Market';
+    if (!window._matchRegistry) window._matchRegistry = new Map();
+    window._matchRegistry.set(sId, match);
+  }
+
+  // Update AI Tip text and Category Badge on the card in DOM
+  const tipValEl = document.getElementById(`ai-tip-val-${sId}`);
+  if (tipValEl) tipValEl.textContent = tipText;
+
+  const badgeEl = document.getElementById(`ai-tip-badge-${sId}`);
+  if (badgeEl && categoryLabel) badgeEl.textContent = categoryLabel;
+
+  // Update displayed odds badge on the card
+  const cardEl = tipValEl ? tipValEl.closest('.match-card') : null;
+  if (cardEl) {
+    const oddsEl = cardEl.querySelector('.desktop-only-odds');
+    if (oddsEl) {
+      oddsEl.textContent = `@${parsedOdds.toFixed(2)}`;
+    }
+  }
+
+  // Highlight active chip in the tray
+  const tray = document.getElementById(`expanded-ai-tips-${sId}`);
+  if (tray) {
+    const chips = tray.querySelectorAll('.expanded-tip-chip');
+    chips.forEach(chip => {
+      chip.classList.remove('active-tip-chip');
+      const chipTip = chip.getAttribute('data-tip') || chip.textContent;
+      if (chipTip && (chipTip === tipText || chipTip.includes(tipText))) {
+        chip.classList.add('active-tip-chip');
+      }
+    });
+  }
+
+  if (typeof showAppNotification === 'function') {
+    showAppNotification(`🎯 Tip Updated: ${tipText} (@${parsedOdds.toFixed(2)})`);
+  }
+}
+window.selectCardExpandedTip = selectCardExpandedTip;
+
+// Render Unified AI Tip Banner + Expandable Tray HTML
+function renderAiTipSection(match) {
+  if (!match) return '';
+  const currentTip = typeof getMatchTip === 'function' ? getMatchTip(match) : (match.tip || 'Home Win (1)');
+  const pool = typeof getMatchMarketPool === 'function' ? getMatchMarketPool(match) : [];
+
+  // Determine category badge
+  const matchedItem = pool.find(p => p.tip === currentTip || currentTip.includes(p.tip) || p.tip.includes(currentTip));
+  const catBadge = matchedItem ? matchedItem.categoryLabel : (match.tipCategory || 'AI Pick');
+
+  // Render chips for the expanded tray
+  const chipsHtml = pool.slice(0, 8).map(item => {
+    const isSelected = item.tip === currentTip;
+    const activeClass = isSelected ? 'active-tip-chip' : '';
+    const safeTip = item.tip.replace(/'/g, "\\'");
+    const safeCat = item.categoryLabel.replace(/'/g, "\\'");
+    return `
+      <button type="button" class="expanded-tip-chip ${activeClass}" 
+              data-match-id="${match.id}" 
+              data-tip="${safeTip}" 
+              onclick="selectCardExpandedTip('${match.id}', '${safeTip}', ${item.odds}, '${safeCat}', event)" 
+              title="Select '${safeTip}' (@${item.odds.toFixed(2)}) for Betslip">
+        <div class="chip-top-row">
+          <span class="chip-cat">${item.icon} ${item.categoryLabel}</span>
+          <span class="chip-odds">@${item.odds.toFixed(2)}</span>
+        </div>
+        <span class="chip-tip">${item.tip}</span>
+      </button>
+    `;
+  }).join('');
+
+  return `
+    <div class="insight-row ${match.isPremium ? 'premium' : ''}" 
+         id="insight-row-${match.id}" 
+         onclick="toggleExpandAiTip('${match.id}', event)" 
+         title="Click to expand & choose from all AI market tips">
+      <div class="ai-tip-main">
+        <span class="ai-tip-prefix"><span>💡</span> AI Tip:</span>
+        <span class="ai-tip-badge" id="ai-tip-badge-${match.id}">${catBadge}</span>
+        <span class="ai-tip-val" id="ai-tip-val-${match.id}">${currentTip}</span>
+      </div>
+      <div class="ai-tip-toggle-wrap">
+        <button type="button" class="ai-tip-expand-btn" id="ai-tip-expand-btn-${match.id}" 
+                onclick="toggleExpandAiTip('${match.id}', event)" 
+                title="Expand / Collapse AI Market Tips">
+          <span id="ai-tip-expand-label-${match.id}">Markets</span>
+          <span class="ai-tip-chevron" id="ai-tip-chevron-${match.id}">▼</span>
+        </button>
+      </div>
+    </div>
+
+    <div class="expanded-ai-tips-tray" id="expanded-ai-tips-${match.id}" style="display: none;">
+      <div class="expanded-tray-header">
+        <span class="expanded-tray-title">🎯 AI Market Predictions (${pool.length} Markets)</span>
+        <span class="expanded-tray-subtitle">Click any tip to select for betslip:</span>
+      </div>
+      <div class="expanded-tips-chips">
+        ${chipsHtml}
+      </div>
+    </div>
+  `;
+}
+window.renderAiTipSection = renderAiTipSection;
 
 // Helper to check if match is completed / outdated (strictly allows only future, upcoming, and live matches)
 function isMatchOutdated(match) {
@@ -248,7 +512,7 @@ function findMatchAnywhere(matchId, eventOrElement) {
       if (!isNaN(num) && num > 1.0) parsedOdds = num;
     }
 
-    const tipEl = cardEl.querySelector('.insight-row span:last-child');
+    const tipEl = cardEl.querySelector('.ai-tip-val') || cardEl.querySelector('.insight-row span:last-child');
     const tipStr = tipEl ? tipEl.textContent.trim() : 'Home Win (1)';
 
     const syntheticMatch = {
@@ -580,12 +844,14 @@ function renderMatchCards(fixtures) {
         </div>
       </div>
 
+      ${typeof renderAiTipSection === 'function' ? renderAiTipSection(match) : `
       <div class="insight-row ${match.isPremium ? 'premium' : ''}">
         <span style="font-size: 0.75rem; color: var(--text-muted); font-weight: 600; display: flex; align-items: center; gap: 5px;">
           <span>💡</span> AI Tip:
         </span>
         <span style="font-weight: 700;">${typeof getMatchTip === 'function' ? getMatchTip(match) : 'Home Win (1)'}</span>
       </div>
+      `}
 
       <!-- Statistical Parameters Badges -->
       <div class="match-params-row">
@@ -8382,10 +8648,12 @@ function buildMatchCardElement(match) {
       </div>
     </div>
 
+    ${typeof renderAiTipSection === 'function' ? renderAiTipSection(match) : `
     <div class="insight-row ${match.isPremium ? 'premium' : ''}">
       <span style="font-size: 0.75rem; color: var(--text-muted); font-weight: 500; margin-right: 4px;" class="mobile-only-label">Tip:</span>
       <span>${typeof getMatchTip === 'function' ? getMatchTip(match) : 'Home Win (1)'}</span>
     </div>
+    `}
 
     <div style="display: flex; flex-wrap: wrap; gap: 6px; margin: 10px 0 6px; border-top: 1px dashed var(--border-color); padding-top: 8px;">
       <span style="font-size: 0.68rem; padding: 2px 6px; background: rgba(26,104,219,0.06); border: 1px solid rgba(26,104,219,0.12); border-radius: var(--radius-sm); color: var(--primary); font-weight: 600;">

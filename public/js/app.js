@@ -112,8 +112,20 @@ function toggleBetslipDrawer() {
   }
 }
 
-function getMatchOdds(match) {
-  const hashStr = (match.homeTeam.name + match.awayTeam.name);
+function getMatchOdds(match, specificTip) {
+  if (!match) return 1.85;
+  if (typeof match.odds === 'number' && !isNaN(match.odds) && match.odds > 1.0 && !specificTip) {
+    return match.odds;
+  }
+  const pool = typeof getMatchMarketPool === 'function' ? getMatchMarketPool(match) : (typeof window !== 'undefined' && window.getMatchMarketPool ? window.getMatchMarketPool(match) : []);
+  const targetTip = specificTip || (typeof getMatchTip === 'function' ? getMatchTip(match) : (typeof window !== 'undefined' && window.getMatchTip ? window.getMatchTip(match) : match.tip));
+
+  if (targetTip && pool && pool.length > 0) {
+    const item = pool.find(p => p.tip === targetTip || targetTip.includes(p.tip) || p.tip.includes(targetTip));
+    if (item && item.odds) return item.odds;
+  }
+
+  const hashStr = ((match.homeTeam && match.homeTeam.name ? match.homeTeam.name : 'Home') + (match.awayTeam && match.awayTeam.name ? match.awayTeam.name : 'Away'));
   let hash = 0;
   for (let i = 0; i < hashStr.length; i++) {
     hash = hashStr.charCodeAt(i) + ((hash << 5) - hash);
@@ -205,7 +217,7 @@ function findMatchAnywhere(matchId, eventOrElement) {
       if (!isNaN(num) && num > 1.0) parsedOdds = num;
     }
 
-    const tipEl = cardEl.querySelector('.insight-row span:last-child');
+    const tipEl = cardEl.querySelector('.ai-tip-val') || cardEl.querySelector('.insight-row span:last-child');
     const tipStr = tipEl ? tipEl.textContent.trim() : 'Home Win (1)';
 
     const syntheticMatch = {
@@ -5333,6 +5345,10 @@ try { if (typeof unlockPremiumPlan === 'function') window.unlockPremiumPlan = un
 try { if (typeof unlockPremiumPlanLigue2 === 'function') window.unlockPremiumPlanLigue2 = unlockPremiumPlanLigue2; } catch (e) {}
 try { if (typeof updateBarDate === 'function') window.updateBarDate = updateBarDate; } catch (e) {}
 try { if (typeof updateFixturesDisplay === 'function') window.updateFixturesDisplay = updateFixturesDisplay; } catch (e) {}
+try { if (typeof getMatchMarketPool === 'function') window.getMatchMarketPool = getMatchMarketPool; } catch (e) {}
+try { if (typeof toggleExpandAiTip === 'function') window.toggleExpandAiTip = toggleExpandAiTip; } catch (e) {}
+try { if (typeof selectCardExpandedTip === 'function') window.selectCardExpandedTip = selectCardExpandedTip; } catch (e) {}
+try { if (typeof renderAiTipSection === 'function') window.renderAiTipSection = renderAiTipSection; } catch (e) {}
 
 
 /* --- DEEPPREDICT MACHINE TICKET GENERATOR & SLIDER HELPERS --- */
