@@ -10,7 +10,8 @@ const API_HOST = 'https://v3.football.api-sports.io';
 export async function onRequest(context) {
   const cache = caches.default;
   const url = new URL(context.request.url);
-  const league = url.searchParams.get('league') || '39';
+  const country = (url.searchParams.get('country') || '').toLowerCase().trim();
+  const league = url.searchParams.get('league') || ((!country || country === 'england') ? '39' : '');
   const now = new Date();
   const season = now.getMonth() >= 6 ? now.getFullYear() : now.getFullYear() - 1;
 
@@ -24,7 +25,7 @@ export async function onRequest(context) {
     });
   }
 
-  const cacheKey = new Request(`https://deeppredictbet.pages.dev/api/standings?league=${league}&season=${season}`);
+  const cacheKey = new Request(url.toString());
   const cachedResponse = await cache.match(cacheKey);
   if (cachedResponse) return cachedResponse;
 
@@ -86,7 +87,7 @@ export async function onRequest(context) {
       "Southampton": "⚪🔴🧣"
     };
 
-    if (table.length === 0 && (league === '39' || league === 'Premier League')) {
+    if (table.length === 0 && (league === '39' || league === 'Premier League') && (!country || country === 'england')) {
       table = [
         { rank: 1, name: "Manchester City", logo: "🔵", matchesPlayed: 2, wins: 2, draws: 0, losses: 0, goalsFor: 6, goalsAgainst: 2, goalDiff: 4, points: 6, form: "WW" },
         { rank: 2, name: "Hull City", logo: "🐯", matchesPlayed: 2, wins: 2, draws: 0, losses: 0, goalsFor: 3, goalsAgainst: 0, goalDiff: 3, points: 6, form: "WW" },
@@ -152,7 +153,12 @@ export async function onRequest(context) {
       { rank: 19, name: "Leicester City", logo: "🦊", matchesPlayed: 2, wins: 0, draws: 0, losses: 2, goalsFor: 1, goalsAgainst: 5, goalDiff: -4, points: 0, form: "LL" },
       { rank: 20, name: "Southampton", logo: "⚪🔴🧣", matchesPlayed: 2, wins: 0, draws: 0, losses: 2, goalsFor: 0, goalsAgainst: 5, goalDiff: -5, points: 0, form: "LL" }
     ];
-    return new Response(JSON.stringify({ success: true, error: err.message, standings: fallbackTable }), {
+    const isEnglishLeague = (league === '39' || league === 'Premier League') && (!country || country === 'england');
+    return new Response(JSON.stringify({
+      success: isEnglishLeague,
+      error: err.message,
+      standings: isEnglishLeague ? fallbackTable : []
+    }), {
       status: 200,
       headers: { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*' }
     });

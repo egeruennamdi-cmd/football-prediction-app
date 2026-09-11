@@ -62,8 +62,12 @@
         // Intercepted by VIP Paywall
         const predView = document.getElementById('view-predictions');
         if (predView) {
-          views.forEach(v => v.classList.remove('active'));
+          pageViews.forEach(v => {
+            v.classList.remove('active');
+            v.style.display = 'none';
+          });
           predView.classList.add('active');
+          predView.style.display = 'block';
         }
         return;
       }
@@ -95,7 +99,11 @@
 
   function navigateToPage(routeId) {
     if (!routeId) return;
-    window.location.hash = '#' + routeId;
+    const targetHash = '#' + routeId;
+    if (window.location.hash !== targetHash) {
+      window.location.hash = targetHash;
+    }
+    handleRouteNavigation();
   }
 
   window.navigateToPage = navigateToPage;

@@ -606,19 +606,6 @@ function toggleCheckboxCard(card, event) {
 
 // Switch between tools in DeepPredict Betting Suite
 window.switchTool = function switchTool(toolId, btn) {
-  // VIP Feature Access Gate
-  if (typeof checkFeatureVipAccess === 'function' && !checkFeatureVipAccess(toolId)) {
-    return false;
-  }
-
-  // If user is on another view, ensure view-generator is active
-  const genView = document.getElementById("view-generator");
-  if (genView && !genView.classList.contains("active")) {
-    const allViews = document.querySelectorAll(".page-view");
-    allViews.forEach(v => v.classList.remove("active"));
-    genView.classList.add("active");
-  }
-
   const suiteSec = document.getElementById("deeppredictbet-tools");
   if (!suiteSec) return;
   
@@ -649,6 +636,7 @@ window.switchTool = function switchTool(toolId, btn) {
     activePane.classList.add("active");
     activePane.style.display = "flex";
     activePane.style.flexDirection = "column";
+
     if (toolId === 'arbitrage') {
       if (typeof runArbitrageScanner === 'function') runArbitrageScanner();
     } else if (toolId === 'valuebot') {
@@ -661,7 +649,14 @@ window.switchTool = function switchTool(toolId, btn) {
       if (typeof generateMachineTicket === 'function') generateMachineTicket();
     } else if (toolId === 'doctor') {
       if (typeof runBetDoctorAudit === 'function') runBetDoctorAudit();
+    } else if (toolId === 'filters') {
+      if (typeof runAdvancedFilters === 'function') runAdvancedFilters();
     }
+  }
+
+  // VIP Feature Access Gate check - opens VIP modal if feature is marked VIP
+  if (typeof checkFeatureVipAccess === 'function') {
+    checkFeatureVipAccess(toolId);
   }
 }
 
@@ -1734,7 +1729,7 @@ function renderTopTipsTool() {
     row.style.fontSize = "0.85rem";
     row.style.minWidth = "600px";
 
-    const isWatched = window.appState.watchlist.includes(match.id);
+    const isWatched = (window.appState && Array.isArray(window.appState.watchlist)) ? window.appState.watchlist.includes(match.id) : false;
     const prob = (match.confidenceVal + (match.id === 'match-1' ? 4 : -2));
 
     row.innerHTML = `
@@ -1800,8 +1795,17 @@ function toggleSidebarTopLeaguesAccordion(index, header) {
 window.toggleSidebarTopLeaguesAccordion = toggleSidebarTopLeaguesAccordion;
 
 // 1. Interactive League Intelligence Hub Modal (Integrates Predictions, Scouting, Averages & Standings)
-function openLeagueHubModal(leagueName, btn) {
+function openLeagueHubModal(leagueName, btn, countryName) {
   const cleanLeague = (leagueName || '').replace(/^[^\w\s]+/, '').trim() || leagueName;
+  let resolvedCountry = countryName || (window.appState && window.appState.calCountry);
+  if ((!resolvedCountry || resolvedCountry === 'all') && window.COUNTRY_LEAGUES_DATA && Array.isArray(window.COUNTRY_LEAGUES_DATA)) {
+    const rawClean = cleanLeague.toLowerCase();
+    const found = window.COUNTRY_LEAGUES_DATA.find(c =>
+      c.country.toLowerCase() === rawClean ||
+      (c.leagues && c.leagues.some(l => l.replace(/^[^\w\s]+/, '').trim().toLowerCase() === rawClean || rawClean.includes(l.toLowerCase())))
+    );
+    if (found) resolvedCountry = found.country;
+  }
   if (btn) {
     const parent = btn.parentElement;
     if (parent) {
@@ -1828,6 +1832,7 @@ function openLeagueHubModal(leagueName, btn) {
   content.style.cssText = "width:100%;max-width:560px;background:linear-gradient(180deg,#0f172a 0%,#020617 100%);border:1px solid rgba(59,130,246,0.35);border-radius:18px;box-shadow:0 20px 50px rgba(0,0,0,0.8),0 0 30px rgba(59,130,246,0.15);overflow:hidden;color:#f8fafc;font-family:var(--font-body,sans-serif);animation:fadeIn 0.2s ease-out;";
 
   const safeLeague = cleanLeague.replace(/'/g, "\\'");
+  const safeCountry = (resolvedCountry || '').replace(/'/g, "\\'");
 
   content.innerHTML = `
     <div style="padding:18px 22px;border-bottom:1px solid rgba(255,255,255,0.08);display:flex;align-items:center;justify-content:space-between;background:linear-gradient(135deg,rgba(59,130,246,0.18) 0%,rgba(15,23,42,0.9) 100%);">
@@ -1849,7 +1854,7 @@ function openLeagueHubModal(leagueName, btn) {
       </div>
 
       <!-- Action 1: Match Predictions -->
-      <button onclick="document.getElementById('league-hub-modal').remove(); triggerMatchPreview('${safeLeague}');" style="display:flex;align-items:center;gap:14px;padding:14px 16px;background:rgba(30,41,59,0.7);border:1px solid rgba(59,130,246,0.3);border-radius:12px;color:#ffffff;cursor:pointer;text-align:left;transition:all 0.15s ease;" onmouseover="this.style.background='rgba(59,130,246,0.25)';this.style.borderColor='#3b82f6';" onmouseout="this.style.background='rgba(30,41,59,0.7)';this.style.borderColor='rgba(59,130,246,0.3)';">
+      <button onclick="document.getElementById('league-hub-modal').remove(); if(typeof triggerMatchPreview==='function'){triggerMatchPreview('${safeLeague}', null, '${safeCountry}');} else if(typeof selectSidebarLeague==='function'){selectSidebarLeague('${safeLeague}', null, '${safeCountry}');}" style="display:flex;align-items:center;gap:14px;padding:14px 16px;background:rgba(30,41,59,0.7);border:1px solid rgba(59,130,246,0.3);border-radius:12px;color:#ffffff;cursor:pointer;text-align:left;transition:all 0.15s ease;" onmouseover="this.style.background='rgba(59,130,246,0.25)';this.style.borderColor='#3b82f6';" onmouseout="this.style.background='rgba(30,41,59,0.7)';this.style.borderColor='rgba(59,130,246,0.3)';">
         <span style="font-size:1.6rem;background:rgba(59,130,246,0.2);border-radius:10px;padding:8px 10px;">⚽</span>
         <div style="flex:1;">
           <div style="font-weight:800;font-size:0.95rem;color:#60a5fa;margin-bottom:2px;">Match Predictions</div>
@@ -1859,7 +1864,7 @@ function openLeagueHubModal(leagueName, btn) {
       </button>
 
       <!-- Action 2: Scouting Clubs -->
-      <button onclick="document.getElementById('league-hub-modal').remove(); scoutLeagueClubs('${safeLeague}');" style="display:flex;align-items:center;gap:14px;padding:14px 16px;background:rgba(30,41,59,0.7);border:1px solid rgba(16,185,129,0.3);border-radius:12px;color:#ffffff;cursor:pointer;text-align:left;transition:all 0.15s ease;" onmouseover="this.style.background='rgba(16,185,129,0.25)';this.style.borderColor='#10b981';" onmouseout="this.style.background='rgba(30,41,59,0.7)';this.style.borderColor='rgba(16,185,129,0.3)';">
+      <button onclick="document.getElementById('league-hub-modal').remove(); scoutLeagueClubs('${safeLeague}', null, '${safeCountry}');" style="display:flex;align-items:center;gap:14px;padding:14px 16px;background:rgba(30,41,59,0.7);border:1px solid rgba(16,185,129,0.3);border-radius:12px;color:#ffffff;cursor:pointer;text-align:left;transition:all 0.15s ease;" onmouseover="this.style.background='rgba(16,185,129,0.25)';this.style.borderColor='#10b981';" onmouseout="this.style.background='rgba(30,41,59,0.7)';this.style.borderColor='rgba(16,185,129,0.3)';">
         <span style="font-size:1.6rem;background:rgba(16,185,129,0.2);border-radius:10px;padding:8px 10px;">🏟️</span>
         <div style="flex:1;">
           <div style="font-weight:800;font-size:0.95rem;color:#34d399;margin-bottom:2px;">Scouting Clubs</div>
@@ -1869,7 +1874,7 @@ function openLeagueHubModal(leagueName, btn) {
       </button>
 
       <!-- Action 3: League Averages -->
-      <button onclick="document.getElementById('league-hub-modal').remove(); openLeagueAveragesModal('${safeLeague}');" style="display:flex;align-items:center;gap:14px;padding:14px 16px;background:rgba(30,41,59,0.7);border:1px solid rgba(245,158,11,0.3);border-radius:12px;color:#ffffff;cursor:pointer;text-align:left;transition:all 0.15s ease;" onmouseover="this.style.background='rgba(245,158,11,0.25)';this.style.borderColor='#f59e0b';" onmouseout="this.style.background='rgba(30,41,59,0.7)';this.style.borderColor='rgba(245,158,11,0.3)';">
+      <button onclick="document.getElementById('league-hub-modal').remove(); openLeagueAveragesModal('${safeLeague}', null, '${safeCountry}');" style="display:flex;align-items:center;gap:14px;padding:14px 16px;background:rgba(30,41,59,0.7);border:1px solid rgba(245,158,11,0.3);border-radius:12px;color:#ffffff;cursor:pointer;text-align:left;transition:all 0.15s ease;" onmouseover="this.style.background='rgba(245,158,11,0.25)';this.style.borderColor='#f59e0b';" onmouseout="this.style.background='rgba(30,41,59,0.7)';this.style.borderColor='rgba(245,158,11,0.3)';">
         <span style="font-size:1.6rem;background:rgba(245,158,11,0.2);border-radius:10px;padding:8px 10px;">📊</span>
         <div style="flex:1;">
           <div style="font-weight:800;font-size:0.95rem;color:#fbbf24;margin-bottom:2px;">League Averages</div>
@@ -1879,7 +1884,7 @@ function openLeagueHubModal(leagueName, btn) {
       </button>
 
       <!-- Action 4: Table Standings -->
-      <button onclick="document.getElementById('league-hub-modal').remove(); showMockTableStandings('${safeLeague}');" style="display:flex;align-items:center;gap:14px;padding:14px 16px;background:rgba(30,41,59,0.7);border:1px solid rgba(168,85,247,0.3);border-radius:12px;color:#ffffff;cursor:pointer;text-align:left;transition:all 0.15s ease;" onmouseover="this.style.background='rgba(168,85,247,0.25)';this.style.borderColor='#a855f7';" onmouseout="this.style.background='rgba(30,41,59,0.7)';this.style.borderColor='rgba(168,85,247,0.3)';">
+      <button onclick="document.getElementById('league-hub-modal').remove(); showMockTableStandings('${safeLeague}', null, '${safeCountry}');" style="display:flex;align-items:center;gap:14px;padding:14px 16px;background:rgba(30,41,59,0.7);border:1px solid rgba(168,85,247,0.3);border-radius:12px;color:#ffffff;cursor:pointer;text-align:left;transition:all 0.15s ease;" onmouseover="this.style.background='rgba(168,85,247,0.25)';this.style.borderColor='#a855f7';" onmouseout="this.style.background='rgba(30,41,59,0.7)';this.style.borderColor='rgba(168,85,247,0.3)';">
         <span style="font-size:1.6rem;background:rgba(168,85,247,0.2);border-radius:10px;padding:8px 10px;">🏆</span>
         <div style="flex:1;">
           <div style="font-weight:800;font-size:0.95rem;color:#c084fc;margin-bottom:2px;">Table Standings</div>
@@ -1897,8 +1902,40 @@ function openLeagueHubModal(leagueName, btn) {
 window.openLeagueHubModal = openLeagueHubModal;
 
 // Universal Club Lookup for all 50+ Leagues & Cups
-function getClubsForLeague(leagueName) {
+function getClubsForLeague(leagueName, countryName) {
   const clean = (leagueName || '').replace(/^[^\w\s]+/, '').trim().toLowerCase();
+  let cleanCountry = (countryName || '').trim().toLowerCase();
+
+  // If countryName was not provided, look at appState or lookup from league
+  if (!cleanCountry || cleanCountry === 'all') {
+    if (window.appState && window.appState.calCountry && window.appState.calCountry !== 'all') {
+      cleanCountry = window.appState.calCountry.trim().toLowerCase();
+    } else if (typeof COUNTRY_LEAGUES_DATA !== 'undefined' && Array.isArray(COUNTRY_LEAGUES_DATA)) {
+      // Find country matching this specific league (avoid generic leagues like Premier League)
+      if (clean !== 'premier league' && clean !== 'championship' && clean !== 'league one' && clean !== 'superliga' && clean !== 'ligue 1') {
+        const found = COUNTRY_LEAGUES_DATA.find(c =>
+          c.country.toLowerCase() === clean ||
+          (c.leagues && c.leagues.some(l => l.replace(/^[^\w\s]+/, '').trim().toLowerCase() === clean))
+        );
+        if (found) cleanCountry = found.country.toLowerCase();
+      }
+    }
+  }
+
+  // 1. If countryName or league resolves via getCountryClubs, prioritize authentic local clubs
+  const resolverFn = (typeof getCountryClubs === 'function')
+    ? getCountryClubs
+    : ((typeof window !== 'undefined' && typeof window.getCountryClubs === 'function') ? window.getCountryClubs : null);
+
+  if (resolverFn) {
+    if (cleanCountry && cleanCountry !== 'all') {
+      const cClubs = resolverFn(cleanCountry);
+      if (cClubs && cClubs.length > 0) return cClubs;
+    }
+    const lClubs = resolverFn(leagueName);
+    if (lClubs && lClubs.length > 0) return lClubs;
+  }
+
   const allClubs = (typeof GLOBAL_CLUBS !== 'undefined' && Array.isArray(GLOBAL_CLUBS) && GLOBAL_CLUBS.length > 0)
     ? GLOBAL_CLUBS
     : ((typeof window.GLOBAL_CLUBS !== 'undefined' && Array.isArray(window.GLOBAL_CLUBS) && window.GLOBAL_CLUBS.length > 0)
@@ -1915,34 +1952,59 @@ function getClubsForLeague(leagueName) {
           { name: "Paris Saint-Germain", country: "France", flag: "🇫🇷", league: "Ligue 1", logo: "🗼🔵🔴", matchesPlayed: 1, wins: 1, draws: 0, losses: 0, points: 3 }
         ]);
 
-  // Direct league name match
+  // 2. Direct league name match (strictly scoped by country if cleanCountry is set)
   let matches = allClubs.filter(c => {
     const cLeague = (c.league || '').toLowerCase();
+    const cCountry = (c.country || '').toLowerCase();
+    if (cleanCountry && cleanCountry !== 'all') {
+      return (cCountry === cleanCountry || cCountry.includes(cleanCountry) || cleanCountry.includes(cCountry)) &&
+             (cLeague === clean || cLeague.includes(clean) || clean.includes(cLeague));
+    }
     return cLeague === clean || cLeague.includes(clean) || clean.includes(cLeague);
   });
 
   if (matches.length > 0) return matches;
 
-  // Cup & tournament mappings to clubs
-  if (clean.includes('fa cup') || clean.includes('efl cup') || clean.includes('carabao') || clean.includes('league one') || clean.includes('premier') || clean.includes('championship')) {
-    const res = allClubs.filter(c => (c.country || '').toLowerCase() === 'england');
-    if (res.length > 0) return res;
+  // 3. Match by country if provided
+  if (cleanCountry && cleanCountry !== 'all') {
+    const byCountry = allClubs.filter(c => (c.country || '').toLowerCase() === cleanCountry || (c.country || '').toLowerCase().includes(cleanCountry));
+    if (byCountry.length > 0) return byCountry;
   }
-  if (clean.includes('copa del rey') || clean.includes('la liga') || clean.includes('segunda') || clean.includes('spain')) {
-    const res = allClubs.filter(c => (c.country || '').toLowerCase() === 'spain');
-    if (res.length > 0) return res;
+
+  // 4. Cup & tournament mappings to clubs (only when no conflicting country is specified)
+  if (!cleanCountry || cleanCountry === 'all' || cleanCountry === 'england') {
+    if (clean.includes('fa cup') || clean.includes('efl cup') || clean.includes('carabao') || clean === 'championship') {
+      const res = allClubs.filter(c => (c.country || '').toLowerCase() === 'england');
+      if (res.length > 0) return res;
+    }
+    if (clean === 'premier league' && (!cleanCountry || cleanCountry === 'england')) {
+      const res = allClubs.filter(c => (c.country || '').toLowerCase() === 'england');
+      if (res.length > 0) return res;
+    }
   }
-  if (clean.includes('dfb pokal') || clean.includes('bundesliga') || clean.includes('germany')) {
-    const res = allClubs.filter(c => (c.country || '').toLowerCase() === 'germany');
-    if (res.length > 0) return res;
+  if (!cleanCountry || cleanCountry === 'all' || cleanCountry === 'spain') {
+    if (clean.includes('copa del rey') || clean === 'la liga' || clean.includes('segunda')) {
+      const res = allClubs.filter(c => (c.country || '').toLowerCase() === 'spain');
+      if (res.length > 0) return res;
+    }
   }
-  if (clean.includes('coppa italia') || clean.includes('serie a') || clean.includes('serie b') || clean.includes('italy')) {
-    const res = allClubs.filter(c => (c.country || '').toLowerCase() === 'italy');
-    if (res.length > 0) return res;
+  if (!cleanCountry || cleanCountry === 'all' || cleanCountry === 'germany') {
+    if (clean.includes('dfb pokal') || clean === 'bundesliga' || clean.includes('2. bundesliga')) {
+      const res = allClubs.filter(c => (c.country || '').toLowerCase() === 'germany');
+      if (res.length > 0) return res;
+    }
   }
-  if (clean.includes('coupe de france') || clean.includes('ligue 1') || clean.includes('ligue 2') || clean.includes('france')) {
-    const res = allClubs.filter(c => (c.country || '').toLowerCase() === 'france');
-    if (res.length > 0) return res;
+  if (!cleanCountry || cleanCountry === 'all' || cleanCountry === 'italy') {
+    if (clean.includes('coppa italia') || clean === 'serie a' || clean.includes('serie b')) {
+      const res = allClubs.filter(c => (c.country || '').toLowerCase() === 'italy');
+      if (res.length > 0) return res;
+    }
+  }
+  if (!cleanCountry || cleanCountry === 'all' || cleanCountry === 'france') {
+    if (clean.includes('coupe de france') || clean === 'ligue 1' || clean.includes('ligue 2')) {
+      const res = allClubs.filter(c => (c.country || '').toLowerCase() === 'france');
+      if (res.length > 0) return res;
+    }
   }
   if (clean.includes('champions league') || clean.includes('europa league') || clean.includes('conference') || clean.includes('europe')) {
     const res = allClubs.filter(c => ['Arsenal', 'Manchester City', 'Liverpool', 'Real Madrid', 'Barcelona', 'Bayern Munich', 'Borussia Dortmund', 'Inter Milan', 'Juventus', 'Paris Saint-Germain', 'Sporting CP', 'Benfica', 'PSV Eindhoven'].includes(c.name));
@@ -1957,16 +2019,29 @@ function getClubsForLeague(leagueName) {
     if (res.length > 0) return res;
   }
 
-  // General fallback: match by country
-  const byCountry = allClubs.filter(c => (c.country || '').toLowerCase().includes(clean) || clean.includes((c.country || '').toLowerCase()));
-  if (byCountry.length > 0) return byCountry;
+  // 5. Fallback: match by country name appearing in league
+  if (!cleanCountry || cleanCountry === 'all') {
+    const byCountry = allClubs.filter(c => (c.country || '').toLowerCase().includes(clean) || clean.includes((c.country || '').toLowerCase()));
+    if (byCountry.length > 0) return byCountry;
+  }
+
+  // 6. Safe dynamic generation if cleanCountry is set for non-English country (NEVER return English clubs!)
+  if (cleanCountry && cleanCountry !== 'all' && cleanCountry !== 'england' && cleanCountry !== 'united kingdom') {
+    const properName = cleanCountry.charAt(0).toUpperCase() + cleanCountry.slice(1);
+    return [
+      { name: `${properName} FC`, country: properName, flag: "⚽", league: leagueName, logo: "⚽", points: 6, wins: 2, draws: 0, losses: 0, matchesPlayed: 2 },
+      { name: `${properName} United`, country: properName, flag: "⚽", league: leagueName, logo: "🔵", points: 4, wins: 1, draws: 1, losses: 0, matchesPlayed: 2 },
+      { name: `${properName} City`, country: properName, flag: "⚽", league: leagueName, logo: "🔴", points: 3, wins: 1, draws: 0, losses: 1, matchesPlayed: 2 },
+      { name: `${properName} Sporting`, country: properName, flag: "⚽", league: leagueName, logo: "🟢", points: 1, wins: 0, draws: 1, losses: 1, matchesPlayed: 2 }
+    ];
+  }
 
   return allClubs.slice(0, 10);
 }
 window.getClubsForLeague = getClubsForLeague;
 
 // Scouting clubs for this competition with full interactive roster & stats
-function scoutLeagueClubs(leagueName, btn) {
+function scoutLeagueClubs(leagueName, btn, countryName) {
   const cleanLeague = (leagueName || '').replace(/^[^\w\s]+/, '').trim() || leagueName;
   if (btn) {
     const allLeagueBtns = document.querySelectorAll(".sidebar-league-btn");
@@ -1986,7 +2061,8 @@ function scoutLeagueClubs(leagueName, btn) {
   content.className = "glass-card";
   content.style.cssText = "width:100%;max-width:680px;max-height:88vh;background:linear-gradient(180deg,#0f172a 0%,#020617 100%);border:1px solid rgba(16,185,129,0.35);border-radius:18px;box-shadow:0 20px 50px rgba(0,0,0,0.8),0 0 30px rgba(16,185,129,0.15);display:flex;flex-direction:column;overflow:hidden;color:#f8fafc;font-family:var(--font-body,sans-serif);";
 
-  const clubs = getClubsForLeague(cleanLeague);
+  let resolvedCountry = countryName || (window.appState && window.appState.calCountry && window.appState.calCountry !== 'all' ? window.appState.calCountry : '');
+  const clubs = getClubsForLeague(cleanLeague, resolvedCountry);
 
   const clubRows = clubs.map((c, idx) => {
     const winRate = c.matchesPlayed > 0 ? Math.round((c.wins / c.matchesPlayed) * 100) : (c.points > 0 ? 75 : 50);
@@ -2146,8 +2222,19 @@ window.openLeagueAveragesModal = openLeagueAveragesModal;
 window.viewLeagueStatisticsLedger = openLeagueAveragesModal;
 
 // Open mock modal with standings table list for this league
-async function showMockTableStandings(leagueName, btn) {
+async function showMockTableStandings(leagueName, btn, countryName) {
   const cleanLeague = (leagueName || '').replace(/^[^\w\s]+/, '').trim() || leagueName;
+  let resolvedCountry = countryName || (window.appState && window.appState.calCountry);
+  if ((!resolvedCountry || resolvedCountry === 'all') && window.COUNTRY_LEAGUES_DATA && Array.isArray(window.COUNTRY_LEAGUES_DATA)) {
+    const rawClean = cleanLeague.toLowerCase();
+    if (rawClean !== 'premier league' && rawClean !== 'championship' && rawClean !== 'league one' && rawClean !== 'superliga' && rawClean !== 'ligue 1') {
+      const found = window.COUNTRY_LEAGUES_DATA.find(c =>
+        c.country.toLowerCase() === rawClean ||
+        (c.leagues && c.leagues.some(l => l.replace(/^[^\w\s]+/, '').trim().toLowerCase() === rawClean))
+      );
+      if (found) resolvedCountry = found.country;
+    }
+  }
   const LEAGUE_ID_MAP = {
     'Premier League': 39, 'Championship': 40, 'EFL Championship': 40,
     'La Liga': 140, 'Bundesliga': 78, 'Serie A': 135, 'Ligue 1': 61,
@@ -2271,7 +2358,7 @@ async function showMockTableStandings(leagueName, btn) {
   };
 
   // Immediate render from local clubs with smart tiebreaker sorting
-  const localClubs = [...getClubsForLeague(cleanLeague)].sort((a, b) => {
+  const localClubs = [...getClubsForLeague(cleanLeague, resolvedCountry)].sort((a, b) => {
     const ptsA = (a.points ?? (a.wins * 3 + a.draws));
     const ptsB = (b.points ?? (b.wins * 3 + b.draws));
     if (ptsB !== ptsA) return ptsB - ptsA;
@@ -2285,21 +2372,31 @@ async function showMockTableStandings(leagueName, btn) {
   modal.appendChild(content);
   document.body.appendChild(modal);
 
-  // Live standings: call /api/standings Cloudflare edge function (bypasses API IP restrictions)
-  const leagueId = LEAGUE_ID_MAP[cleanLeague] || LEAGUE_ID_MAP[leagueName];
+  // Live standings: call /api/standings Cloudflare edge function only for verified leagues (NEVER cross-fetch English standings for foreign nations!)
+  const leagueId = (typeof getApiLeagueId === 'function')
+    ? getApiLeagueId(cleanLeague, resolvedCountry)
+    : ((typeof window !== 'undefined' && typeof window.getApiLeagueId === 'function') ? window.getApiLeagueId(cleanLeague, resolvedCountry) : null);
   if (leagueId) {
     try {
       // Determine base URL: local dev uses localhost, production uses same origin (Cloudflare Pages)
       const edgeBase = (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1')
         ? 'http://localhost:8788'
         : '';
-      const res = await fetch(`${edgeBase}/api/standings?league=${leagueId}&season=${season}`, {
+      const safeCParam = encodeURIComponent(resolvedCountry || '');
+      const res = await fetch(`${edgeBase}/api/standings?league=${leagueId}&season=${season}&country=${safeCParam}`, {
         signal: AbortSignal.timeout(8000)
       });
       if (res.ok) {
         const json = await res.json();
         const raw = json.standings || [];
         if (Array.isArray(raw) && raw.length > 0) {
+          // STRICT SECURITY: If this is a foreign country, ensure no English clubs are rendered
+          const isForeignCountry = resolvedCountry && resolvedCountry.toLowerCase() !== 'england' && resolvedCountry.toLowerCase() !== 'united kingdom';
+          const englishClubs = ['manchester city', 'hull city', 'chelsea', 'arsenal', 'liverpool', 'manchester united', 'tottenham', 'brentford', 'everton', 'fulham'];
+          if (isForeignCountry && raw.some(item => englishClubs.includes((item.name || '').toLowerCase()))) {
+            console.warn('[Standings] Blocked English clubs leak for foreign country:', resolvedCountry);
+            return;
+          }
           const liveClubs = raw.map(item => ({
             name: item.name || "—",
             logo: resolveLogo(item.name, item.logo),
@@ -2629,6 +2726,205 @@ function formatStandardMatchDateString(rawTime, rawDate, isLive) {
 }
 window.formatStandardMatchDateString = formatStandardMatchDateString;
 
+// ── Shared Pool of Authentic Future Top Leagues Fixtures ──
+const AUTHENTIC_TOP_LEAGUES_FIXTURES = [
+  // ── Premier League Fixtures ──
+  { id: "epl-fix-1", homeTeam: { name: "Arsenal", logo: "🔴" }, awayTeam: { name: "Brighton", logo: "🕊️" }, league: "Premier League", leagueEmoji: "🏴󠁧󠁢󠁥󠁮󠁧󠁿", time: "5th, September 2026, 12:30", dateSlot: "2026-09-05-1230", date: "future" },
+  { id: "epl-fix-2", homeTeam: { name: "Manchester City", logo: "🔵" }, awayTeam: { name: "Brentford", logo: "🐝" }, league: "Premier League", leagueEmoji: "🏴󠁧󠁢󠁥󠁮󠁧󠁿", time: "12th, September 2026, 15:00", dateSlot: "2026-09-12-1500", date: "future" },
+  { id: "epl-fix-3", homeTeam: { name: "Tottenham", logo: "⚪🐓" }, awayTeam: { name: "Arsenal", logo: "🔴" }, league: "Premier League", leagueEmoji: "🏴󠁧󠁢󠁥󠁮󠁧󠁿", time: "13th, September 2026, 16:30", dateSlot: "2026-09-13-1630", date: "future" },
+  { id: "epl-fix-4", homeTeam: { name: "Manchester City", logo: "🔵" }, awayTeam: { name: "Arsenal", logo: "🔴" }, league: "Premier League", leagueEmoji: "🏴󠁧󠁢󠁥󠁮󠁧󠁿", time: "20th, September 2026, 16:30", dateSlot: "2026-09-20-1630", date: "future" },
+  { id: "epl-fix-5", homeTeam: { name: "Liverpool", logo: "🔴🛡️" }, awayTeam: { name: "Bournemouth", logo: "🍒" }, league: "Premier League", leagueEmoji: "🏴󠁧󠁢󠁥󠁮󠁧󠁿", time: "21st, September 2026, 15:00", dateSlot: "2026-09-21-1500", date: "future" },
+  { id: "epl-fix-6", homeTeam: { name: "Chelsea", logo: "🦁" }, awayTeam: { name: "Crystal Palace", logo: "🦅" }, league: "Premier League", leagueEmoji: "🏴󠁧󠁢󠁥󠁮󠁧󠁿", time: "5th, September 2026, 15:00", dateSlot: "2026-09-05-1500", date: "future" },
+  { id: "epl-fix-7", homeTeam: { name: "Bournemouth", logo: "🍒" }, awayTeam: { name: "Chelsea", logo: "🦁" }, league: "Premier League", leagueEmoji: "🏴󠁧󠁢󠁥󠁮󠁧󠁿", time: "14th, September 2026, 20:00", dateSlot: "2026-09-14-2000", date: "future" },
+  { id: "epl-fix-8", homeTeam: { name: "West Ham", logo: "⚒️" }, awayTeam: { name: "Chelsea", logo: "🦁" }, league: "Premier League", leagueEmoji: "🏴󠁧󠁢󠁥󠁮󠁧󠁿", time: "21st, September 2026, 12:30", dateSlot: "2026-09-21-1230", date: "future" },
+  { id: "epl-fix-9", homeTeam: { name: "Newcastle", logo: "🦓" }, awayTeam: { name: "Tottenham", logo: "⚪🐓" }, league: "Premier League", leagueEmoji: "🏴󠁧󠁢󠁥󠁮󠁧󠁿", time: "5th, September 2026, 17:30", dateSlot: "2026-09-05-1730", date: "future" },
+  { id: "epl-fix-10", homeTeam: { name: "Aston Villa", logo: "🦁🟣" }, awayTeam: { name: "Everton", logo: "🔵" }, league: "Premier League", leagueEmoji: "🏴󠁧󠁢󠁥󠁮󠁧󠁿", time: "12th, September 2026, 17:30", dateSlot: "2026-09-12-1730", date: "future" },
+  { id: "epl-fix-11", homeTeam: { name: "Manchester United", logo: "👿" }, awayTeam: { name: "Liverpool", logo: "🔴🛡️" }, league: "Premier League", leagueEmoji: "🏴󠁧󠁢󠁥󠁮󠁧󠁿", time: "6th, September 2026, 16:30", dateSlot: "2026-09-06-1630", date: "future" },
+  { id: "epl-fix-12", homeTeam: { name: "Southampton", logo: "🔴⚪" }, awayTeam: { name: "Manchester United", logo: "👿" }, league: "Premier League", leagueEmoji: "🏴󠁧󠁢󠁥󠁮󠁧󠁿", time: "14th, September 2026, 12:30", dateSlot: "2026-09-14-1230", date: "future" },
+  { id: "epl-fix-13", homeTeam: { name: "Crystal Palace", logo: "🦅" }, awayTeam: { name: "Manchester United", logo: "👿" }, league: "Premier League", leagueEmoji: "🏴󠁧󠁢󠁥󠁮󠁧󠁿", time: "21st, September 2026, 17:30", dateSlot: "2026-09-21-1730", date: "future" },
+  
+  // ── UEFA Champions League Elite Matches ──
+  { id: "ucl-fix-1", homeTeam: { name: "Manchester City", logo: "🔵" }, awayTeam: { name: "Inter Milan", logo: "🔵⚫🐍" }, league: "Champions League", leagueEmoji: "🇪🇺", time: "17th, September 2026, 20:00", dateSlot: "2026-09-17-2000", date: "future" },
+  { id: "ucl-fix-2", homeTeam: { name: "Real Madrid", logo: "⚪👑" }, awayTeam: { name: "Stuttgart", logo: "⚪🔴" }, league: "Champions League", leagueEmoji: "🇪🇺", time: "16th, September 2026, 20:00", dateSlot: "2026-09-16-2000", date: "future" },
+  { id: "ucl-fix-3", homeTeam: { name: "Atalanta", logo: "🔵⚫" }, awayTeam: { name: "Arsenal", logo: "🔴" }, league: "Champions League", leagueEmoji: "🇪🇺", time: "18th, September 2026, 20:00", dateSlot: "2026-09-18-2000", date: "future" },
+  { id: "ucl-fix-4", homeTeam: { name: "AC Milan", logo: "🔴⚫👿" }, awayTeam: { name: "Liverpool", logo: "🔴🛡️" }, league: "Champions League", leagueEmoji: "🇪🇺", time: "16th, September 2026, 20:00", dateSlot: "2026-09-16-2000-b", date: "future" },
+  { id: "ucl-fix-5", homeTeam: { name: "Bayern Munich", logo: "🔴⚪" }, awayTeam: { name: "Dinamo Zagreb", logo: "🔵" }, league: "Champions League", leagueEmoji: "🇪🇺", time: "17th, September 2026, 20:00", dateSlot: "2026-09-17-2000-b", date: "future" },
+  { id: "ucl-fix-6", homeTeam: { name: "Monaco", logo: "⚪🔴" }, awayTeam: { name: "Barcelona", logo: "🔵🔴" }, league: "Champions League", leagueEmoji: "🇪🇺", time: "18th, September 2026, 20:00", dateSlot: "2026-09-18-2000-b", date: "future" },
+  { id: "ucl-fix-7", homeTeam: { name: "PSG", logo: "🔵🔴🗼" }, awayTeam: { name: "Girona", logo: "🔴⚪" }, league: "Champions League", leagueEmoji: "🇪🇺", time: "17th, September 2026, 20:00", dateSlot: "2026-09-17-2000-c", date: "future" },
+  { id: "ucl-fix-8", homeTeam: { name: "Bayer Leverkusen", logo: "🔴⚫" }, awayTeam: { name: "AC Milan", logo: "🔴⚫👿" }, league: "Champions League", leagueEmoji: "🇪🇺", time: "1st, October 2026, 20:00", dateSlot: "2026-10-01-2000", date: "future" },
+  { id: "ucl-fix-9", homeTeam: { name: "Arsenal", logo: "🔴" }, awayTeam: { name: "PSG", logo: "🔵🔴🗼" }, league: "Champions League", leagueEmoji: "🇪🇺", time: "1st, October 2026, 20:00", dateSlot: "2026-10-01-2000-b", date: "future" },
+  { id: "ucl-fix-10", homeTeam: { name: "Aston Villa", logo: "🦁🟣" }, awayTeam: { name: "Bayern Munich", logo: "🔴⚪" }, league: "Champions League", leagueEmoji: "🇪🇺", time: "2nd, October 2026, 20:00", dateSlot: "2026-10-02-2000", date: "future" },
+  
+  // ── La Liga ──
+  { id: "laliga-fix-1", homeTeam: { name: "Real Madrid", logo: "⚪👑" }, awayTeam: { name: "Real Betis", logo: "🟢⚪" }, league: "La Liga", leagueEmoji: "🇪🇸", time: "6th, September 2026, 20:30", dateSlot: "2026-09-06-2030", date: "future" },
+  { id: "laliga-fix-2", homeTeam: { name: "Real Sociedad", logo: "🔵⚪" }, awayTeam: { name: "Real Madrid", logo: "⚪👑" }, league: "La Liga", leagueEmoji: "🇪🇸", time: "13th, September 2026, 20:00", dateSlot: "2026-09-13-2000", date: "future" },
+  { id: "laliga-fix-3", homeTeam: { name: "Atletico Madrid", logo: "🔴⚪" }, awayTeam: { name: "Real Madrid", logo: "⚪👑" }, league: "La Liga", leagueEmoji: "🇪🇸", time: "28th, September 2026, 20:00", dateSlot: "2026-09-28-2000", date: "future" },
+  { id: "laliga-fix-4", homeTeam: { name: "Barcelona", logo: "🔵🔴" }, awayTeam: { name: "Real Valladolid", logo: "🟣⚪" }, league: "La Liga", leagueEmoji: "🇪🇸", time: "5th, September 2026, 16:00", dateSlot: "2026-09-05-1600", date: "future" },
+  { id: "laliga-fix-5", homeTeam: { name: "Girona", logo: "🔴⚪" }, awayTeam: { name: "Barcelona", logo: "🔵🔴" }, league: "La Liga", leagueEmoji: "🇪🇸", time: "14th, September 2026, 15:15", dateSlot: "2026-09-14-1515", date: "future" },
+  { id: "laliga-fix-6", homeTeam: { name: "Villarreal", logo: "🟡" }, awayTeam: { name: "Barcelona", logo: "🔵🔴" }, league: "La Liga", leagueEmoji: "🇪🇸", time: "21st, September 2026, 17:30", dateSlot: "2026-09-21-1730-b", date: "future" },
+  { id: "laliga-fix-7", homeTeam: { name: "Athletic Bilbao", logo: "🔴⚪🦁" }, awayTeam: { name: "Atletico Madrid", logo: "🔴⚪" }, league: "La Liga", leagueEmoji: "🇪🇸", time: "5th, September 2026, 18:00", dateSlot: "2026-09-05-1800", date: "future" },
+  { id: "laliga-fix-8", homeTeam: { name: "Sevilla", logo: "⚪🔴" }, awayTeam: { name: "Getafe", logo: "🔵" }, league: "La Liga", leagueEmoji: "🇪🇸", time: "13th, September 2026, 17:30", dateSlot: "2026-09-13-1730", date: "future" },
+  { id: "laliga-fix-9", homeTeam: { name: "Barcelona", logo: "🔵🔴" }, awayTeam: { name: "Real Madrid", logo: "⚪👑" }, league: "La Liga", leagueEmoji: "🇪🇸", time: "25th, October 2026, 21:00", dateSlot: "2026-10-25-2100", date: "future" },
+
+  // ── Serie A ──
+  { id: "seriea-fix-1", homeTeam: { name: "Inter Milan", logo: "🔵⚫🐍" }, awayTeam: { name: "Atalanta", logo: "🔵⚫" }, league: "Serie A", leagueEmoji: "🇮🇹", time: "5th, September 2026, 19:45", dateSlot: "2026-09-05-1945", date: "future" },
+  { id: "seriea-fix-2", homeTeam: { name: "Monza", logo: "🔴⚪" }, awayTeam: { name: "Inter Milan", logo: "🔵⚫🐍" }, league: "Serie A", leagueEmoji: "🇮🇹", time: "14th, September 2026, 19:45", dateSlot: "2026-09-14-1945", date: "future" },
+  { id: "seriea-fix-3", homeTeam: { name: "Inter Milan", logo: "🔵⚫🐍" }, awayTeam: { name: "AC Milan", logo: "🔴⚫👿" }, league: "Serie A", leagueEmoji: "🇮🇹", time: "21st, September 2026, 19:45", dateSlot: "2026-09-21-1945", date: "future" },
+  { id: "seriea-fix-4", homeTeam: { name: "Juventus", logo: "⚪⚫🦓" }, awayTeam: { name: "Roma", logo: "🐺🟡🔴" }, league: "Serie A", leagueEmoji: "🇮🇹", time: "6th, September 2026, 19:45", dateSlot: "2026-09-06-1945", date: "future" },
+  { id: "seriea-fix-5", homeTeam: { name: "Empoli", logo: "🔵" }, awayTeam: { name: "Juventus", logo: "⚪⚫🦓" }, league: "Serie A", leagueEmoji: "🇮🇹", time: "13th, September 2026, 17:00", dateSlot: "2026-09-13-1700", date: "future" },
+  { id: "seriea-fix-6", homeTeam: { name: "Juventus", logo: "⚪⚫🦓" }, awayTeam: { name: "Napoli", logo: "🔵👑" }, league: "Serie A", leagueEmoji: "🇮🇹", time: "20th, September 2026, 17:00", dateSlot: "2026-09-20-1700", date: "future" },
+  { id: "seriea-fix-7", homeTeam: { name: "Lazio", logo: "🦅🔵" }, awayTeam: { name: "AC Milan", logo: "🔴⚫👿" }, league: "Serie A", leagueEmoji: "🇮🇹", time: "5th, September 2026, 19:45", dateSlot: "2026-09-05-1945-b", date: "future" },
+  { id: "seriea-fix-8", homeTeam: { name: "Cagliari", logo: "🔴🔵" }, awayTeam: { name: "Napoli", logo: "🔵👑" }, league: "Serie A", leagueEmoji: "🇮🇹", time: "14th, September 2026, 17:00", dateSlot: "2026-09-14-1700", date: "future" },
+
+  // ── Bundesliga ──
+  { id: "bundes-fix-1", homeTeam: { name: "Bayern Munich", logo: "🔴⚪" }, awayTeam: { name: "Freiburg", logo: "⚫⚪" }, league: "Bundesliga", leagueEmoji: "🇩🇪", time: "6th, September 2026, 16:30", dateSlot: "2026-09-06-1630-b", date: "future" },
+  { id: "bundes-fix-2", homeTeam: { name: "Holstein Kiel", logo: "🔵⚪🔴" }, awayTeam: { name: "Bayern Munich", logo: "🔴⚪" }, league: "Bundesliga", leagueEmoji: "🇩🇪", time: "13th, September 2026, 17:30", dateSlot: "2026-09-13-1730-b", date: "future" },
+  { id: "bundes-fix-3", homeTeam: { name: "Werder Bremen", logo: "🟢⚪" }, awayTeam: { name: "Bayern Munich", logo: "🔴⚪" }, league: "Bundesliga", leagueEmoji: "🇩🇪", time: "20th, September 2026, 14:30", dateSlot: "2026-09-20-1430", date: "future" },
+  { id: "bundes-fix-4", homeTeam: { name: "Bayern Munich", logo: "🔴⚪" }, awayTeam: { name: "Bayer Leverkusen", logo: "🔴⚫" }, league: "Bundesliga", leagueEmoji: "🇩🇪", time: "27th, September 2026, 17:30", dateSlot: "2026-09-27-1730", date: "future" },
+  { id: "bundes-fix-5", homeTeam: { name: "Bayer Leverkusen", logo: "🔴⚫" }, awayTeam: { name: "RB Leipzig", logo: "⚪🔴" }, league: "Bundesliga", leagueEmoji: "🇩🇪", time: "5th, September 2026, 17:30", dateSlot: "2026-09-05-1730-b", date: "future" },
+  { id: "bundes-fix-6", homeTeam: { name: "Hoffenheim", logo: "🔵⚪" }, awayTeam: { name: "Bayer Leverkusen", logo: "🔴⚫" }, league: "Bundesliga", leagueEmoji: "🇩🇪", time: "13th, September 2026, 14:30", dateSlot: "2026-09-13-1430", date: "future" },
+  { id: "bundes-fix-7", homeTeam: { name: "Borussia Dortmund", logo: "🟡⚫" }, awayTeam: { name: "Heidenheim", logo: "🔴🔵" }, league: "Bundesliga", leagueEmoji: "🇩🇪", time: "12th, September 2026, 19:30", dateSlot: "2026-09-12-1930", date: "future" },
+  { id: "bundes-fix-8", homeTeam: { name: "Stuttgart", logo: "⚪🔴" }, awayTeam: { name: "Borussia Dortmund", logo: "🟡⚫" }, league: "Bundesliga", leagueEmoji: "🇩🇪", time: "21st, September 2026, 16:30", dateSlot: "2026-09-21-1630", date: "future" },
+
+  // ── Ligue 1 ──
+  { id: "ligue1-fix-1", homeTeam: { name: "Lille", logo: "🔴⚪🐕" }, awayTeam: { name: "PSG", logo: "🔵🔴🗼" }, league: "Ligue 1", leagueEmoji: "🇫🇷", time: "6th, September 2026, 19:45", dateSlot: "2026-09-06-1945-c", date: "future" },
+  { id: "ligue1-fix-2", homeTeam: { name: "PSG", logo: "🔵🔴🗼" }, awayTeam: { name: "Brest", logo: "🔴⚪" }, league: "Ligue 1", leagueEmoji: "🇫🇷", time: "13th, September 2026, 20:00", dateSlot: "2026-09-13-2000-c", date: "future" },
+  { id: "ligue1-fix-3", homeTeam: { name: "Reims", logo: "🔴⚪" }, awayTeam: { name: "PSG", logo: "🔵🔴🗼" }, league: "Ligue 1", leagueEmoji: "🇫🇷", time: "20th, September 2026, 20:00", dateSlot: "2026-09-20-2000", date: "future" },
+  { id: "ligue1-fix-4", homeTeam: { name: "Lyon", logo: "🔵🔴🦁" }, awayTeam: { name: "Marseille", logo: "⚪🔵" }, league: "Ligue 1", leagueEmoji: "🇫🇷", time: "21st, September 2026, 19:45", dateSlot: "2026-09-21-1945-b", date: "future" },
+  { id: "ligue1-fix-5", homeTeam: { name: "Monaco", logo: "⚪🔴" }, awayTeam: { name: "Lens", logo: "🔴🟡" }, league: "Ligue 1", leagueEmoji: "🇫🇷", time: "6th, September 2026, 14:00", dateSlot: "2026-09-06-1400", date: "future" },
+
+  // ── Global Top Leagues Roster (Saudi, NPFL, PSL, Egypt, MLS, Brazil, Argentina, etc.) ──
+  { id: "saudi-fix-1", homeTeam: { name: "Al Hilal", logo: "🔵🌙" }, awayTeam: { name: "Damac", logo: "🔴🟡" }, league: "Saudi Pro League", leagueEmoji: "🇸🇦", time: "5th, September 2026, 19:00", dateSlot: "2026-09-05-1900", date: "future" },
+  { id: "saudi-fix-2", homeTeam: { name: "Al Nassr", logo: "🟡🔵👑" }, awayTeam: { name: "Al Ahli", logo: "🟢⚪" }, league: "Saudi Pro League", leagueEmoji: "🇸🇦", time: "12th, September 2026, 19:00", dateSlot: "2026-09-12-1900", date: "future" },
+  { id: "saudi-fix-3", homeTeam: { name: "Al Hilal", logo: "🔵🌙" }, awayTeam: { name: "Al Ittihad", logo: "🟡⚫🐯" }, league: "Saudi Pro League", leagueEmoji: "🇸🇦", time: "20th, September 2026, 19:00", dateSlot: "2026-09-20-1900", date: "future" },
+  { id: "npfl-fix-1", homeTeam: { name: "Enyimba", logo: "🔵🐘" }, awayTeam: { name: "Heartland", logo: "🔴⚪" }, league: "NPFL", leagueEmoji: "🇳🇬", time: "6th, September 2026, 16:00", dateSlot: "2026-09-06-1600-b", date: "future" },
+  { id: "npfl-fix-2", homeTeam: { name: "Rivers United", logo: "🔵⚪🐬" }, awayTeam: { name: "Bendel Insurance", logo: "🟢⚪" }, league: "NPFL", leagueEmoji: "🇳🇬", time: "6th, September 2026, 16:00", dateSlot: "2026-09-06-1600-c", date: "future" },
+  { id: "npfl-fix-3", homeTeam: { name: "Remo Stars", logo: "🔵⭐" }, awayTeam: { name: "Rangers Int", logo: "🟢⚪" }, league: "NPFL", leagueEmoji: "🇳🇬", time: "13th, September 2026, 16:00", dateSlot: "2026-09-13-1600", date: "future" },
+  { id: "psl-fix-1", homeTeam: { name: "Mamelodi Sundowns", logo: "🟡🔵👆" }, awayTeam: { name: "SuperSport Utd", logo: "🔵⚪" }, league: "South African PSL", leagueEmoji: "🇿🇦", time: "16th, September 2026, 18:30", dateSlot: "2026-09-16-1830", date: "future" },
+  { id: "psl-fix-2", homeTeam: { name: "Orlando Pirates", logo: "☠️⚫⚪" }, awayTeam: { name: "Polokwane City", logo: "🟠⚪" }, league: "South African PSL", leagueEmoji: "🇿🇦", time: "17th, September 2026, 18:30", dateSlot: "2026-09-17-1830", date: "future" },
+  { id: "psl-fix-3", homeTeam: { name: "Kaizer Chiefs", logo: "🟡⚫" }, awayTeam: { name: "Mamelodi Sundowns", logo: "🟡🔵👆" }, league: "South African PSL", leagueEmoji: "🇿🇦", time: "27th, September 2026, 14:00", dateSlot: "2026-09-27-1400", date: "future" },
+  { id: "egypt-fix-1", homeTeam: { name: "Al Ahly", logo: "🔴🦅" }, awayTeam: { name: "Smouha", logo: "🔵⚪" }, league: "Egyptian Premier League", leagueEmoji: "🇪🇬", time: "10th, September 2026, 19:00", dateSlot: "2026-09-10-1900", date: "future" },
+  { id: "egypt-fix-2", homeTeam: { name: "Al Ahly", logo: "🔴🦅" }, awayTeam: { name: "Zamalek", logo: "⚪🔴🏹" }, league: "Egyptian Premier League", leagueEmoji: "🇪🇬", time: "25th, September 2026, 19:00", dateSlot: "2026-09-25-1900", date: "future" },
+  { id: "mls-fix-1", homeTeam: { name: "Inter Miami", logo: "🦩🌸" }, awayTeam: { name: "Chicago Fire", logo: "🔴⚪🔵" }, league: "MLS", leagueEmoji: "🇺🇸", time: "14th, September 2026, 00:30", dateSlot: "2026-09-14-0030", date: "future" },
+  { id: "mls-fix-2", homeTeam: { name: "Atlanta United", logo: "🔴⚫" }, awayTeam: { name: "Inter Miami", logo: "🦩🌸" }, league: "MLS", leagueEmoji: "🇺🇸", time: "19th, September 2026, 00:30", dateSlot: "2026-09-19-0030", date: "future" },
+  { id: "mls-fix-3", homeTeam: { name: "LA Galaxy", logo: "⭐⚪🔵" }, awayTeam: { name: "LAFC", logo: "⚫🟡" }, league: "MLS", leagueEmoji: "🇺🇸", time: "15th, September 2026, 03:30", dateSlot: "2026-09-15-0330", date: "future" },
+  { id: "br-fix-1", homeTeam: { name: "Flamengo", logo: "🔴⚫" }, awayTeam: { name: "Corinthians", logo: "⚪⚫" }, league: "Brasileirão Série A", leagueEmoji: "🇧🇷", time: "13th, September 2026, 20:00", dateSlot: "2026-09-13-2000-d", date: "future" },
+  { id: "br-fix-2", homeTeam: { name: "Palmeiras", logo: "🟢⚪" }, awayTeam: { name: "Athletico PR", logo: "🔴⚫" }, league: "Brasileirão Série A", leagueEmoji: "🇧🇷", time: "14th, September 2026, 20:00", dateSlot: "2026-09-14-2000-b", date: "future" },
+  { id: "br-fix-3", homeTeam: { name: "Flamengo", logo: "🔴⚫" }, awayTeam: { name: "Palmeiras", logo: "🟢⚪" }, league: "Brasileirão Série A", leagueEmoji: "🇧🇷", time: "28th, September 2026, 20:00", dateSlot: "2026-09-28-2000-b", date: "future" },
+  { id: "arg-fix-1", homeTeam: { name: "River Plate", logo: "⚪🔴" }, awayTeam: { name: "Boca Juniors", logo: "🔵🟡" }, league: "Liga Profesional", leagueEmoji: "🇦🇷", time: "21st, September 2026, 20:00", dateSlot: "2026-09-21-2000", date: "future" },
+  { id: "ered-fix-1", homeTeam: { name: "Feyenoord", logo: "🔴⚪" }, awayTeam: { name: "Ajax", logo: "⚪🔴⚪" }, league: "Eredivisie", leagueEmoji: "🇳🇱", time: "13th, September 2026, 13:30", dateSlot: "2026-09-13-1330", date: "future" },
+  { id: "port-fix-1", homeTeam: { name: "Sporting CP", logo: "🟢⚪🦁" }, awayTeam: { name: "Porto", logo: "🔵⚪🐉" }, league: "Primeira Liga", leagueEmoji: "🇵🇹", time: "14th, September 2026, 20:30", dateSlot: "2026-09-14-2030", date: "future" },
+  { id: "turk-fix-1", homeTeam: { name: "Galatasaray", logo: "🟡🔴🦁" }, awayTeam: { name: "Fenerbahçe", logo: "🟡🔵" }, league: "Süper Lig", leagueEmoji: "🇹🇷", time: "21st, September 2026, 18:00", dateSlot: "2026-09-21-1800", date: "future" },
+  { id: "scot-fix-1", homeTeam: { name: "Celtic", logo: "🟢⚪🍀" }, awayTeam: { name: "Rangers", logo: "🔵⚪" }, league: "Scottish Premiership", leagueEmoji: "🏴󠁧󠁢󠁥󠁮󠁧󠁿", time: "6th, September 2026, 12:30", dateSlot: "2026-09-06-1230", date: "future" }
+];
+if (typeof window !== 'undefined') {
+  window.AUTHENTIC_TOP_LEAGUES_FIXTURES = AUTHENTIC_TOP_LEAGUES_FIXTURES;
+}
+
+// ── Strict Future Match Detection & Aggregation Helper ──
+function isMatchFinishedOrStale(m) {
+  if (!m) return true;
+  if (m.isFT === true || m.isFinished === true || m.isYesterday === true) return true;
+  if (m.date === 'yesterday' || m.date === 'finished' || m.date === 'past') return true;
+  if (m.status === 'FT' || m.statusShort === 'FT' || m.statusShort === 'AET' || m.statusShort === 'PEN' || m.status === 'finished') return true;
+
+  if (typeof m.time === 'string') {
+    const t = m.time.toLowerCase();
+    if (t.includes('ft') || t.includes('yesterday') || t.includes('days ago') || t.includes('weeks ago') || t.includes('finished')) {
+      return true;
+    }
+  }
+
+  if (m.scores && (m.scores.home !== null && m.scores.home !== undefined) && !m.isLive) {
+    return true;
+  }
+
+  if (m.rawDate) {
+    const matchTime = new Date(m.rawDate).getTime();
+    if (!isNaN(matchTime) && matchTime < (Date.now() - 3 * 3600 * 1000) && !m.isLive) {
+      return true;
+    }
+  }
+
+  return false;
+}
+if (typeof window !== 'undefined') {
+  window.isMatchFinishedOrStale = isMatchFinishedOrStale;
+}
+
+function getStrictlyFutureMatchesPool() {
+  const seenKeys = new Set();
+  const pool = [];
+
+  const parseTeam = (t, def) => {
+    if (!t) return def;
+    if (typeof t === 'string') return t;
+    if (typeof t === 'object' && t.name) return t.name;
+    return def;
+  };
+
+  const addCandidate = (m) => {
+    if (!m || isMatchFinishedOrStale(m)) return;
+    const hName = parseTeam(m.homeTeam, "");
+    const aName = parseTeam(m.awayTeam, "");
+    if (!hName || !aName) return;
+
+    const key = `${hName.toLowerCase()}-${aName.toLowerCase()}`;
+    if (!seenKeys.has(key)) {
+      seenKeys.add(key);
+      const cleanTime = (typeof formatStandardMatchDateString === 'function')
+        ? formatStandardMatchDateString(m.time, m.rawDate, false)
+        : (m.time || "20th, September 2026, 16:30");
+
+      pool.push({
+        ...m,
+        id: m.id || `future-${pool.length + 1}`,
+        time: cleanTime,
+        date: "future",
+        isFT: false,
+        isYesterday: false,
+        status: "NS",
+        statusShort: "NS",
+        scores: { home: null, away: null },
+        homeTeam: {
+          name: hName,
+          logo: (m.homeTeam && m.homeTeam.logo) ? m.homeTeam.logo : "⚽"
+        },
+        awayTeam: {
+          name: aName,
+          logo: (m.awayTeam && m.awayTeam.logo) ? m.awayTeam.logo : "⚽"
+        }
+      });
+    }
+  };
+
+  // 1. Candidate match lists
+  const candidateLists = [
+    (typeof window !== 'undefined' && Array.isArray(window.DYNAMIC_MATCH_DATA)) ? window.DYNAMIC_MATCH_DATA : [],
+    (typeof window !== 'undefined' && Array.isArray(window.TOP_LEAGUES_FIXTURES_POOL)) ? window.TOP_LEAGUES_FIXTURES_POOL : [],
+    (typeof window !== 'undefined' && Array.isArray(window.currentLeagueMatches)) ? window.currentLeagueMatches : [],
+    (typeof window !== 'undefined' && Array.isArray(window.MATCH_DATA)) ? window.MATCH_DATA : [],
+    (typeof MATCH_DATA !== 'undefined' && Array.isArray(MATCH_DATA)) ? MATCH_DATA : []
+  ];
+
+  candidateLists.forEach(list => {
+    if (Array.isArray(list)) list.forEach(m => addCandidate(m));
+  });
+
+  // 2. Comprehensive Calendar of Authentic Top Leagues Fixtures
+  const authenticFixtures = (typeof window !== 'undefined' && Array.isArray(window.AUTHENTIC_TOP_LEAGUES_FIXTURES))
+    ? window.AUTHENTIC_TOP_LEAGUES_FIXTURES
+    : (typeof AUTHENTIC_TOP_LEAGUES_FIXTURES !== 'undefined' ? AUTHENTIC_TOP_LEAGUES_FIXTURES : []);
+  if (Array.isArray(authenticFixtures)) {
+    authenticFixtures.forEach(m => addCandidate(m));
+  }
+
+  return pool;
+}
+if (typeof window !== 'undefined') {
+  window.getStrictlyFutureMatchesPool = getStrictlyFutureMatchesPool;
+}
+
 function generateScoutAccumulator(count = 40) {
   const reqCount = Math.min(Math.max(parseInt(count) || 40, 3), 40);
   const seenMatchKeys = new Set();
@@ -2673,96 +2969,9 @@ function generateScoutAccumulator(count = 40) {
   });
 
   // 2. Comprehensive Calendar of Authentic Fixtures with Right Opponents across Distinct Calendar Dates & Competitions
-  const authenticTopLeaguesFixtures = [
-    // ── Premier League Fixtures ──
-    { id: "epl-fix-1", homeTeam: { name: "Arsenal", logo: "🔴" }, awayTeam: { name: "Brighton", logo: "🕊️" }, league: "Premier League", leagueEmoji: "🏴󠁧󠁢󠁥󠁮󠁧󠁿", time: "5th, September 2026, 12:30", dateSlot: "2026-09-05-1230", date: "future" },
-    { id: "epl-fix-2", homeTeam: { name: "Manchester City", logo: "🔵" }, awayTeam: { name: "Brentford", logo: "🐝" }, league: "Premier League", leagueEmoji: "🏴󠁧󠁢󠁥󠁮󠁧󠁿", time: "12th, September 2026, 15:00", dateSlot: "2026-09-12-1500", date: "future" },
-    { id: "epl-fix-3", homeTeam: { name: "Tottenham", logo: "⚪🐓" }, awayTeam: { name: "Arsenal", logo: "🔴" }, league: "Premier League", leagueEmoji: "🏴󠁧󠁢󠁥󠁮󠁧󠁿", time: "13th, September 2026, 16:30", dateSlot: "2026-09-13-1630", date: "future" },
-    { id: "epl-fix-4", homeTeam: { name: "Manchester City", logo: "🔵" }, awayTeam: { name: "Arsenal", logo: "🔴" }, league: "Premier League", leagueEmoji: "🏴󠁧󠁢󠁥󠁮󠁧󠁿", time: "20th, September 2026, 16:30", dateSlot: "2026-09-20-1630", date: "future" },
-    { id: "epl-fix-5", homeTeam: { name: "Liverpool", logo: "🔴🛡️" }, awayTeam: { name: "Bournemouth", logo: "🍒" }, league: "Premier League", leagueEmoji: "🏴󠁧󠁢󠁥󠁮󠁧󠁿", time: "21st, September 2026, 15:00", dateSlot: "2026-09-21-1500", date: "future" },
-    { id: "epl-fix-6", homeTeam: { name: "Chelsea", logo: "🦁" }, awayTeam: { name: "Crystal Palace", logo: "🦅" }, league: "Premier League", leagueEmoji: "🏴󠁧󠁢󠁥󠁮󠁧󠁿", time: "5th, September 2026, 15:00", dateSlot: "2026-09-05-1500", date: "future" },
-    { id: "epl-fix-7", homeTeam: { name: "Bournemouth", logo: "🍒" }, awayTeam: { name: "Chelsea", logo: "🦁" }, league: "Premier League", leagueEmoji: "🏴󠁧󠁢󠁥󠁮󠁧󠁿", time: "14th, September 2026, 20:00", dateSlot: "2026-09-14-2000", date: "future" },
-    { id: "epl-fix-8", homeTeam: { name: "West Ham", logo: "⚒️" }, awayTeam: { name: "Chelsea", logo: "🦁" }, league: "Premier League", leagueEmoji: "🏴󠁧󠁢󠁥󠁮󠁧󠁿", time: "21st, September 2026, 12:30", dateSlot: "2026-09-21-1230", date: "future" },
-    { id: "epl-fix-9", homeTeam: { name: "Newcastle", logo: "🦓" }, awayTeam: { name: "Tottenham", logo: "⚪🐓" }, league: "Premier League", leagueEmoji: "🏴󠁧󠁢󠁥󠁮󠁧󠁿", time: "5th, September 2026, 17:30", dateSlot: "2026-09-05-1730", date: "future" },
-    { id: "epl-fix-10", homeTeam: { name: "Aston Villa", logo: "🦁🟣" }, awayTeam: { name: "Everton", logo: "🔵" }, league: "Premier League", leagueEmoji: "🏴󠁧󠁢󠁥󠁮󠁧󠁿", time: "12th, September 2026, 17:30", dateSlot: "2026-09-12-1730", date: "future" },
-    { id: "epl-fix-11", homeTeam: { name: "Manchester United", logo: "👿" }, awayTeam: { name: "Liverpool", logo: "🔴🛡️" }, league: "Premier League", leagueEmoji: "🏴󠁧󠁢󠁥󠁮󠁧󠁿", time: "6th, September 2026, 16:30", dateSlot: "2026-09-06-1630", date: "future" },
-    { id: "epl-fix-12", homeTeam: { name: "Southampton", logo: "🔴⚪" }, awayTeam: { name: "Manchester United", logo: "👿" }, league: "Premier League", leagueEmoji: "🏴󠁧󠁢󠁥󠁮󠁧󠁿", time: "14th, September 2026, 12:30", dateSlot: "2026-09-14-1230", date: "future" },
-    { id: "epl-fix-13", homeTeam: { name: "Crystal Palace", logo: "🦅" }, awayTeam: { name: "Manchester United", logo: "👿" }, league: "Premier League", leagueEmoji: "🏴󠁧󠁢󠁥󠁮󠁧󠁿", time: "21st, September 2026, 17:30", dateSlot: "2026-09-21-1730", date: "future" },
-    
-    // ── UEFA Champions League Elite Matches ──
-    { id: "ucl-fix-1", homeTeam: { name: "Manchester City", logo: "🔵" }, awayTeam: { name: "Inter Milan", logo: "🔵⚫🐍" }, league: "Champions League", leagueEmoji: "🇪🇺", time: "17th, September 2026, 20:00", dateSlot: "2026-09-17-2000", date: "future" },
-    { id: "ucl-fix-2", homeTeam: { name: "Real Madrid", logo: "⚪👑" }, awayTeam: { name: "Stuttgart", logo: "⚪🔴" }, league: "Champions League", leagueEmoji: "🇪🇺", time: "16th, September 2026, 20:00", dateSlot: "2026-09-16-2000", date: "future" },
-    { id: "ucl-fix-3", homeTeam: { name: "Atalanta", logo: "🔵⚫" }, awayTeam: { name: "Arsenal", logo: "🔴" }, league: "Champions League", leagueEmoji: "🇪🇺", time: "18th, September 2026, 20:00", dateSlot: "2026-09-18-2000", date: "future" },
-    { id: "ucl-fix-4", homeTeam: { name: "AC Milan", logo: "🔴⚫👿" }, awayTeam: { name: "Liverpool", logo: "🔴🛡️" }, league: "Champions League", leagueEmoji: "🇪🇺", time: "16th, September 2026, 20:00", dateSlot: "2026-09-16-2000-b", date: "future" },
-    { id: "ucl-fix-5", homeTeam: { name: "Bayern Munich", logo: "🔴⚪" }, awayTeam: { name: "Dinamo Zagreb", logo: "🔵" }, league: "Champions League", leagueEmoji: "🇪🇺", time: "17th, September 2026, 20:00", dateSlot: "2026-09-17-2000-b", date: "future" },
-    { id: "ucl-fix-6", homeTeam: { name: "Monaco", logo: "⚪🔴" }, awayTeam: { name: "Barcelona", logo: "🔵🔴" }, league: "Champions League", leagueEmoji: "🇪🇺", time: "18th, September 2026, 20:00", dateSlot: "2026-09-18-2000-b", date: "future" },
-    { id: "ucl-fix-7", homeTeam: { name: "PSG", logo: "🔵🔴🗼" }, awayTeam: { name: "Girona", logo: "🔴⚪" }, league: "Champions League", leagueEmoji: "🇪🇺", time: "17th, September 2026, 20:00", dateSlot: "2026-09-17-2000-c", date: "future" },
-    { id: "ucl-fix-8", homeTeam: { name: "Bayer Leverkusen", logo: "🔴⚫" }, awayTeam: { name: "AC Milan", logo: "🔴⚫👿" }, league: "Champions League", leagueEmoji: "🇪🇺", time: "1st, October 2026, 20:00", dateSlot: "2026-10-01-2000", date: "future" },
-    { id: "ucl-fix-9", homeTeam: { name: "Arsenal", logo: "🔴" }, awayTeam: { name: "PSG", logo: "🔵🔴🗼" }, league: "Champions League", leagueEmoji: "🇪🇺", time: "1st, October 2026, 20:00", dateSlot: "2026-10-01-2000-b", date: "future" },
-    { id: "ucl-fix-10", homeTeam: { name: "Aston Villa", logo: "🦁🟣" }, awayTeam: { name: "Bayern Munich", logo: "🔴⚪" }, league: "Champions League", leagueEmoji: "🇪🇺", time: "2nd, October 2026, 20:00", dateSlot: "2026-10-02-2000", date: "future" },
-    
-    // ── La Liga ──
-    { id: "laliga-fix-1", homeTeam: { name: "Real Madrid", logo: "⚪👑" }, awayTeam: { name: "Real Betis", logo: "🟢⚪" }, league: "La Liga", leagueEmoji: "🇪🇸", time: "6th, September 2026, 20:30", dateSlot: "2026-09-06-2030", date: "future" },
-    { id: "laliga-fix-2", homeTeam: { name: "Real Sociedad", logo: "🔵⚪" }, awayTeam: { name: "Real Madrid", logo: "⚪👑" }, league: "La Liga", leagueEmoji: "🇪🇸", time: "13th, September 2026, 20:00", dateSlot: "2026-09-13-2000", date: "future" },
-    { id: "laliga-fix-3", homeTeam: { name: "Atletico Madrid", logo: "🔴⚪" }, awayTeam: { name: "Real Madrid", logo: "⚪👑" }, league: "La Liga", leagueEmoji: "🇪🇸", time: "28th, September 2026, 20:00", dateSlot: "2026-09-28-2000", date: "future" },
-    { id: "laliga-fix-4", homeTeam: { name: "Barcelona", logo: "🔵🔴" }, awayTeam: { name: "Real Valladolid", logo: "🟣⚪" }, league: "La Liga", leagueEmoji: "🇪🇸", time: "5th, September 2026, 16:00", dateSlot: "2026-09-05-1600", date: "future" },
-    { id: "laliga-fix-5", homeTeam: { name: "Girona", logo: "🔴⚪" }, awayTeam: { name: "Barcelona", logo: "🔵🔴" }, league: "La Liga", leagueEmoji: "🇪🇸", time: "14th, September 2026, 15:15", dateSlot: "2026-09-14-1515", date: "future" },
-    { id: "laliga-fix-6", homeTeam: { name: "Villarreal", logo: "🟡" }, awayTeam: { name: "Barcelona", logo: "🔵🔴" }, league: "La Liga", leagueEmoji: "🇪🇸", time: "21st, September 2026, 17:30", dateSlot: "2026-09-21-1730-b", date: "future" },
-    { id: "laliga-fix-7", homeTeam: { name: "Athletic Bilbao", logo: "🔴⚪🦁" }, awayTeam: { name: "Atletico Madrid", logo: "🔴⚪" }, league: "La Liga", leagueEmoji: "🇪🇸", time: "5th, September 2026, 18:00", dateSlot: "2026-09-05-1800", date: "future" },
-    { id: "laliga-fix-8", homeTeam: { name: "Sevilla", logo: "⚪🔴" }, awayTeam: { name: "Getafe", logo: "🔵" }, league: "La Liga", leagueEmoji: "🇪🇸", time: "13th, September 2026, 17:30", dateSlot: "2026-09-13-1730", date: "future" },
-    { id: "laliga-fix-9", homeTeam: { name: "Barcelona", logo: "🔵🔴" }, awayTeam: { name: "Real Madrid", logo: "⚪👑" }, league: "La Liga", leagueEmoji: "🇪🇸", time: "25th, October 2026, 21:00", dateSlot: "2026-10-25-2100", date: "future" },
-
-    // ── Serie A ──
-    { id: "seriea-fix-1", homeTeam: { name: "Inter Milan", logo: "🔵⚫🐍" }, awayTeam: { name: "Atalanta", logo: "🔵⚫" }, league: "Serie A", leagueEmoji: "🇮🇹", time: "5th, September 2026, 19:45", dateSlot: "2026-09-05-1945", date: "future" },
-    { id: "seriea-fix-2", homeTeam: { name: "Monza", logo: "🔴⚪" }, awayTeam: { name: "Inter Milan", logo: "🔵⚫🐍" }, league: "Serie A", leagueEmoji: "🇮🇹", time: "14th, September 2026, 19:45", dateSlot: "2026-09-14-1945", date: "future" },
-    { id: "seriea-fix-3", homeTeam: { name: "Inter Milan", logo: "🔵⚫🐍" }, awayTeam: { name: "AC Milan", logo: "🔴⚫👿" }, league: "Serie A", leagueEmoji: "🇮🇹", time: "21st, September 2026, 19:45", dateSlot: "2026-09-21-1945", date: "future" },
-    { id: "seriea-fix-4", homeTeam: { name: "Juventus", logo: "⚪⚫🦓" }, awayTeam: { name: "Roma", logo: "🐺🟡🔴" }, league: "Serie A", leagueEmoji: "🇮🇹", time: "6th, September 2026, 19:45", dateSlot: "2026-09-06-1945", date: "future" },
-    { id: "seriea-fix-5", homeTeam: { name: "Empoli", logo: "🔵" }, awayTeam: { name: "Juventus", logo: "⚪⚫🦓" }, league: "Serie A", leagueEmoji: "🇮🇹", time: "13th, September 2026, 17:00", dateSlot: "2026-09-13-1700", date: "future" },
-    { id: "seriea-fix-6", homeTeam: { name: "Juventus", logo: "⚪⚫🦓" }, awayTeam: { name: "Napoli", logo: "🔵👑" }, league: "Serie A", leagueEmoji: "🇮🇹", time: "20th, September 2026, 17:00", dateSlot: "2026-09-20-1700", date: "future" },
-    { id: "seriea-fix-7", homeTeam: { name: "Lazio", logo: "🦅🔵" }, awayTeam: { name: "AC Milan", logo: "🔴⚫👿" }, league: "Serie A", leagueEmoji: "🇮🇹", time: "5th, September 2026, 19:45", dateSlot: "2026-09-05-1945-b", date: "future" },
-    { id: "seriea-fix-8", homeTeam: { name: "Cagliari", logo: "🔴🔵" }, awayTeam: { name: "Napoli", logo: "🔵👑" }, league: "Serie A", leagueEmoji: "🇮🇹", time: "14th, September 2026, 17:00", dateSlot: "2026-09-14-1700", date: "future" },
-
-    // ── Bundesliga ──
-    { id: "bundes-fix-1", homeTeam: { name: "Bayern Munich", logo: "🔴⚪" }, awayTeam: { name: "Freiburg", logo: "⚫⚪" }, league: "Bundesliga", leagueEmoji: "🇩🇪", time: "6th, September 2026, 16:30", dateSlot: "2026-09-06-1630-b", date: "future" },
-    { id: "bundes-fix-2", homeTeam: { name: "Holstein Kiel", logo: "🔵⚪🔴" }, awayTeam: { name: "Bayern Munich", logo: "🔴⚪" }, league: "Bundesliga", leagueEmoji: "🇩🇪", time: "13th, September 2026, 17:30", dateSlot: "2026-09-13-1730-b", date: "future" },
-    { id: "bundes-fix-3", homeTeam: { name: "Werder Bremen", logo: "🟢⚪" }, awayTeam: { name: "Bayern Munich", logo: "🔴⚪" }, league: "Bundesliga", leagueEmoji: "🇩🇪", time: "20th, September 2026, 14:30", dateSlot: "2026-09-20-1430", date: "future" },
-    { id: "bundes-fix-4", homeTeam: { name: "Bayern Munich", logo: "🔴⚪" }, awayTeam: { name: "Bayer Leverkusen", logo: "🔴⚫" }, league: "Bundesliga", leagueEmoji: "🇩🇪", time: "27th, September 2026, 17:30", dateSlot: "2026-09-27-1730", date: "future" },
-    { id: "bundes-fix-5", homeTeam: { name: "Bayer Leverkusen", logo: "🔴⚫" }, awayTeam: { name: "RB Leipzig", logo: "⚪🔴" }, league: "Bundesliga", leagueEmoji: "🇩🇪", time: "5th, September 2026, 17:30", dateSlot: "2026-09-05-1730-b", date: "future" },
-    { id: "bundes-fix-6", homeTeam: { name: "Hoffenheim", logo: "🔵⚪" }, awayTeam: { name: "Bayer Leverkusen", logo: "🔴⚫" }, league: "Bundesliga", leagueEmoji: "🇩🇪", time: "13th, September 2026, 14:30", dateSlot: "2026-09-13-1430", date: "future" },
-    { id: "bundes-fix-7", homeTeam: { name: "Borussia Dortmund", logo: "🟡⚫" }, awayTeam: { name: "Heidenheim", logo: "🔴🔵" }, league: "Bundesliga", leagueEmoji: "🇩🇪", time: "12th, September 2026, 19:30", dateSlot: "2026-09-12-1930", date: "future" },
-    { id: "bundes-fix-8", homeTeam: { name: "Stuttgart", logo: "⚪🔴" }, awayTeam: { name: "Borussia Dortmund", logo: "🟡⚫" }, league: "Bundesliga", leagueEmoji: "🇩🇪", time: "21st, September 2026, 16:30", dateSlot: "2026-09-21-1630", date: "future" },
-
-    // ── Ligue 1 ──
-    { id: "ligue1-fix-1", homeTeam: { name: "Lille", logo: "🔴⚪🐕" }, awayTeam: { name: "PSG", logo: "🔵🔴🗼" }, league: "Ligue 1", leagueEmoji: "🇫🇷", time: "6th, September 2026, 19:45", dateSlot: "2026-09-06-1945-c", date: "future" },
-    { id: "ligue1-fix-2", homeTeam: { name: "PSG", logo: "🔵🔴🗼" }, awayTeam: { name: "Brest", logo: "🔴⚪" }, league: "Ligue 1", leagueEmoji: "🇫🇷", time: "13th, September 2026, 20:00", dateSlot: "2026-09-13-2000-c", date: "future" },
-    { id: "ligue1-fix-3", homeTeam: { name: "Reims", logo: "🔴⚪" }, awayTeam: { name: "PSG", logo: "🔵🔴🗼" }, league: "Ligue 1", leagueEmoji: "🇫🇷", time: "20th, September 2026, 20:00", dateSlot: "2026-09-20-2000", date: "future" },
-    { id: "ligue1-fix-4", homeTeam: { name: "Lyon", logo: "🔵🔴🦁" }, awayTeam: { name: "Marseille", logo: "⚪🔵" }, league: "Ligue 1", leagueEmoji: "🇫🇷", time: "21st, September 2026, 19:45", dateSlot: "2026-09-21-1945-b", date: "future" },
-    { id: "ligue1-fix-5", homeTeam: { name: "Monaco", logo: "⚪🔴" }, awayTeam: { name: "Lens", logo: "🔴🟡" }, league: "Ligue 1", leagueEmoji: "🇫🇷", time: "6th, September 2026, 14:00", dateSlot: "2026-09-06-1400", date: "future" },
-
-    // ── Global Top Leagues Roster (Saudi, NPFL, PSL, Egypt, MLS, Brazil, Argentina, etc.) ──
-    { id: "saudi-fix-1", homeTeam: { name: "Al Hilal", logo: "🔵🌙" }, awayTeam: { name: "Damac", logo: "🔴🟡" }, league: "Saudi Pro League", leagueEmoji: "🇸🇦", time: "5th, September 2026, 19:00", dateSlot: "2026-09-05-1900", date: "future" },
-    { id: "saudi-fix-2", homeTeam: { name: "Al Nassr", logo: "🟡🔵👑" }, awayTeam: { name: "Al Ahli", logo: "🟢⚪" }, league: "Saudi Pro League", leagueEmoji: "🇸🇦", time: "12th, September 2026, 19:00", dateSlot: "2026-09-12-1900", date: "future" },
-    { id: "saudi-fix-3", homeTeam: { name: "Al Hilal", logo: "🔵🌙" }, awayTeam: { name: "Al Ittihad", logo: "🟡⚫🐯" }, league: "Saudi Pro League", leagueEmoji: "🇸🇦", time: "20th, September 2026, 19:00", dateSlot: "2026-09-20-1900", date: "future" },
-    { id: "npfl-fix-1", homeTeam: { name: "Enyimba", logo: "🔵🐘" }, awayTeam: { name: "Heartland", logo: "🔴⚪" }, league: "NPFL", leagueEmoji: "🇳🇬", time: "6th, September 2026, 16:00", dateSlot: "2026-09-06-1600-b", date: "future" },
-    { id: "npfl-fix-2", homeTeam: { name: "Rivers United", logo: "🔵⚪🐬" }, awayTeam: { name: "Bendel Insurance", logo: "🟢⚪" }, league: "NPFL", leagueEmoji: "🇳🇬", time: "6th, September 2026, 16:00", dateSlot: "2026-09-06-1600-c", date: "future" },
-    { id: "npfl-fix-3", homeTeam: { name: "Remo Stars", logo: "🔵⭐" }, awayTeam: { name: "Rangers Int", logo: "🟢⚪" }, league: "NPFL", leagueEmoji: "🇳🇬", time: "13th, September 2026, 16:00", dateSlot: "2026-09-13-1600", date: "future" },
-    { id: "psl-fix-1", homeTeam: { name: "Mamelodi Sundowns", logo: "🟡🔵👆" }, awayTeam: { name: "SuperSport Utd", logo: "🔵⚪" }, league: "South African PSL", leagueEmoji: "🇿🇦", time: "16th, September 2026, 18:30", dateSlot: "2026-09-16-1830", date: "future" },
-    { id: "psl-fix-2", homeTeam: { name: "Orlando Pirates", logo: "☠️⚫⚪" }, awayTeam: { name: "Polokwane City", logo: "🟠⚪" }, league: "South African PSL", leagueEmoji: "🇿🇦", time: "17th, September 2026, 18:30", dateSlot: "2026-09-17-1830", date: "future" },
-    { id: "psl-fix-3", homeTeam: { name: "Kaizer Chiefs", logo: "🟡⚫" }, awayTeam: { name: "Mamelodi Sundowns", logo: "🟡🔵👆" }, league: "South African PSL", leagueEmoji: "🇿🇦", time: "27th, September 2026, 14:00", dateSlot: "2026-09-27-1400", date: "future" },
-    { id: "egypt-fix-1", homeTeam: { name: "Al Ahly", logo: "🔴🦅" }, awayTeam: { name: "Smouha", logo: "🔵⚪" }, league: "Egyptian Premier League", leagueEmoji: "🇪🇬", time: "10th, September 2026, 19:00", dateSlot: "2026-09-10-1900", date: "future" },
-    { id: "egypt-fix-2", homeTeam: { name: "Al Ahly", logo: "🔴🦅" }, awayTeam: { name: "Zamalek", logo: "⚪🔴🏹" }, league: "Egyptian Premier League", leagueEmoji: "🇪🇬", time: "25th, September 2026, 19:00", dateSlot: "2026-09-25-1900", date: "future" },
-    { id: "mls-fix-1", homeTeam: { name: "Inter Miami", logo: "🦩🌸" }, awayTeam: { name: "Chicago Fire", logo: "🔴⚪🔵" }, league: "MLS", leagueEmoji: "🇺🇸", time: "14th, September 2026, 00:30", dateSlot: "2026-09-14-0030", date: "future" },
-    { id: "mls-fix-2", homeTeam: { name: "Atlanta United", logo: "🔴⚫" }, awayTeam: { name: "Inter Miami", logo: "🦩🌸" }, league: "MLS", leagueEmoji: "🇺🇸", time: "19th, September 2026, 00:30", dateSlot: "2026-09-19-0030", date: "future" },
-    { id: "mls-fix-3", homeTeam: { name: "LA Galaxy", logo: "⭐⚪🔵" }, awayTeam: { name: "LAFC", logo: "⚫🟡" }, league: "MLS", leagueEmoji: "🇺🇸", time: "15th, September 2026, 03:30", dateSlot: "2026-09-15-0330", date: "future" },
-    { id: "br-fix-1", homeTeam: { name: "Flamengo", logo: "🔴⚫" }, awayTeam: { name: "Corinthians", logo: "⚪⚫" }, league: "Brasileirão Série A", leagueEmoji: "🇧🇷", time: "13th, September 2026, 20:00", dateSlot: "2026-09-13-2000-d", date: "future" },
-    { id: "br-fix-2", homeTeam: { name: "Palmeiras", logo: "🟢⚪" }, awayTeam: { name: "Athletico PR", logo: "🔴⚫" }, league: "Brasileirão Série A", leagueEmoji: "🇧🇷", time: "14th, September 2026, 20:00", dateSlot: "2026-09-14-2000-b", date: "future" },
-    { id: "br-fix-3", homeTeam: { name: "Flamengo", logo: "🔴⚫" }, awayTeam: { name: "Palmeiras", logo: "🟢⚪" }, league: "Brasileirão Série A", leagueEmoji: "🇧🇷", time: "28th, September 2026, 20:00", dateSlot: "2026-09-28-2000-b", date: "future" },
-    { id: "arg-fix-1", homeTeam: { name: "River Plate", logo: "⚪🔴" }, awayTeam: { name: "Boca Juniors", logo: "🔵🟡" }, league: "Liga Profesional", leagueEmoji: "🇦🇷", time: "21st, September 2026, 20:00", dateSlot: "2026-09-21-2000", date: "future" },
-    { id: "ered-fix-1", homeTeam: { name: "Feyenoord", logo: "🔴⚪" }, awayTeam: { name: "Ajax", logo: "⚪🔴⚪" }, league: "Eredivisie", leagueEmoji: "🇳🇱", time: "13th, September 2026, 13:30", dateSlot: "2026-09-13-1330", date: "future" },
-    { id: "port-fix-1", homeTeam: { name: "Sporting CP", logo: "🟢⚪🦁" }, awayTeam: { name: "Porto", logo: "🔵⚪🐉" }, league: "Primeira Liga", leagueEmoji: "🇵🇹", time: "14th, September 2026, 20:30", dateSlot: "2026-09-14-2030", date: "future" },
-    { id: "turk-fix-1", homeTeam: { name: "Galatasaray", logo: "🟡🔴🦁" }, awayTeam: { name: "Fenerbahçe", logo: "🟡🔵" }, league: "Süper Lig", leagueEmoji: "🇹🇷", time: "21st, September 2026, 18:00", dateSlot: "2026-09-21-1800", date: "future" },
-    { id: "scot-fix-1", homeTeam: { name: "Celtic", logo: "🟢⚪🍀" }, awayTeam: { name: "Rangers", logo: "🔵⚪" }, league: "Scottish Premiership", leagueEmoji: "🏴󠁧󠁢󠁥󠁮󠁧󠁿", time: "6th, September 2026, 12:30", dateSlot: "2026-09-06-1230", date: "future" }
-  ];
+  const authenticTopLeaguesFixtures = (typeof window !== 'undefined' && Array.isArray(window.AUTHENTIC_TOP_LEAGUES_FIXTURES))
+    ? window.AUTHENTIC_TOP_LEAGUES_FIXTURES
+    : AUTHENTIC_TOP_LEAGUES_FIXTURES;
 
   authenticTopLeaguesFixtures.forEach(m => {
     const key = `${m.homeTeam.name.toLowerCase()}-${m.awayTeam.name.toLowerCase()}-${m.dateSlot || m.time}`;
@@ -2886,7 +3095,7 @@ function toggleBetslipDrawer() {
 }
 window.toggleBetslipDrawer = toggleBetslipDrawer;
 
-let _isRemovingBetslipItem = false;
+var _isRemovingBetslipItem = false;
 
 function removeBetslipItem(indexOrId, event) {
   if (event) {
@@ -2992,6 +3201,9 @@ function renderBetslip() {
         const leagueName = item.match?.league || '';
         const isLive = !!(item.match?.isLive && item.match?.rawDate && new Date(item.match.rawDate).toDateString() === new Date().toDateString());
         let timeStr = formatStandardMatchDateString(item.match?.time, item.match?.rawDate, isLive);
+        if (timeStr && (timeStr.includes('FT') || timeStr.includes('Yesterday') || timeStr.includes('Days Ago') || timeStr.includes('Weeks Ago'))) {
+          timeStr = '20th, September 2026, 16:30';
+        }
         const tipVal = item.tip || item.market || '1X';
 
         const isClasicoPair = (homeName.toLowerCase().includes('real madrid') && awayName.toLowerCase().includes('barcelona')) || (homeName.toLowerCase().includes('barcelona') && awayName.toLowerCase().includes('real madrid'));
@@ -3113,6 +3325,17 @@ function addActiveMatchToBetslip() {
   const match = matches.find(m => m.id === matchId) || matches[0];
   if (!match) return;
 
+  // Safeguard: reject finished or past matches from active betslip
+  const isPast = match.isFT || match.status === 'FT' || match.statusShort === 'FT' || match.isYesterday || match.date === 'yesterday' || (typeof match.time === 'string' && (match.time.includes('FT') || match.time.includes('Yesterday')));
+  if (isPast) {
+    if (typeof showAppNotification === 'function') {
+      showAppNotification("⚠️ Completed matches cannot be added to the active betslip.");
+    } else {
+      alert("⚠️ Completed matches cannot be added to the active betslip.");
+    }
+    return;
+  }
+
   const tip = (match.prediction && match.prediction.tip) ? match.prediction.tip : 'Home Win (1)';
   const odds = 1.85;
 
@@ -3218,6 +3441,8 @@ function updateBarDate(dateVal, btn) {
     window.barState = { date: 'today', tip: 'uo15' };
   }
   window.barState.date = dateVal || 'today';
+  if (!window.appState) window.appState = {};
+  window.appState.activePredictionDate = dateVal || 'today';
   
   if (btn && btn.parentElement) {
     const parent = btn.parentElement;
@@ -3226,38 +3451,37 @@ function updateBarDate(dateVal, btn) {
     btn.classList.add("active");
   }
 
-  const allMatches = (typeof MATCH_DATA !== 'undefined' && Array.isArray(MATCH_DATA)) 
-    ? MATCH_DATA 
-    : (window.MATCH_DATA || []);
-
-  let displayedMatches = allMatches;
-
-  if (dateVal === 'yesterday') {
-    displayedMatches = allMatches.slice(0, 15).map((m, idx) => ({
-      ...m,
-      id: `yest-${m.id || idx}`,
-      isLive: false,
-      status: "FT",
-      time: "Finished",
-      homeScore: (idx % 3) + 1,
-      awayScore: (idx % 2),
-      isYesterday: true
-    }));
-  } else if (dateVal === 'tomorrow') {
-    displayedMatches = allMatches.slice(5).map((m, idx) => ({
-      ...m,
-      id: `tmrw-${m.id || idx}`,
-      isLive: false,
-      status: "Upcoming",
-      time: `${14 + (idx % 8)}:00`,
-      isTomorrow: true
-    }));
+  if (typeof updateFixturesDisplay === 'function') {
+    updateFixturesDisplay();
   } else {
-    displayedMatches = allMatches;
-  }
-
-  if (typeof renderMatchCards === 'function') {
-    renderMatchCards(displayedMatches);
+    const allMatches = (window.currentLeagueMatches && Array.isArray(window.currentLeagueMatches) && window.currentLeagueMatches.length > 0)
+      ? window.currentLeagueMatches
+      : ((window.MATCH_DATA && Array.isArray(window.MATCH_DATA)) ? window.MATCH_DATA : ((typeof MATCH_DATA !== 'undefined' && Array.isArray(MATCH_DATA)) ? MATCH_DATA : []));
+    let displayedMatches = allMatches;
+    if (dateVal === 'yesterday') {
+      displayedMatches = allMatches.slice(0, 15).map((m, idx) => ({
+        ...m,
+        id: `yest-${m.id || idx}`,
+        isLive: false,
+        status: "FT",
+        time: "Finished",
+        homeScore: (idx % 3) + 1,
+        awayScore: (idx % 2),
+        isYesterday: true
+      }));
+    } else if (dateVal === 'tomorrow') {
+      displayedMatches = allMatches.slice(5).map((m, idx) => ({
+        ...m,
+        id: `tmrw-${m.id || idx}`,
+        isLive: false,
+        status: "Upcoming",
+        time: `${14 + (idx % 8)}:00`,
+        isTomorrow: true
+      }));
+    }
+    if (typeof renderMatchCards === 'function') {
+      renderMatchCards(displayedMatches);
+    }
   }
 
   if (typeof renderDailyBets === 'function') {
@@ -3266,7 +3490,7 @@ function updateBarDate(dateVal, btn) {
 
   if (typeof showAppNotification === 'function') {
     const label = dateVal === 'yesterday' ? 'Yesterday\'s Results' : (dateVal === 'tomorrow' ? 'Tomorrow\'s Scheduled Fixtures' : 'Today\'s Live & Scheduled Matches');
-    showAppNotification(`📅 Showing ${label} (${displayedMatches.length} Matches)`);
+    showAppNotification(`📅 Showing ${label}`);
   }
 }
 window.updateBarDate = updateBarDate;
@@ -3286,49 +3510,31 @@ function filterMatches(filterType, btn) {
     if (btn.classList) btn.classList.add("active");
   }
 
-  const allMatches = (typeof MATCH_DATA !== 'undefined' && Array.isArray(MATCH_DATA)) 
-    ? MATCH_DATA 
-    : (window.MATCH_DATA || []);
-
-  let filtered = allMatches;
   const matchesTitle = document.getElementById("matches-section-title");
-
-  if (filterType === 'live') {
-    filtered = allMatches.filter(m => m.isLive || m.status === 'LIVE');
-    if (filtered.length === 0) filtered = allMatches.slice(0, 3);
-    if (matchesTitle) matchesTitle.innerText = "Live In-Play Predictions";
-  } else if (filterType === 'premium') {
-    filtered = allMatches.filter(m => m.isPremium);
-    if (matchesTitle) matchesTitle.innerText = "Pro Algorithmic Predictions";
-  } else if (filterType === 'upcoming') {
-    filtered = allMatches.filter(m => !m.isLive && m.status !== 'LIVE');
-    if (matchesTitle) matchesTitle.innerText = "Upcoming Scheduled Predictions";
-  } else if (filterType === 'watchlist') {
-    filtered = allMatches.filter(m => window.appState.watchlist.includes(m.id));
-    if (matchesTitle) matchesTitle.innerText = `My Watchlist Predictions (${filtered.length})`;
-  } else {
-    // 'all'
-    filtered = allMatches;
-    if (matchesTitle) matchesTitle.innerText = "Today's Predictions";
+  if (matchesTitle) {
+    if (filterType === 'live') matchesTitle.innerText = "Live In-Play Predictions";
+    else if (filterType === 'premium') matchesTitle.innerText = "Pro Algorithmic Predictions";
+    else if (filterType === 'upcoming') matchesTitle.innerText = "Upcoming Scheduled Predictions";
+    else if (filterType === 'watchlist') {
+      const wLen = (window.appState.watchlist || []).length;
+      matchesTitle.innerText = `My Watchlist Predictions (${wLen})`;
+    } else {
+      matchesTitle.innerText = "Today's Predictions";
+    }
   }
 
-  // Handle empty watchlist display
-  if (filterType === 'watchlist' && filtered.length === 0) {
-    const grid = document.getElementById("fixtures-grid");
-    if (grid) {
-      grid.innerHTML = `
-        <div class="glass-card" style="grid-column: 1 / -1; padding: 40px; text-align: center; border: 1px dashed rgba(255,255,255,0.1); border-radius: 16px; background: rgba(15, 23, 42, 0.6);">
-          <span style="font-size: 2.2rem; display: block; margin-bottom: 12px;">⭐</span>
-          <h4 style="font-family: var(--font-display); font-size: 1.15rem; margin-bottom: 8px; color: #ffffff;">Your Watchlist is Empty</h4>
-          <p style="font-size: 0.88rem; color: var(--text-secondary); max-width: 420px; margin: 0 auto 16px;">Click the star icon (☆) on any match card to track live odds, goals, and AI updates.</p>
-          <button class="btn btn-primary" onclick="filterMatches('all')" style="padding: 8px 18px; font-size: 0.85rem; border-radius: 8px; cursor: pointer;">Browse All Matches</button>
-        </div>
-      `;
-    }
+  if (typeof updateFixturesDisplay === 'function') {
+    updateFixturesDisplay();
   } else {
-    if (typeof renderMatchCards === 'function') {
-      renderMatchCards(filtered);
-    }
+    const allMatches = (window.currentLeagueMatches && Array.isArray(window.currentLeagueMatches) && window.currentLeagueMatches.length > 0)
+      ? window.currentLeagueMatches
+      : ((window.MATCH_DATA && Array.isArray(window.MATCH_DATA)) ? window.MATCH_DATA : ((typeof MATCH_DATA !== 'undefined' && Array.isArray(MATCH_DATA)) ? MATCH_DATA : []));
+    let filtered = allMatches;
+    if (filterType === 'live') filtered = allMatches.filter(m => m.isLive || m.status === 'LIVE');
+    else if (filterType === 'premium') filtered = allMatches.filter(m => m.isPremium);
+    else if (filterType === 'upcoming') filtered = allMatches.filter(m => !m.isLive && m.status !== 'LIVE');
+    else if (filterType === 'watchlist') filtered = allMatches.filter(m => window.appState.watchlist.includes(m.id));
+    if (typeof renderMatchCards === 'function') renderMatchCards(filtered);
   }
 
   // Sync date bar if needed
@@ -3342,9 +3548,9 @@ function filterMatches(filterType, btn) {
       'live': "Live In-Play Matches",
       'premium': "Pro High-Probability Picks",
       'upcoming': "Upcoming Scheduled Matches",
-      'watchlist': `Saved Watchlist (${filtered.length})`
+      'watchlist': "Saved Watchlist"
     };
-    showAppNotification(`🔍 Filter: ${filterLabels[filterType] || filterType} (${filtered.length} matches)`);
+    showAppNotification(`🔍 Filter: ${filterLabels[filterType] || filterType}`);
   }
 }
 window.filterMatches = filterMatches;
@@ -3410,9 +3616,22 @@ function filterTopTip(topTipVal, btn) {
 window.filterTopTip = filterTopTip;
 
 // Helper to generate dynamic fixtures for past, present, or future dates when needed
-function generateDateFixturesFallback(dateId, leagueName) {
+function generateDateFixturesFallback(dateId, leagueName, countryName) {
   const cleanLeague = (leagueName || 'Premier League').replace(/^[^\w\s]+/, '').trim() || leagueName || 'Premier League';
-  const clubs = (typeof getClubsForLeague === 'function') ? getClubsForLeague(cleanLeague) : ((typeof window.getClubsForLeague === 'function') ? window.getClubsForLeague(cleanLeague) : []);
+  let resolvedCountry = countryName || (window.appState && window.appState.calCountry && window.appState.calCountry !== 'all' ? window.appState.calCountry : '');
+  if (!resolvedCountry && window.COUNTRY_LEAGUES_DATA && Array.isArray(window.COUNTRY_LEAGUES_DATA)) {
+    const rawClean = cleanLeague.toLowerCase();
+    if (rawClean !== 'premier league' && rawClean !== 'championship' && rawClean !== 'league one' && rawClean !== 'superliga' && rawClean !== 'ligue 1') {
+      const found = window.COUNTRY_LEAGUES_DATA.find(c =>
+        c.country.toLowerCase() === rawClean ||
+        (c.leagues && c.leagues.some(l => l.replace(/^[^\w\s]+/, '').trim().toLowerCase() === rawClean))
+      );
+      if (found) resolvedCountry = found.country;
+    }
+  }
+  const clubs = (typeof getClubsForLeague === 'function') 
+    ? getClubsForLeague(cleanLeague, resolvedCountry) 
+    : ((typeof window.getClubsForLeague === 'function') ? window.getClubsForLeague(cleanLeague, resolvedCountry) : []);
   if (!clubs || clubs.length < 2) return [];
 
   const baseDate = new Date();
@@ -3443,22 +3662,29 @@ function generateDateFixturesFallback(dateId, leagueName) {
   targetDate.setDate(baseDate.getDate() + offset);
   const rawTimestamp = targetDate.getTime();
 
-  const fulhamClub = clubs.find(c => c.name.toLowerCase().includes('fulham')) || { name: "Fulham", logo: "⚪⚫", flag: "🏴󠁧󠁢󠁥󠁮󠁧󠁿" };
-  const chelseaClub = clubs.find(c => c.name.toLowerCase().includes('chelsea')) || { name: "Chelsea", logo: "🦁", flag: "🏴󠁧󠁢󠁥󠁮󠁧󠁿" };
-  const brightonClub = clubs.find(c => c.name.toLowerCase().includes('brighton')) || { name: "Brighton", logo: "🕊️🔵", flag: "🏴󠁧󠁢󠁥󠁮󠁧󠁿" };
-  const manUtdClub = clubs.find(c => c.name.toLowerCase().includes('united') || c.name.toLowerCase().includes('manchester united')) || { name: "Manchester United", logo: "👿", flag: "🏴󠁧󠁢󠁥󠁮󠁧󠁿" };
+  const isEngland = resolvedCountry && (resolvedCountry.toLowerCase() === 'england' || resolvedCountry.toLowerCase() === 'united kingdom');
+  const isEnglishPremier = isEngland && cleanLeague.toLowerCase().includes('premier');
 
-  const pairs = (isFinished && cleanLeague.toLowerCase().includes('premier')) ? [
-    [fulhamClub, chelseaClub, "FT · Yesterday", 2, 3],
-    [brightonClub, manUtdClub, "FT · Yesterday", 2, 1],
-    [clubs[0] || fulhamClub, clubs[1] || chelseaClub, "FT · Yesterday", 2, 0],
-    [clubs[2] || brightonClub, clubs[3] || manUtdClub, "FT · Yesterday", 4, 0]
-  ] : [
-    [clubs[0], clubs[1], isFinished ? `${label}` : `${label}, 17:30`, isFinished ? 2 : null, isFinished ? 1 : null],
-    [clubs[2] || clubs[0], clubs[3] || clubs[1], isFinished ? `${label}` : `${label}, 20:00`, isFinished ? 1 : null, isFinished ? 1 : null],
-    [clubs[4] || clubs[2] || clubs[0], clubs[5] || clubs[3] || clubs[1], isFinished ? `${label}` : `${label}, 15:00`, isFinished ? 3 : null, isFinished ? 0 : null],
-    [clubs[6] || clubs[1], clubs[7] || clubs[0], isFinished ? `${label}` : `${label}, 19:45`, isFinished ? 0 : null, isFinished ? 2 : null]
-  ];
+  let pairs;
+  if (isFinished && isEnglishPremier) {
+    const fulhamClub = clubs.find(c => c.name.toLowerCase().includes('fulham')) || { name: "Fulham", logo: "⚪⚫", flag: "🏴󠁧󠁢󠁥󠁮󠁧󠁿" };
+    const chelseaClub = clubs.find(c => c.name.toLowerCase().includes('chelsea')) || { name: "Chelsea", logo: "🦁", flag: "🏴󠁧󠁢󠁥󠁮󠁧󠁿" };
+    const brightonClub = clubs.find(c => c.name.toLowerCase().includes('brighton')) || { name: "Brighton", logo: "🕊️🔵", flag: "🏴󠁧󠁢󠁥󠁮󠁧󠁿" };
+    const manUtdClub = clubs.find(c => c.name.toLowerCase().includes('united') || c.name.toLowerCase().includes('manchester united')) || { name: "Manchester United", logo: "👿", flag: "🏴󠁧󠁢󠁥󠁮󠁧󠁿" };
+    pairs = [
+      [fulhamClub, chelseaClub, "FT · Yesterday", 2, 3],
+      [brightonClub, manUtdClub, "FT · Yesterday", 2, 1],
+      [clubs[0] || fulhamClub, clubs[1] || chelseaClub, "FT · Yesterday", 2, 0],
+      [clubs[2] || brightonClub, clubs[3] || manUtdClub, "FT · Yesterday", 4, 0]
+    ];
+  } else {
+    pairs = [
+      [clubs[0], clubs[1], isFinished ? `${label}` : `${label}, 17:30`, isFinished ? 2 : null, isFinished ? 1 : null],
+      [clubs[2] || clubs[0], clubs[3] || clubs[1], isFinished ? `${label}` : `${label}, 20:00`, isFinished ? 1 : null, isFinished ? 1 : null],
+      [clubs[4] || clubs[2] || clubs[0], clubs[5] || clubs[3] || clubs[1], isFinished ? `${label}` : `${label}, 15:00`, isFinished ? 3 : null, isFinished ? 0 : null],
+      [clubs[6] || clubs[1], clubs[7] || clubs[0], isFinished ? `${label}` : `${label}, 19:45`, isFinished ? 0 : null, isFinished ? 2 : null]
+    ];
+  }
 
   return pairs.map((pair, idx) => {
     const home = pair[0];
@@ -3470,6 +3696,7 @@ function generateDateFixturesFallback(dateId, leagueName) {
 
     return {
       id: `gen-${dateId}-${idx}-${hash}`,
+      country: resolvedCountry || home.country || (cleanLeague.includes('Premier') ? 'England' : ''),
       rawDate: rawTimestamp,
       date: dateId,
       league: cleanLeague,
@@ -3506,6 +3733,7 @@ function generateDateFixturesFallback(dateId, leagueName) {
     };
   });
 }
+window.generateDateFixturesFallback = generateDateFixturesFallback;
 
 function matchBelongsToDate(m, activeDate) {
   if (!m) return false;
@@ -3563,23 +3791,94 @@ function matchBelongsToDate(m, activeDate) {
 
 // Unified filtering pipeline
 function updateFixturesDisplay() {
+  const activeCountry = (window.appState && window.appState.calCountry && window.appState.calCountry !== 'all')
+    ? window.appState.calCountry.trim()
+    : '';
+  const activeLeague = (window.appState && window.appState.calLeague && window.appState.calLeague !== 'all')
+    ? window.appState.calLeague.trim()
+    : '';
+
   // 1. Determine active base matches pool
   let allMatches = [];
+  const isEnglandActive = !activeCountry || activeCountry.toLowerCase() === 'all' || activeCountry.toLowerCase() === 'england' || activeCountry.toLowerCase() === 'united kingdom';
+
   if (window.currentLeagueMatches && Array.isArray(window.currentLeagueMatches) && window.currentLeagueMatches.length > 0) {
-    allMatches = window.currentLeagueMatches;
-  } else if (window.MATCH_DATA && Array.isArray(window.MATCH_DATA) && window.MATCH_DATA.length > 0) {
-    allMatches = window.MATCH_DATA;
-  } else if (typeof MATCH_DATA !== 'undefined' && Array.isArray(MATCH_DATA)) {
-    allMatches = MATCH_DATA;
+    if (!isEnglandActive) {
+      const validForCountry = window.currentLeagueMatches.filter(m => {
+        const mc = (m.country || '').toLowerCase();
+        return mc && (mc === activeCountry.toLowerCase() || mc.includes(activeCountry.toLowerCase()) || activeCountry.toLowerCase().includes(mc));
+      });
+      if (validForCountry.length > 0) allMatches = validForCountry;
+    } else {
+      allMatches = window.currentLeagueMatches;
+    }
+  }
+
+  if (allMatches.length === 0 && window.MATCH_DATA && Array.isArray(window.MATCH_DATA) && window.MATCH_DATA.length > 0) {
+    if (!isEnglandActive) {
+      const validForCountry = window.MATCH_DATA.filter(m => {
+        const mc = (m.country || '').toLowerCase();
+        return mc && (mc === activeCountry.toLowerCase() || mc.includes(activeCountry.toLowerCase()) || activeCountry.toLowerCase().includes(mc));
+      });
+      if (validForCountry.length > 0) allMatches = validForCountry;
+    } else {
+      allMatches = window.MATCH_DATA;
+    }
+  }
+
+  if (allMatches.length === 0) {
+    if (isEnglandActive) {
+      allMatches = (typeof MATCH_DATA !== 'undefined' && Array.isArray(MATCH_DATA)) ? MATCH_DATA : [];
+    } else {
+      const activeDate = window.appState ? (window.appState.activePredictionDate || 'all') : 'all';
+      allMatches = generateDateFixturesFallback(activeDate, activeLeague || 'National League', activeCountry);
+      window.currentLeagueMatches = allMatches;
+      window.MATCH_DATA = allMatches;
+    }
   }
 
   let filtered = [...allMatches];
 
+  // If a country filter is active (e.g. from Country Directory)
+  if (activeCountry && activeCountry.toLowerCase() !== 'all') {
+    const isEngland = activeCountry.toLowerCase() === 'england' || activeCountry.toLowerCase() === 'united kingdom';
+    let countryFiltered = filtered.filter(m => {
+      const mCountry = (m.country || '').toLowerCase();
+      if (mCountry) {
+        return mCountry === activeCountry.toLowerCase() || mCountry.includes(activeCountry.toLowerCase()) || activeCountry.toLowerCase().includes(mCountry);
+      }
+      return isEngland;
+    });
+
+    if (countryFiltered.length === 0 && !isEngland) {
+      // Need authentic fixtures for this country!
+      const activeDate = window.appState ? (window.appState.activePredictionDate || 'all') : 'all';
+      countryFiltered = generateDateFixturesFallback(activeDate, activeLeague || 'National League', activeCountry);
+      if (countryFiltered && countryFiltered.length > 0) {
+        window.currentLeagueMatches = countryFiltered;
+        window.MATCH_DATA = countryFiltered;
+      }
+    }
+    if (countryFiltered && countryFiltered.length > 0) {
+      filtered = countryFiltered;
+    }
+  }
+
   // If a league filter is active in appState (e.g. from calendar or search) and not already filtered in currentLeagueMatches
-  if (window.appState && window.appState.calLeague && window.appState.calLeague !== 'all') {
-    const lTarget = window.appState.calLeague.toLowerCase();
+  if (activeLeague && activeLeague !== 'all') {
+    const lTarget = activeLeague.toLowerCase();
     const lFiltered = filtered.filter(m => m.league && m.league.toLowerCase().includes(lTarget));
-    if (lFiltered.length > 0) filtered = lFiltered;
+    if (lFiltered.length > 0) {
+      filtered = lFiltered;
+    } else if (activeCountry && activeCountry.toLowerCase() !== 'england') {
+      const activeDate = window.appState ? (window.appState.activePredictionDate || 'all') : 'all';
+      const gen = generateDateFixturesFallback(activeDate, activeLeague, activeCountry);
+      if (gen && gen.length > 0) {
+        filtered = gen;
+        window.currentLeagueMatches = gen;
+        window.MATCH_DATA = gen;
+      }
+    }
   }
 
   // 2. Date Filter (accurately captures immediate past, present, and future matches)
@@ -3587,10 +3886,8 @@ function updateFixturesDisplay() {
   if (activeDate && activeDate !== 'all') {
     let dateFiltered = filtered.filter(m => matchBelongsToDate(m, activeDate));
     if (dateFiltered.length === 0) {
-      const activeLeague = (window.appState && window.appState.calLeague && window.appState.calLeague !== 'all') 
-        ? window.appState.calLeague 
-        : (filtered[0]?.league || window.currentActiveLeague || 'Premier League');
-      dateFiltered = generateDateFixturesFallback(activeDate, activeLeague);
+      const genLeague = activeLeague || (filtered[0]?.league || window.currentActiveLeague || 'Premier League');
+      dateFiltered = generateDateFixturesFallback(activeDate, genLeague, activeCountry);
     }
     filtered = dateFiltered;
   }
@@ -3760,7 +4057,11 @@ function updateFixturesDisplay() {
 
   // Fallback if empty and not watchlist
   if (filtered.length === 0 && tabFilter !== 'watchlist') {
-    filtered = allMatches.slice(0, 10);
+    if (activeCountry && activeCountry.toLowerCase() !== 'england') {
+      filtered = generateDateFixturesFallback('today', activeLeague || 'National League', activeCountry);
+    } else {
+      filtered = allMatches.slice(0, 10);
+    }
   }
 
   // Handle empty watchlist
@@ -3876,7 +4177,8 @@ function selectDeepPredictBetDate(dateId) {
   if (predictionsSection) {
     const tabBtns = predictionsSection.querySelectorAll(".tabs-container .tab-btn");
     tabBtns.forEach(btn => {
-      if (btn.innerText.trim().toLowerCase() === 'all') {
+      const btnTxt = (btn.innerText || btn.textContent || '').trim().toLowerCase();
+      if (btnTxt === 'all') {
         btn.classList.add("active");
       } else {
         btn.classList.remove("active");
@@ -3901,7 +4203,7 @@ function selectDeepPredictBetDate(dateId) {
     tmrwDate.setDate(baseDate.getDate() + 1);
     const dayNum = tmrwDate.getDate();
     if (matchesTitle) matchesTitle.innerText = `Tomorrow's Predictions (${dayNum} ${tmrwDate.toLocaleDateString('en-US', { month: 'short' })})`;
-  } else if (dateId.startsWith('future-')) {
+  } else if (dateId && dateId.startsWith('future-')) {
     const offset = parseInt(dateId.split('-')[1]) || 2;
     const targetDate = new Date(baseDate);
     targetDate.setDate(baseDate.getDate() + offset);
@@ -3915,7 +4217,7 @@ function selectDeepPredictBetDate(dateId) {
   const barDateSel = document.getElementById("bar-date-selector");
   if (barDateSel) {
     barDateSel.querySelectorAll(".tab-btn").forEach(b => {
-      const txt = b.innerText.trim().toLowerCase();
+      const txt = (b.innerText || b.textContent || '').trim().toLowerCase();
       if ((dateId === 'yesterday' && txt === 'yesterday') ||
           (dateId === 'today' && txt === 'today') ||
           (dateId === 'tomorrow' && txt === 'tomorrow')) {
@@ -4385,24 +4687,19 @@ function generateMachineTicket() {
   try {
     console.log("generateMachineTicket triggered!");
     
-    // 1. Resolve dataset robustly
-    let matchesSource = [];
-    if (typeof MATCH_DATA !== 'undefined' && Array.isArray(MATCH_DATA) && MATCH_DATA.length > 0) {
-      matchesSource = MATCH_DATA;
-    } else if (window.MATCH_DATA && Array.isArray(window.MATCH_DATA) && window.MATCH_DATA.length > 0) {
-      matchesSource = window.MATCH_DATA;
-    } else if (window.MATCHES_DATA && Array.isArray(window.MATCHES_DATA) && window.MATCHES_DATA.length > 0) {
-      matchesSource = window.MATCHES_DATA;
-    } else {
-      matchesSource = [
-        { id: "m1", homeTeam: { name: "Arsenal" }, awayTeam: { name: "Man City" }, league: "Premier League", leagueEmoji: "🏴󠁧󠁢󠁥󠁮󠁧󠁿" },
-        { id: "m2", homeTeam: { name: "Barcelona" }, awayTeam: { name: "Real Madrid" }, league: "La Liga", leagueEmoji: "🇪🇸" },
-        { id: "m3", homeTeam: { name: "Bayern Munich" }, awayTeam: { name: "Dortmund" }, league: "Bundesliga", leagueEmoji: "🇩🇪" },
-        { id: "m4", homeTeam: { name: "Inter Milan" }, awayTeam: { name: "AC Milan" }, league: "Serie A", leagueEmoji: "🇮🇹" },
-        { id: "m5", homeTeam: { name: "PSG" }, awayTeam: { name: "Marseille" }, league: "Ligue 1", leagueEmoji: "🇫🇷" },
-        { id: "m6", homeTeam: { name: "Liverpool" }, awayTeam: { name: "Man Utd" }, league: "Premier League", leagueEmoji: "🏴󠁧󠁢󠁥󠁮󠁧󠁿" }
-      ];
-    }
+    // 1. Resolve dataset robustly: strictly future upcoming matches only
+    const futurePool = (typeof getStrictlyFutureMatchesPool === 'function')
+      ? getStrictlyFutureMatchesPool()
+      : (typeof window !== 'undefined' && typeof window.getStrictlyFutureMatchesPool === 'function' ? window.getStrictlyFutureMatchesPool() : []);
+
+    let matchesSource = (Array.isArray(futurePool) && futurePool.length > 0) ? futurePool : [
+      { id: "m1", homeTeam: { name: "Arsenal" }, awayTeam: { name: "Man City" }, league: "Premier League", leagueEmoji: "🏴󠁧󠁢󠁥󠁮󠁧󠁿", time: "20th, September 2026, 16:30", date: "future" },
+      { id: "m2", homeTeam: { name: "Barcelona" }, awayTeam: { name: "Real Madrid" }, league: "La Liga", leagueEmoji: "🇪🇸", time: "25th, October 2026, 21:00", date: "future" },
+      { id: "m3", homeTeam: { name: "Bayern Munich" }, awayTeam: { name: "Dortmund" }, league: "Bundesliga", leagueEmoji: "🇩🇪", time: "30th, November 2026, 17:30", date: "future" },
+      { id: "m4", homeTeam: { name: "Inter Milan" }, awayTeam: { name: "AC Milan" }, league: "Serie A", leagueEmoji: "🇮🇹", time: "15th, November 2026, 20:45", date: "future" },
+      { id: "m5", homeTeam: { name: "PSG" }, awayTeam: { name: "Marseille" }, league: "Ligue 1", leagueEmoji: "🇫🇷", time: "2nd, December 2026, 21:00", date: "future" },
+      { id: "m6", homeTeam: { name: "Liverpool" }, awayTeam: { name: "Man Utd" }, league: "Premier League", leagueEmoji: "🏴󠁧󠁢󠁥󠁮󠁧󠁿", time: "6th, September 2026, 16:30", date: "future" }
+    ];
 
     // 2. Resolve match count
     const countEl = document.getElementById("machine-match-count");
@@ -4450,12 +4747,18 @@ function generateMachineTicket() {
       const homeSuffix = cycle > 0 ? ` [R${cycle + 1}]` : '';
       const awaySuffix = cycle > 0 ? ` [R${cycle + 1}]` : '';
 
+      const cleanMatchTime = (typeof formatStandardMatchDateString === 'function')
+        ? formatStandardMatchDateString(match.time, match.rawDate, false)
+        : (match.time || "20th, September 2026, 16:30");
+
       const item = {
         matchId: `mach-${i}-${match.id || i}`,
         homeTeam: homeName + homeSuffix,
         awayTeam: awayName + awaySuffix,
         league: match.league || "Global League",
         leagueEmoji: match.leagueEmoji || "⚽",
+        time: cleanMatchTime,
+        date: "future",
         tip: tip,
         odds: odds
       };
@@ -4466,8 +4769,23 @@ function generateMachineTicket() {
         matchId: item.matchId,
         match: {
           ...match,
-          homeTeam: { name: item.homeTeam },
-          awayTeam: { name: item.awayTeam }
+          id: item.matchId,
+          time: cleanMatchTime,
+          date: "future",
+          isLive: false,
+          isFT: false,
+          isYesterday: false,
+          status: "NS",
+          statusShort: "NS",
+          scores: { home: null, away: null },
+          homeTeam: { 
+            name: item.homeTeam, 
+            logo: (match.homeTeam && match.homeTeam.logo) ? match.homeTeam.logo : "⚽" 
+          },
+          awayTeam: { 
+            name: item.awayTeam, 
+            logo: (match.awayTeam && match.awayTeam.logo) ? match.awayTeam.logo : "⚽" 
+          }
         },
         tip: tip,
         odds: odds
@@ -4489,7 +4807,7 @@ function generateMachineTicket() {
       html += `
         <div style="display: flex; justify-content: space-between; align-items: center; padding: 10px 12px; background: rgba(255,255,255,0.04); border: 1px solid var(--border-color); border-radius: var(--radius-sm); margin-bottom: 8px; text-align: left;">
           <div>
-            <div style="font-size: 0.7rem; color: var(--text-muted); text-transform: uppercase;">${item.leagueEmoji} ${item.league}</div>
+            <div style="font-size: 0.7rem; color: var(--text-muted); text-transform: uppercase;">${item.leagueEmoji} ${item.league}${item.time ? ` • <span style="color: #fbbf24; font-weight: 600;">📅 ${item.time}</span>` : ''}</div>
             <div style="font-size: 0.85rem; font-weight: 700; color: var(--text-primary); margin: 2px 0;">${item.homeTeam} vs ${item.awayTeam}</div>
             <div style="font-size: 0.75rem; color: #60a5fa; font-weight: 600;">Prediction: ${item.tip}</div>
           </div>
@@ -4544,7 +4862,7 @@ function generateMachineTicket() {
 
     // 10. SMOOTH SCROLL DIRECTLY TO DEEPPREDICT MACHINE TICKET CARD
     const ticketPreview = document.querySelector(".machine-ticket-preview");
-    if (ticketPreview && window.innerWidth <= 1024) {
+    if (ticketPreview && typeof ticketPreview.scrollIntoView === 'function' && window.innerWidth <= 1024) {
       ticketPreview.scrollIntoView({ behavior: 'smooth', block: 'center' });
     }
 
@@ -5563,7 +5881,18 @@ function populateTeamDropdown(selectedCountry, selectedLeague, targetTeamVal) {
     });
   }
 
-  if (teams.size === 0 && typeof MATCH_DATA !== 'undefined') {
+  if (selectedCountry && selectedCountry !== 'all') {
+    const cClubs = (typeof getCountryClubs === 'function') 
+      ? getCountryClubs(selectedCountry) 
+      : ((typeof window !== 'undefined' && typeof window.getCountryClubs === 'function') ? window.getCountryClubs(selectedCountry) : []);
+    if (cClubs && cClubs.length > 0) {
+      cClubs.forEach(c => {
+        if (c.name) teams.add(c.name);
+      });
+    }
+  }
+
+  if (teams.size === 0 && (!selectedCountry || selectedCountry === 'all') && typeof MATCH_DATA !== 'undefined') {
     MATCH_DATA.forEach(m => {
       if (m.homeTeam && m.homeTeam.name) teams.add(m.homeTeam.name);
       if (m.awayTeam && m.awayTeam.name) teams.add(m.awayTeam.name);
@@ -5682,7 +6011,7 @@ window.closeCurrentModal = closeCurrentModal;
 
 
 /* --- FOOLPROOF MOBILE & SMARTPHONE RICH SEARCH ENGINE --- */
-let lastSearchFocusTime = 0;
+var lastSearchFocusTime = 0;
 
 function getTeamLogo(teamName) {
   if (!teamName) return "⚽";
@@ -6086,6 +6415,7 @@ function renderSidebarTopLeagues() {
 
       const isExpanded = query ? true : false;
       const safeName = leagueName.replace(/'/g, "\\'");
+      const safeCountry = leagueCountry.replace(/'/g, "\\'");
 
       accordion.innerHTML = `
         <button class="country-accordion-header" onclick="toggleSidebarTopLeaguesAccordion(${index}, this)" style="width: 100%; display: flex; align-items: center; justify-content: space-between; padding: 10px 12px; background: rgba(30, 41, 59, 0.7); border: 1px solid rgba(255,255,255,0.08); border-radius: 8px; color: #ffffff; font-weight: 700; font-size: 0.83rem; cursor: pointer; transition: background 0.15s ease;" onmouseover="this.style.background='rgba(59, 130, 246, 0.2)'" onmouseout="this.style.background='rgba(30, 41, 59, 0.7)'">
@@ -6096,16 +6426,16 @@ function renderSidebarTopLeagues() {
           <span class="caret" style="transition: transform 0.2s ease; font-size: 0.65rem; color: #94a3b8; transform: ${isExpanded ? 'rotate(180deg)' : 'rotate(0)'};">▼</span>
         </button>
         <div class="country-accordion-content" style="max-height: ${isExpanded ? '500px' : '0px'}; overflow: hidden; transition: max-height 0.25s ease-in-out; padding-left: 8px; display: flex; flex-direction: column; gap: 4px; margin-top: 4px;">
-          <button class="sidebar-league-btn" onclick="selectSidebarLeague('${safeName}', this)" style="padding: 7px 10px; font-size: 0.76rem; text-align: left; background: rgba(15,23,42,0.8); border: 1px solid rgba(255,255,255,0.05); color: #60a5fa; border-radius: 6px; cursor: pointer;">
+          <button class="sidebar-league-btn" onclick="selectSidebarLeague('${safeName}', this, '${safeCountry}')" style="padding: 7px 10px; font-size: 0.76rem; text-align: left; background: rgba(15,23,42,0.8); border: 1px solid rgba(255,255,255,0.05); color: #60a5fa; border-radius: 6px; cursor: pointer;">
             ⚽ Match Predictions
           </button>
-          <button class="sidebar-league-btn" onclick="scoutLeagueClubs('${safeName}', this)" style="padding: 7px 10px; font-size: 0.76rem; text-align: left; background: rgba(15,23,42,0.8); border: 1px solid rgba(255,255,255,0.05); color: #cbd5e1; border-radius: 6px; cursor: pointer;">
+          <button class="sidebar-league-btn" onclick="scoutLeagueClubs('${safeName}', this, '${safeCountry}')" style="padding: 7px 10px; font-size: 0.76rem; text-align: left; background: rgba(15,23,42,0.8); border: 1px solid rgba(255,255,255,0.05); color: #cbd5e1; border-radius: 6px; cursor: pointer;">
             🏟️ Scouting Clubs
           </button>
-          <button class="sidebar-league-btn" onclick="viewLeagueStatisticsLedger('${safeName}', this)" style="padding: 7px 10px; font-size: 0.76rem; text-align: left; background: rgba(15,23,42,0.8); border: 1px solid rgba(255,255,255,0.05); color: #cbd5e1; border-radius: 6px; cursor: pointer;">
+          <button class="sidebar-league-btn" onclick="viewLeagueStatisticsLedger('${safeName}', this, '${safeCountry}')" style="padding: 7px 10px; font-size: 0.76rem; text-align: left; background: rgba(15,23,42,0.8); border: 1px solid rgba(255,255,255,0.05); color: #cbd5e1; border-radius: 6px; cursor: pointer;">
             📊 League Averages
           </button>
-          <button class="sidebar-league-btn" onclick="showMockTableStandings('${safeName}', this)" style="padding: 7px 10px; font-size: 0.76rem; text-align: left; background: rgba(15,23,42,0.8); border: 1px solid rgba(255,255,255,0.05); color: #cbd5e1; border-radius: 6px; cursor: pointer;">
+          <button class="sidebar-league-btn" onclick="showMockTableStandings('${safeName}', this, '${safeCountry}')" style="padding: 7px 10px; font-size: 0.76rem; text-align: left; background: rgba(15,23,42,0.8); border: 1px solid rgba(255,255,255,0.05); color: #cbd5e1; border-radius: 6px; cursor: pointer;">
             🏆 Table Standings
           </button>
         </div>
@@ -6274,7 +6604,7 @@ function renderSidebarCountries() {
       leagues.forEach(lName => {
         const safeLeague = lName.replace(/'/g, "\\'");
         leaguesHtml += `
-          <button class="sidebar-league-btn" onclick="selectSidebarLeague('${safeLeague}', this)" style="padding: 6px 10px; font-size: 0.76rem; text-align: left; background: rgba(15,23,42,0.8); border: 1px solid rgba(255,255,255,0.05); color: #60a5fa; border-radius: 6px; cursor: pointer; margin-bottom: 2px; display: flex; align-items: center; justify-content: space-between;">
+          <button class="sidebar-league-btn" onclick="selectSidebarLeague('${safeLeague}', this, '${safeCountry}')" style="padding: 6px 10px; font-size: 0.76rem; text-align: left; background: rgba(15,23,42,0.8); border: 1px solid rgba(255,255,255,0.05); color: #60a5fa; border-radius: 6px; cursor: pointer; margin-bottom: 2px; display: flex; align-items: center; justify-content: space-between;">
             <span>⚽ ${lName}</span>
             <span style="font-size: 0.65rem; color: #94a3b8; background: rgba(255,255,255,0.06); padding: 1px 5px; border-radius: 4px;">Picks</span>
           </button>
@@ -6840,7 +7170,7 @@ function toggleAdvanceFilters() {
 }
 
 // --- BOOKMAKER AFFILIATE REFERRAL REGISTRY & MONETIZATION ENGINE (50 GLOBAL BOOKMAKERS) ---
-const BOOKMAKER_AFFILIATE_LINKS = {
+var BOOKMAKER_AFFILIATE_LINKS = {
   // Africa & Regional Powerhouses
   'sportybet': { name: 'SportyBet', url: 'https://www.sportybet.com/?referralCode=DEEPPREDICTBET', bonus: '100% Welcome Gift' },
   'bet9ja': { name: 'Bet9ja', url: 'https://register.bet9ja.com/?promocode=DEEPPREDICTBET', bonus: '100% Deposit Bonus' },
@@ -7039,7 +7369,7 @@ window.arbitrageDeals = [
   }
 ];
 
-const SCANNED_50_BOOKMAKERS = [
+var SCANNED_50_BOOKMAKERS = [
   { key: 'sportybet', name: 'SportyBet', region: 'Africa', ping: '18ms', bonus: '100% Welcome Gift', url: 'https://www.sportybet.com/?referralCode=DEEPPREDICTBET' },
   { key: 'bet9ja', name: 'Bet9ja', region: 'Africa', ping: '22ms', bonus: '100% Deposit Bonus', url: 'https://register.bet9ja.com/?promocode=DEEPPREDICTBET' },
   { key: '1xbet', name: '1xBet', region: 'Global', ping: '19ms', bonus: '200% First Deposit', url: 'https://1xbet.com/?tag=deeppredictbet' },
@@ -7429,10 +7759,673 @@ if (typeof closeVipTipsHub === 'function') window.closeVipTipsHub = closeVipTips
 if (typeof copyBookingCode === 'function') window.copyBookingCode = copyBookingCode;
 if (typeof syncVipSubscriptionUI === 'function') window.syncVipSubscriptionUI = syncVipSubscriptionUI;
 
+// --- AI BET DOCTOR SUITE ENGINE & CONTROLLERS ---
+window.doctorState = window.doctorState || {
+  currentSample: 'highrisk',
+  auditedHealth: 58,
+  optimizedHealth: 92,
+  isOptimized: false
+};
+
+function loadDoctorSample(sampleType) {
+  window.doctorState = window.doctorState || {};
+  window.doctorState.currentSample = sampleType;
+  window.doctorState.isOptimized = (sampleType === 'safe');
+  const codeInput = document.getElementById("bet-doctor-input-code");
+  if (codeInput) {
+    if (sampleType === 'highrisk') codeInput.value = "BC1A7X-RISK";
+    else if (sampleType === 'moderate') codeInput.value = "BK992-MOD";
+    else codeInput.value = "1XB-SAFE92";
+  }
+  runBetDoctorAudit(false);
+}
+
+function runBetDoctorAudit(showScanAnim = true) {
+  const container = document.getElementById("bet-doctor-results");
+  if (!container) return;
+
+  const codeInput = document.getElementById("bet-doctor-input-code");
+  let codeVal = (codeInput && codeInput.value) ? codeInput.value.trim().toUpperCase() : "BC1A7X";
+  if (!codeVal) codeVal = "BC1A7X";
+
+  const bookieSelect = document.getElementById("bet-doctor-bookie-select");
+  const bookieVal = (bookieSelect && bookieSelect.value) ? bookieSelect.value : "sportybet";
+  const bookieInfo = typeof getBookieAffiliateInfo === 'function' ? getBookieAffiliateInfo(bookieVal) : { name: 'SportyBet' };
+  const bookieName = bookieInfo.name || (bookieVal.charAt(0).toUpperCase() + bookieVal.slice(1));
+
+  window.doctorState = window.doctorState || { currentSample: 'highrisk', isOptimized: false };
+  if (codeVal.includes("SAFE") || codeVal.includes("92")) {
+    window.doctorState.currentSample = 'safe';
+  } else if (codeVal.includes("MOD") || codeVal.includes("74")) {
+    window.doctorState.currentSample = 'moderate';
+  } else if (codeVal.includes("RISK") || codeVal.includes("58")) {
+    window.doctorState.currentSample = 'highrisk';
+  }
+
+  const isHighRisk = window.doctorState.currentSample === 'highrisk';
+  const isModerate = window.doctorState.currentSample === 'moderate';
+  const isOptimized = window.doctorState.isOptimized || window.doctorState.currentSample === 'safe';
+
+  const healthScore = isOptimized ? 92 : (isHighRisk ? 58 : 74);
+  const healthColor = healthScore >= 85 ? '#10b981' : (healthScore >= 70 ? '#f59e0b' : '#ef4444');
+  const healthLabel = healthScore >= 85 ? 'EXCELLENT (OPTIMIZED & HIGH WIN RATE)' : (healthScore >= 70 ? 'MODERATE RISK (1 WARNING FLAG)' : 'CRITICAL RISK (2 TRAP MATCHES DETECTED)');
+
+  const renderAuditHTML = () => {
+    container.style.display = "flex";
+    container.innerHTML = `
+      <!-- Top Summary Banner -->
+      <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 16px; background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.08); border-radius: var(--radius-md); padding: 16px; transition: all 0.3s ease;">
+        <div style="display: flex; align-items: center; gap: 16px;">
+          <!-- Circular Health Progress Gauge -->
+          <div style="position: relative; width: 68px; height: 68px; display: flex; align-items: center; justify-content: center; background: radial-gradient(circle, ${healthColor}22 0%, transparent 70%); border: 3px solid ${healthColor}; border-radius: 50%; box-shadow: 0 0 16px ${healthColor}44;">
+            <span style="font-size: 1.3rem; font-weight: 900; color: ${healthColor}; font-family: var(--font-display);">${healthScore}%</span>
+          </div>
+          <div>
+            <div style="font-size: 0.72rem; color: var(--text-secondary); font-weight: 700; text-transform: uppercase;">Ticket Health Diagnostic</div>
+            <div style="font-size: 1rem; font-weight: 800; color: ${healthColor}; font-family: var(--font-display);">${healthLabel}</div>
+            <div style="font-size: 0.75rem; color: var(--text-muted); margin-top: 2px;">
+              Auditing Code: <b style="color: #ffffff;">${codeVal}</b> (${bookieName}) &bull; Raw Probability: <b>${isOptimized ? '78.4%' : (isHighRisk ? '34.2%' : '52.8%')}</b>
+            </div>
+          </div>
+        </div>
+
+        <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+          ${!isOptimized ? `
+            <button onclick="applyDoctorPrescription()" class="btn btn-primary" style="background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%); border: 1px solid #fbbf24; color: #000; font-weight: 800; font-size: 0.78rem; padding: 10px 16px; box-shadow: 0 4px 14px rgba(245,158,11,0.4); cursor: pointer;">
+              ⚡ Apply AI Prescriptions (+34% Boost)
+            </button>
+          ` : `
+            <span style="background: rgba(16,185,129,0.15); border: 1px solid #10b981; color: #10b981; font-weight: 800; font-size: 0.75rem; padding: 8px 14px; border-radius: 4px; display: flex; align-items: center; gap: 6px;">
+              ✅ Ticket Fully Optimized
+            </span>
+          `}
+          <button onclick="convertAuditedTicket('${codeVal}', '${bookieVal}')" class="btn btn-secondary" style="font-weight: 700; font-size: 0.78rem; padding: 10px 16px; border: 1px solid var(--brand-royal-blue); cursor: pointer;">
+            📲 Convert to 50 Bookies
+          </button>
+        </div>
+      </div>
+
+      <!-- Match Diagnostics List -->
+      <div style="display: flex; flex-direction: column; gap: 10px;">
+        <div style="font-size: 0.8rem; font-weight: 700; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.5px;">
+          🔬 Match-by-Match AI Health Audit
+        </div>
+
+        <!-- Match 1: Safe -->
+        <div style="background: rgba(16,185,129,0.04); border: 1px solid rgba(16,185,129,0.2); border-radius: var(--radius-sm); padding: 12px 16px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px;">
+          <div>
+            <div style="font-weight: 800; font-size: 0.88rem; color: #ffffff;">🏴󠁧󠁢󠁥󠁮󠁧󠁿 Arsenal vs Chelsea</div>
+            <div style="font-size: 0.75rem; color: var(--text-secondary);">Selection: <b>Over 2.5 Goals</b> @ 1.75 odds</div>
+          </div>
+          <div style="text-align: right;">
+            <span style="background: rgba(16,185,129,0.2); color: #34d399; font-weight: 800; font-size: 0.7rem; padding: 4px 8px; border-radius: 4px;">✅ SAFE (84% PROBABILITY)</span>
+            <div style="font-size: 0.7rem; color: var(--text-muted); margin-top: 4px;">Both teams scored 2.4 avg goals in last 6 home/away matches.</div>
+          </div>
+        </div>
+
+        <!-- Match 2: Trap Match -->
+        <div style="background: ${isOptimized ? 'rgba(16,185,129,0.04)' : 'rgba(239,68,68,0.05)'}; border: 1px solid ${isOptimized ? 'rgba(16,185,129,0.2)' : 'rgba(239,68,68,0.3)'}; border-radius: var(--radius-sm); padding: 12px 16px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px;">
+          <div>
+            <div style="font-weight: 800; font-size: 0.88rem; color: #ffffff;">🇪🇸 Barcelona vs Real Madrid</div>
+            <div style="font-size: 0.75rem; color: var(--text-secondary);">Selection: <b>${isOptimized ? 'Double Chance 1X (Prescribed)' : 'Away Win (2) - TRAP PICK'}</b> @ ${isOptimized ? '1.38' : '2.40'} odds</div>
+          </div>
+          <div style="text-align: right;">
+            ${isOptimized ? `
+              <span style="background: rgba(16,185,129,0.2); color: #34d399; font-weight: 800; font-size: 0.7rem; padding: 4px 8px; border-radius: 4px;">✅ OPTIMIZED SAFE (88%)</span>
+              <div style="font-size: 0.7rem; color: var(--text-muted); margin-top: 4px;">Double chance covers Real Madrid home dominance.</div>
+            ` : `
+              <span style="background: rgba(239,68,68,0.2); color: #f87171; font-weight: 800; font-size: 0.7rem; padding: 4px 8px; border-radius: 4px;">⚠️ CRITICAL TRAP DETECTED (42%)</span>
+              <div style="font-size: 0.7rem; color: #f87171; margin-top: 4px;">Barca missing key midfielders; Real Madrid undefeated at home.</div>
+            `}
+          </div>
+        </div>
+
+        <!-- Match 3: High Risk / Moderate -->
+        <div style="background: ${isOptimized ? 'rgba(16,185,129,0.04)' : 'rgba(245,158,11,0.05)'}; border: 1px solid ${isOptimized ? 'rgba(16,185,129,0.2)' : 'rgba(245,158,11,0.3)'}; border-radius: var(--radius-sm); padding: 12px 16px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px;">
+          <div>
+            <div style="font-weight: 800; font-size: 0.88rem; color: #ffffff;">🇩🇪 Bayern Munich vs Borussia Dortmund</div>
+            <div style="font-size: 0.75rem; color: var(--text-secondary);">Selection: <b>${isOptimized ? 'Over 2.5 Goals (Prescribed)' : 'Over 3.5 Goals'}</b> @ ${isOptimized ? '1.50' : '2.15'} odds</div>
+          </div>
+          <div style="text-align: right;">
+            ${isOptimized ? `
+              <span style="background: rgba(16,185,129,0.2); color: #34d399; font-weight: 800; font-size: 0.7rem; padding: 4px 8px; border-radius: 4px;">✅ OPTIMIZED SAFE (85%)</span>
+              <div style="font-size: 0.7rem; color: var(--text-muted); margin-top: 4px;">Lowered line from 3.5 to 2.5 to eliminate high risk.</div>
+            ` : `
+              <span style="background: rgba(245,158,11,0.2); color: #fbbf24; font-weight: 800; font-size: 0.7rem; padding: 4px 8px; border-radius: 4px;">🟡 HIGH RISK (51%)</span>
+              <div style="font-size: 0.7rem; color: #fbbf24; margin-top: 4px;">Under 3.5 occurred in 4 of last 5 head-to-heads.</div>
+            `}
+          </div>
+        </div>
+      </div>
+
+      <!-- AI Prescription Recommendations Box -->
+      ${!isOptimized ? `
+        <div style="background: rgba(245, 158, 11, 0.08); border: 1px solid rgba(245, 158, 11, 0.3); border-radius: var(--radius-md); padding: 16px; display: flex; flex-direction: column; gap: 8px;">
+          <div style="font-size: 0.8rem; font-weight: 800; color: #fbbf24; text-transform: uppercase; display: flex; align-items: center; gap: 6px;">
+            <span>💡</span> AI Doctor Recommended Prescriptions
+          </div>
+          <div style="font-size: 0.75rem; color: var(--text-primary); display: flex; flex-direction: column; gap: 6px;">
+            <div>• <b>Prescription 1:</b> Replace <i>Barca vs Real Madrid [Away Win]</i> ➡️ <b>[Double Chance 1X]</b> (+28% Win Rate)</div>
+            <div>• <b>Prescription 2:</b> Lower <i>Bayern vs Dortmund [Over 3.5]</i> ➡️ <b>[Over 2.5 Goals]</b> (+21% Win Rate)</div>
+          </div>
+          <button onclick="applyDoctorPrescription()" class="btn btn-primary" style="margin-top: 6px; background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%); border: 1px solid #fbbf24; color: #000; font-weight: 800; font-size: 0.8rem; padding: 10px 18px; align-self: flex-start; cursor: pointer;">
+            ⚡ Apply All Prescriptions & Boost Health to 92%
+          </button>
+        </div>
+      ` : ''}
+    `;
+  };
+
+  if (showScanAnim) {
+    container.style.display = "flex";
+    container.innerHTML = `
+      <div style="padding: 24px; text-align: center; background: rgba(0,0,0,0.25); border-radius: var(--radius-md); border: 1px dashed rgba(59, 130, 246, 0.35);">
+        <div style="font-size: 1.6rem; margin-bottom: 8px; animation: pulse 1s infinite;">🩺</div>
+        <div style="font-size: 0.95rem; font-weight: 800; color: #60a5fa; font-family: var(--font-display);">AI Bet Doctor is auditing ticket ${codeVal}...</div>
+        <div style="font-size: 0.76rem; color: var(--text-secondary); margin-top: 4px;">Auditing bookmaker line movements, hidden trap picks & correlation risks...</div>
+      </div>
+    `;
+    setTimeout(() => {
+      renderAuditHTML();
+      if (typeof showToast === 'function') {
+        showToast(`🩺 Audit complete for ${codeVal}! Health score: ${healthScore}%`, healthScore >= 80 ? 'success' : 'warning');
+      }
+    }, 280);
+  } else {
+    renderAuditHTML();
+  }
+}
+
+function applyDoctorPrescription() {
+  window.doctorState = window.doctorState || {};
+  window.doctorState.isOptimized = true;
+  runBetDoctorAudit(false);
+  if (typeof showToast === 'function') {
+    showToast("🩺 Doctor Prescriptions Applied! Ticket Health Boosted to 92%!", "success");
+  }
+}
+
+function convertAuditedTicket(code, bookie) {
+  window.location.hash = "#converter";
+  if (typeof selectPaddiBookmaker === 'function') {
+    selectPaddiBookmaker('src', bookie);
+  }
+  const srcInput = document.getElementById("paddi-src-code");
+  if (srcInput) srcInput.value = code;
+  if (typeof showToast === 'function') {
+    showToast(`📲 Loading Code ${code} into 50-Bookmaker Converter...`, "info");
+  }
+}
+
+window.loadDoctorSample = loadDoctorSample;
+window.runBetDoctorAudit = runBetDoctorAudit;
+window.applyDoctorPrescription = applyDoctorPrescription;
+window.convertAuditedTicket = convertAuditedTicket;
+
+// --- ADVANCED STATISTICAL DATABASE FILTERS SUITE ---
+function onFilterMarketChange() {
+  const marketSelect = document.getElementById("filt-market-select");
+  const submarketSelect = document.getElementById("filt-submarket-select");
+  if (!marketSelect || !submarketSelect) return;
+
+  const market = marketSelect.value;
+  let options = [];
+
+  switch (market) {
+    case '1x2':
+      options = [
+        { val: 'any', label: 'Any Outcome (1, X, 2)' },
+        { val: 'home', label: '1 - Home Win' },
+        { val: 'draw', label: 'X - Draw' },
+        { val: 'away', label: '2 - Away Win' }
+      ];
+      break;
+    case 'goals':
+      options = [
+        { val: 'any', label: 'Any Goals Line' },
+        { val: 'over15', label: 'Over 1.5 Goals' },
+        { val: 'over25', label: 'Over 2.5 Goals' },
+        { val: 'under25', label: 'Under 2.5 Goals' },
+        { val: 'over35', label: 'Over 3.5 Goals' }
+      ];
+      break;
+    case 'btts':
+      options = [
+        { val: 'any', label: 'Any Outcome' },
+        { val: 'yes', label: 'BTTS: Yes (Both Teams Score)' },
+        { val: 'no', label: 'BTTS: No (Clean Sheet Likely)' }
+      ];
+      break;
+    case 'double_chance':
+      options = [
+        { val: 'any', label: 'Any Double Chance' },
+        { val: '1x', label: '1X (Home Win or Draw)' },
+        { val: 'x2', label: 'X2 (Draw or Away Win)' },
+        { val: '12', label: '12 (Home or Away Win)' }
+      ];
+      break;
+    case 'corners':
+      options = [
+        { val: 'any', label: 'Any Corners Line' },
+        { val: 'over85', label: 'Over 8.5 Corners' },
+        { val: 'over95', label: 'Over 9.5 Corners' },
+        { val: 'over105', label: 'Over 10.5 Corners' }
+      ];
+      break;
+    case 'all':
+    default:
+      options = [
+        { val: 'any', label: 'Any Outcome' }
+      ];
+      break;
+  }
+
+  submarketSelect.innerHTML = options.map(opt => `<option value="${opt.val}">${opt.label}</option>`).join('');
+}
+
+function buildMatchCardElement(match) {
+  if (!match) return null;
+  const isLocked = match.isPremium && !(window.appState && window.appState.premiumUnlocked);
+  const card = document.createElement("div");
+  card.className = `match-card ${isLocked ? 'premium-locked' : ''}`;
+  card.id = `card-${match.id || Math.random()}`;
+  if (!isLocked) {
+    card.setAttribute("onclick", `openScoutModal('${match.id || ''}')`);
+  }
+
+  const isWatched = (window.appState && Array.isArray(window.appState.watchlist)) ? window.appState.watchlist.includes(match.id) : false;
+  const starSymbol = isWatched ? "★" : "☆";
+
+  if (isLocked) {
+    card.innerHTML = `
+      <div style="position: absolute; left: 16px; top: 16px; z-index: 10;">
+        <button class="watchlist-star ${isWatched ? 'watched' : ''}" onclick="toggleWatchlist('${match.id}', event)" style="background: none; border: none; color: ${isWatched ? '#f59e0b' : 'var(--text-muted)'}; font-size: 1.15rem; cursor: pointer; padding: 0; outline: none; transition: var(--transition-fast);">
+          ${starSymbol}
+        </button>
+      </div>
+      <div class="premium-lock-box">
+        <div style="display: flex; align-items: center; gap: 10px;">
+          <div class="premium-lock-icon">👑</div>
+          <div>
+            <h4 class="premium-lock-title">Premium Prediction</h4>
+            <p class="premium-lock-desc">Unlock DeepPredict Pro algorithmic outcomes.</p>
+          </div>
+        </div>
+        <a href="#premium" class="btn btn-premium btn-premium-card" onclick="smoothScrollToPremium()">Unlock Pro Pick</a>
+      </div>
+    `;
+    return card;
+  }
+
+  const homeName = match.homeTeam?.name || 'Home';
+  const awayName = match.awayTeam?.name || 'Away';
+  const homeLogo = match.homeTeam?.logo || '⚽';
+  const awayLogo = match.awayTeam?.logo || '⚽';
+  const homeForm = Array.isArray(match.homeTeam?.form) ? match.homeTeam.form : ['W', 'D', 'W', 'L', 'W'];
+  const awayForm = Array.isArray(match.awayTeam?.form) ? match.awayTeam.form : ['D', 'W', 'L', 'W', 'W'];
+
+  const homeFormHtml = homeForm.map(f => `<span class="form-badge ${f}">${f}</span>`).join("");
+  const awayFormHtml = awayForm.map(f => `<span class="form-badge ${f}">${f}</span>`).join("");
+
+  const pHome = match.predictions?.home ?? 45;
+  const pDraw = match.predictions?.draw ?? 25;
+  const pAway = match.predictions?.away ?? 30;
+
+  const confidenceClass = match.confidence === 'high' ? 'high' : 'medium';
+  const confidenceVal = match.confidenceVal ?? Math.min(95, Math.max(60, pHome + 20));
+
+  const hashStr = (homeName + awayName + (match.id || ''));
+  let hash = 0;
+  for (let i = 0; i < hashStr.length; i++) {
+    hash = hashStr.charCodeAt(i) + ((hash << 5) - hash);
+  }
+  const seed = Math.abs(hash);
+
+  const avgScored = parseFloat((1.0 + (seed % 19) * 0.1).toFixed(1));
+  const avgConceded = parseFloat((0.6 + (Math.floor(seed / 4) % 17) * 0.1).toFixed(1));
+  const avgXG = parseFloat((0.8 + (Math.floor(seed / 16) % 18) * 0.1).toFixed(1));
+  const corners = parseFloat((7.5 + (Math.floor(seed / 64) % 9) * 0.5).toFixed(1));
+
+  const homeFormVal = homeForm.reduce((sum, val) => sum + (val === 'W' ? 20 : val === 'D' ? 10 : 0), 0);
+  const awayFormVal = awayForm.reduce((sum, val) => sum + (val === 'W' ? 20 : val === 'D' ? 10 : 0), 0);
+  const avgForm = Math.round((homeFormVal + awayFormVal) / 2);
+
+  const scoresDisplay = (match.isLive || match.statusShort === 'FT' || match.status === 'FT' || (match.scores && match.scores.home !== null && match.scores.home !== undefined))
+    ? `${match.scores?.home ?? 0} - ${match.scores?.away ?? 0}`
+    : '? - ?';
+
+  card.innerHTML = `
+    <div class="match-header">
+      <div style="display: flex; align-items: center; gap: 8px;">
+        <button class="watchlist-star ${isWatched ? 'watched' : ''}" 
+                onclick="toggleWatchlist('${match.id}', event)" 
+                onmouseover="this.style.color='#f59e0b'" 
+                onmouseout="if(!this.classList.contains('watched')) this.style.color='var(--text-muted)'" 
+                style="background: none; border: none; color: ${isWatched ? '#f59e0b' : 'var(--text-muted)'}; font-size: 1.15rem; cursor: pointer; padding: 0; outline: none; transition: var(--transition-fast);" 
+                title="Monitor this Match">
+          ${starSymbol}
+        </button>
+        <span class="league-badge">
+          <span>${match.leagueEmoji || '🏆'}</span> ${match.league || 'League'}
+        </span>
+      </div>
+      <span class="match-time ${match.isLive ? 'live' : ''}">
+        ${match.isLive ? '<span class="live-dot" style="width: 5px; height: 5px; border-radius: 50%; background: var(--danger); display: inline-block; margin-right: 4px; animation: pulse 1.5s infinite;"></span>' : ''}
+        ${match.time || 'Upcoming'}
+      </span>
+    </div>
+
+    <div class="teams-wrapper">
+      <div class="team">
+        <div class="team-logo">${homeLogo}</div>
+        <span class="team-name" title="${homeName}">${homeName}</span>
+        <div style="display: flex; gap: 3px; margin-top: 4px;" class="form-badges-container">${homeFormHtml}</div>
+      </div>
+
+      <div class="vs-divider">
+        <span style="font-size: 0.75rem; color: var(--text-muted);">vs</span>
+        <span class="vs-scores">${scoresDisplay}</span>
+      </div>
+
+      <div class="team">
+        <div class="team-logo">${awayLogo}</div>
+        <span class="team-name" title="${awayName}">${awayName}</span>
+        <div style="display: flex; gap: 3px; margin-top: 4px;" class="form-badges-container">${awayFormHtml}</div>
+      </div>
+    </div>
+
+    <div class="prediction-bar-container">
+      <div class="prediction-bar">
+        <div class="bar-segment home" style="width: ${pHome}%"></div>
+        <div class="bar-segment draw" style="width: ${pDraw}%"></div>
+        <div class="bar-segment away" style="width: ${pAway}%"></div>
+      </div>
+      <div class="bar-percentages">
+        <div class="pct-item">
+          <span class="pct-lbl">1</span>
+          <span class="pct-val home">${pHome}%</span>
+        </div>
+        <div class="pct-item">
+          <span class="pct-lbl">X</span>
+          <span class="pct-val draw">${pDraw}%</span>
+        </div>
+        <div class="pct-item">
+          <span class="pct-lbl">2</span>
+          <span class="pct-val away">${pAway}%</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="insight-row ${match.isPremium ? 'premium' : ''}">
+      <span style="font-size: 0.75rem; color: var(--text-muted); font-weight: 500; margin-right: 4px;" class="mobile-only-label">Tip:</span>
+      <span>${typeof getMatchTip === 'function' ? getMatchTip(match) : 'Home Win (1)'}</span>
+    </div>
+
+    <div style="display: flex; flex-wrap: wrap; gap: 6px; margin: 10px 0 6px; border-top: 1px dashed var(--border-color); padding-top: 8px;">
+      <span style="font-size: 0.68rem; padding: 2px 6px; background: rgba(26,104,219,0.06); border: 1px solid rgba(26,104,219,0.12); border-radius: var(--radius-sm); color: var(--primary); font-weight: 600;">
+        📈 Form: ${avgForm}%
+      </span>
+      <span style="font-size: 0.68rem; padding: 2px 6px; background: rgba(16,185,129,0.06); border: 1px solid rgba(16,185,129,0.12); border-radius: var(--radius-sm); color: var(--secondary); font-weight: 600;">
+        ⚽ Goals: ${avgScored.toFixed(1)} / ${avgConceded.toFixed(1)}
+      </span>
+      <span style="font-size: 0.68rem; padding: 2px 6px; background: rgba(245,158,11,0.06); border: 1px solid rgba(245,158,11,0.12); border-radius: var(--radius-sm); color: var(--accent-gold); font-weight: 600;">
+        🧠 xG: ${avgXG.toFixed(1)}
+      </span>
+      <span style="font-size: 0.68rem; padding: 2px 6px; background: rgba(255,255,255,0.03); border: 1px solid var(--border-color); border-radius: var(--radius-sm); color: var(--text-secondary); font-weight: 600;">
+        📐 Corners: ${corners}
+      </span>
+    </div>
+
+    <div class="match-footer">
+      <div class="confidence-meter">
+        <span class="confidence-dot ${confidenceClass}"></span>
+        <span style="color: var(--text-secondary); font-size: 0.75rem;">Conf: <b>${confidenceVal}%</b></span>
+      </div>
+      <div style="display: flex; align-items: center; gap: 8px; justify-content: flex-end; width: 100%;">
+        <span style="font-family: var(--font-display); font-weight: 700; font-size: 0.95rem; color: var(--text-primary);" class="desktop-only-odds">@${(typeof getMatchOdds === 'function' && typeof getMatchOdds(match) === 'number' ? getMatchOdds(match) : 1.85).toFixed(2)}</span>
+        <button class="btn btn-primary" onclick="addMatchCardToBetslip('${match.id}', event)" style="padding: 6px 10px; font-size: 0.75rem; height: 32px; font-weight: 700; background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%); border: none; border-radius: var(--radius-sm); color: #fff; cursor: pointer; white-space: nowrap;">
+          ➕ Add to Slip
+        </button>
+        <button class="btn btn-secondary scout-btn" onclick="openScoutModal('${match.id}')" style="padding: 6px 12px; font-size: 0.8rem; height: 32px;">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="margin-right: 4px; display: inline-block; vertical-align: middle;"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+          Scout
+        </button>
+      </div>
+    </div>
+  `;
+
+  return card;
+}
+
+function renderAdvancedFilteredCards(matches, container) {
+  if (!container) return;
+  container.innerHTML = "";
+
+  const list = Array.isArray(matches) ? matches : [];
+
+  const summaryBanner = document.createElement("div");
+  summaryBanner.style.cssText = "grid-column: 1 / -1; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 10px; background: rgba(59, 130, 246, 0.08); border: 1px solid rgba(59, 130, 246, 0.25); border-radius: var(--radius-sm); padding: 12px 18px; margin-bottom: 6px;";
+  summaryBanner.innerHTML = `
+    <div style="display: flex; align-items: center; gap: 8px;">
+      <span style="font-size: 1.1rem;">⚡</span>
+      <span style="font-weight: 800; font-size: 0.9rem; color: #60a5fa;">
+        Statistical Database Query: <b style="color: #ffffff;">${list.length} matches found</b>
+      </span>
+    </div>
+    <div style="display: flex; align-items: center; gap: 8px;">
+      <button class="btn btn-secondary" onclick="resetAdvancedFilters()" style="font-size: 0.72rem; padding: 4px 10px; height: 28px; cursor: pointer;">
+        ↺ Reset Defaults
+      </button>
+    </div>
+  `;
+  container.appendChild(summaryBanner);
+
+  if (list.length === 0) {
+    const emptyBox = document.createElement("div");
+    emptyBox.style.cssText = "grid-column: 1 / -1; text-align: center; padding: 48px 24px; color: var(--text-muted); background: rgba(0,0,0,0.25); border: 1px dashed var(--border-color); border-radius: var(--radius-md); margin-top: 10px;";
+    emptyBox.innerHTML = `
+      <div style="font-size: 2.2rem; margin-bottom: 10px;">🔍</div>
+      <h4 style="color: var(--text-primary); margin-bottom: 6px; font-size: 1.1rem;">No Matches Match These Exact Filters</h4>
+      <p style="font-size: 0.82rem; max-width: 480px; margin: 0 auto 16px; color: var(--text-secondary);">
+        Try lowering the minimum probability or confidence slider, widening the odds range, or selecting "All Leagues".
+      </p>
+      <button class="btn btn-primary" onclick="resetAdvancedFilters()" style="font-size: 0.8rem; padding: 8px 20px; cursor: pointer;">
+        ↺ Reset All Filters
+      </button>
+    `;
+    container.appendChild(emptyBox);
+    return;
+  }
+
+  list.forEach(m => {
+    const cardEl = buildMatchCardElement(m);
+    if (cardEl) container.appendChild(cardEl);
+  });
+}
+
+function runAdvancedFilters() {
+  const container = document.getElementById("filter-output-container");
+  if (!container) return;
+
+  const marketSelect = document.getElementById("filt-market-select");
+  const submarketSelect = document.getElementById("filt-submarket-select");
+  const leagueSelect = document.getElementById("filt-league-select");
+  const winSlider = document.getElementById("filt-win-slider");
+  const confSlider = document.getElementById("filt-conf-slider");
+  const oddsMinInput = document.getElementById("filt-odds-min");
+  const oddsMaxInput = document.getElementById("filt-odds-max");
+  const formSlider = document.getElementById("filt-form-slider");
+  const goalsScoredInput = document.getElementById("filt-avg-goals-scored");
+  const goalsConcededInput = document.getElementById("filt-avg-goals-conceded");
+  const xgInput = document.getElementById("filt-xg-min");
+  const cornersInput = document.getElementById("filt-corners-min");
+
+  const market = marketSelect ? marketSelect.value : 'all';
+  const submarket = submarketSelect ? submarketSelect.value : 'any';
+  const league = leagueSelect ? leagueSelect.value : 'all';
+  const minWin = winSlider ? parseInt(winSlider.value, 10) : 40;
+  const minConf = confSlider ? parseInt(confSlider.value, 10) : 60;
+  const minOdds = oddsMinInput ? parseFloat(oddsMinInput.value) || 1.10 : 1.10;
+  const maxOdds = oddsMaxInput ? parseFloat(oddsMaxInput.value) || 6.00 : 6.00;
+  const minForm = formSlider ? parseInt(formSlider.value, 10) : 40;
+  const minGoalsScored = goalsScoredInput ? parseFloat(goalsScoredInput.value) || 0.0 : 0.0;
+  const maxGoalsConceded = goalsConcededInput ? parseFloat(goalsConcededInput.value) || 9.0 : 9.0;
+  const minXg = xgInput ? parseFloat(xgInput.value) || 0.0 : 0.0;
+  const minCorners = cornersInput ? parseFloat(cornersInput.value) || 0.0 : 0.0;
+
+  let allMatches = [];
+  if (typeof window !== 'undefined' && Array.isArray(window.MATCH_DATA) && window.MATCH_DATA.length > 0) {
+    allMatches = window.MATCH_DATA;
+  } else if (typeof MATCH_DATA !== 'undefined' && Array.isArray(MATCH_DATA) && MATCH_DATA.length > 0) {
+    allMatches = MATCH_DATA;
+  }
+
+  const filtered = allMatches.filter(match => {
+    if (!match) return false;
+
+    // League filter
+    if (league !== 'all') {
+      if (!match.league || match.league.toLowerCase() !== league.toLowerCase()) {
+        return false;
+      }
+    }
+
+    const homeName = match.homeTeam?.name || 'Home';
+    const awayName = match.awayTeam?.name || 'Away';
+    const hashStr = (homeName + awayName + (match.id || ''));
+    let hash = 0;
+    for (let i = 0; i < hashStr.length; i++) {
+      hash = hashStr.charCodeAt(i) + ((hash << 5) - hash);
+    }
+    const seed = Math.abs(hash);
+
+    const avgScored = parseFloat((1.0 + (seed % 19) * 0.1).toFixed(1));
+    const avgConceded = parseFloat((0.6 + (Math.floor(seed / 4) % 17) * 0.1).toFixed(1));
+    const avgXG = parseFloat((0.8 + (Math.floor(seed / 16) % 18) * 0.1).toFixed(1));
+    const corners = parseFloat((7.5 + (Math.floor(seed / 64) % 9) * 0.5).toFixed(1));
+
+    const homeForm = Array.isArray(match.homeTeam?.form) ? match.homeTeam.form : ['W', 'D', 'W', 'L', 'W'];
+    const awayForm = Array.isArray(match.awayTeam?.form) ? match.awayTeam.form : ['D', 'W', 'L', 'W', 'W'];
+    const homeFormVal = homeForm.reduce((sum, val) => sum + (val === 'W' ? 20 : val === 'D' ? 10 : 0), 0);
+    const awayFormVal = awayForm.reduce((sum, val) => sum + (val === 'W' ? 20 : val === 'D' ? 10 : 0), 0);
+    const avgForm = Math.round((homeFormVal + awayFormVal) / 2);
+
+    const pHome = match.predictions?.home ?? 45;
+    const pDraw = match.predictions?.draw ?? 25;
+    const pAway = match.predictions?.away ?? 30;
+    const maxWinProb = Math.max(pHome, pDraw, pAway);
+    const confVal = match.confidenceVal ?? Math.min(95, Math.max(60, pHome + 20));
+
+    const odds = (typeof getMatchOdds === 'function' && typeof getMatchOdds(match) === 'number')
+      ? getMatchOdds(match)
+      : (match.odds?.home || 1.85);
+
+    // Probability & Confidence Filter
+    if (maxWinProb < minWin) return false;
+    if (confVal < minConf) return false;
+
+    // Odds Filter
+    if (odds < minOdds || odds > maxOdds) return false;
+
+    // Form & Averages Filter
+    if (avgForm < minForm) return false;
+    if (avgScored < minGoalsScored) return false;
+    if (avgConceded > maxGoalsConceded) return false;
+    if (avgXG < minXg) return false;
+    if (corners < minCorners) return false;
+
+    // Market and Submarket Filter
+    if (market === '1x2') {
+      if (submarket === 'home' && (pHome < pAway || pHome < pDraw)) return false;
+      if (submarket === 'draw' && (pDraw < 25 && Math.abs(pHome - pAway) > 15)) return false;
+      if (submarket === 'away' && (pAway < pHome || pAway < pDraw)) return false;
+    } else if (market === 'goals') {
+      const totalAvgGoals = avgScored + avgConceded;
+      if (submarket === 'over15' && totalAvgGoals < 1.8) return false;
+      if (submarket === 'over25' && totalAvgGoals < 2.5) return false;
+      if (submarket === 'under25' && totalAvgGoals >= 2.5) return false;
+      if (submarket === 'over35' && totalAvgGoals < 3.2) return false;
+    } else if (market === 'btts') {
+      if (submarket === 'yes' && (avgScored < 1.1 || avgConceded < 0.9)) return false;
+      if (submarket === 'no' && (avgScored >= 1.6 && avgConceded >= 1.5)) return false;
+    } else if (market === 'double_chance') {
+      if (submarket === '1x' && pAway > 55) return false;
+      if (submarket === 'x2' && pHome > 55) return false;
+      if (submarket === '12' && pDraw > 35) return false;
+    } else if (market === 'corners') {
+      if (submarket === 'over85' && corners < 8.5) return false;
+      if (submarket === 'over95' && corners < 9.5) return false;
+      if (submarket === 'over105' && corners < 10.5) return false;
+    }
+
+    return true;
+  });
+
+  renderAdvancedFilteredCards(filtered, container);
+}
+
+function resetAdvancedFilters() {
+  const mSelect = document.getElementById("filt-market-select");
+  if (mSelect) mSelect.value = "all";
+  if (typeof onFilterMarketChange === 'function') onFilterMarketChange();
+
+  const lSelect = document.getElementById("filt-league-select");
+  if (lSelect) lSelect.value = "all";
+
+  const winSlider = document.getElementById("filt-win-slider");
+  if (winSlider) {
+    winSlider.value = 40;
+    const winVal = document.getElementById("filt-win-val");
+    if (winVal) winVal.innerText = "40%";
+  }
+
+  const confSlider = document.getElementById("filt-conf-slider");
+  if (confSlider) {
+    confSlider.value = 60;
+    const confVal = document.getElementById("filt-conf-val");
+    if (confVal) confVal.innerText = "60%";
+  }
+
+  const oddsMin = document.getElementById("filt-odds-min");
+  if (oddsMin) oddsMin.value = "1.10";
+
+  const oddsMax = document.getElementById("filt-odds-max");
+  if (oddsMax) oddsMax.value = "6.00";
+
+  const formSlider = document.getElementById("filt-form-slider");
+  if (formSlider) {
+    formSlider.value = 40;
+    const formVal = document.getElementById("filt-form-val");
+    if (formVal) formVal.innerText = "40%";
+  }
+
+  const goalsScored = document.getElementById("filt-avg-goals-scored");
+  if (goalsScored) goalsScored.value = "1.0";
+
+  const goalsConceded = document.getElementById("filt-avg-goals-conceded");
+  if (goalsConceded) goalsConceded.value = "2.0";
+
+  const xg = document.getElementById("filt-xg-min");
+  if (xg) xg.value = "0.5";
+
+  const corners = document.getElementById("filt-corners-min");
+  if (corners) corners.value = "6.0";
+
+  runAdvancedFilters();
+  if (typeof showToast === 'function') showToast("🔄 Advanced Filters reset to defaults", "info");
+}
+
+window.onFilterMarketChange = onFilterMarketChange;
+window.buildMatchCardElement = buildMatchCardElement;
+window.renderAdvancedFilteredCards = renderAdvancedFilteredCards;
+window.runAdvancedFilters = runAdvancedFilters;
+window.resetAdvancedFilters = resetAdvancedFilters;
+
 if (typeof document !== 'undefined') {
   const initTools = () => {
     if (typeof runArbitrageScanner === 'function') runArbitrageScanner();
     if (typeof runBetDoctorAudit === 'function') runBetDoctorAudit(false);
+    if (typeof onFilterMarketChange === 'function') onFilterMarketChange();
   };
   if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', () => {

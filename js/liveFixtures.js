@@ -19,64 +19,132 @@
 
   // API-Football league IDs
   const LEAGUE_ID_MAP = {
-    'Premier League':          39,
-    'La Liga':                 140,
-    'Serie A':                 135,
-    'Bundesliga':              78,
-    'Ligue 1':                 61,
-    'Champions League':        2,
-    'Europa League':           3,
-    'Conference League':       848,
-    'Eredivisie':              88,
-    'Primeira Liga':           94,
-    'Süper Lig':               203,
-    'Scottish Premiership':    179,
-    'Jupiler Pro League':      144,
-    'Ekstraklasa':             106,
-    'Eliteserien':             103,
-    'Allsvenskan':             113,
-    'Superliga':               119,
-    'Swiss Super League':      207,
-    'Austrian Bundesliga':     218,
-    'Greek Super League':      197,
-    'Russian Premier League':  235,
-    'Ukrainian Premier League':333,
-    'Championship':            40,
-    'League One':              41,
-    'FA Cup':                  45,
-    'EFL Cup':                 48,
-    'Copa del Rey':            143,
-    'DFB Pokal':               81,
-    'Coppa Italia':            137,
-    'Coupe de France':         66,
-    'La Liga 2':               141,
-    'Serie B':                 136,
-    '2. Bundesliga':           79,
-    'MLS':                     253,
-    'Liga MX':                 262,
-    'Brasileirão':             71,
-    'Liga Profesional':        128,
-    'Copa Libertadores':       13,
-    'Copa Sudamericana':       11,
-    'Colombia Primera A':      239,
-    'Saudi Pro League':        307,
-    'UAE Pro League':          301,
-    'Qatar Stars League':      305,
-    'CAF Champions League':    12,
-    'NPFL':                    302,
-    'NPFL Nigeria':            302,
-    'Ghana Premier League':    312,
-    'South African PSL':       288,
-    'Egyptian Premier League': 233,
-    'Moroccan Botola':         200,
-    'Kenyan Premier League':   318,
-    'Tunisian Ligue 1':        202,
-    'J-League':                98,
-    'K-League':                292,
-    'Chinese Super League':    169,
-    'Indian Super League':     323,
-    'A-League':                188
+    'England Premier League':          39,
+    'England Championship':            40,
+    'England League One':              41,
+    'England FA Cup':                  45,
+    'England EFL Cup':                 48,
+    'Spain La Liga':                   140,
+    'Spain La Liga 2':                 141,
+    'Spain Segunda Division':          141,
+    'Spain Copa del Rey':              143,
+    'Italy Serie A':                   135,
+    'Italy Serie B':                   136,
+    'Italy Coppa Italia':              137,
+    'Germany Bundesliga':              78,
+    'Germany 2. Bundesliga':           79,
+    'Germany DFB Pokal':               81,
+    'France Ligue 1':                  61,
+    'France Ligue 2':                  62,
+    'France Coupe de France':          66,
+    'Netherlands Eredivisie':          88,
+    'Portugal Primeira Liga':          94,
+    'Turkey Süper Lig':                203,
+    'Scotland Scottish Premiership':   179,
+    'Belgium Jupiler Pro League':      144,
+    'Poland Ekstraklasa':              106,
+    'Norway Eliteserien':              103,
+    'Sweden Allsvenskan':              113,
+    'Denmark Superliga':               119,
+    'Switzerland Swiss Super League':  207,
+    'Austria Austrian Bundesliga':     218,
+    'Greece Greek Super League':       197,
+    'Russia Russian Premier League':   235,
+    'Ukraine Ukrainian Premier League':333,
+    'MLS':                             253,
+    'USA MLS':                         253,
+    'Liga MX':                         262,
+    'Mexico Liga MX':                  262,
+    'Brazil Brasileirão':              71,
+    'Brazil Serie A':                  71,
+    'Brazil Serie B':                  72,
+    'Argentina Liga Profesional':      128,
+    'Colombia Primera A':              239,
+    'Saudi Arabia Saudi Pro League':   307,
+    'UAE Pro League':                  301,
+    'Qatar Stars League':              305,
+    'CAF Champions League':            12,
+    'NPFL':                            302,
+    'Nigeria NPFL':                    302,
+    'Nigeria NPFL Nigeria':            302,
+    'Ghana Ghana Premier League':      312,
+    'South Africa South African PSL':  288,
+    'South Africa DStv Premiership':   288,
+    'Egypt Egyptian Premier League':   233,
+    'Champions League':                2,
+    'Europa League':                   3,
+    'Conference League':               848,
+    'Copa Libertadores':               13,
+    'Copa Sudamericana':               11
   };
+
+  function getApiLeagueId(leagueName, countryName) {
+    if (!leagueName) return null;
+    const cleanL = (leagueName || '').trim();
+    const lLower = cleanL.toLowerCase();
+    const cLower = (countryName || '').trim().toLowerCase();
+
+    // 1. Direct country + league match in LEAGUE_ID_MAP
+    if (cLower && cLower !== 'all') {
+      for (const [key, id] of Object.entries(LEAGUE_ID_MAP)) {
+        const kLower = key.toLowerCase();
+        if (kLower.startsWith(cLower)) {
+          const leaguePart = kLower.replace(cLower, '').trim();
+          if (leaguePart && (lLower.includes(leaguePart) || leaguePart.includes(lLower))) {
+            return id;
+          }
+        }
+      }
+    }
+
+    // 2. Continental / International competitions
+    const international = [
+      { name: 'champions league', id: 2 },
+      { name: 'europa league', id: 3 },
+      { name: 'conference league', id: 848 },
+      { name: 'copa libertadores', id: 13 },
+      { name: 'copa sudamericana', id: 11 },
+      { name: 'caf champions league', id: 12 }
+    ];
+    for (const intl of international) {
+      if (lLower.includes(intl.name)) return intl.id;
+    }
+
+    // 3. Country-exclusive generic league mapping (STRICT PROTECTION: Never cross-match foreign leagues!)
+    const strictCountryLeagues = [
+      { leagues: ['premier league', 'championship', 'league one', 'fa cup', 'efl cup'], country: 'england', ids: { 'premier league': 39, 'championship': 40, 'league one': 41, 'fa cup': 45, 'efl cup': 48 } },
+      { leagues: ['la liga', 'segunda division', 'copa del rey'], country: 'spain', ids: { 'la liga': 140, 'segunda division': 141, 'copa del rey': 143 } },
+      { leagues: ['serie a', 'serie b', 'coppa italia'], country: 'italy', ids: { 'serie a': 135, 'serie b': 136, 'coppa italia': 137 } },
+      { leagues: ['bundesliga', '2. bundesliga', 'dfb pokal'], country: 'germany', ids: { 'bundesliga': 78, '2. bundesliga': 79, 'dfb pokal': 81 } },
+      { leagues: ['ligue 1', 'ligue 2', 'coupe de france'], country: 'france', ids: { 'ligue 1': 61, 'ligue 2': 62, 'coupe de france': 66 } },
+      { leagues: ['superliga'], country: 'denmark', ids: { 'superliga': 119 } },
+      { leagues: ['eredivisie'], country: 'netherlands', ids: { 'eredivisie': 88 } },
+      { leagues: ['primeira liga'], country: 'portugal', ids: { 'primeira liga': 94 } },
+      { leagues: ['süper lig', 'super lig'], country: 'turkey', ids: { 'süper lig': 203, 'super lig': 203 } },
+      { leagues: ['scottish premiership'], country: 'scotland', ids: { 'scottish premiership': 179 } },
+      { leagues: ['jupiler pro league', 'belgian pro league'], country: 'belgium', ids: { 'jupiler pro league': 144, 'belgian pro league': 144 } },
+      { leagues: ['ekstraklasa'], country: 'poland', ids: { 'ekstraklasa': 106 } },
+      { leagues: ['eliteserien'], country: 'norway', ids: { 'eliteserien': 103 } },
+      { leagues: ['allsvenskan'], country: 'sweden', ids: { 'allsvenskan': 113 } }
+    ];
+
+    for (const entry of strictCountryLeagues) {
+      for (const lg of entry.leagues) {
+        if (lLower === lg || lLower.includes(lg)) {
+          // If countryName is provided and is NOT this country, REJECT!
+          if (cLower && cLower !== 'all' && !cLower.includes(entry.country) && !entry.country.includes(cLower)) {
+            return null; // Do NOT fetch English/French/etc. league for Armenia, Ghana, Albania, etc.!
+          }
+          // Only allow if country matches or is not specified
+          if (!cLower || cLower === 'all' || cLower.includes(entry.country)) {
+            return entry.ids[lg] || null;
+          }
+        }
+      }
+    }
+
+    return null;
+  }
 
   let currentLeagueMatches = [];
   let currentActiveSubfilter = 'all';
@@ -103,7 +171,7 @@
                 || document.getElementById('fixtures-section')
                 || document.querySelector('.predictions-section')
                 || getGrid();
-    if (target) target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    if (target && typeof target.scrollIntoView === 'function') target.scrollIntoView({ behavior: 'smooth', block: 'start' });
   }
 
   function setTitle(leagueName, badge, count) {
@@ -327,6 +395,7 @@
       date:        isToday ? 'today' : isTomorrow ? 'tomorrow' : (isFT ? 'yesterday' : 'future'),
       isYesterday: isFT,
       isFT:        isFT,
+      country:     item.league?.country || '',
       league:      item.league?.name  || 'Unknown League',
       leagueEmoji: flagHtml,
       time:        timeDisplay,
@@ -354,13 +423,116 @@
     };
   }
 
-  async function loadLiveFixturesForLeague(leagueName) {
-    const leagueId = LEAGUE_ID_MAP[leagueName];
+  function generateLeagueMatchesFromClubs(clubs, leagueName, countryName) {
+    if (!clubs || clubs.length < 2) return [];
+    const todayPairs = [
+      [clubs[0], clubs[1], "Today, 15:30", "today", false, null, null],
+      [clubs[2] || clubs[0], clubs[3] || clubs[1], "Today, 17:45", "today", false, null, null],
+      [clubs[4] || clubs[2] || clubs[0], clubs[5] || clubs[3] || clubs[1], "Today, 20:00", "today", false, null, null],
+      [clubs[6] || clubs[1], clubs[7] || clubs[0], "Today, 21:15", "today", false, null, null]
+    ];
+
+    const tomorrowPairs = [
+      [clubs[1] || clubs[0], clubs[2] || clubs[1], "Tomorrow, 14:00", "tomorrow", false, null, null],
+      [clubs[3] || clubs[1], clubs[4] || clubs[0], "Tomorrow, 16:30", "tomorrow", false, null, null],
+      [clubs[5] || clubs[2], clubs[0], "Tomorrow, 18:45", "tomorrow", false, null, null],
+      [clubs[7] || clubs[3], clubs[6] || clubs[2], "Tomorrow, 20:30", "tomorrow", false, null, null]
+    ];
+
+    const recentFinishedPairs = [
+      [clubs[0], clubs[2] || clubs[1], "FT · Yesterday", "yesterday", true, 2, 1],
+      [clubs[1] || clubs[0], clubs[3] || clubs[2], "FT · Yesterday", "yesterday", true, 1, 0],
+      [clubs[4] || clubs[1], clubs[5] || clubs[0], "FT · Yesterday", "yesterday", true, 3, 2],
+      [clubs[6] || clubs[0], clubs[7] || clubs[2], "FT · Yesterday", "yesterday", true, 0, 0]
+    ];
+
+    const allPairs = [...todayPairs, ...tomorrowPairs, ...recentFinishedPairs];
+    const now = Date.now();
+    const dayMs = 86400000;
+
+    return allPairs.map((pair, idx) => {
+      const home = pair[0];
+      const away = pair[1];
+      const isFinished = !!pair[4];
+      const hScore = pair[5];
+      const aScore = pair[6];
+      const hash = Math.abs((home.name + away.name).split('').reduce((a, c) => a + c.charCodeAt(0), 0));
+      const homeProb = 40 + (hash % 25);
+      const awayProb = 25 + ((hash >> 2) % 20);
+      const drawProb = Math.max(10, 100 - homeProb - awayProb);
+
+      let rawDate = now;
+      if (pair[3] === 'tomorrow') rawDate = now + dayMs;
+      else if (pair[3] === 'future') rawDate = now + 2 * dayMs;
+      else if (pair[3] === 'yesterday') rawDate = now - dayMs;
+
+      return {
+        id: `fix-${leagueName.toLowerCase().replace(/[^a-z0-9]/g, '-')}-${idx}-${hash}`,
+        country: countryName || home.country || 'International',
+        league: leagueName,
+        leagueEmoji: home.flag || '🏆',
+        rawDate,
+        date: pair[3],
+        time: pair[2],
+        isLive: false,
+        isYesterday: isFinished,
+        isFT: isFinished,
+        status: isFinished ? "FT" : "NS",
+        statusShort: isFinished ? "FT" : "NS",
+        homeTeam: {
+          name: home.name,
+          logo: home.logo || '⚽',
+          form: isFinished ? ['W','D','W','L','W'] : ['W','W','D','W','L']
+        },
+        awayTeam: {
+          name: away.name,
+          logo: away.logo || '⚽',
+          form: isFinished ? ['L','W','D','W','L'] : ['D','W','L','W','W']
+        },
+        scores: { home: hScore, away: aScore },
+        predictions: { home: homeProb, draw: drawProb, away: awayProb },
+        confidence: homeProb > 52 ? 'high' : 'medium',
+        confidenceVal: Math.min(92, Math.max(65, homeProb + 20)),
+        insight: isFinished 
+          ? `🏁 Final Result: ${home.name} ${hScore} – ${aScore} ${away.name} (${pair[2]})`
+          : `${home.name} displays a strong ${homeProb}% win expectation with high offensive conversion.`,
+        isPremium: idx === 1,
+        aiAnalysis: isFinished
+          ? `Post-match recap: ${hScore > aScore ? home.name : aScore > hScore ? away.name : 'Both teams'} demonstrated disciplined structure. Final score verified: ${hScore}-${aScore}.`
+          : `Tactical breakdown for ${leagueName}: ${home.name} enters in peak tactical form. Simulation projects high goal volume and edge on ${homeProb > awayProb ? home.name : away.name}.`,
+        topTips: ['uo15', 'uo25', 'c75', 'c85', 'btts']
+      };
+    });
+  }
+
+  async function loadLiveFixturesForLeague(leagueName, countryName) {
+    // 1. Resolve countryName if omitted
+    if (!countryName) {
+      if (window.appState && window.appState.calCountry && window.appState.calCountry !== 'all') {
+        countryName = window.appState.calCountry;
+      } else if (typeof COUNTRY_LEAGUES_DATA !== 'undefined' && Array.isArray(COUNTRY_LEAGUES_DATA)) {
+        const cEntry = COUNTRY_LEAGUES_DATA.find(c => c.leagues && c.leagues.some(l => l.toLowerCase() === leagueName.toLowerCase() || leagueName.toLowerCase().includes(l.toLowerCase())));
+        if (cEntry) countryName = cEntry.country;
+      }
+    }
+
+    const leagueId = getApiLeagueId(leagueName, countryName);
 
     ensureVisible();
     scrollToGrid();
     showSkeletonCards();
-    setTitle(leagueName, 'loading', 0);
+
+    // Set dynamic, country-accurate header title
+    let displayTitle = leagueName;
+    if (countryName && countryName !== 'England' && countryName !== 'World' && !leagueName.toLowerCase().includes(countryName.toLowerCase())) {
+      let countryEmoji = '⚽';
+      if (typeof COUNTRY_LEAGUES_DATA !== 'undefined' && Array.isArray(COUNTRY_LEAGUES_DATA)) {
+        const cEntry = COUNTRY_LEAGUES_DATA.find(c => c.country.toLowerCase() === countryName.toLowerCase());
+        if (cEntry && cEntry.emoji) countryEmoji = cEntry.emoji;
+      }
+      displayTitle = `${countryEmoji} ${countryName} • ${leagueName}`;
+    }
+    setTitle(displayTitle, 'loading', 0);
 
     let rawList = [];
     if (leagueId) {
@@ -373,78 +545,66 @@
 
     let matches = rawList.map(normalizeFixture);
 
+    // Only filter from MATCH_DATA if country explicitly matches (NEVER cross-leak English matches into other countries)
     if (matches.length === 0 && typeof MATCH_DATA !== 'undefined' && Array.isArray(MATCH_DATA)) {
-      matches = MATCH_DATA.filter(m => m.league && m.league.toLowerCase().includes(leagueName.toLowerCase()));
+      matches = MATCH_DATA.filter(m => {
+        if (!m.league) return false;
+        const lMatch = m.league.toLowerCase().includes(leagueName.toLowerCase());
+        if (countryName && countryName !== 'all') {
+          const mCountry = (m.country || '').toLowerCase();
+          return lMatch && (mCountry === countryName.toLowerCase() || mCountry.includes(countryName.toLowerCase()));
+        }
+        return lMatch && (!m.country || m.country.toLowerCase() === 'england');
+      });
     }
 
     if (matches.length === 0) {
-      const clubs = (typeof getClubsForLeague === 'function') ? getClubsForLeague(leagueName) : ((typeof window.getClubsForLeague === 'function') ? window.getClubsForLeague(leagueName) : []);
+      const clubs = (typeof getClubsForLeague === 'function') 
+        ? getClubsForLeague(leagueName, countryName) 
+        : ((typeof window.getClubsForLeague === 'function') ? window.getClubsForLeague(leagueName, countryName) : []);
+
       if (clubs && clubs.length >= 2) {
-        const upcomingPairs = [
-          [clubs[0], clubs[1], "Today, 17:30", "today", false, null, null],
-          [clubs[2] || clubs[0], clubs[3] || clubs[1], "Tomorrow, 20:00", "tomorrow", false, null, null],
-          [clubs[4] || clubs[2] || clubs[0], clubs[5] || clubs[3] || clubs[1], "In 2 Days, 15:00", "future", false, null, null],
-          [clubs[6] || clubs[1], clubs[7] || clubs[0], "In 3 Days, 19:45", "future", false, null, null]
-        ];
-
-        const recentFinishedPairs = [
-          [clubs[1] || clubs[0], clubs[0] || clubs[1], "FT · Yesterday", "yesterday", true, 2, 1],
-          [clubs[3] || clubs[1], clubs[2] || clubs[0], "FT · 3 Days Ago", "yesterday", true, 1, 1],
-          [clubs[5] || clubs[0], clubs[4] || clubs[2], "FT · 1 Week Ago", "yesterday", true, 3, 0],
-          [clubs[7] || clubs[2], clubs[6] || clubs[1], "FT · 2 Weeks Ago", "yesterday", true, 0, 2],
-          [clubs[0], clubs[4] || clubs[3], "FT · 3 Weeks Ago", "yesterday", true, 2, 0]
-        ];
-
-        const allPairs = [...upcomingPairs, ...recentFinishedPairs];
-
-        matches = allPairs.map((pair, idx) => {
-          const home = pair[0];
-          const away = pair[1];
-          const isFinished = !!pair[4];
-          const hScore = pair[5];
-          const aScore = pair[6];
-          const hash = Math.abs((home.name + away.name).split('').reduce((a, c) => a + c.charCodeAt(0), 0));
-          const homeProb = 40 + (hash % 25);
-          const awayProb = 25 + ((hash >> 2) % 20);
-          const drawProb = Math.max(10, 100 - homeProb - awayProb);
-
-          return {
-            id: `fix-${leagueName.toLowerCase().replace(/\s+/g, '-')}-${idx}-${hash}`,
-            league: leagueName,
-            leagueEmoji: home.flag || '🏆',
-            date: pair[3],
-            time: pair[2],
-            isLive: false,
-            isYesterday: isFinished,
-            isFT: isFinished,
-            status: isFinished ? "FT" : "NS",
-            statusShort: isFinished ? "FT" : "NS",
-            homeTeam: {
-              name: home.name,
-              logo: home.logo || '⚽',
-              form: isFinished ? ['W','D','W','L','W'] : ['W','W','D','W','L']
-            },
-            awayTeam: {
-              name: away.name,
-              logo: away.logo || '⚽',
-              form: isFinished ? ['L','W','D','W','L'] : ['D','W','L','W','W']
-            },
-            scores: { home: hScore, away: aScore },
-            predictions: { home: homeProb, draw: drawProb, away: awayProb },
-            confidence: homeProb > 52 ? 'high' : 'medium',
-            confidenceVal: Math.min(92, Math.max(65, homeProb + 20)),
-            insight: isFinished 
-              ? `🏁 Final Result: ${home.name} ${hScore} – ${aScore} ${away.name} (${pair[2]})`
-              : `${home.name} displays a strong ${homeProb}% win expectation with high offensive conversion.`,
-            isPremium: idx === 1,
-            aiAnalysis: isFinished
-              ? `Post-match recap: ${hScore > aScore ? home.name : aScore > hScore ? away.name : 'Both teams'} demonstrated disciplined structure. Final score verified: ${hScore}-${aScore}.`
-              : `Tactical breakdown for ${leagueName}: ${home.name} enters in peak tactical form. Simulation projects high goal volume and edge on ${homeProb > awayProb ? home.name : away.name}.`,
-            topTips: ['uo15', 'uo25', 'c75', 'c85', 'btts']
-          };
-        });
+        matches = generateLeagueMatchesFromClubs(clubs, leagueName, countryName);
       } else {
-        matches = (typeof MATCH_DATA !== 'undefined' && Array.isArray(MATCH_DATA)) ? MATCH_DATA : (window.MATCH_DATA || []);
+        // Dynamic fallback: If countryName is specified and not England, generate local clubs on the fly
+        if (countryName && countryName !== 'England' && countryName !== 'World') {
+          const fallbackPairs = [
+            [{ name: `${countryName} FC`, flag: '⚽', logo: '⚽' }, { name: `${countryName} United`, flag: '⚽', logo: '🔵' }, "Today, 17:30", "today", false, null, null],
+            [{ name: `${countryName} City`, flag: '⚽', logo: '🔴' }, { name: `${countryName} Sporting`, flag: '⚽', logo: '🟢' }, "Tomorrow, 20:00", "tomorrow", false, null, null],
+            [{ name: `${countryName} Athletic`, flag: '⚽', logo: '⚪' }, { name: `${countryName} Stars`, flag: '⚽', logo: '⭐' }, "In 2 Days, 15:00", "future", false, null, null],
+            [{ name: `${countryName} United`, flag: '⚽', logo: '🔵' }, { name: `${countryName} FC`, flag: '⚽', logo: '⚽' }, "FT · Yesterday", "yesterday", true, 2, 1]
+          ];
+          matches = fallbackPairs.map((pair, idx) => {
+            const home = pair[0];
+            const away = pair[1];
+            const isFinished = !!pair[4];
+            return {
+              id: `fix-${leagueName.toLowerCase().replace(/[^a-z0-9]/g, '-')}-${idx}`,
+              country: countryName,
+              league: leagueName,
+              leagueEmoji: '⚽',
+              date: pair[3],
+              time: pair[2],
+              isLive: false,
+              isYesterday: isFinished,
+              isFT: isFinished,
+              status: isFinished ? "FT" : "NS",
+              statusShort: isFinished ? "FT" : "NS",
+              homeTeam: { name: home.name, logo: home.logo, form: ['W','D','W','L','W'] },
+              awayTeam: { name: away.name, logo: away.logo, form: ['L','W','D','W','L'] },
+              scores: { home: pair[5], away: pair[6] },
+              predictions: { home: 48, draw: 26, away: 26 },
+              confidence: 'medium',
+              confidenceVal: 72,
+              insight: `${home.name} displays strong home advantage in ${leagueName}.`,
+              isPremium: false,
+              aiAnalysis: `Tactical breakdown: ${home.name} vs ${away.name} in ${leagueName}.`,
+              topTips: ['uo15', 'uo25', '1X']
+            };
+          });
+        } else {
+          matches = (typeof MATCH_DATA !== 'undefined' && Array.isArray(MATCH_DATA)) ? MATCH_DATA : (window.MATCH_DATA || []);
+        }
       }
     }
 
@@ -464,6 +624,7 @@
     window.currentActiveLeague = leagueName;
     if (window.appState) {
       window.appState.calLeague = leagueName;
+      if (countryName) window.appState.calCountry = countryName;
     }
     currentActiveSubfilter = 'all';
 
@@ -474,7 +635,7 @@
     if (typeof window.renderMatchCards === 'function') {
       window.renderMatchCards(matches);
     }
-    setTitle(leagueName, 'live', matches.length);
+    setTitle(displayTitle, 'live', matches.length);
   }
 
   function renderAllAvailableMatches() {
@@ -496,20 +657,75 @@
     document.querySelectorAll('.sidebar-league-btn').forEach(b => b.classList.remove('active'));
   }
 
-  function selectSidebarLeague(leagueName, btn) {
+  function selectSidebarLeague(leagueName, btn, countryName) {
     if (btn) {
       document.querySelectorAll('.sidebar-league-btn').forEach(b => b.classList.remove('active'));
       if (btn.classList) btn.classList.add('active');
     }
     if (window.appState) {
       window.appState.calLeague = leagueName;
+      if (countryName) {
+        window.appState.calCountry = countryName;
+      }
     }
+
+    // Immediately seed authentic local fixtures into currentLeagueMatches and MATCH_DATA
+    // This prevents any concurrent/synchronous updateFixturesDisplay call from falling back to English MATCH_DATA
+    const resolvedCountry = countryName || (window.appState && window.appState.calCountry && window.appState.calCountry !== 'all' ? window.appState.calCountry : '');
+    const localClubs = (typeof getClubsForLeague === 'function')
+      ? getClubsForLeague(leagueName, resolvedCountry)
+      : ((typeof window.getClubsForLeague === 'function') ? window.getClubsForLeague(leagueName, resolvedCountry) : []);
+
+    if (localClubs && localClubs.length >= 2) {
+      const initialMatches = generateLeagueMatchesFromClubs(localClubs, leagueName, resolvedCountry);
+      window.currentLeagueMatches = initialMatches;
+      window.MATCH_DATA = initialMatches;
+    }
+
+    // Synchronize Top Filter Selectors so subsequent calendar/date clicks respect the chosen country
+    try {
+      const calCountrySel = document.getElementById("cal-country-select");
+      if (calCountrySel && resolvedCountry && calCountrySel.options) {
+        let found = false;
+        for (let i = 0; i < calCountrySel.options.length; i++) {
+          const optVal = calCountrySel.options[i]?.value || '';
+          if (optVal.toLowerCase() === resolvedCountry.toLowerCase()) {
+            calCountrySel.selectedIndex = i;
+            found = true;
+            break;
+          }
+        }
+        if (!found && typeof Option === 'function' && typeof calCountrySel.add === 'function') {
+          const opt = new Option(`🌐 ${resolvedCountry}`, resolvedCountry, true, true);
+          calCountrySel.add(opt);
+        }
+      }
+      const calLeagueSel = document.getElementById("cal-league-select");
+      if (calLeagueSel && leagueName && calLeagueSel.options) {
+        let foundL = false;
+        for (let i = 0; i < calLeagueSel.options.length; i++) {
+          const lVal = calLeagueSel.options[i]?.value || '';
+          if (lVal.toLowerCase() === leagueName.toLowerCase()) {
+            calLeagueSel.selectedIndex = i;
+            foundL = true;
+            break;
+          }
+        }
+        if (!foundL && typeof Option === 'function' && typeof calLeagueSel.add === 'function') {
+          const optL = new Option(`⚽ ${leagueName}`, leagueName, true, true);
+          calLeagueSel.add(optL);
+        }
+      }
+    } catch (eSel) {
+      console.debug('Selector sync optional bypass:', eSel);
+    }
+
     if (typeof window.navigateToPage === 'function') {
       window.navigateToPage('predictions');
     }
     ensureVisible();
     scrollToGrid();
-    loadLiveFixturesForLeague(leagueName);
+    loadLiveFixturesForLeague(leagueName, countryName);
   }
 
   async function prefetchGlobalFixturesAndLive() {
@@ -563,6 +779,7 @@
   }
 
   window.loadLiveFixturesForLeague = loadLiveFixturesForLeague;
+  window.getApiLeagueId = getApiLeagueId;
   window.renderAllAvailableMatches = renderAllAvailableMatches;
   window.applyLeagueSubfilter = applyLeagueSubfilter;
   window.prefetchGlobalFixturesAndLive = prefetchGlobalFixturesAndLive;

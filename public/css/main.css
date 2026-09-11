@@ -166,6 +166,42 @@ header {
   color: var(--text-primary);
 }
 
+.brand-logo-img {
+  height: 44px;
+  width: auto;
+  max-height: 48px;
+  object-fit: contain;
+  vertical-align: middle;
+  filter: drop-shadow(0 2px 8px rgba(0, 0, 0, 0.5));
+  transition: transform 0.2s ease, filter 0.2s ease;
+}
+
+.brand-logo-img:hover {
+  transform: scale(1.03);
+  filter: drop-shadow(0 4px 12px rgba(37, 99, 235, 0.4));
+}
+
+@media (max-width: 1024px) {
+  .brand-logo-img {
+    height: 38px;
+    max-height: 40px;
+  }
+}
+
+@media (max-width: 768px) {
+  .brand-logo-img {
+    height: 34px;
+    max-height: 36px;
+  }
+}
+
+@media (max-width: 480px) {
+  .brand-logo-img {
+    height: 28px;
+    max-height: 30px;
+  }
+}
+
 .brand-logo-text {
   display: inline-flex !important;
   flex-direction: row !important;

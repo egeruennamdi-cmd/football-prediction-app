@@ -816,6 +816,1250 @@ const VALUE_BETS = [
   { match: "Tottenham vs Arsenal", market: "Away Win & Over 2.5", bookmakerOdds: "3.10", modelProbability: "42%", modelOdds: "2.40", ev: "+29.2%" }
 ];
 
+
+/* --- COMPREHENSIVE 150-COUNTRY LOCAL CLUBS REGISTRY --- */
+const COUNTRY_CLUBS_DATA = {
+  "Africa": [
+    "Al Ahly",
+    "Espérance de Tunis",
+    "Mamelodi Sundowns",
+    "TP Mazembe",
+    "Raja Casablanca",
+    "Wydad AC",
+    "Zamalek SC",
+    "Simba SC"
+  ],
+  "Albania": [
+    "KF Tirana",
+    "Partizani Tirana",
+    "Vllaznia Shkodër",
+    "Egnatia Rrogozhinë",
+    "Dinamo City",
+    "Teuta Durrës",
+    "Skënderbeu Korçë",
+    "KF Laçi"
+  ],
+  "Algeria": [
+    "MC Alger",
+    "CR Belouizdad",
+    "USM Alger",
+    "JS Kabylie",
+    "ES Sétif",
+    "CS Constantine",
+    "MC Oran",
+    "JS Saoura"
+  ],
+  "Andorra": [
+    "Inter Club d'Escaldes",
+    "FC Santa Coloma",
+    "UE Santa Coloma",
+    "Atlètic d'Escaldes",
+    "FC Ordino",
+    "FC Pas de la Casa"
+  ],
+  "Angola": [
+    "Petro de Luanda",
+    "Primeiro de Agosto",
+    "Sagrada Esperança",
+    "Wiliete SC",
+    "Interclube",
+    "Bravos do Maquis",
+    "Kabuscorp SCP",
+    "Desportivo da Huíla"
+  ],
+  "Argentina": [
+    "River Plate",
+    "Boca Juniors",
+    "Racing Club",
+    "Independiente",
+    "San Lorenzo",
+    "Vélez Sarsfield",
+    "Estudiantes LP",
+    "Rosario Central"
+  ],
+  "Armenia": [
+    "FC Pyunik",
+    "FC Noah",
+    "Ararat-Armenia",
+    "Urartu FC",
+    "Alashkert FC",
+    "Shirak SC"
+  ],
+  "Aruba": [
+    "SV Dakota",
+    "SV Racing Club Aruba",
+    "SV Britannia",
+    "SV Estrella",
+    "SV Deportivo Nacional",
+    "SV La Fama"
+  ],
+  "Asia": [
+    "Al-Hilal",
+    "Al-Nassr",
+    "Ulsan HD",
+    "Vissel Kobe",
+    "Yokohama F. Marinos",
+    "Al-Ain FC",
+    "Persepolis",
+    "Pohang Steelers"
+  ],
+  "Australia": [
+    "Sydney FC",
+    "Melbourne City",
+    "Melbourne Victory",
+    "Central Coast Mariners",
+    "Western Sydney Wanderers",
+    "Adelaide United",
+    "Brisbane Roar",
+    "Macarthur FC"
+  ],
+  "Austria": [
+    "Red Bull Salzburg",
+    "Sturm Graz",
+    "Rapid Wien",
+    "LASK",
+    "Austria Wien",
+    "Wolfsberger AC"
+  ],
+  "Azerbaijan": [
+    "Qarabağ FK",
+    "Neftçi Baku",
+    "Sabah FC",
+    "Zira FK",
+    "Gabala SC",
+    "Sumqayit FK"
+  ],
+  "Bahrain": [
+    "Riffa SC",
+    "Al-Muharraq",
+    "Al-Khaldiya",
+    "Manama Club",
+    "Al-Ahli Manama",
+    "East Riffa"
+  ],
+  "Bangladesh": [
+    "Bashundhara Kings",
+    "Abahani Limited Dhaka",
+    "Mohammedan SC Dhaka",
+    "Sheikh Russel KC",
+    "Sheikh Jamal DC",
+    "Rahmatganj MFS"
+  ],
+  "Belarus": [
+    "Dinamo Minsk",
+    "BATE Borisov",
+    "Neman Grodno",
+    "Torpedo-BelAZ Zhodino",
+    "Isloch Minsk",
+    "Slavia Mozyr"
+  ],
+  "Belgium": [
+    "Club Brugge",
+    "Union Saint-Gilloise",
+    "Anderlecht",
+    "KRC Genk",
+    "Gent",
+    "Royal Antwerp"
+  ],
+  "Benin": [
+    "Coton FC",
+    "Loto-Popo FC",
+    "Ayéma FC",
+    "Dragons de l'Ouémé",
+    "Dynamo d'Abomey",
+    "ASPAC FC"
+  ],
+  "Bolivia": [
+    "The Strongest",
+    "Bolívar",
+    "Always Ready",
+    "Jorge Wilstermann",
+    "Blooming",
+    "Oriente Petrolero"
+  ],
+  "Bosnia and Herzegovina": [
+    "FK Sarajevo",
+    "Zrinjski Mostar",
+    "FK Željezničar",
+    "Borac Banja Luka",
+    "Velež Mostar",
+    "Široki Brijeg"
+  ],
+  "Botswana": [
+    "Jwaneng Galaxy",
+    "Township Rollers",
+    "Gaborone United",
+    "Orapa United",
+    "Security Systems FC",
+    "BDF XI"
+  ],
+  "Brazil": [
+    "Botafogo",
+    "Palmeiras",
+    "Flamengo",
+    "São Paulo",
+    "Grêmio",
+    "Internacional",
+    "Fluminense",
+    "Atlético Mineiro"
+  ],
+  "Bulgaria": [
+    "Ludogorets Razgrad",
+    "CSKA Sofia",
+    "Levski Sofia",
+    "Cherno More Varna",
+    "Lokomotiv Plovdiv",
+    "Botev Plovdiv"
+  ],
+  "Burkina Faso": [
+    "AS Douanes",
+    "Rail Club du Kadiogo",
+    "Salitas FC",
+    "ASFA Yennenga",
+    "Etoile Filante"
+  ],
+  "Burundi": [
+    "Vital'O FC",
+    "Flambeau du Centre",
+    "Musongati FC",
+    "Aigle Noir Makamba",
+    "Rukinzo FC"
+  ],
+  "Cambodia": [
+    "Phnom Penh Crown",
+    "Preah Khan Reach Svay Rieng",
+    "Visakha FC",
+    "Boeung Ket FC",
+    "Nagaworld FC"
+  ],
+  "Cameroon": [
+    "Coton Sport FC",
+    "Canon Yaoundé",
+    "Union Douala",
+    "Bamboutos FC",
+    "Colombe Sportive",
+    "Dynamo Douala"
+  ],
+  "Canada": [
+    "Forge FC",
+    "Cavalry FC",
+    "Pacific FC",
+    "Atlético Ottawa",
+    "Vancouver FC",
+    "York United FC"
+  ],
+  "Chile": [
+    "Colo-Colo",
+    "Universidad de Chile",
+    "Universidad Católica",
+    "Cobreloa",
+    "Unión Española",
+    "Palestino"
+  ],
+  "China": [
+    "Shanghai Port",
+    "Shanghai Shenhua",
+    "Shandong Taishan",
+    "Beijing Guoan",
+    "Chengdu Rongcheng",
+    "Zhejiang FC"
+  ],
+  "Colombia": [
+    "Millonarios",
+    "Atlético Nacional",
+    "América de Cali",
+    "Junior FC",
+    "Independiente Santa Fe",
+    "Independiente Medellín"
+  ],
+  "Congo": [
+    "AC Léopards",
+    "AS Otohô",
+    "Diables Noirs",
+    "CARA Brazzaville",
+    "Étoile du Congo"
+  ],
+  "Costa Rica": [
+    "Deportivo Saprissa",
+    "LD Alajuelense",
+    "CS Herediano",
+    "CS Cartaginés",
+    "AD San Carlos",
+    "Municipal Liberia"
+  ],
+  "Croatia": [
+    "GNK Dinamo Zagreb",
+    "HNK Hajduk Split",
+    "HNK Rijeka",
+    "NK Osijek",
+    "NK Lokomotiva Zagreb",
+    "HNK Gorica"
+  ],
+  "Cuba": [
+    "FC Pinar del Río",
+    "FC Ciego de Ávila",
+    "FC Santiago de Cuba",
+    "FC La Habana",
+    "FC Camagüey"
+  ],
+  "Cyprus": [
+    "APOEL Nicosia",
+    "Omonia Nicosia",
+    "Aris Limassol",
+    "Apollon Limassol",
+    "Anorthosis Famagusta",
+    "AEK Larnaca"
+  ],
+  "Czech Republic": [
+    "AC Sparta Prague",
+    "SK Slavia Prague",
+    "FC Viktoria Plzeň",
+    "FC Baník Ostrava",
+    "FK Mladá Boleslav",
+    "FC Slovan Liberec"
+  ],
+  "Denmark": [
+    "FC Copenhagen",
+    "Brøndby IF",
+    "FC Midtjylland",
+    "FC Nordsjælland",
+    "AGF Aarhus",
+    "Silkeborg IF"
+  ],
+  "Dominican Republic": [
+    "Cibao FC",
+    "Club Atlético Pantoja",
+    "Moca FC",
+    "O&M FC",
+    "Atlántico FC"
+  ],
+  "Ecuador": [
+    "LDU Quito",
+    "Barcelona SC",
+    "Independiente del Valle",
+    "CS Emelec",
+    "Universidad Católica Ecuador",
+    "SD Aucas"
+  ],
+  "Egypt": [
+    "Al Ahly SC",
+    "Pyramids FC",
+    "Zamalek SC",
+    "Al Masry SC",
+    "Modern Sport FC",
+    "Smouha SC"
+  ],
+  "El Salvador": [
+    "Alianza FC",
+    "CD FAS",
+    "CD Águila",
+    "AD Isidro Metapán",
+    "CD Luis Ángel Firpo",
+    "CD Municipal Limeño"
+  ],
+  "England": [
+    "Manchester City",
+    "Arsenal",
+    "Liverpool",
+    "Chelsea",
+    "Tottenham Hotspur",
+    "Manchester United",
+    "Newcastle United",
+    "Aston Villa"
+  ],
+  "Estonia": [
+    "FC Flora Tallinn",
+    "FCI Levadia Tallinn",
+    "Paide Linnameeskond",
+    "Nõmme Kalju FC",
+    "JK Narva Trans"
+  ],
+  "Ethiopia": [
+    "Saint George SC",
+    "Fasil Kenema SC",
+    "Ethiopian Coffee SC",
+    "Bahir Dar Kenema",
+    "Defence Force SC (Mekelakeya)"
+  ],
+  "Europe": [
+    "Real Madrid",
+    "Manchester City",
+    "Bayern Munich",
+    "Barcelona",
+    "Paris Saint-Germain",
+    "Inter Milan",
+    "Arsenal",
+    "Juventus"
+  ],
+  "Faroe Islands": [
+    "KÍ Klaksvík",
+    "B36 Tórshavn",
+    "HB Tórshavn",
+    "Víkingur Gøta",
+    "NSÍ Runavík"
+  ],
+  "Finland": [
+    "HJK Helsinki",
+    "KuPS Kuopio",
+    "Ilves Tampere",
+    "SJK Seinäjoki",
+    "VPS Vaasa",
+    "FC Inter Turku"
+  ],
+  "France": [
+    "Paris Saint-Germain",
+    "Olympique de Marseille",
+    "AS Monaco",
+    "Lille OSC",
+    "Olympique Lyonnais",
+    "OGC Nice"
+  ],
+  "Gabon": [
+    "AS Mangasport",
+    "CF Mounana",
+    "AS Stade Mandji",
+    "US Bitam",
+    "Pelican FC"
+  ],
+  "Georgia": [
+    "FC Dinamo Tbilisi",
+    "FC Dinamo Batumi",
+    "FC Torpedo Kutaisi",
+    "FC Iberia 1999",
+    "FC Dila Gori"
+  ],
+  "Germany": [
+    "FC Bayern Munich",
+    "Bayer 04 Leverkusen",
+    "Borussia Dortmund",
+    "RB Leipzig",
+    "Eintracht Frankfurt",
+    "VfB Stuttgart"
+  ],
+  "Ghana": [
+    "Asante Kotoko SC",
+    "Accra Hearts of Oak",
+    "Medeama SC",
+    "Aduana Stars",
+    "Accra Great Olympics",
+    "Berekum Chelsea"
+  ],
+  "Greece": [
+    "Olympiacos FC",
+    "Panathinaikos FC",
+    "AEK Athens",
+    "PAOK FC",
+    "Aris Thessaloniki",
+    "Atromitos FC"
+  ],
+  "Guatemala": [
+    "Comunicaciones FC",
+    "CSD Municipal",
+    "Antigua GFC",
+    "CSD Xelajú MC",
+    "Cobán Imperial"
+  ],
+  "Guinea": [
+    "Horoya AC",
+    "Hafia FC",
+    "Milo FC",
+    "SOAR Académie",
+    "AS Kaloum Star"
+  ],
+  "Honduras": [
+    "CD Olimpia",
+    "CD Motagua",
+    "Real CD España",
+    "CD Marathón",
+    "Olancho FC",
+    "CDS Vida"
+  ],
+  "Hong Kong": [
+    "Kitchee SC",
+    "Eastern SC",
+    "Lee Man FC",
+    "Southern District FC",
+    "Hong Kong Rangers FC"
+  ],
+  "Hungary": [
+    "Ferencvárosi TC",
+    "Fehérvár FC",
+    "Puskás Akadémia FC",
+    "Debreceni VSC",
+    "Újpest FC",
+    "MTK Budapest"
+  ],
+  "Iceland": [
+    "Víkingur Reykjavík",
+    "Valur Reykjavík",
+    "Breiðablik UBK",
+    "KR Reykjavík",
+    "FH Hafnarfjörður",
+    "Stjarnan FC"
+  ],
+  "India": [
+    "Mohun Bagan Super Giant",
+    "Mumbai City FC",
+    "Kerala Blasters FC",
+    "Bengaluru FC",
+    "FC Goa",
+    "East Bengal FC"
+  ],
+  "Indonesia": [
+    "Persija Jakarta",
+    "Persib Bandung",
+    "Bali United",
+    "Persebaya Surabaya",
+    "PSM Makassar",
+    "Borneo FC Samarinda"
+  ],
+  "Iran": [
+    "Persepolis FC",
+    "Esteghlal FC",
+    "Sepahan SC",
+    "Tractor SC",
+    "Gol Gohar Sirjan",
+    "Foolad Khuzestan"
+  ],
+  "Iraq": [
+    "Al-Shorta SC",
+    "Al-Quwa Al-Jawiya",
+    "Al-Zawraa SC",
+    "Al-Talaba SC",
+    "Erbil SC",
+    "Duhok SC"
+  ],
+  "Ireland": [
+    "Shamrock Rovers FC",
+    "Derry City FC",
+    "St Patrick's Athletic FC",
+    "Bohemian FC",
+    "Shelbourne FC",
+    "Dundalk FC"
+  ],
+  "Israel": [
+    "Maccabi Tel Aviv FC",
+    "Maccabi Haifa FC",
+    "Hapoel Be'er Sheva FC",
+    "Beitar Jerusalem FC",
+    "Hapoel Tel Aviv FC",
+    "Maccabi Netanya FC"
+  ],
+  "Italy": [
+    "Inter Milan",
+    "Juventus FC",
+    "AC Milan",
+    "SSC Napoli",
+    "Atalanta BC",
+    "AS Roma",
+    "SS Lazio",
+    "ACF Fiorentina"
+  ],
+  "Ivory Coast": [
+    "ASEC Mimosas",
+    "Africa Sports d'Abidjan",
+    "Stade d'Abidjan",
+    "FC San Pédro",
+    "Racing Club d'Abidjan",
+    "SOL FC"
+  ],
+  "Jamaica": [
+    "Cavalier FC",
+    "Mount Pleasant FA",
+    "Tivoli Gardens FC",
+    "Portmore United",
+    "Arnett Gardens FC",
+    "Waterhouse FC"
+  ],
+  "Japan": [
+    "Vissel Kobe",
+    "Yokohama F. Marinos",
+    "Kawasaki Frontale",
+    "Urawa Red Diamonds",
+    "Sanfrecce Hiroshima",
+    "Kashima Antlers"
+  ],
+  "Jordan": [
+    "Al-Wehdat SC",
+    "Al-Faisaly Amman",
+    "Al-Hussein SC Irbid",
+    "Al-Ramtha SC",
+    "Shabab Al-Ordon Club"
+  ],
+  "Kazakhstan": [
+    "FC Astana",
+    "FC Kairat Almaty",
+    "FC Tobol Kostanay",
+    "FC Ordabasy Shymkent",
+    "FC Aktobe",
+    "FC Shakhter Karagandy"
+  ],
+  "Kenya": [
+    "Gor Mahia FC",
+    "AFC Leopards",
+    "Tusker FC",
+    "Kenya Police FC",
+    "Bandari FC",
+    "Kakamega Homeboyz"
+  ],
+  "Kosovo": [
+    "FC Ballkani",
+    "FC Drita",
+    "FC Prishtina",
+    "KF Llapi",
+    "SC Gjilani",
+    "FC Malisheva"
+  ],
+  "Kuwait": [
+    "Kuwait SC",
+    "Al-Arabi SC",
+    "Al-Qadsia SC",
+    "Kazma SC",
+    "Al-Salmiya SC"
+  ],
+  "Kyrgyzstan": [
+    "FC Dordoi Bishkek",
+    "FC Abdysh-Ata Kant",
+    "FC Alay Osh",
+    "FC Muras United",
+    "FC Neftchi Kochkor-Ata"
+  ],
+  "Latvia": [
+    "Riga FC",
+    "RFS",
+    "FK Liepāja",
+    "Valmiera FC",
+    "FK Auda"
+  ],
+  "Lebanon": [
+    "Al-Ahed FC",
+    "Al-Ansar FC",
+    "Nejmeh SC",
+    "Al-Bourj FC",
+    "Safa SC Beirut"
+  ],
+  "Liberia": [
+    "LPRC Oilers",
+    "Invincible Eleven",
+    "Mighty Barrolle",
+    "Watanga FC",
+    "LISCR FC"
+  ],
+  "Lithuania": [
+    "FK Žalgiris Vilnius",
+    "FK Panevėžys",
+    "FC Hegelmann",
+    "FK Kauno Žalgiris",
+    "FA Šiauliai"
+  ],
+  "Luxembourg": [
+    "F91 Dudelange",
+    "Swift Hesperange",
+    "FC Progrès Niederkorn",
+    "Racing FC Union Luxembourg",
+    "FC Differdange 03"
+  ],
+  "Macau": [
+    "Chao Pak Kei",
+    "Must CPK",
+    "SL Benfica de Macau",
+    "Sporting Clube de Macau",
+    "Ka I"
+  ],
+  "North Macedonia": [
+    "KF Shkëndija",
+    "FC Struga Trim-Lum",
+    "FK Vardar Skopje",
+    "FK Rabotnički",
+    "FC Shkupi"
+  ],
+  "Madagascar": [
+    "Fosa Juniors FC",
+    "ASSM Elgeco Plus",
+    "AS Fanalamanga",
+    "Ajesaia Antananarivo"
+  ],
+  "Malawi": [
+    "FCB Nyasa Big Bullets",
+    "Silver Strikers FC",
+    "Mighty Wanderers FC",
+    "Kamuzu Barracks FC"
+  ],
+  "Malaysia": [
+    "Johor Darul Ta'zim FC",
+    "Selangor FC",
+    "Kedah Darul Aman FC",
+    "Terengganu FC",
+    "Perak FC",
+    "Sabah FC"
+  ],
+  "Maldives": [
+    "Maziya S&RC",
+    "Club Eagles",
+    "Club Valencia",
+    "TC Sports Club"
+  ],
+  "Mali": [
+    "Djoliba AC",
+    "Stade Malien de Bamako",
+    "AS Real Bamako",
+    "AS Bakaridjan",
+    "USFAS Bamako"
+  ],
+  "Malta": [
+    "Ħamrun Spartans FC",
+    "Floriana FC",
+    "Hibernians FC",
+    "Sliema Wanderers FC",
+    "Birkirkara FC",
+    "Valletta FC"
+  ],
+  "Mauritania": [
+    "FC Nouadhibou",
+    "AS Douanes Mauritanie",
+    "ASC Tevragh-Zeina",
+    "Chemal FC"
+  ],
+  "Mauritius": [
+    "Cercle de Joachim SC",
+    "Pamplemousses SC",
+    "Petite Rivière Noire FC",
+    "AS Port-Louis 2000"
+  ],
+  "Mexico": [
+    "Club América",
+    "Cruz Azul",
+    "CF Monterrey",
+    "Tigres UANL",
+    "CD Guadalajara",
+    "Deportivo Toluca",
+    "CF Pachuca",
+    "Pumas UNAM"
+  ],
+  "Moldova": [
+    "FC Sheriff Tiraspol",
+    "FC Petrocub Hîncești",
+    "FC Zimbru Chișinău",
+    "FC Milsami Orhei"
+  ],
+  "Mongolia": [
+    "FC Ulaanbaatar",
+    "SP Falcons",
+    "Deren FC",
+    "Khangarid FC"
+  ],
+  "Montenegro": [
+    "FK Budućnost Podgorica",
+    "FK Sutjeska Nikšić",
+    "FK Dečić Tuzi",
+    "FK Mornar Bar"
+  ],
+  "Morocco": [
+    "Wydad AC",
+    "Raja Casablanca",
+    "AS FAR Rabat",
+    "RS Berkane",
+    "FUS Rabat",
+    "MAS Fez"
+  ],
+  "Myanmar": [
+    "Shan United FC",
+    "Yangon United FC",
+    "Hantharwaddy United FC",
+    "Yadanarbon FC"
+  ],
+  "Namibia": [
+    "African Stars FC",
+    "Blue Waters FC",
+    "Orlando Pirates Windhoek",
+    "Tigers FC Windhoek"
+  ],
+  "Nepal": [
+    "Machhindra FC",
+    "Tribhuwan Army Club",
+    "Nepal Police Club",
+    "Manang Marshyangdi Club"
+  ],
+  "Netherlands": [
+    "PSV Eindhoven",
+    "Feyenoord Rotterdam",
+    "AFC Ajax",
+    "AZ Alkmaar",
+    "FC Twente",
+    "FC Utrecht"
+  ],
+  "New Zealand": [
+    "Auckland City FC",
+    "Wellington Olympic",
+    "Auckland United",
+    "Eastern Suburbs AFC",
+    "Christchurch United"
+  ],
+  "Nicaragua": [
+    "Real Estelí FC",
+    "Diriangén FC",
+    "Managua FC",
+    "CD Walter Ferretti"
+  ],
+  "Niger": [
+    "AS GNN",
+    "AS FAN Niamey",
+    "Sahel SC",
+    "Olympic FC de Niamey",
+    "US Gendarmerie Nationale"
+  ],
+  "Nigeria": [
+    "Enugu Rangers International",
+    "Remo Stars FC",
+    "Enyimba International FC",
+    "Rivers United FC",
+    "Plateau United",
+    "Shooting Stars SC",
+    "Kano Pillars FC"
+  ],
+  "Northern Ireland": [
+    "Linfield FC",
+    "Glentoran FC",
+    "Larne FC",
+    "Cliftonville FC",
+    "Crusaders FC",
+    "Coleraine FC"
+  ],
+  "Norway": [
+    "FK Bodø/Glimt",
+    "Molde FK",
+    "SK Brann",
+    "Viking FK",
+    "Rosenborg BK",
+    "Vålerenga Fotball"
+  ],
+  "Oman": [
+    "Al-Seeb Club",
+    "Al-Nahda Club",
+    "Dhofar Club",
+    "Al-Nasr SC Salalah",
+    "Sohar SC"
+  ],
+  "Palestine": [
+    "Jabal Al-Mukaber Club",
+    "Shabab Al-Khalil SC",
+    "Markaz Balata",
+    "Hilal Al-Quds Club"
+  ],
+  "Panama": [
+    "CAI de La Chorrera",
+    "Tauro FC",
+    "Sporting San Miguelito",
+    "CD Plaza Amador",
+    "San Francisco FC"
+  ],
+  "Paraguay": [
+    "Club Olimpia",
+    "Club Cerro Porteño",
+    "Club Libertad",
+    "Club Guaraní",
+    "Club Nacional Asunción",
+    "Sportivo Luqueño"
+  ],
+  "Peru": [
+    "Club Universitario de Deportes",
+    "Club Alianza Lima",
+    "Sporting Cristal",
+    "FBC Melgar",
+    "CS Cienciano",
+    "Universidad César Vallejo"
+  ],
+  "Philippines": [
+    "Kaya FC-Iloilo",
+    "Dynamic Herb Cebu FC",
+    "Stallion Laguna FC",
+    "United City FC"
+  ],
+  "Poland": [
+    "Legia Warsaw",
+    "Lech Poznań",
+    "Raków Częstochowa",
+    "Jagiellonia Białystok",
+    "Pogoń Szczecin",
+    "Śląsk Wrocław"
+  ],
+  "Portugal": [
+    "Sporting CP",
+    "SL Benfica",
+    "FC Porto",
+    "SC Braga",
+    "Vitória de Guimarães",
+    "FC Famalicão"
+  ],
+  "Qatar": [
+    "Al-Sadd SC",
+    "Al-Duhail SC",
+    "Al-Rayyan SC",
+    "Al-Arabi SC",
+    "Al-Gharafa SC",
+    "Al-Wakrah SC"
+  ],
+  "Romania": [
+    "FCSB",
+    "CFR Cluj",
+    "CS Universitatea Craiova",
+    "FC Rapid București",
+    "FC Farul Constanța",
+    "Sepsi OSK"
+  ],
+  "Russia": [
+    "FC Zenit Saint Petersburg",
+    "FC Spartak Moscow",
+    "PFC CSKA Moscow",
+    "FC Dynamo Moscow",
+    "FC Krasnodar",
+    "FC Lokomotiv Moscow"
+  ],
+  "Rwanda": [
+    "APR FC Kigali",
+    "Rayon Sports FC",
+    "AS Kigali",
+    "Police FC Rwanda",
+    "Mukura Victory Sports"
+  ],
+  "San Marino": [
+    "SP Tre Penne",
+    "SS La Fiorita",
+    "SS Folgore Falciano",
+    "SS Cosmos",
+    "SS Virtus"
+  ],
+  "Saudi Arabia": [
+    "Al-Hilal SFC",
+    "Al-Nassr FC",
+    "Al-Ittihad Club",
+    "Al-Ahli Saudi FC",
+    "Al-Shabab FC",
+    "Al-Ettifaq FC"
+  ],
+  "Scotland": [
+    "Celtic FC",
+    "Rangers FC",
+    "Aberdeen FC",
+    "Heart of Midlothian FC",
+    "Hibernian FC",
+    "Kilmarnock FC"
+  ],
+  "Senegal": [
+    "ASC Jaraaf",
+    "Génération Foot",
+    "Teungueth FC",
+    "Casa Sports de Ziguinchor",
+    "Guédiawaye FC"
+  ],
+  "Serbia": [
+    "Red Star Belgrade",
+    "FK Partizan Belgrade",
+    "FK TSC Bačka Topola",
+    "FK Vojvodina",
+    "FK Čukarički"
+  ],
+  "Singapore": [
+    "Albirex Niigata Singapore",
+    "Lion City Sailors FC",
+    "BG Tampines Rovers FC",
+    "Geylang International FC"
+  ],
+  "Slovakia": [
+    "ŠK Slovan Bratislava",
+    "FC Spartak Trnava",
+    "FC DAC 1904 Dunajská Streda",
+    "MŠK Žilina",
+    "MFK Ružomberok"
+  ],
+  "Slovenia": [
+    "NK Maribor",
+    "NK Olimpija Ljubljana",
+    "NK Celje",
+    "FC Koper",
+    "NK Bravo Ljubljana"
+  ],
+  "Somalia": [
+    "Horseed FC",
+    "Mogadishu City Club",
+    "Dekedaha FC",
+    "Elman FC"
+  ],
+  "South Africa": [
+    "Mamelodi Sundowns FC",
+    "Orlando Pirates FC",
+    "Kaizer Chiefs FC",
+    "Stellenbosch FC",
+    "Sekhukhune United FC",
+    "SuperSport United FC"
+  ],
+  "South Korea": [
+    "Ulsan HD FC",
+    "Jeonbuk Hyundai Motors",
+    "Pohang Steelers",
+    "FC Seoul",
+    "Incheon United FC",
+    "Gwangju FC"
+  ],
+  "Spain": [
+    "Real Madrid CF",
+    "FC Barcelona",
+    "Atlético de Madrid",
+    "Athletic Club Bilbao",
+    "Real Sociedad",
+    "Villarreal CF",
+    "Real Betis Balompié",
+    "Sevilla FC"
+  ],
+  "Sudan": [
+    "Al-Hilal Club Omdurman",
+    "Al-Merrikh SC",
+    "Al-Ahli Shendi",
+    "Hay Al-Wadi SC"
+  ],
+  "Sweden": [
+    "Malmö FF",
+    "AIK Fotboll",
+    "Djurgårdens IF",
+    "Hammarby IF",
+    "IFK Göteborg",
+    "BK Häcken"
+  ],
+  "Switzerland": [
+    "BSC Young Boys Bern",
+    "FC Basel 1893",
+    "FC Zürich",
+    "Servette FC Genève",
+    "FC Lugano",
+    "FC St. Gallen"
+  ],
+  "Syria": [
+    "Al-Karamah SC",
+    "Al-Ittihad SC Aleppo",
+    "Al-Jaish SC Damascus",
+    "Tishreen SC",
+    "Al-Wahda SC Damascus"
+  ],
+  "Taiwan": [
+    "Taiwan Steel Group",
+    "Taichung Futuro FC",
+    "Hang Yuen FC",
+    "AC Taipei"
+  ],
+  "Tajikistan": [
+    "FC Istiklol Dushanbe",
+    "FC Ravshan Kulob",
+    "CSKA Pamir Dushanbe",
+    "FK Khujand"
+  ],
+  "Tanzania": [
+    "Young Africans SC (Yanga)",
+    "Simba SC",
+    "Azam FC",
+    "Singida Black Stars FC",
+    "Coastal Union FC"
+  ],
+  "Thailand": [
+    "Buriram United FC",
+    "Bangkok United FC",
+    "BG Pathum United FC",
+    "Port FC",
+    "Muangthong United FC",
+    "Chiangrai United FC"
+  ],
+  "Togo": [
+    "ASKO de Kara",
+    "ASC Kara",
+    "AS OTR Lomé",
+    "Dynamic Togolais",
+    "Unisport de Sokodé"
+  ],
+  "Tunisia": [
+    "Espérance Sportive de Tunis",
+    "Club Africain Tunis",
+    "Étoile Sportive du Sahel",
+    "CS Sfaxien",
+    "US Monastirienne"
+  ],
+  "Turkey": [
+    "Galatasaray SK",
+    "Fenerbahçe SK",
+    "Beşiktaş JK",
+    "Trabzonspor",
+    "Istanbul Başakşehir FK",
+    "Samsunspor"
+  ],
+  "Uganda": [
+    "Vipers SC",
+    "KCCA FC Kampala",
+    "SC Villa Kampala",
+    "Express FC Kampala",
+    "BUL FC Jinja",
+    "Kitara FC"
+  ],
+  "Ukraine": [
+    "FC Shakhtar Donetsk",
+    "FC Dynamo Kyiv",
+    "FC Kryvbas Kryvyi Rih",
+    "FC Polissya Zhytomyr",
+    "SC Dnipro-1",
+    "FC Zorya Luhansk"
+  ],
+  "United Arab Emirates": [
+    "Al-Ain FC",
+    "Shabab Al-Ahli Club",
+    "Al-Wasl FC",
+    "Sharjah FC",
+    "Al-Jazira Club",
+    "Al-Wahda FC Abu Dhabi"
+  ],
+  "Uruguay": [
+    "Club Atlético Peñarol",
+    "Club Nacional de Football",
+    "Defensor Sporting Club",
+    "Danubio FC",
+    "Liverpool FC Montevideo",
+    "Montevideo Wanderers FC"
+  ],
+  "USA": [
+    "Inter Miami CF",
+    "Los Angeles Galaxy",
+    "Columbus Crew",
+    "Los Angeles FC (LAFC)",
+    "FC Cincinnati",
+    "Seattle Sounders FC",
+    "New York Red Bulls",
+    "Atlanta United FC"
+  ],
+  "Uzbekistan": [
+    "Pakhtakor Tashkent FK",
+    "Navbahor Namangan",
+    "FC Nasaf Qarshi",
+    "Neftchi Fergana",
+    "FC Bunyodkor Tashkent",
+    "AGMK Olmaliq"
+  ],
+  "Venezuela": [
+    "Deportivo Táchira FC",
+    "Caracas FC",
+    "Academia Puerto Cabello",
+    "Zamora FC",
+    "Portuguesa FC",
+    "Metropolitanos FC"
+  ],
+  "Vietnam": [
+    "Hà Nội FC",
+    "Công An Hà Nội FC",
+    "Thép Xanh Nam Định FC",
+    "Thể Công-Viettel",
+    "Hải Phòng FC",
+    "Hoàng Anh Gia Lai FC"
+  ],
+  "Wales": [
+    "The New Saints FC (TNS)",
+    "Connah's Quay Nomads FC",
+    "Penybont FC",
+    "Bala Town FC",
+    "Newtown AFC",
+    "Cardiff Metropolitan University FC"
+  ],
+  "World": [
+    "Argentina National Team",
+    "France National Team",
+    "Brazil National Team",
+    "England National Team",
+    "Spain National Team",
+    "Germany National Team",
+    "Italy National Team",
+    "Netherlands National Team"
+  ]
+};
+
+function getCountryClubs(countryOrLeague) {
+  if (!countryOrLeague) return [];
+  const query = countryOrLeague.trim().toLowerCase();
+
+  // 1. Direct match by country key in COUNTRY_CLUBS_DATA
+  for (const [cName, clubs] of Object.entries(COUNTRY_CLUBS_DATA)) {
+    if (cName.toLowerCase() === query) {
+      return hydrateCountryClubs(cName, clubs, countryOrLeague);
+    }
+  }
+
+  // 2. Look up which country in COUNTRY_LEAGUES_DATA features this league (skip overly generic names that occur in multiple countries)
+  const genericNames = ['premier league', 'championship', 'league one', 'league two', 'superliga', 'ligue 1', 'ligue 2', 'serie a', 'serie b', 'cup', 'fa cup', 'national league'];
+  if (!genericNames.includes(query) && typeof COUNTRY_LEAGUES_DATA !== 'undefined' && Array.isArray(COUNTRY_LEAGUES_DATA)) {
+    const lEntry = COUNTRY_LEAGUES_DATA.find(c => c.leagues && c.leagues.some(l => l.toLowerCase() === query || (query.length > 5 && query.includes(l.toLowerCase()))));
+    if (lEntry && COUNTRY_CLUBS_DATA[lEntry.country]) {
+      return hydrateCountryClubs(lEntry.country, COUNTRY_CLUBS_DATA[lEntry.country], countryOrLeague);
+    }
+  }
+
+  // 3. Partial country match (only if query length >= 4 to prevent false matches)
+  if (query.length >= 4) {
+    for (const [cName, clubs] of Object.entries(COUNTRY_CLUBS_DATA)) {
+      if (cName.toLowerCase().includes(query) || query.includes(cName.toLowerCase())) {
+        return hydrateCountryClubs(cName, clubs, countryOrLeague);
+      }
+    }
+  }
+
+  return [];
+}
+
+function hydrateCountryClubs(countryName, rawNames, leagueName) {
+  let countryEmoji = '⚽';
+  let primaryLeague = leagueName || 'Premier League';
+
+  if (typeof COUNTRY_LEAGUES_DATA !== 'undefined' && Array.isArray(COUNTRY_LEAGUES_DATA)) {
+    const cEntry = COUNTRY_LEAGUES_DATA.find(c => c.country.toLowerCase() === countryName.toLowerCase());
+    if (cEntry) {
+      countryEmoji = cEntry.emoji || '⚽';
+      if (!leagueName || leagueName === countryName) {
+        primaryLeague = (cEntry.leagues && cEntry.leagues[0]) ? cEntry.leagues[0] : 'National League';
+      }
+    }
+  }
+
+  const logos = ['⚽', '🔵', '🔴', '⚪', '🟢', '🟡', '🟣', '🟠', '🦁', '🦅', '⭐', '🛡️'];
+
+  return rawNames.map((name, idx) => {
+    // Check if GLOBAL_CLUBS already has this club
+    const existing = (typeof GLOBAL_CLUBS !== 'undefined' && Array.isArray(GLOBAL_CLUBS))
+      ? GLOBAL_CLUBS.find(c => c.name.toLowerCase() === name.toLowerCase())
+      : null;
+
+    if (existing) {
+      return {
+        ...existing,
+        country: countryName,
+        flag: countryEmoji
+      };
+    }
+
+    const wins = idx < 2 ? 2 : idx < 4 ? 1 : 0;
+    const draws = (idx === 2 || idx === 3 || idx === 4) ? 1 : 0;
+    const losses = idx >= 4 ? (draws ? 1 : 2) : 0;
+    const points = wins * 3 + draws;
+
+    return {
+      name: name,
+      country: countryName,
+      flag: countryEmoji,
+      league: primaryLeague,
+      logo: logos[idx % logos.length],
+      points: points,
+      wins: wins,
+      draws: draws,
+      losses: losses,
+      matchesPlayed: 2
+    };
+  });
+}
+
+try { if (typeof COUNTRY_CLUBS_DATA !== 'undefined') window.COUNTRY_CLUBS_DATA = COUNTRY_CLUBS_DATA; } catch(e) {}
+try { if (typeof getCountryClubs !== 'undefined') window.getCountryClubs = getCountryClubs; } catch(e) {}
+
 const COUNTRY_LEAGUES_DATA = [
   { country: "Africa", emoji: "🌍", leagues: ["CAF Champions League", "CAF Confederation Cup", "Africa Cup of Nations"] },
   { country: "Albania", emoji: "🇦🇱", leagues: ["Superliga", "Kupa e Shqipërisë"] },
@@ -1081,6 +2325,8 @@ try { if (typeof LEAGUE_STATS_DATA !== 'undefined') window.LEAGUE_STATS_DATA = L
 try { if (typeof DAILY_TIPS !== 'undefined') window.DAILY_TIPS = DAILY_TIPS; } catch (e) { }
 try { if (typeof HOT_TRENDS !== 'undefined') window.HOT_TRENDS = HOT_TRENDS; } catch (e) { }
 try { if (typeof VALUE_BETS !== 'undefined') window.VALUE_BETS = VALUE_BETS; } catch (e) { }
+try { if (typeof COUNTRY_CLUBS_DATA !== 'undefined') window.COUNTRY_CLUBS_DATA = COUNTRY_CLUBS_DATA; } catch (e) { }
+try { if (typeof getCountryClubs !== 'undefined') window.getCountryClubs = getCountryClubs; } catch (e) { }
 try { if (typeof COUNTRY_LEAGUES_DATA !== 'undefined') window.COUNTRY_LEAGUES_DATA = COUNTRY_LEAGUES_DATA; } catch (e) { }
 try { if (typeof TOP_LEAGUES_DATA !== 'undefined') window.TOP_LEAGUES_DATA = TOP_LEAGUES_DATA; } catch (e) { }
 try { if (typeof GLOBAL_CLUBS !== 'undefined') window.GLOBAL_CLUBS = GLOBAL_CLUBS; } catch (e) { }

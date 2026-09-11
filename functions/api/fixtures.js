@@ -10,7 +10,8 @@ export async function onRequest(context) {
   const cache = caches.default;
   const url = new URL(context.request.url);
   const live = url.searchParams.get('live');
-  const league = url.searchParams.get('league') || (live ? '' : '39');
+  const country = (url.searchParams.get('country') || '').toLowerCase().trim();
+  const league = url.searchParams.get('league') || (live ? '' : (!country || country === 'england' ? '39' : ''));
   const next = url.searchParams.get('next') || '15';
 
   const cacheKey = new Request(url.toString());

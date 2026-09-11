@@ -25,15 +25,15 @@
     content="DeepPredictBet - Premium AI-powered football predictions, live match analytics, head-to-head stats, and tactical scout briefings.">
   <meta name="build-version" content="2026.08.10.1230">
   
-  <!-- Favicon & Mobile App Icons (Option 1: DPB Tricolor Monogram) -->
-  <link rel="icon" type="image/x-icon" href="/favicon.ico">
-  <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
-  <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
-  <link rel="icon" type="image/png" sizes="48x48" href="/favicon-48x48.png">
-  <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
-  <link rel="manifest" href="/site.webmanifest">
-  <meta name="theme-color" content="#0f172a">
-  <meta name="msapplication-TileColor" content="#0f172a">
+  <!-- Favicon & Mobile App Icons (Option 2: DPB Monogram with Obsidian & Royal Blue Football Background) -->
+  <link rel="icon" type="image/x-icon" href="/favicon.ico?v=20261026_opt2">
+  <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png?v=20261026_opt2">
+  <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png?v=20261026_opt2">
+  <link rel="icon" type="image/png" sizes="48x48" href="/favicon-48x48.png?v=20261026_opt2">
+  <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png?v=20261026_opt2">
+  <link rel="manifest" href="/site.webmanifest?v=20261026_opt2">
+  <meta name="theme-color" content="#080b11">
+  <meta name="msapplication-TileColor" content="#080b11">
 
   <link rel="stylesheet" href="css/main.css?v=202608101230">
 
@@ -93,12 +93,10 @@
           title="Open Menu Drawer">
           ☰
         </button>
-        <a href="#" class="logo"
-          style="text-transform: none; text-decoration: none; display: inline-flex; align-items: center;">
-          <span class="brand-logo-text"><span
-              class="brand-deep">Deep</span><span
-              class="brand-predict">Predict</span><span
-              class="brand-bet">Bet</span></span>
+        <a href="#predictions" class="logo" onclick="if(typeof navigateToPage==='function'){navigateToPage('predictions');}else if(typeof handleRouteNavigation==='function'){handleRouteNavigation();}else{window.location.hash='#predictions';}"
+          style="text-transform: none; text-decoration: none; display: inline-flex; align-items: center; cursor: pointer;" title="DeepPredictBet Home">
+          <img src="/assets/logo-3d.png?v=20261026_opt3_pure" alt="DeepPredictBet" class="brand-logo-img">
+          <span class="sr-only" style="position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0,0,0,0); border: 0;">DeepPredictBet</span>
         </a>
       </div>
       <nav>
@@ -356,11 +354,10 @@
     <div
       style="position: relative; overflow: hidden; padding: 26px 18px; min-height: 86px; border-bottom: 1px solid rgba(255, 255, 255, 0.1); display: flex; align-items: center; justify-content: space-between; background: linear-gradient(135deg, #1d4ed8 0%, #1e40af 50%, #0f172a 100%); box-shadow: 0 4px 20px rgba(29, 78, 216, 0.4);">
 
-      <!-- DeepPredictBet Background Watermark Logo -->
+      <!-- DeepPredictBet 3D Watermark Logo -->
       <div
-        style="position: absolute; right: 15px; top: 50%; transform: translateY(-50%); font-size: 1.45rem; pointer-events: none; white-space: nowrap; user-select: none; opacity: 0.5;">
-        <span class="brand-logo-text"><span class="brand-deep">Deep</span><span
-            class="brand-predict">Predict</span><span class="brand-bet">Bet</span></span>
+        style="position: absolute; right: 15px; top: 50%; transform: translateY(-50%); pointer-events: none; white-space: nowrap; user-select: none; opacity: 0.75;">
+        <img src="/assets/logo-3d.png?v=20261026_opt3_pure" alt="DeepPredictBet" style="height: 34px; width: auto; object-fit: contain; filter: drop-shadow(0 2px 10px rgba(0,0,0,0.5));">
       </div>
 
       <!-- User Info Row -->
@@ -2792,7 +2789,7 @@
               </div>
 
               <!-- Audit Button -->
-              <button class="btn btn-primary" onclick="runBetDoctorAudit()"
+              <button class="btn btn-primary" id="btn-run-doctor-audit" onclick="if(typeof window.runBetDoctorAudit==='function'){window.runBetDoctorAudit();}else if(typeof runBetDoctorAudit==='function'){runBetDoctorAudit();}"
                 style="height: 44px; padding: 0 24px; font-size: 0.85rem; font-weight: 800; background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%); border: 1px solid #3b82f6; box-shadow: 0 4px 14px rgba(37,99,235,0.45); cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; text-transform: uppercase;">
                 🩺 Audit Ticket Health
               </button>
@@ -2804,13 +2801,13 @@
               style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap; margin-bottom: 20px; border-top: 1px solid rgba(255,255,255,0.08); padding-top: 14px;">
               <span style="font-size: 0.72rem; color: var(--text-secondary); font-weight: 600;">Try Sample
                 Tickets:</span>
-              <button onclick="loadDoctorSample('highrisk')"
+              <button onclick="if(typeof window.loadDoctorSample==='function'){window.loadDoctorSample('highrisk');}else if(typeof loadDoctorSample==='function'){loadDoctorSample('highrisk');}"
                 style="background: rgba(239, 68, 68, 0.15); border: 1px solid rgba(239, 68, 68, 0.4); color: #f87171; font-size: 0.72rem; font-weight: 700; padding: 6px 12px; border-radius: 4px; cursor: pointer;">⚠️
                 High Risk Ticket (58% Health)</button>
-              <button onclick="loadDoctorSample('moderate')"
+              <button onclick="if(typeof window.loadDoctorSample==='function'){window.loadDoctorSample('moderate');}else if(typeof loadDoctorSample==='function'){loadDoctorSample('moderate');}"
                 style="background: rgba(245, 158, 11, 0.15); border: 1px solid rgba(245, 158, 11, 0.4); color: #fbbf24; font-size: 0.72rem; font-weight: 700; padding: 6px 12px; border-radius: 4px; cursor: pointer;">🟡
                 Moderate Ticket (74% Health)</button>
-              <button onclick="loadDoctorSample('safe')"
+              <button onclick="if(typeof window.loadDoctorSample==='function'){window.loadDoctorSample('safe');}else if(typeof loadDoctorSample==='function'){loadDoctorSample('safe');}"
                 style="background: rgba(16, 185, 129, 0.15); border: 1px solid rgba(16, 185, 129, 0.4); color: #34d399; font-size: 0.72rem; font-weight: 700; padding: 6px 12px; border-radius: 4px; cursor: pointer;">✅
                 Safe Ticket (92% Health)</button>
             </div>
@@ -3282,7 +3279,7 @@
               <div class="form-group" style="display: flex; flex-direction: column; gap: 6px;">
                 <label for="filt-market-select"
                   style="font-size: 0.75rem; font-weight: 600; color: var(--text-secondary);">Betting Market</label>
-                <select id="filt-market-select" onchange="onFilterMarketChange()"
+                <select id="filt-market-select" onchange="if(typeof onFilterMarketChange==='function') onFilterMarketChange(); if(typeof runAdvancedFilters==='function') runAdvancedFilters();"
                   style="background: var(--bg-dark); border: 1px solid var(--border-color); border-radius: var(--radius-sm); padding: 8px; color: var(--text-primary); outline: none; cursor: pointer; font-size: 0.8rem;">
                   <option value="all">All Predictions</option>
                   <option value="1x2">1X2 Match Winner</option>
@@ -3297,7 +3294,7 @@
                 <label for="filt-submarket-select"
                   style="font-size: 0.75rem; font-weight: 600; color: var(--text-secondary);">Prediction
                   Criteria</label>
-                <select id="filt-submarket-select"
+                <select id="filt-submarket-select" onchange="if(typeof runAdvancedFilters==='function') runAdvancedFilters();"
                   style="background: var(--bg-dark); border: 1px solid var(--border-color); border-radius: var(--radius-sm); padding: 8px; color: var(--text-primary); outline: none; cursor: pointer; font-size: 0.8rem;">
                   <option value="any">Any Outcome</option>
                 </select>
@@ -3306,7 +3303,7 @@
               <div class="form-group" style="display: flex; flex-direction: column; gap: 6px;">
                 <label for="filt-league-select"
                   style="font-size: 0.75rem; font-weight: 600; color: var(--text-secondary);">League Selection</label>
-                <select id="filt-league-select"
+                <select id="filt-league-select" onchange="if(typeof runAdvancedFilters==='function') runAdvancedFilters();"
                   style="background: var(--bg-dark); border: 1px solid var(--border-color); border-radius: var(--radius-sm); padding: 8px; color: var(--text-primary); outline: none; cursor: pointer; font-size: 0.8rem;">
                   <option value="all">All Leagues</option>
                 </select>
@@ -3324,7 +3321,7 @@
                   <span id="filt-win-val" style="color: var(--primary); font-weight: 700;">40%</span></label>
                 <input type="range" id="filt-win-slider" min="40" max="95" value="40" step="5"
                   style="accent-color: var(--primary); cursor: pointer;"
-                  oninput="document.getElementById('filt-win-val').innerText = this.value + '%'">
+                  oninput="document.getElementById('filt-win-val').innerText = this.value + '%'; if(typeof runAdvancedFilters==='function') runAdvancedFilters();">
               </div>
 
               <div class="form-group" style="display: flex; flex-direction: column; gap: 6px;">
@@ -3332,18 +3329,20 @@
                   <span id="filt-conf-val" style="color: var(--primary); font-weight: 700;">60%</span></label>
                 <input type="range" id="filt-conf-slider" min="50" max="95" value="60" step="5"
                   style="accent-color: var(--primary); cursor: pointer;"
-                  oninput="document.getElementById('filt-conf-val').innerText = this.value + '%'">
+                  oninput="document.getElementById('filt-conf-val').innerText = this.value + '%'; if(typeof runAdvancedFilters==='function') runAdvancedFilters();">
               </div>
 
               <div class="form-group" style="display: flex; gap: 10px;">
                 <div style="flex: 1; display: flex; flex-direction: column; gap: 4px;">
                   <label style="font-size: 0.7rem; font-weight: 600; color: var(--text-secondary);">Min Odds</label>
                   <input type="number" id="filt-odds-min" step="0.05" min="1.0" value="1.10"
+                    oninput="if(typeof runAdvancedFilters==='function') runAdvancedFilters();"
                     style="background: var(--bg-dark); border: 1px solid var(--border-color); border-radius: var(--radius-sm); padding: 8px; color: var(--text-primary); font-size: 0.8rem; width: 100%;">
                 </div>
                 <div style="flex: 1; display: flex; flex-direction: column; gap: 4px;">
                   <label style="font-size: 0.7rem; font-weight: 600; color: var(--text-secondary);">Max Odds</label>
                   <input type="number" id="filt-odds-max" step="0.1" min="1.0" value="6.00"
+                    oninput="if(typeof runAdvancedFilters==='function') runAdvancedFilters();"
                     style="background: var(--bg-dark); border: 1px solid var(--border-color); border-radius: var(--radius-sm); padding: 8px; color: var(--text-primary); font-size: 0.8rem; width: 100%;">
                 </div>
               </div>
@@ -3360,7 +3359,7 @@
                   <span id="filt-form-val" style="color: var(--primary); font-weight: 700;">40%</span></label>
                 <input type="range" id="filt-form-slider" min="30" max="90" value="40" step="5"
                   style="accent-color: var(--primary); cursor: pointer;"
-                  oninput="document.getElementById('filt-form-val').innerText = this.value + '%'">
+                  oninput="document.getElementById('filt-form-val').innerText = this.value + '%'; if(typeof runAdvancedFilters==='function') runAdvancedFilters();">
               </div>
 
               <div class="form-group" style="display: flex; gap: 10px;">
@@ -3368,12 +3367,14 @@
                   <label style="font-size: 0.7rem; font-weight: 600; color: var(--text-secondary);">Avg Goals
                     Scored</label>
                   <input type="number" id="filt-avg-goals-scored" step="0.1" min="0.0" value="1.0"
+                    oninput="if(typeof runAdvancedFilters==='function') runAdvancedFilters();"
                     style="background: var(--bg-dark); border: 1px solid var(--border-color); border-radius: var(--radius-sm); padding: 8px; color: var(--text-primary); font-size: 0.8rem; width: 100%;">
                 </div>
                 <div style="flex: 1; display: flex; flex-direction: column; gap: 4px;">
                   <label style="font-size: 0.7rem; font-weight: 600; color: var(--text-secondary);">Avg Goals
                     Conceded</label>
                   <input type="number" id="filt-avg-goals-conceded" step="0.1" min="0.0" value="2.0"
+                    oninput="if(typeof runAdvancedFilters==='function') runAdvancedFilters();"
                     style="background: var(--bg-dark); border: 1px solid var(--border-color); border-radius: var(--radius-sm); padding: 8px; color: var(--text-primary); font-size: 0.8rem; width: 100%;">
                 </div>
               </div>
@@ -3383,11 +3384,13 @@
                   <label style="font-size: 0.7rem; font-weight: 600; color: var(--text-secondary);">Expected Goals
                     (xG)</label>
                   <input type="number" id="filt-xg-min" step="0.1" min="0.0" value="0.5"
+                    oninput="if(typeof runAdvancedFilters==='function') runAdvancedFilters();"
                     style="background: var(--bg-dark); border: 1px solid var(--border-color); border-radius: var(--radius-sm); padding: 8px; color: var(--text-primary); font-size: 0.8rem; width: 100%;">
                 </div>
                 <div style="flex: 1; display: flex; flex-direction: column; gap: 4px;">
                   <label style="font-size: 0.7rem; font-weight: 600; color: var(--text-secondary);">Avg Corners</label>
                   <input type="number" id="filt-corners-min" step="0.5" min="4.0" value="6.0"
+                    oninput="if(typeof runAdvancedFilters==='function') runAdvancedFilters();"
                     style="background: var(--bg-dark); border: 1px solid var(--border-color); border-radius: var(--radius-sm); padding: 8px; color: var(--text-primary); font-size: 0.8rem; width: 100%;">
                 </div>
               </div>
@@ -3395,9 +3398,13 @@
 
           </div>
 
-          <div style="display: flex; justify-content: flex-end; margin-bottom: 24px; margin-top: -12px;">
-            <button class="btn btn-primary" style="height: 42px; padding: 0 32px; font-weight: 700; font-size: 0.9rem;"
-              onclick="runAdvancedFilters()">
+          <div style="display: flex; justify-content: flex-end; gap: 12px; margin-bottom: 24px; margin-top: -12px;">
+            <button class="btn btn-secondary" style="height: 42px; padding: 0 20px; font-weight: 600; font-size: 0.85rem;"
+              onclick="if(typeof resetAdvancedFilters==='function') resetAdvancedFilters();">
+              ↺ Reset Defaults
+            </button>
+            <button class="btn btn-primary" id="btn-apply-filters" style="height: 42px; padding: 0 32px; font-weight: 700; font-size: 0.9rem;"
+              onclick="if(typeof runAdvancedFilters==='function') runAdvancedFilters();">
               ⚡ Apply Statistical Filters
             </button>
           </div>
@@ -4254,10 +4261,10 @@
     <div class="container footer-top-row" style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 16px;">
       <!-- Left side: DeepPredictBet Logo -->
       <div class="footer-logo-wrap" style="display: flex; align-items: center;">
-        <span class="footer-brand-name brand-logo-text" style="font-size: 1.45rem;"><span
-            class="brand-deep">Deep</span><span
-            class="brand-predict">Predict</span><span
-            class="brand-bet">Bet</span></span>
+        <a href="#predictions" onclick="if(typeof navigateToPage==='function'){navigateToPage('predictions');}else if(typeof handleRouteNavigation==='function'){handleRouteNavigation();}else{window.location.hash='#predictions';}" style="text-decoration: none; display: inline-flex; align-items: center; cursor: pointer;" title="DeepPredictBet Home">
+          <img src="/assets/logo-3d.png?v=20261026_opt3_pure" alt="DeepPredictBet" style="height: 42px; width: auto; object-fit: contain; filter: drop-shadow(0 2px 10px rgba(0,0,0,0.5));">
+          <span class="sr-only" style="position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0,0,0,0); border: 0;">DeepPredictBet</span>
+        </a>
       </div>
 
       <!-- Extreme Right: VIP Packages, VIP Club & Manage Features -->
@@ -5820,12 +5827,12 @@
   </nav>
 
   <!-- --- LOAD SCRIPTS (Classic Day 1 Architecture) --- -->
-  <script src="js/data.js?v=20261026_doctor1"></script>
-  <script src="js/vipManager.js?v=20261026_doctor1"></script>
-  <script src="js/ui.js?v=20261026_doctor1"></script>
-  <script src="js/router.js?v=20261026_doctor1"></script>
-  <script src="js/app.js?v=20261026_doctor1"></script>
-  <script src="js/liveFixtures.js?v=20261026_doctor1"></script>
+  <script src="js/data.js?v=20261026_sr_eng_bulletproof"></script>
+  <script src="js/vipManager.js?v=20261026_sr_eng_bulletproof"></script>
+  <script src="js/ui.js?v=20261026_sr_eng_bulletproof"></script>
+  <script src="js/router.js?v=20261026_sr_eng_bulletproof"></script>
+  <script src="js/app.js?v=20261026_sr_eng_bulletproof"></script>
+  <script src="js/liveFixtures.js?v=20261026_sr_eng_bulletproof"></script>
   <script>
     // Clean global helper bindings
     window.addEventListener('DOMContentLoaded', () => {
