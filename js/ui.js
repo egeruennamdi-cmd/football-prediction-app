@@ -280,18 +280,18 @@ function renderMatchCards(fixtures) {
       </div>
 
       <div class="teams-wrapper">
-        <div class="team">
+        <div class="team home-team">
           <div class="team-logo">${homeLogo}</div>
           <span class="team-name" title="${homeName}">${homeName}</span>
           <div style="display: flex; gap: 3px; margin-top: 4px;" class="form-badges-container">${homeFormHtml}</div>
         </div>
 
         <div class="vs-divider">
-          <span style="font-size: 0.75rem; color: var(--text-muted);">vs</span>
+          <span style="font-size: 0.75rem; color: var(--text-muted); font-weight: 700; text-transform: uppercase;">vs</span>
           <span class="vs-scores">${scoresDisplay}</span>
         </div>
 
-        <div class="team">
+        <div class="team away-team">
           <div class="team-logo">${awayLogo}</div>
           <span class="team-name" title="${awayName}">${awayName}</span>
           <div style="display: flex; gap: 3px; margin-top: 4px;" class="form-badges-container">${awayFormHtml}</div>
@@ -321,22 +321,24 @@ function renderMatchCards(fixtures) {
       </div>
 
       <div class="insight-row ${match.isPremium ? 'premium' : ''}">
-        <span style="font-size: 0.75rem; color: var(--text-muted); font-weight: 500; margin-right: 4px;" class="mobile-only-label">Tip:</span>
-        <span>${typeof getMatchTip === 'function' ? getMatchTip(match) : 'Home Win (1)'}</span>
+        <span style="font-size: 0.75rem; color: var(--text-muted); font-weight: 600; display: flex; align-items: center; gap: 5px;">
+          <span>💡</span> AI Tip:
+        </span>
+        <span style="font-weight: 700;">${typeof getMatchTip === 'function' ? getMatchTip(match) : 'Home Win (1)'}</span>
       </div>
 
       <!-- Statistical Parameters Badges -->
-      <div style="display: flex; flex-wrap: wrap; gap: 6px; margin: 10px 0 6px; border-top: 1px dashed var(--border-color); padding-top: 8px;">
-        <span style="font-size: 0.68rem; padding: 2px 6px; background: rgba(26,104,219,0.06); border: 1px solid rgba(26,104,219,0.12); border-radius: var(--radius-sm); color: var(--primary); font-weight: 600;">
+      <div class="match-params-row">
+        <span class="match-param-pill param-form">
           📈 Form: ${avgForm}%
         </span>
-        <span style="font-size: 0.68rem; padding: 2px 6px; background: rgba(16,185,129,0.06); border: 1px solid rgba(16,185,129,0.12); border-radius: var(--radius-sm); color: var(--secondary); font-weight: 600;">
+        <span class="match-param-pill param-goals">
           ⚽ Goals: ${avgScored.toFixed(1)} / ${avgConceded.toFixed(1)}
         </span>
-        <span style="font-size: 0.68rem; padding: 2px 6px; background: rgba(245,158,11,0.06); border: 1px solid rgba(245,158,11,0.12); border-radius: var(--radius-sm); color: var(--accent-gold); font-weight: 600;">
+        <span class="match-param-pill param-xg">
           🧠 xG: ${avgXG.toFixed(1)}
         </span>
-        <span style="font-size: 0.68rem; padding: 2px 6px; background: rgba(255,255,255,0.03); border: 1px solid var(--border-color); border-radius: var(--radius-sm); color: var(--text-secondary); font-weight: 600;">
+        <span class="match-param-pill param-corners">
           📐 Corners: ${corners}
         </span>
       </div>
@@ -344,11 +346,11 @@ function renderMatchCards(fixtures) {
       <div class="match-footer">
         <div class="confidence-meter">
           <span class="confidence-dot ${confidenceClass}"></span>
-          <span style="color: var(--text-secondary); font-size: 0.75rem;">Conf: <b>${confidenceVal}%</b></span>
+          <span style="color: var(--text-secondary); font-size: 0.78rem;">Conf: <b style="color: var(--text-primary);">${confidenceVal}%</b></span>
         </div>
-        <div style="display: flex; align-items: center; gap: 8px; justify-content: flex-end; width: 100%;">
-          <span style="font-family: var(--font-display); font-weight: 700; font-size: 0.95rem; color: var(--text-primary);" class="desktop-only-odds">@${(typeof getMatchOdds === 'function' && typeof getMatchOdds(match) === 'number' ? getMatchOdds(match) : 1.85).toFixed(2)}</span>
-          <button class="btn btn-primary" onclick="addMatchCardToBetslip('${match.id}', event)" style="padding: 6px 10px; font-size: 0.75rem; height: 32px; font-weight: 700; background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%); border: none; border-radius: var(--radius-sm); color: #fff; cursor: pointer; white-space: nowrap;">
+        <div style="display: flex; align-items: center; gap: 8px; justify-content: flex-end;">
+          <span style="font-family: var(--font-display); font-weight: 800; font-size: 0.95rem; color: var(--accent-gold); background: rgba(245,158,11,0.08); border: 1px solid rgba(245,158,11,0.2); padding: 2px 7px; border-radius: var(--radius-sm);" class="desktop-only-odds">@${(typeof getMatchOdds === 'function' && typeof getMatchOdds(match) === 'number' ? getMatchOdds(match) : 1.85).toFixed(2)}</span>
+          <button class="btn btn-primary" onclick="addMatchCardToBetslip('${match.id}', event)" style="padding: 6px 12px; font-size: 0.75rem; height: 32px; font-weight: 700; background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%); border: none; border-radius: var(--radius-sm); color: #fff; cursor: pointer; white-space: nowrap;">
             ➕ Add to Slip
           </button>
           <button class="btn btn-secondary scout-btn" onclick="openScoutModal('${match.id}')" style="padding: 6px 12px; font-size: 0.8rem; height: 32px;">
