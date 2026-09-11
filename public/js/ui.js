@@ -166,6 +166,23 @@ function getMatchTip(match) {
   return pHome >= pAway ? 'Home Win (1)' : 'Over 1.5 Goals';
 }
 
+// Helper to check if match is completed / outdated
+function isMatchOutdated(match) {
+  if (!match) return true;
+  if (match.isFT || match.isYesterday || match.date === 'yesterday') return true;
+  const status = String(match.status || match.statusShort || '').toUpperCase();
+  if (status === 'FT' || status === 'AET' || status === 'PEN' || status === 'CANC' || status === 'PST' || status === 'ABD') return true;
+  if (typeof match.time === 'string') {
+    const t = match.time.toLowerCase();
+    if (t.includes('ft') || t.includes('yesterday') || t.includes('days ago') || t.includes('weeks ago') || t.includes('finished')) return true;
+  }
+  if (!match.isLive && match.scores && typeof match.scores.home === 'number' && typeof match.scores.away === 'number') {
+    if (match.scores.home > 0 || match.scores.away > 0) return true;
+  }
+  return false;
+}
+if (typeof window !== 'undefined') window.isMatchOutdated = isMatchOutdated;
+
 // Render match cards dynamically
 function renderMatchCards(fixtures) {
   const grid = document.getElementById("fixtures-grid");
@@ -173,6 +190,15 @@ function renderMatchCards(fixtures) {
   grid.innerHTML = "";
 
   const list = Array.isArray(fixtures) ? fixtures : [];
+
+  // Register all matches in universal registry
+  if (!window._matchRegistry) window._matchRegistry = new Map();
+  list.forEach(m => {
+    if (m && m.id) {
+      window._matchRegistry.set(String(m.id), m);
+      if (m.fixtureId) window._matchRegistry.set(String(m.fixtureId), m);
+    }
+  });
 
   if (list.length === 0) {
     grid.innerHTML = `
@@ -350,9 +376,10 @@ function renderMatchCards(fixtures) {
         </div>
         <div style="display: flex; align-items: center; gap: 8px; justify-content: flex-end;">
           <span style="font-family: var(--font-display); font-weight: 800; font-size: 0.95rem; color: var(--accent-gold); background: rgba(245,158,11,0.08); border: 1px solid rgba(245,158,11,0.2); padding: 2px 7px; border-radius: var(--radius-sm);" class="desktop-only-odds">@${(typeof getMatchOdds === 'function' && typeof getMatchOdds(match) === 'number' ? getMatchOdds(match) : 1.85).toFixed(2)}</span>
-          <button class="btn btn-primary" onclick="addMatchCardToBetslip('${match.id}', event)" style="padding: 6px 12px; font-size: 0.75rem; height: 32px; font-weight: 700; background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%); border: none; border-radius: var(--radius-sm); color: #fff; cursor: pointer; white-space: nowrap;">
-            ➕ Add to Slip
-          </button>
+          ${isMatchOutdated(match)
+            ? `<button class="btn btn-secondary add-to-slip-btn outdated-match-btn" onclick="addMatchCardToBetslip('${match.id}', event)" title="Match completed - cannot add to active betslip" style="padding: 6px 10px; font-size: 0.75rem; height: 32px; font-weight: 600; background: rgba(255,255,255,0.06); border: 1px solid var(--border-color); border-radius: var(--radius-sm); color: var(--text-muted); cursor: not-allowed; white-space: nowrap;">🏁 Finished</button>`
+            : `<button class="btn btn-primary add-to-slip-btn" onclick="addMatchCardToBetslip('${match.id}', event)" style="padding: 6px 12px; font-size: 0.75rem; height: 32px; font-weight: 700; background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%); border: none; border-radius: var(--radius-sm); color: #fff; cursor: pointer; white-space: nowrap;">➕ Add to Slip</button>`
+          }
           <button class="btn btn-secondary scout-btn" onclick="openScoutModal('${match.id}')" style="padding: 6px 12px; font-size: 0.8rem; height: 32px;">
             <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="margin-right: 4px; display: inline-block; vertical-align: middle;"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
             Scout
@@ -3179,6 +3206,7 @@ function renderBetslip() {
 
   const betslipList = (window.appState && Array.isArray(window.appState.betslip)) ? window.appState.betslip : [];
   const count = betslipList.length;
+  countBadge.textContent = count;
   countBadge.innerText = count;
 
   if (count === 0) {
@@ -3238,9 +3266,13 @@ function renderBetslip() {
       });
 
       const formattedOdds = (totalOdds > 99999 ? "99,999+" : totalOdds.toFixed(2));
-      if (totalOddsVal) totalOddsVal.innerText = `@${formattedOdds}`;
+      if (totalOddsVal) {
+        totalOddsVal.textContent = `@${formattedOdds}`;
+        totalOddsVal.innerText = `@${formattedOdds}`;
+      }
       if (headerOdds) {
         headerOdds.style.display = "block";
+        headerOdds.textContent = `Total Odds: @${formattedOdds}`;
         headerOdds.innerText = `Total Odds: @${formattedOdds}`;
       }
     }
@@ -8059,6 +8091,12 @@ function buildMatchCardElement(match) {
     return card;
   }
 
+  if (match && match.id) {
+    if (!window._matchRegistry) window._matchRegistry = new Map();
+    window._matchRegistry.set(String(match.id), match);
+    if (match.fixtureId) window._matchRegistry.set(String(match.fixtureId), match);
+  }
+
   const homeName = match.homeTeam?.name || 'Home';
   const awayName = match.awayTeam?.name || 'Away';
   const homeLogo = match.homeTeam?.logo || '⚽';
@@ -8185,9 +8223,10 @@ function buildMatchCardElement(match) {
       </div>
       <div style="display: flex; align-items: center; gap: 8px; justify-content: flex-end; width: 100%;">
         <span style="font-family: var(--font-display); font-weight: 700; font-size: 0.95rem; color: var(--text-primary);" class="desktop-only-odds">@${(typeof getMatchOdds === 'function' && typeof getMatchOdds(match) === 'number' ? getMatchOdds(match) : 1.85).toFixed(2)}</span>
-        <button class="btn btn-primary" onclick="addMatchCardToBetslip('${match.id}', event)" style="padding: 6px 10px; font-size: 0.75rem; height: 32px; font-weight: 700; background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%); border: none; border-radius: var(--radius-sm); color: #fff; cursor: pointer; white-space: nowrap;">
-          ➕ Add to Slip
-        </button>
+        ${isMatchOutdated(match)
+          ? `<button class="btn btn-secondary add-to-slip-btn outdated-match-btn" onclick="addMatchCardToBetslip('${match.id}', event)" title="Match completed - cannot add to active betslip" style="padding: 6px 10px; font-size: 0.75rem; height: 32px; font-weight: 600; background: rgba(255,255,255,0.06); border: 1px solid var(--border-color); border-radius: var(--radius-sm); color: var(--text-muted); cursor: not-allowed; white-space: nowrap;">🏁 Finished</button>`
+          : `<button class="btn btn-primary add-to-slip-btn" onclick="addMatchCardToBetslip('${match.id}', event)" style="padding: 6px 10px; font-size: 0.75rem; height: 32px; font-weight: 700; background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%); border: none; border-radius: var(--radius-sm); color: #fff; cursor: pointer; white-space: nowrap;">➕ Add to Slip</button>`
+        }
         <button class="btn btn-secondary scout-btn" onclick="openScoutModal('${match.id}')" style="padding: 6px 12px; font-size: 0.8rem; height: 32px;">
           <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="margin-right: 4px; display: inline-block; vertical-align: middle;"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
           Scout

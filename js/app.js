@@ -122,116 +122,257 @@ function getMatchOdds(match) {
   return parseFloat((1.45 + (seed % 11) * 0.1).toFixed(2));
 }
 
+// --- ROBUST MATCH RESOLUTION & OUTDATED FILTER ENGINE ---
+
+function isMatchOutdated(match) {
+  if (!match) return true;
+
+  // 1. Direct status flags
+  if (match.isFT || match.isYesterday || match.date === 'yesterday') return true;
+  const status = String(match.status || match.statusShort || '').toUpperCase();
+  if (status === 'FT' || status === 'AET' || status === 'PEN' || status === 'CANC' || status === 'PST' || status === 'ABD') {
+    return true;
+  }
+
+  // 2. Time string indicators
+  if (typeof match.time === 'string') {
+    const t = match.time.toLowerCase();
+    if (t.includes('ft') || t.includes('yesterday') || t.includes('days ago') || t.includes('weeks ago') || t.includes('finished')) {
+      return true;
+    }
+  }
+
+  // 3. Final scores with non-live state
+  if (!match.isLive && match.scores && typeof match.scores.home === 'number' && typeof match.scores.away === 'number') {
+    if (match.scores.home > 0 || match.scores.away > 0) return true;
+  }
+
+  // 4. Past timestamp (older than 4 hours without isLive flag)
+  if (match.rawDate && !match.isLive) {
+    const d = new Date(match.rawDate).getTime();
+    if (!isNaN(d) && d < (Date.now() - 4 * 3600 * 1000)) {
+      return true;
+    }
+  }
+
+  return false;
+}
+window.isMatchOutdated = isMatchOutdated;
+
+function findMatchAnywhere(matchId, eventOrElement) {
+  if (!matchId && !eventOrElement) return null;
+  const sId = matchId ? String(matchId).trim() : null;
+
+  // 1. Fast lookup from global match registry Map
+  if (sId && window._matchRegistry && typeof window._matchRegistry.get === 'function') {
+    const regMatch = window._matchRegistry.get(sId);
+    if (regMatch) return regMatch;
+  }
+
+  // 2. Comprehensive search across all global match pools
+  const candidateLists = [
+    (window.currentLeagueMatches && Array.isArray(window.currentLeagueMatches)) ? window.currentLeagueMatches : [],
+    (window.MATCH_DATA && Array.isArray(window.MATCH_DATA)) ? window.MATCH_DATA : [],
+    (window.LIVE_FIXTURES_POOL && Array.isArray(window.LIVE_FIXTURES_POOL)) ? window.LIVE_FIXTURES_POOL : [],
+    (window.DYNAMIC_MATCH_DATA && Array.isArray(window.DYNAMIC_MATCH_DATA)) ? window.DYNAMIC_MATCH_DATA : [],
+    (window.TOP_LEAGUES_FIXTURES_POOL && Array.isArray(window.TOP_LEAGUES_FIXTURES_POOL)) ? window.TOP_LEAGUES_FIXTURES_POOL : [],
+    (window.AUTHENTIC_TOP_LEAGUES_FIXTURES && Array.isArray(window.AUTHENTIC_TOP_LEAGUES_FIXTURES)) ? window.AUTHENTIC_TOP_LEAGUES_FIXTURES : [],
+    (window.ALL_FIXTURES_CACHE && Array.isArray(window.ALL_FIXTURES_CACHE)) ? window.ALL_FIXTURES_CACHE : [],
+    (typeof MATCH_DATA !== 'undefined' && Array.isArray(MATCH_DATA)) ? MATCH_DATA : []
+  ];
+
+  if (sId) {
+    for (let i = 0; i < candidateLists.length; i++) {
+      const list = candidateLists[i];
+      const match = list.find(m => m && (String(m.id) === sId || String(m.fixtureId) === sId));
+      if (match) {
+        if (!window._matchRegistry) window._matchRegistry = new Map();
+        window._matchRegistry.set(sId, match);
+        return match;
+      }
+    }
+  }
+
+  // 3. Fallback: Parse directly from the DOM match-card!
+  let cardEl = null;
+  if (eventOrElement) {
+    if (eventOrElement.nodeType === 1) {
+      cardEl = eventOrElement.closest('.match-card');
+    } else if (eventOrElement.target && eventOrElement.target.closest) {
+      cardEl = eventOrElement.target.closest('.match-card');
+    }
+  }
+  if (!cardEl && sId) {
+    cardEl = document.getElementById('card-' + sId) || document.querySelector(`[data-match-id="${sId}"]`);
+  }
+
+  if (cardEl) {
+    const homeEl = cardEl.querySelector('.home-team .team-name') || cardEl.querySelector('.home-team');
+    const awayEl = cardEl.querySelector('.away-team .team-name') || cardEl.querySelector('.away-team');
+    const homeName = homeEl ? homeEl.textContent.trim() : 'Home Team';
+    const awayName = awayEl ? awayEl.textContent.trim() : 'Away Team';
+
+    const leagueEl = cardEl.querySelector('.league-badge');
+    const leagueName = leagueEl ? leagueEl.textContent.replace(/^[^\w\s]+/, '').trim() : (window.appState?.calLeague || 'League');
+
+    const timeEl = cardEl.querySelector('.match-time');
+    const timeStr = timeEl ? timeEl.textContent.trim() : 'Today, 18:00';
+
+    const oddsEl = cardEl.querySelector('.desktop-only-odds');
+    let parsedOdds = 1.85;
+    if (oddsEl) {
+      const num = parseFloat(oddsEl.textContent.replace(/[^0-9.]/g, ''));
+      if (!isNaN(num) && num > 1.0) parsedOdds = num;
+    }
+
+    const tipEl = cardEl.querySelector('.insight-row span:last-child');
+    const tipStr = tipEl ? tipEl.textContent.trim() : 'Home Win (1)';
+
+    const syntheticMatch = {
+      id: sId || `dom-${Date.now()}-${Math.floor(Math.random() * 1000)}`,
+      league: leagueName,
+      time: timeStr,
+      homeTeam: { name: homeName, logo: '⚽' },
+      awayTeam: { name: awayName, logo: '⚽' },
+      predictions: { home: 45, draw: 25, away: 30 },
+      isLive: timeStr.toLowerCase().includes('live'),
+      isFT: timeStr.toLowerCase().includes('ft') || timeStr.toLowerCase().includes('yesterday'),
+      tip: tipStr,
+      odds: parsedOdds
+    };
+
+    if (sId) {
+      if (!window._matchRegistry) window._matchRegistry = new Map();
+      window._matchRegistry.set(sId, syntheticMatch);
+    }
+    return syntheticMatch;
+  }
+
+  return null;
+}
+window.findMatchAnywhere = findMatchAnywhere;
+
 function addActiveMatchToBetslip() {
   let matchId = window.appState ? window.appState.activeScoutMatchId : null;
-  const matches = (typeof MATCH_DATA !== 'undefined' && MATCH_DATA) ? MATCH_DATA : (window.MATCH_DATA || []);
-  
-  if (!matchId && matches.length > 0) {
-    matchId = matches[0].id;
+  if (!matchId) {
+    const candidate = findMatchAnywhere(null, document.getElementById('scout-modal'));
+    if (candidate) matchId = candidate.id;
   }
   if (!matchId) return;
 
-  if (window.appState.betslip.length >= 40) {
-    alert("⚠️ Maximum limit of 40 selections reached in your active betslip.");
-    return;
-  }
-
-  const match = matches.find(m => m.id === matchId);
-  if (!match) return;
-
-  // Safeguard: reject finished or past matches from active betslip
-  const isPast = match.isFT || match.status === 'FT' || match.statusShort === 'FT' || match.isYesterday || match.date === 'yesterday' || (typeof match.time === 'string' && (match.time.includes('FT') || match.time.includes('Yesterday')));
-  if (isPast) {
-    if (typeof showAppNotification === 'function') {
-      showAppNotification("⚠️ Completed matches cannot be added to the active betslip.");
-    } else {
-      alert("⚠️ Completed matches cannot be added to the active betslip.");
-    }
-    return;
-  }
-
-  const tip = typeof getMatchTip === 'function' ? getMatchTip(match) : 'Home Win (1)';
-  const odds = typeof getMatchOdds === 'function' ? getMatchOdds(match) : 1.85;
-
-  if (window.appState.betslip.some(item => item.matchId === matchId)) {
-    alert("⚠️ This match is already in your active betslip.");
-    return;
-  }
-
-  window.appState.betslip.push({
-    matchId,
-    match,
-    tip,
-    odds
-  });
-
-  if (typeof triggerCloseScoutModal === 'function') triggerCloseScoutModal();
-  renderBetslip();
-  
-  const drawer = document.getElementById("floating-betslip-drawer");
-  if (drawer && !drawer.classList.contains("open")) {
-    drawer.classList.add("open");
+  addMatchCardToBetslip(matchId);
+  if (typeof triggerCloseScoutModal === 'function') {
+    triggerCloseScoutModal();
   }
 }
+window.addActiveMatchToBetslip = addActiveMatchToBetslip;
 
 function addMatchCardToBetslip(matchId, e) {
-  if (e && e.stopPropagation) e.stopPropagation();
+  if (e) {
+    if (typeof e.stopPropagation === 'function') e.stopPropagation();
+    if (typeof e.preventDefault === 'function') e.preventDefault();
+  }
 
   if (!window.appState) window.appState = { betslip: [] };
-  if (!window.appState.betslip) window.appState.betslip = [];
+  if (!Array.isArray(window.appState.betslip)) window.appState.betslip = [];
 
-  if (window.appState.betslip.length >= 40) {
+  const buttonEl = (e && e.target) ? (e.target.closest('button') || e.target) : null;
+  const match = findMatchAnywhere(matchId, e || buttonEl);
+
+  if (!match) {
     if (typeof showAppNotification === 'function') {
-      showAppNotification("⚠️ Maximum limit of 40 selections reached in your active betslip.");
-    } else {
-      alert("⚠️ Maximum limit of 40 selections reached in your active betslip.");
+      showAppNotification("⚠️ Match details could not be loaded. Please try again.");
     }
     return;
   }
 
-  const matches = (typeof MATCH_DATA !== 'undefined' && MATCH_DATA) ? MATCH_DATA : (window.MATCH_DATA || []);
-  const match = matches.find(m => m.id === matchId);
-  if (!match) return;
-
-  // Safeguard: reject finished or past matches from active betslip
-  const isPast = match.isFT || match.status === 'FT' || match.statusShort === 'FT' || match.isYesterday || match.date === 'yesterday' || (typeof match.time === 'string' && (match.time.includes('FT') || match.time.includes('Yesterday')));
-  if (isPast) {
+  // STRICT REQUIREMENT: Only future/upcoming and live matches can be added to the slip!
+  // Outdated or completed matches are strictly rejected.
+  if (isMatchOutdated(match)) {
     if (typeof showAppNotification === 'function') {
-      showAppNotification("⚠️ Completed matches cannot be added to the active betslip.");
+      showAppNotification("⚠️ Outdated or completed matches cannot be added to the active betslip.");
     } else {
-      alert("⚠️ Completed matches cannot be added to the active betslip.");
+      alert("⚠️ Outdated or completed matches cannot be added to the active betslip.");
     }
     return;
   }
 
-  if (window.appState.betslip.some(item => item.matchId === matchId)) {
+  // Betslip capacity check (up to 50 selections)
+  if (window.appState.betslip.length >= 50) {
+    const drawer = document.getElementById("floating-betslip-drawer");
+    if (drawer && !drawer.classList.contains("open")) {
+      drawer.classList.add("open");
+    }
     if (typeof showAppNotification === 'function') {
-      showAppNotification(`ℹ️ ${match.homeTeam.name} vs ${match.awayTeam.name} is already in your betslip.`);
+      showAppNotification("⚠️ Maximum limit of 50 selections reached in your active betslip.");
     } else {
-      alert(`ℹ️ ${match.homeTeam.name} vs ${match.awayTeam.name} is already in your betslip.`);
+      alert("⚠️ Maximum limit of 50 selections reached in your active betslip.");
     }
     return;
   }
 
-  const tip = typeof getMatchTip === 'function' ? getMatchTip(match) : 'Home Win (1)';
-  const odds = typeof getMatchOdds === 'function' ? getMatchOdds(match) : 1.85;
+  // Duplicate selection detection
+  const homeName = match.homeTeam?.name || 'Home';
+  const awayName = match.awayTeam?.name || 'Away';
+  const matchKey = `${homeName.toLowerCase()}-${awayName.toLowerCase()}`;
 
-  window.appState.betslip.push({
-    matchId,
-    match,
-    tip,
-    odds
+  const alreadyInSlip = window.appState.betslip.some(item => {
+    if (String(item.matchId) === String(match.id)) return true;
+    if (item.match && String(item.match.id) === String(match.id)) return true;
+    const h = (item.match?.homeTeam?.name || item.homeTeam || '').toLowerCase();
+    const a = (item.match?.awayTeam?.name || item.awayTeam || '').toLowerCase();
+    return h && a && `${h}-${a}` === matchKey;
   });
 
-  renderBetslip();
+  if (alreadyInSlip) {
+    const drawer = document.getElementById("floating-betslip-drawer");
+    if (drawer && !drawer.classList.contains("open")) {
+      drawer.classList.add("open");
+    }
+    if (typeof showAppNotification === 'function') {
+      showAppNotification(`ℹ️ ${homeName} vs ${awayName} is already in your active betslip.`);
+    } else {
+      alert(`ℹ️ ${homeName} vs ${awayName} is already in your active betslip.`);
+    }
+    return;
+  }
+
+  const tip = match.tip || (typeof getMatchTip === 'function' ? getMatchTip(match) : 'Home Win (1)');
+  const odds = (typeof match.odds === 'number' && !isNaN(match.odds) && match.odds > 1.0)
+    ? match.odds
+    : (typeof getMatchOdds === 'function' ? getMatchOdds(match) : 1.85);
+
+  window.appState.betslip.push({
+    matchId: String(match.id),
+    match: match,
+    tip: tip,
+    odds: odds
+  });
+
+  if (typeof renderBetslip === 'function') {
+    renderBetslip();
+  }
 
   const drawer = document.getElementById("floating-betslip-drawer");
   if (drawer && !drawer.classList.contains("open")) {
     drawer.classList.add("open");
+  }
+
+  // Visual interactive feedback on button
+  if (buttonEl) {
+    const originalContent = buttonEl.innerHTML;
+    buttonEl.innerHTML = `✓ Added`;
+    buttonEl.style.background = 'linear-gradient(135deg, #059669 0%, #10b981 100%)';
+    buttonEl.style.boxShadow = '0 0 12px rgba(16, 185, 129, 0.5)';
+    setTimeout(() => {
+      buttonEl.innerHTML = originalContent;
+      buttonEl.style.background = 'linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%)';
+      buttonEl.style.boxShadow = 'none';
+    }, 1800);
   }
 
   if (typeof showAppNotification === 'function') {
-    showAppNotification(`✅ Added ${match.homeTeam.name} vs ${match.awayTeam.name} to active betslip!`);
+    showAppNotification(`✅ Added ${homeName} vs ${awayName} (@${odds.toFixed(2)}) to active betslip!`);
   }
 }
 window.addMatchCardToBetslip = addMatchCardToBetslip;
@@ -671,7 +812,7 @@ function removeBetslipItem(indexOrId, event) {
   } else if (typeof indexOrId === 'string' && indexOrId.trim() !== '' && !isNaN(Number(indexOrId))) {
     idx = Number(indexOrId);
   } else if (typeof indexOrId === 'string') {
-    idx = window.appState.betslip.findIndex(item => item.matchId === indexOrId || (item.match && item.match.id === indexOrId));
+    idx = window.appState.betslip.findIndex(item => String(item.matchId) === String(indexOrId) || (item.match && String(item.match.id) === String(indexOrId)));
   }
 
   if (idx >= 0 && idx < window.appState.betslip.length) {
@@ -780,10 +921,10 @@ function renderBetslip() {
   if (!countBadge) return;
 
   const count = window.appState.betslip.length;
+  countBadge.textContent = count;
   countBadge.innerText = count;
 
   if (count === 0) {
-    if (emptyState) emptyState.style.display = "block";
     if (emptyState) emptyState.style.display = "block";
     if (itemsContainer) itemsContainer.style.display = "none";
     if (summaryActions) summaryActions.style.display = "none";
@@ -842,9 +983,13 @@ function renderBetslip() {
       });
 
       const formattedOdds = (totalOdds > 99999 ? "99,999+" : totalOdds.toFixed(2));
-      if (totalOddsVal) totalOddsVal.innerText = `@${formattedOdds}`;
+      if (totalOddsVal) {
+        totalOddsVal.textContent = `@${formattedOdds}`;
+        totalOddsVal.innerText = `@${formattedOdds}`;
+      }
       if (headerOdds) {
         headerOdds.style.display = "block";
+        headerOdds.textContent = `Total Odds: @${formattedOdds}`;
         headerOdds.innerText = `Total Odds: @${formattedOdds}`;
       }
     }
