@@ -3848,8 +3848,33 @@ header {
 
 .expanded-tips-chips {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
-  gap: 6px;
+  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+  gap: 8px;
+  max-height: 240px;
+  overflow-y: auto;
+  padding-right: 8px;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(59, 130, 246, 0.65) rgba(15, 23, 42, 0.7);
+}
+
+.expanded-tips-chips::-webkit-scrollbar {
+  width: 7px;
+}
+
+.expanded-tips-chips::-webkit-scrollbar-track {
+  background: rgba(15, 23, 42, 0.7);
+  border-radius: 4px;
+  border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.expanded-tips-chips::-webkit-scrollbar-thumb {
+  background: linear-gradient(180deg, rgba(59, 130, 246, 0.8), rgba(37, 99, 235, 0.8));
+  border-radius: 4px;
+  box-shadow: 0 0 8px rgba(59, 130, 246, 0.5);
+}
+
+.expanded-tips-chips::-webkit-scrollbar-thumb:hover {
+  background: linear-gradient(180deg, #3b82f6, #2563eb);
 }
 
 .expanded-tip-chip {
