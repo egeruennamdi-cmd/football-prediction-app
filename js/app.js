@@ -453,7 +453,7 @@ function formatStandardMatchDateString(rawTime, rawDate, isLive) {
 window.formatStandardMatchDateString = formatStandardMatchDateString;
 
 // ── Shared Pool of Authentic Future Top Leagues Fixtures ──
-const AUTHENTIC_TOP_LEAGUES_FIXTURES = [
+var AUTHENTIC_TOP_LEAGUES_FIXTURES = (typeof window !== 'undefined' && window.AUTHENTIC_TOP_LEAGUES_FIXTURES) ? window.AUTHENTIC_TOP_LEAGUES_FIXTURES : [
   // ── Premier League Fixtures ──
   { id: "epl-fix-1", homeTeam: { name: "Arsenal", logo: "🔴" }, awayTeam: { name: "Brighton", logo: "🕊️" }, league: "Premier League", leagueEmoji: "🏴󠁧󠁢󠁥󠁮󠁧󠁿", time: "5th, September 2026, 12:30", dateSlot: "2026-09-05-1230", date: "future" },
   { id: "epl-fix-2", homeTeam: { name: "Manchester City", logo: "🔵" }, awayTeam: { name: "Brentford", logo: "🐝" }, league: "Premier League", leagueEmoji: "🏴󠁧󠁢󠁥󠁮󠁧󠁿", time: "12th, September 2026, 15:00", dateSlot: "2026-09-12-1500", date: "future" },
@@ -1039,7 +1039,7 @@ window.generateScoutAccumulator = generateScoutAccumulator;
 // ACTIVE BETSLIP SOCIAL SHARING ENGINE (7-PLATFORMS & DEEPPREDICTBET BRANDING)
 // ==========================================================================
 
-let _lastOpenShareModalTime = 0;
+var _lastOpenShareModalTime = 0;
 
 function attachBetslipShareButtonListener() {
   const shareBtn = document.getElementById("betslip-share-btn");
@@ -1065,116 +1065,130 @@ if (typeof document !== 'undefined') {
 }
 
 function openBetslipShareModal(e) {
-  if (e) {
-    if (typeof e.stopPropagation === 'function') e.stopPropagation();
-    if (typeof e.preventDefault === 'function') e.preventDefault();
-  }
-
-  // Only debounce actual rapid user event clicks within 350ms
-  if (e && e.type && typeof Date !== 'undefined') {
-    const now = Date.now();
-    if (now - _lastOpenShareModalTime < 350) return;
-    _lastOpenShareModalTime = now;
-  }
-
-  // 1. Ensure betslip has selections from the Active Betslip Builder
-  const betslip = (window.appState && Array.isArray(window.appState.betslip)) ? window.appState.betslip : [];
-  if (!betslip || betslip.length === 0) {
-    if (typeof showAppNotification === 'function') {
-      showAppNotification("⚠️ Your active betslip is empty. Select matches before sharing!");
-    } else if (typeof alert === 'function') {
-      alert("Your active betslip is empty. Select matches before sharing!");
+  try {
+    if (e) {
+      if (typeof e.stopPropagation === 'function') e.stopPropagation();
+      if (typeof e.preventDefault === 'function') e.preventDefault();
     }
-    return;
-  }
 
-  const modal = document.getElementById("betslip-share-modal");
-  if (!modal) {
-    console.error("betslip-share-modal element not found");
-    return;
-  }
+    // Only debounce actual rapid user event clicks within 350ms
+    if (e && e.type && typeof Date !== 'undefined') {
+      const now = Date.now();
+      const lastTime = window._lastOpenShareModalTime || _lastOpenShareModalTime || 0;
+      if (now - lastTime < 350) return;
+      window._lastOpenShareModalTime = now;
+      _lastOpenShareModalTime = now;
+    }
 
-  // 2. Collapse floating betslip drawer so modal is fully visible and unobscured
-  const drawer = document.getElementById("floating-betslip-drawer");
-  if (drawer) {
-    drawer.classList.remove("open");
-  }
-
-  // 3. Populate Modal Fixture List with all clubs from Active Betslip Builder
-  let totalOdds = 1.0;
-  const count = betslip.length;
-
-  const fixturesList = document.getElementById("share-modal-fixtures-list");
-  if (fixturesList) {
-    fixturesList.innerHTML = "";
-    betslip.forEach((item, idx) => {
-      const itemOdds = (typeof item.odds === 'number' && !isNaN(item.odds)) ? item.odds : 1.45;
-      totalOdds *= itemOdds;
-
-      let homeName = item.match?.homeTeam?.name || item.match?.homeTeam || item.homeTeam || 'Home';
-      let awayName = item.match?.awayTeam?.name || item.match?.awayTeam || item.awayTeam || 'Away';
-      const leagueName = item.match?.league || 'Football';
-      const isLive = !!(item.match?.isLive && item.match?.rawDate && new Date(item.match.rawDate).toDateString() === new Date().toDateString());
-      let timeStr = (typeof formatStandardMatchDateString === 'function')
-        ? formatStandardMatchDateString(item.match?.time, item.match?.rawDate, isLive)
-        : (item.match?.time || 'Upcoming');
-      if (timeStr && (timeStr.includes('FT') || timeStr.includes('Yesterday') || timeStr.includes('Days Ago') || timeStr.includes('Weeks Ago'))) {
-        timeStr = '20th, September 2026, 16:30';
+    // 1. Ensure betslip has selections from the Active Betslip Builder
+    const betslip = (window.appState && Array.isArray(window.appState.betslip)) ? window.appState.betslip : [];
+    if (!betslip || betslip.length === 0) {
+      if (typeof showAppNotification === 'function') {
+        showAppNotification("⚠️ Your active betslip is empty. Select matches before sharing!");
+      } else if (typeof alert === 'function') {
+        alert("Your active betslip is empty. Select matches before sharing!");
       }
-      const isClasicoPair = (homeName.toLowerCase().includes('real madrid') && awayName.toLowerCase().includes('barcelona')) || (homeName.toLowerCase().includes('barcelona') && awayName.toLowerCase().includes('real madrid'));
-      if (isClasicoPair && (timeStr.includes('October 2026') || timeStr.includes('26th') || timeStr.includes('25th'))) {
-        homeName = 'Barcelona';
-        awayName = 'Real Madrid';
-        timeStr = '25th, October 2026, 21:00';
-      }
-      const tipVal = item.tip || item.market || '1X';
+      return;
+    }
 
-      const fixtureRow = document.createElement("div");
-      fixtureRow.className = "share-fixture-row";
-      fixtureRow.innerHTML = `
-        <div class="share-fixture-info">
-          <span class="share-fixture-num">#${idx + 1}</span>
-          <div class="share-fixture-teams">
-            <div class="share-fixture-match">${homeName} vs ${awayName}</div>
-            <div class="share-fixture-sub">
-              <span style="color: #60a5fa; font-weight: 600;">${leagueName}</span>
-              <span>•</span>
-              <span style="color: #fbbf24; font-weight: 700;">Tip: ${tipVal}</span>
+    const modal = document.getElementById("betslip-share-modal");
+    if (!modal) {
+      console.error("betslip-share-modal element not found");
+      return;
+    }
+
+    // 2. Collapse floating betslip drawer so modal is fully visible and unobscured
+    const drawer = document.getElementById("floating-betslip-drawer");
+    if (drawer) {
+      drawer.classList.remove("open");
+    }
+
+    // 3. Populate Modal Fixture List with all clubs from Active Betslip Builder
+    let totalOdds = 1.0;
+    const count = betslip.length;
+
+    const fixturesList = document.getElementById("share-modal-fixtures-list");
+    if (fixturesList) {
+      fixturesList.innerHTML = "";
+      betslip.forEach((item, idx) => {
+        const itemOdds = (typeof item.odds === 'number' && !isNaN(item.odds)) ? item.odds : 1.45;
+        totalOdds *= itemOdds;
+
+        let homeName = item.match?.homeTeam?.name || item.match?.homeTeam || item.homeTeam || 'Home';
+        let awayName = item.match?.awayTeam?.name || item.match?.awayTeam || item.awayTeam || 'Away';
+        if (typeof homeName === 'object' && homeName !== null) homeName = homeName.name || homeName.team || 'Home';
+        if (typeof awayName === 'object' && awayName !== null) awayName = awayName.name || awayName.team || 'Away';
+        homeName = String(homeName || 'Home');
+        awayName = String(awayName || 'Away');
+
+        const leagueName = String(item.match?.league || 'Football');
+        const isLive = !!(item.match?.isLive && item.match?.rawDate && new Date(item.match.rawDate).toDateString() === new Date().toDateString());
+        let timeStr = (typeof formatStandardMatchDateString === 'function')
+          ? formatStandardMatchDateString(item.match?.time, item.match?.rawDate, isLive)
+          : (item.match?.time || 'Upcoming');
+        timeStr = String(timeStr || 'Upcoming');
+
+        if (timeStr && (timeStr.includes('FT') || timeStr.includes('Yesterday') || timeStr.includes('Days Ago') || timeStr.includes('Weeks Ago'))) {
+          timeStr = '20th, September 2026, 16:30';
+        }
+        const isClasicoPair = (homeName.toLowerCase().includes('real madrid') && awayName.toLowerCase().includes('barcelona')) || (homeName.toLowerCase().includes('barcelona') && awayName.toLowerCase().includes('real madrid'));
+        if (isClasicoPair && (timeStr.includes('October 2026') || timeStr.includes('26th') || timeStr.includes('25th'))) {
+          homeName = 'Barcelona';
+          awayName = 'Real Madrid';
+          timeStr = '25th, October 2026, 21:00';
+        }
+        const tipVal = String(item.tip || item.market || '1X');
+
+        const fixtureRow = document.createElement("div");
+        fixtureRow.className = "share-fixture-row";
+        fixtureRow.innerHTML = `
+          <div class="share-fixture-info">
+            <span class="share-fixture-num">#${idx + 1}</span>
+            <div class="share-fixture-teams">
+              <div class="share-fixture-match">${homeName} vs ${awayName}</div>
+              <div class="share-fixture-sub">
+                <span style="color: #60a5fa; font-weight: 600;">${leagueName}</span>
+                <span>•</span>
+                <span style="color: #fbbf24; font-weight: 700;">Tip: ${tipVal}</span>
+              </div>
             </div>
           </div>
-        </div>
-        <div class="share-fixture-odds">@${itemOdds.toFixed(2)}</div>
-      `;
-      fixturesList.appendChild(fixtureRow);
-    });
-  }
-
-  const formattedOdds = (totalOdds > 99999 ? "99,999+" : totalOdds.toFixed(2));
-  const oddsEl = document.getElementById("share-modal-total-odds");
-  if (oddsEl) oddsEl.textContent = `@${formattedOdds}`;
-
-  const countEl = document.getElementById("share-modal-matches-count");
-  if (countEl) countEl.textContent = `${count} ${count === 1 ? 'Match' : 'Matches'}`;
-
-  // Check device share support
-  const deviceShareBtn = document.getElementById("betslip-device-share-btn");
-  if (deviceShareBtn) {
-    if (typeof navigator !== 'undefined' && navigator.share) {
-      deviceShareBtn.style.display = "flex";
-    } else {
-      deviceShareBtn.style.display = "none";
+          <div class="share-fixture-odds">@${itemOdds.toFixed(2)}</div>
+        `;
+        fixturesList.appendChild(fixtureRow);
+      });
     }
-  }
 
-  // 4. Force modal visibility explicitly (overriding any inline style="display: none" from closeCurrentModal)
-  modal.classList.add("active");
-  modal.style.display = "flex";
-  modal.style.opacity = "1";
-  modal.style.pointerEvents = "all";
-  modal.style.visibility = "visible";
-  modal.style.zIndex = "10000005";
-  document.body.style.overflow = "hidden";
+    const formattedOdds = (totalOdds > 99999 ? "99,999+" : totalOdds.toFixed(2));
+    const oddsEl = document.getElementById("share-modal-total-odds");
+    if (oddsEl) oddsEl.textContent = `@${formattedOdds}`;
+
+    const countEl = document.getElementById("share-modal-matches-count");
+    if (countEl) countEl.textContent = `${count} ${count === 1 ? 'Match' : 'Matches'}`;
+
+    // Check device share support
+    const deviceShareBtn = document.getElementById("betslip-device-share-btn");
+    if (deviceShareBtn) {
+      if (typeof navigator !== 'undefined' && navigator.share) {
+        deviceShareBtn.style.display = "flex";
+      } else {
+        deviceShareBtn.style.display = "none";
+      }
+    }
+
+    // 4. Force modal visibility explicitly (overriding any inline style="display: none" from closeCurrentModal)
+    modal.classList.add("active");
+    modal.style.display = "flex";
+    modal.style.opacity = "1";
+    modal.style.pointerEvents = "all";
+    modal.style.visibility = "visible";
+    modal.style.zIndex = "10000005";
+    document.body.style.overflow = "hidden";
+  } catch (err) {
+    console.error("Error in openBetslipShareModal:", err);
+  }
 }
+window.openBetslipShareModal = openBetslipShareModal;
 
 function closeBetslipShareModal(event, force) {
   if (force || !event || event.target.id === "betslip-share-modal" || (event.target.classList && event.target.classList.contains("modal-close")) || (event.target.closest && event.target.closest(".modal-close"))) {
