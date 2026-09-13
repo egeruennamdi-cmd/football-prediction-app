@@ -1032,6 +1032,556 @@ window.renderBetslip = renderBetslip;
 window.generateScoutAccumulator = generateScoutAccumulator;
 
 
+// ==========================================================================
+// ACTIVE BETSLIP SOCIAL SHARING ENGINE (7-PLATFORMS & DEEPPREDICTBET BRANDING)
+// ==========================================================================
+
+function openBetslipShareModal() {
+  const betslip = (window.appState && Array.isArray(window.appState.betslip)) ? window.appState.betslip : [];
+  if (betslip.length === 0) {
+    if (typeof showAppNotification === 'function') {
+      showAppNotification("⚠️ Your active betslip is empty. Add matches before sharing!");
+    } else {
+      alert("Your active betslip is empty. Add matches before sharing!");
+    }
+    return;
+  }
+
+  const modal = document.getElementById("betslip-share-modal");
+  if (!modal) return;
+
+  let totalOdds = 1.0;
+  const count = betslip.length;
+
+  const fixturesList = document.getElementById("share-modal-fixtures-list");
+  if (fixturesList) {
+    fixturesList.innerHTML = "";
+    betslip.forEach((item, idx) => {
+      const itemOdds = (typeof item.odds === 'number' && !isNaN(item.odds)) ? item.odds : 1.45;
+      totalOdds *= itemOdds;
+
+      let homeName = item.match?.homeTeam?.name || item.match?.homeTeam || item.homeTeam || 'Home';
+      let awayName = item.match?.awayTeam?.name || item.match?.awayTeam || item.awayTeam || 'Away';
+      const leagueName = item.match?.league || 'Football';
+      const isLive = !!(item.match?.isLive && item.match?.rawDate && new Date(item.match.rawDate).toDateString() === new Date().toDateString());
+      let timeStr = formatStandardMatchDateString(item.match?.time, item.match?.rawDate, isLive);
+      if (timeStr && (timeStr.includes('FT') || timeStr.includes('Yesterday') || timeStr.includes('Days Ago') || timeStr.includes('Weeks Ago'))) {
+        timeStr = '20th, September 2026, 16:30';
+      }
+      const isClasicoPair = (homeName.toLowerCase().includes('real madrid') && awayName.toLowerCase().includes('barcelona')) || (homeName.toLowerCase().includes('barcelona') && awayName.toLowerCase().includes('real madrid'));
+      if (isClasicoPair && (timeStr.includes('October 2026') || timeStr.includes('26th') || timeStr.includes('25th'))) {
+        homeName = 'Barcelona';
+        awayName = 'Real Madrid';
+        timeStr = '25th, October 2026, 21:00';
+      }
+      const tipVal = item.tip || item.market || '1X';
+
+      const fixtureRow = document.createElement("div");
+      fixtureRow.className = "share-fixture-row";
+      fixtureRow.innerHTML = `
+        <div class="share-fixture-info">
+          <span class="share-fixture-num">#${idx + 1}</span>
+          <div class="share-fixture-teams">
+            <div class="share-fixture-match">${homeName} vs ${awayName}</div>
+            <div class="share-fixture-sub">
+              <span style="color: #60a5fa; font-weight: 600;">${leagueName}</span>
+              <span>•</span>
+              <span style="color: #fbbf24; font-weight: 700;">Tip: ${tipVal}</span>
+            </div>
+          </div>
+        </div>
+        <div class="share-fixture-odds">@${itemOdds.toFixed(2)}</div>
+      `;
+      fixturesList.appendChild(fixtureRow);
+    });
+  }
+
+  const formattedOdds = (totalOdds > 99999 ? "99,999+" : totalOdds.toFixed(2));
+  const oddsEl = document.getElementById("share-modal-total-odds");
+  if (oddsEl) oddsEl.textContent = `@${formattedOdds}`;
+
+  const countEl = document.getElementById("share-modal-matches-count");
+  if (countEl) countEl.textContent = `${count} ${count === 1 ? 'Match' : 'Matches'}`;
+
+  modal.classList.add("active");
+  document.body.style.overflow = "hidden";
+}
+
+function closeBetslipShareModal(event, force) {
+  if (force || !event || event.target.id === "betslip-share-modal" || (event.target.classList && event.target.classList.contains("modal-close"))) {
+    const modal = document.getElementById("betslip-share-modal");
+    if (modal) {
+      modal.classList.remove("active");
+    }
+    document.body.style.overflow = "";
+  }
+}
+
+function getBetslipShareData() {
+  const betslip = (window.appState && Array.isArray(window.appState.betslip)) ? window.appState.betslip : [];
+  let totalOdds = 1.0;
+  const items = betslip.map((item, idx) => {
+    const itemOdds = (typeof item.odds === 'number' && !isNaN(item.odds)) ? item.odds : 1.45;
+    totalOdds *= itemOdds;
+
+    let homeName = item.match?.homeTeam?.name || item.match?.homeTeam || item.homeTeam || 'Home';
+    let awayName = item.match?.awayTeam?.name || item.match?.awayTeam || item.awayTeam || 'Away';
+    const leagueName = item.match?.league || 'Football';
+    const tipVal = item.tip || item.market || '1X';
+
+    return {
+      index: idx + 1,
+      home: homeName,
+      away: awayName,
+      fixture: `${homeName} vs ${awayName}`,
+      league: leagueName,
+      tip: tipVal,
+      odds: itemOdds.toFixed(2)
+    };
+  });
+
+  const formattedOdds = (totalOdds > 99999 ? "99,999+" : totalOdds.toFixed(2));
+  return {
+    items,
+    count: items.length,
+    totalOdds: formattedOdds,
+    siteUrl: "https://deeppredictbet.pages.dev"
+  };
+}
+
+function buildBetslipShareText(platform) {
+  const data = getBetslipShareData();
+  if (data.count === 0) return "";
+
+  const siteUrl = data.siteUrl;
+
+  // Custom text per platform
+  if (platform === 'x') {
+    const footer = `\n⚡ DeepPredictBet: ${siteUrl}\n#DeepPredictBet #Accumulator`;
+    const maxBodyLen = 275 - footer.length;
+    let tweet = `🏆 DEEPPREDICTBET ACCA (@${data.totalOdds}) 🏆\n🔥 ${data.count} Curated Matches:\n`;
+    
+    let addedCount = 0;
+    for (let i = 0; i < data.items.length; i++) {
+      const line = `⚽ ${data.items[i].fixture}: ${data.items[i].tip} (@${data.items[i].odds})\n`;
+      if (tweet.length + line.length <= maxBodyLen - 35) {
+        tweet += line;
+        addedCount++;
+      } else {
+        break;
+      }
+    }
+    if (addedCount < data.count) {
+      tweet += `... +${data.count - addedCount} more picks!\n`;
+    }
+    tweet += footer;
+    return tweet;
+  }
+
+  if (platform === 'pinterest') {
+    let pinDesc = `DeepPredictBet AI Accumulator - ${data.count} Matches (@${data.totalOdds} Total Odds). Clubs: `;
+    const clubList = data.items.map(i => `${i.fixture} [${i.tip} @${i.odds}]`).join(', ');
+    pinDesc += clubList.substring(0, 320);
+    if (clubList.length > 320) pinDesc += '...';
+    pinDesc += ` | AI Engine verified on ${siteUrl}`;
+    return pinDesc;
+  }
+
+  // Full detailed format for WhatsApp, Email, Threads, Facebook, Clipboard
+  let text = `🏆 *DEEPPREDICTBET AI ACCUMULATOR* 🏆\n`;
+  text += `⚡ Verified by DeepPredictBet AI Engine\n`;
+  text += `📊 *Selections:* ${data.count} Matches | *Total Odds:* @${data.totalOdds}\n\n`;
+  text += `📋 *Curated Club Predictions:*\n`;
+
+  data.items.forEach(item => {
+    text += `${item.index}. *${item.fixture}* (${item.league})\n`;
+    text += `   🎯 Tip: ${item.tip} | Odds: @${item.odds}\n`;
+  });
+
+  text += `\n🔗 *Verify or load ticket on DeepPredictBet:* ${siteUrl}\n`;
+  text += `✨ Powered by DeepPredictBet Hybrid AI Intelligence`;
+  return text;
+}
+
+function shareBetslipToPlatform(platform) {
+  const data = getBetslipShareData();
+  if (data.count === 0) {
+    if (typeof showAppNotification === 'function') {
+      showAppNotification("⚠️ Your active betslip is empty!");
+    }
+    return;
+  }
+
+  const siteUrl = data.siteUrl;
+  const logoUrl = `${siteUrl}/assets/logo-3d-transparent.png`;
+  const shareText = buildBetslipShareText(platform);
+
+  switch (platform) {
+    case 'whatsapp': {
+      const waUrl = `https://api.whatsapp.com/send?text=${encodeURIComponent(shareText)}`;
+      window.open(waUrl, '_blank', 'noopener,noreferrer');
+      break;
+    }
+
+    case 'email': {
+      const subject = `DeepPredictBet Accumulator: ${data.count} Matches (@${data.totalOdds} Odds)`;
+      const cleanBody = shareText.replace(/\*/g, '');
+      const mailtoUrl = `mailto:?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(cleanBody)}`;
+      window.location.href = mailtoUrl;
+      break;
+    }
+
+    case 'x': {
+      const xText = buildBetslipShareText('x');
+      const xUrl = `https://twitter.com/intent/tweet?text=${encodeURIComponent(xText)}`;
+      window.open(xUrl, '_blank', 'noopener,noreferrer,width=600,height=450');
+      break;
+    }
+
+    case 'instagram': {
+      copyBetslipShareText(true);
+      tryNativeMobileShareWithImage(data).then(shared => {
+        if (!shared) {
+          downloadBetslipTicketImage();
+          if (typeof showAppNotification === 'function') {
+            showAppNotification("📸 Branded ticket image saved & betslip copied! Opening Instagram...");
+          }
+          setTimeout(() => {
+            window.open('https://www.instagram.com/', '_blank', 'noopener,noreferrer');
+          }, 800);
+        }
+      });
+      break;
+    }
+
+    case 'facebook': {
+      const fbUrl = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(siteUrl)}&quote=${encodeURIComponent(shareText)}`;
+      window.open(fbUrl, '_blank', 'noopener,noreferrer,width=600,height=500');
+      break;
+    }
+
+    case 'threads': {
+      const threadsText = buildBetslipShareText('threads');
+      const threadsUrl = `https://www.threads.net/intent/post?text=${encodeURIComponent(threadsText)}`;
+      window.open(threadsUrl, '_blank', 'noopener,noreferrer');
+      break;
+    }
+
+    case 'pinterest': {
+      const pinDesc = buildBetslipShareText('pinterest');
+      const pinUrl = `https://pinterest.com/pin/create/button/?url=${encodeURIComponent(siteUrl)}&media=${encodeURIComponent(logoUrl)}&description=${encodeURIComponent(pinDesc)}`;
+      window.open(pinUrl, '_blank', 'noopener,noreferrer,width=750,height=600');
+      break;
+    }
+
+    default:
+      copyBetslipShareText();
+      break;
+  }
+}
+
+function copyBetslipShareText(isSilent) {
+  const shareText = buildBetslipShareText('clipboard');
+  if (!shareText) return;
+
+  if (navigator.clipboard && navigator.clipboard.writeText) {
+    navigator.clipboard.writeText(shareText).then(() => {
+      if (!isSilent && typeof showAppNotification === 'function') {
+        showAppNotification("📋 Active betslip clubs & odds copied to clipboard with DeepPredictBet branding!");
+      }
+    }).catch(() => {
+      fallbackCopyText(shareText, isSilent);
+    });
+  } else {
+    fallbackCopyText(shareText, isSilent);
+  }
+}
+
+function fallbackCopyText(text, isSilent) {
+  const ta = document.createElement("textarea");
+  ta.value = text;
+  ta.style.position = "fixed";
+  ta.style.opacity = "0";
+  document.body.appendChild(ta);
+  ta.select();
+  try {
+    document.execCommand("copy");
+    if (!isSilent && typeof showAppNotification === 'function') {
+      showAppNotification("📋 Active betslip copied to clipboard!");
+    }
+  } catch (e) {
+    if (!isSilent) alert("Failed to copy automatically. Please select text manually.");
+  }
+  document.body.removeChild(ta);
+}
+
+// Client-Side Canvas Graphic Generator carrying DeepPredictBet Logo always
+function generateBetslipTicketCanvas() {
+  return new Promise((resolve) => {
+    const data = getBetslipShareData();
+    if (data.count === 0) {
+      resolve(null);
+      return;
+    }
+
+    const itemsToDraw = data.items.slice(0, 16);
+    const canvas = document.createElement('canvas');
+    const width = 800;
+    const headerHeight = 220;
+    const rowHeight = 44;
+    const footerHeight = 90;
+    const height = headerHeight + (itemsToDraw.length * rowHeight) + footerHeight + (data.count > 16 ? 40 : 0);
+
+    canvas.width = width;
+    canvas.height = height;
+    const ctx = canvas.getContext('2d');
+    if (!ctx) {
+      resolve(null);
+      return;
+    }
+
+    // 1. Dark Luxury Gradient Background
+    const bgGrad = ctx.createLinearGradient(0, 0, width, height);
+    bgGrad.addColorStop(0, '#0b111e');
+    bgGrad.addColorStop(0.5, '#080d16');
+    bgGrad.addColorStop(1, '#020617');
+    ctx.fillStyle = bgGrad;
+    ctx.fillRect(0, 0, width, height);
+
+    // Glowing subtle background accents
+    const glowGrad = ctx.createRadialGradient(width / 2, 80, 10, width / 2, 80, 360);
+    glowGrad.addColorStop(0, 'rgba(37, 99, 235, 0.22)');
+    glowGrad.addColorStop(1, 'rgba(15, 23, 42, 0)');
+    ctx.fillStyle = glowGrad;
+    ctx.fillRect(0, 0, width, 300);
+
+    // Border Glow
+    ctx.lineWidth = 3;
+    ctx.strokeStyle = 'rgba(59, 130, 246, 0.4)';
+    ctx.strokeRect(6, 6, width - 12, height - 12);
+
+    // 2. Render DeepPredictBet Logo
+    const logoImg = new Image();
+    logoImg.crossOrigin = "anonymous";
+    logoImg.onload = () => {
+      drawCanvasContent(logoImg);
+    };
+    logoImg.onerror = () => {
+      drawCanvasContent(null);
+    };
+    logoImg.src = 'assets/logo-3d-transparent.png';
+
+    function drawCanvasContent(img) {
+      // Draw Logo
+      if (img && img.naturalWidth > 0) {
+        const logoTargetH = 50;
+        const logoTargetW = (img.naturalWidth / img.naturalHeight) * logoTargetH;
+        const logoX = (width - logoTargetW) / 2;
+        ctx.drawImage(img, logoX, 24, logoTargetW, logoTargetH);
+      } else {
+        ctx.fillStyle = '#38bdf8';
+        ctx.font = 'bold 32px sans-serif';
+        ctx.textAlign = 'center';
+        ctx.fillText('DEEPPREDICTBET', width / 2, 60);
+      }
+
+      // Title & Verification Seal
+      ctx.fillStyle = '#38bdf8';
+      ctx.font = 'bold 15px sans-serif';
+      ctx.textAlign = 'center';
+      ctx.fillText('⚡ AI-POWERED ACCUMULATOR BETSLIP', width / 2, 102);
+
+      // Meta Stats Bar (Selections & Total Odds)
+      const pillY = 125;
+      const pillH = 50;
+
+      // Selections Pill
+      ctx.fillStyle = 'rgba(30, 41, 59, 0.8)';
+      ctx.strokeStyle = 'rgba(255, 255, 255, 0.12)';
+      ctx.lineWidth = 1.5;
+      ctx.beginPath();
+      ctx.roundRect(40, pillY, 220, pillH, 8);
+      ctx.fill();
+      ctx.stroke();
+
+      ctx.fillStyle = '#94a3b8';
+      ctx.font = 'bold 11px sans-serif';
+      ctx.textAlign = 'left';
+      ctx.fillText('SELECTIONS', 56, pillY + 20);
+      ctx.fillStyle = '#ffffff';
+      ctx.font = 'bold 18px sans-serif';
+      ctx.fillText(`${data.count} Matches`, 56, pillY + 40);
+
+      // Total Odds Pill
+      ctx.fillStyle = 'rgba(30, 41, 59, 0.8)';
+      ctx.beginPath();
+      ctx.roundRect(width - 260, pillY, 220, pillH, 8);
+      ctx.fill();
+      ctx.stroke();
+
+      ctx.fillStyle = '#94a3b8';
+      ctx.font = 'bold 11px sans-serif';
+      ctx.fillText('TOTAL ACCUMULATOR ODDS', width - 244, pillY + 20);
+      ctx.fillStyle = '#fbbf24';
+      ctx.font = 'bold 20px sans-serif';
+      ctx.fillText(`@${data.totalOdds}`, width - 244, pillY + 41);
+
+      // Status Pill (Center)
+      ctx.fillStyle = 'rgba(16, 185, 129, 0.15)';
+      ctx.strokeStyle = '#10b981';
+      ctx.beginPath();
+      ctx.roundRect(280, pillY, 240, pillH, 8);
+      ctx.fill();
+      ctx.stroke();
+
+      ctx.fillStyle = '#34d399';
+      ctx.font = 'bold 12px sans-serif';
+      ctx.textAlign = 'center';
+      ctx.fillText('STATUS: VERIFIED', 400, pillY + 22);
+      ctx.fillStyle = '#a7f3d0';
+      ctx.font = 'bold 14px sans-serif';
+      ctx.fillText('⚡ Engine Algorithmic EV+', 400, pillY + 41);
+
+      // 3. Render Fixture Rows
+      let startY = 210;
+      itemsToDraw.forEach((item, idx) => {
+        const rowY = startY + (idx * rowHeight);
+
+        // Alternating row background
+        if (idx % 2 === 0) {
+          ctx.fillStyle = 'rgba(255, 255, 255, 0.025)';
+          ctx.fillRect(40, rowY - 14, width - 80, rowHeight - 4);
+        }
+
+        // Index
+        ctx.fillStyle = '#60a5fa';
+        ctx.font = 'bold 13px sans-serif';
+        ctx.textAlign = 'left';
+        ctx.fillText(`#${item.index}`, 52, rowY + 10);
+
+        // Fixture (Home vs Away)
+        ctx.fillStyle = '#ffffff';
+        ctx.font = 'bold 15px sans-serif';
+        ctx.fillText(item.fixture, 95, rowY + 10);
+
+        // League & Tip
+        ctx.fillStyle = '#94a3b8';
+        ctx.font = '12px sans-serif';
+        ctx.fillText(`[${item.league}]`, 375, rowY + 10);
+
+        ctx.fillStyle = '#fbbf24';
+        ctx.font = 'bold 13px sans-serif';
+        ctx.fillText(`Tip: ${item.tip}`, 530, rowY + 10);
+
+        // Odds Badge
+        ctx.fillStyle = '#34d399';
+        ctx.font = 'bold 15px monospace';
+        ctx.textAlign = 'right';
+        ctx.fillText(`@${item.odds}`, width - 52, rowY + 10);
+      });
+
+      // Extra count notice if capped
+      if (data.count > 16) {
+        const extraY = startY + (16 * rowHeight) + 10;
+        ctx.fillStyle = '#38bdf8';
+        ctx.font = 'italic 13px sans-serif';
+        ctx.textAlign = 'center';
+        ctx.fillText(`... and ${data.count - 16} additional curated matches on DeepPredictBet`, width / 2, extraY);
+      }
+
+      // 4. Ticket Footer
+      const footY = height - 45;
+      ctx.strokeStyle = 'rgba(255, 255, 255, 0.1)';
+      ctx.beginPath();
+      ctx.moveTo(40, footY - 20);
+      ctx.lineTo(width - 40, footY - 20);
+      ctx.stroke();
+
+      ctx.fillStyle = '#94a3b8';
+      ctx.font = '12px sans-serif';
+      ctx.textAlign = 'left';
+      ctx.fillText('⚡ Verified by DeepPredictBet AI Engine', 45, footY + 4);
+
+      ctx.fillStyle = '#38bdf8';
+      ctx.font = 'bold 13px monospace';
+      ctx.textAlign = 'right';
+      ctx.fillText('https://deeppredictbet.pages.dev', width - 45, footY + 4);
+
+      resolve(canvas);
+    }
+  });
+}
+
+function downloadBetslipTicketImage() {
+  generateBetslipTicketCanvas().then((canvas) => {
+    if (!canvas) return;
+    try {
+      const link = document.createElement('a');
+      link.download = `DeepPredictBet-Betslip-${Date.now().toString().slice(-6)}.png`;
+      link.href = canvas.toDataURL('image/png');
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      if (typeof showAppNotification === 'function') {
+        showAppNotification("📸 Downloaded DeepPredictBet Branded Ticket Image!");
+      }
+    } catch (e) {
+      console.error("Ticket download error:", e);
+    }
+  });
+}
+
+function tryNativeMobileShareWithImage(data) {
+  return new Promise((resolve) => {
+    if (!navigator.share || !navigator.canShare) {
+      resolve(false);
+      return;
+    }
+
+    generateBetslipTicketCanvas().then((canvas) => {
+      if (!canvas || !canvas.toBlob) {
+        resolve(false);
+        return;
+      }
+
+      canvas.toBlob((blob) => {
+        if (!blob) {
+          resolve(false);
+          return;
+        }
+
+        try {
+          const file = new File([blob], 'DeepPredictBet-Betslip.png', { type: 'image/png' });
+          if (navigator.canShare({ files: [file] })) {
+            navigator.share({
+              files: [file],
+              title: `DeepPredictBet Accumulator (@${data.totalOdds})`,
+              text: buildBetslipShareText('whatsapp'),
+              url: data.siteUrl
+            }).then(() => resolve(true)).catch(() => resolve(false));
+          } else {
+            resolve(false);
+          }
+        } catch (err) {
+          resolve(false);
+        }
+      }, 'image/png');
+    });
+  });
+}
+
+// Expose Social Share functions globally
+window.openBetslipShareModal = openBetslipShareModal;
+window.closeBetslipShareModal = closeBetslipShareModal;
+window.getBetslipShareData = getBetslipShareData;
+window.buildBetslipShareText = buildBetslipShareText;
+window.shareBetslipToPlatform = shareBetslipToPlatform;
+window.copyBetslipShareText = copyBetslipShareText;
+window.downloadBetslipTicketImage = downloadBetslipTicketImage;
+window.generateBetslipTicketCanvas = generateBetslipTicketCanvas;
+
+
+
 // --- STANDALONE BETPADDI CODE CONVERTER LOGIC ---
 
 function togglePaddiDropdown(type) {

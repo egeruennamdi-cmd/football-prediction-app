@@ -17,12 +17,16 @@
   <meta property="og:description"
     content="DeepPredictBet - Premium AI-powered football predictions, live match analytics, head-to-head stats, and tactical scout briefings.">
   <meta property="og:site_name" content="DeepPredictBet">
+  <meta property="og:image" content="https://deeppredictbet.pages.dev/assets/logo-3d-transparent.png">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
   <!-- Twitter Meta Tags -->
   <meta name="twitter:card" content="summary_large_image">
   <meta name="twitter:url" content="https://deeppredictbet.com/">
   <meta name="twitter:title" content="DeepPredictBet | Next-Gen AI Football Predictions & Analytics">
   <meta name="twitter:description"
     content="DeepPredictBet - Premium AI-powered football predictions, live match analytics, head-to-head stats, and tactical scout briefings.">
+  <meta name="twitter:image" content="https://deeppredictbet.pages.dev/assets/logo-3d-transparent.png">
   <meta name="build-version" content="2026.08.10.1230">
   
   <!-- Favicon & Mobile App Icons (Option 2: DPB Monogram with Obsidian & Royal Blue Football Background) -->
@@ -35,7 +39,7 @@
   <meta name="theme-color" content="#080b11">
   <meta name="msapplication-TileColor" content="#080b11">
 
-  <link rel="stylesheet" href="css/main.css?v=20261026_ai_tip_expand_v5_full78">
+  <link rel="stylesheet" href="css/main.css?v=20261026_betslip_share_v1">
 
   <script>
     function toggleMobileDrawer() {
@@ -5627,6 +5631,10 @@
           style="width: 100%; display: flex; align-items: center; justify-content: center; gap: 6px; font-weight: 700; background: var(--brand-royal-blue); border-color: var(--brand-royal-blue);">
           ⚡ Convert & Place Bet
         </button>
+        <button class="btn btn-betslip-share" id="betslip-share-btn" onclick="openBetslipShareModal()"
+          style="width: 100%; display: flex; align-items: center; justify-content: center; gap: 6px; font-weight: 700; background: linear-gradient(135deg, #059669 0%, #10b981 100%); border: none; color: #ffffff; border-radius: 8px; padding: 9px 12px; font-size: 0.85rem; cursor: pointer; transition: all 0.2s ease; box-shadow: 0 4px 12px rgba(16, 185, 129, 0.25);">
+          📤 Share Betslip
+        </button>
         <button class="btn btn-secondary" onclick="clearBetslip()"
           style="width: 100%; font-size: 0.75rem; padding: 6px; height: auto; border: none; background: transparent; color: var(--text-muted);">
           Clear All Selections
@@ -5800,6 +5808,126 @@
     </div>
   </div>
 
+  <!-- --- ACTIVE BETSLIP SOCIAL SHARE MODAL (7-PLATFORM SYNC WITH DEEPPREDICTBET LOGO) --- -->
+  <div class="modal-overlay" id="betslip-share-modal" onclick="closeBetslipShareModal(event)">
+    <div class="modal-content betslip-share-content" onclick="event.stopPropagation()">
+      <!-- Modal Header -->
+      <div class="betslip-share-header">
+        <div style="display: flex; align-items: center; gap: 12px;">
+          <div style="width: 40px; height: 40px; border-radius: 50%; background: rgba(16, 185, 129, 0.15); border: 1.5px solid #10b981; display: flex; align-items: center; justify-content: center; font-size: 1.2rem;">
+            📤
+          </div>
+          <div>
+            <h3 style="font-family: var(--font-display); font-size: 1.15rem; font-weight: 900; color: #ffffff; margin: 0;">
+              Share Active Betslip
+            </h3>
+            <span style="font-size: 0.74rem; color: #94a3b8;">
+              Share curated clubs & accumulator predictions
+            </span>
+          </div>
+        </div>
+        <button class="modal-close" onclick="closeBetslipShareModal(event, true)" aria-label="Close modal"
+          style="background: rgba(255, 255, 255, 0.1); border: 1px solid rgba(255, 255, 255, 0.18); border-radius: 50%; width: 32px; height: 32px; font-size: 1.1rem; color: #ffffff; cursor: pointer; display: flex; align-items: center; justify-content: center;">&times;</button>
+      </div>
+
+      <!-- Modal Body -->
+      <div class="betslip-share-body">
+        <!-- Branded Ticket Preview Card (Carrying DeepPredictBet logo always) -->
+        <div class="betslip-ticket-preview" id="betslip-ticket-card">
+          <div class="betslip-ticket-top">
+            <img src="assets/logo-3d-transparent.png" alt="DeepPredictBet" class="betslip-ticket-logo">
+            <div class="betslip-ticket-badge">AI ACCUMULATOR</div>
+          </div>
+
+          <div class="betslip-ticket-meta">
+            <div class="betslip-ticket-stat">
+              <span class="stat-label">Selections</span>
+              <span class="stat-val" id="share-modal-matches-count">0 Matches</span>
+            </div>
+            <div class="betslip-ticket-stat">
+              <span class="stat-label">Total Odds</span>
+              <span class="stat-val stat-odds" id="share-modal-total-odds">@1.00</span>
+            </div>
+            <div class="betslip-ticket-stat">
+              <span class="stat-label">AI Status</span>
+              <span class="stat-val stat-verified">⚡ Verified</span>
+            </div>
+          </div>
+
+          <!-- Scrollable List of Clubs from Active Betslip Builder -->
+          <div class="betslip-ticket-fixtures" id="share-modal-fixtures-list">
+            <!-- Dynamically populated by JS -->
+          </div>
+
+          <div class="betslip-ticket-footer">
+            <span style="font-size: 0.72rem; color: #94a3b8; display: flex; align-items: center; gap: 4px;">
+              <span>⚡ Verified by DeepPredictBet AI Engine</span>
+            </span>
+            <span style="font-size: 0.72rem; color: #38bdf8; font-weight: 700; font-family: monospace;">deeppredictbet.pages.dev</span>
+          </div>
+        </div>
+
+        <!-- Quick Action Buttons -->
+        <div class="betslip-share-quick-actions">
+          <button class="btn-ticket-action btn-download-image" onclick="downloadBetslipTicketImage()">
+            <span>📸</span> Download Ticket Image
+          </button>
+          <button class="btn-ticket-action btn-copy-text" onclick="copyBetslipShareText()">
+            <span>📋</span> Copy Betslip Text
+          </button>
+        </div>
+
+        <!-- Social Platforms Sharing Grid (All 7 Platforms) -->
+        <div class="betslip-share-platforms-section">
+          <div class="share-platforms-heading">Direct Share to Social Media:</div>
+          <div class="betslip-share-grid">
+            <!-- WhatsApp -->
+            <button class="share-btn share-whatsapp" onclick="shareBetslipToPlatform('whatsapp')" title="Share to WhatsApp">
+              <svg class="share-icon" viewBox="0 0 24 24" fill="currentColor"><path d="M12.031 6.172c-3.181 0-5.767 2.586-5.768 5.766-.001 1.298.38 2.27 1.019 3.287l-.582 2.128 2.182-.573c.978.58 1.911.928 3.145.929 3.178 0 5.767-2.587 5.768-5.766.001-3.187-2.575-5.77-5.764-5.771zm3.392 8.244c-.144.405-.837.774-1.17.824-.299.045-.677.063-1.092-.069-.252-.08-.575-.187-.988-.365-1.739-.751-2.874-2.502-2.961-2.617-.087-.116-.708-.94-.708-1.793s.448-1.273.607-1.446c.159-.173.346-.217.462-.217l.332.006c.106.005.249-.04.39.298.144.347.491 1.2.534 1.287.043.087.072.188.014.304-.058.116-.087.188-.173.289l-.26.304c-.087.086-.177.18-.076.354.101.174.449.741.964 1.201.662.591 1.221.774 1.394.86.173.086.275.071.376-.043.101-.116.433-.506.549-.68.116-.173.231-.145.39-.087s1.011.477 1.184.564.289.13.332.202c.043.072.043.419-.101.824z"/></svg>
+              <span>WhatsApp</span>
+            </button>
+
+            <!-- Email -->
+            <button class="share-btn share-email" onclick="shareBetslipToPlatform('email')" title="Share via Email">
+              <svg class="share-icon" viewBox="0 0 24 24" fill="currentColor"><path d="M20 4H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 4l-8 5-8-5V6l8 5 8-5v2z"/></svg>
+              <span>Email</span>
+            </button>
+
+            <!-- X (Twitter) -->
+            <button class="share-btn share-x" onclick="shareBetslipToPlatform('x')" title="Share on X">
+              <svg class="share-icon" viewBox="0 0 24 24" fill="currentColor"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>
+              <span>X</span>
+            </button>
+
+            <!-- Instagram -->
+            <button class="share-btn share-instagram" onclick="shareBetslipToPlatform('instagram')" title="Share to Instagram">
+              <svg class="share-icon" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z"/></svg>
+              <span>Instagram</span>
+            </button>
+
+            <!-- Facebook -->
+            <button class="share-btn share-facebook" onclick="shareBetslipToPlatform('facebook')" title="Share to Facebook">
+              <svg class="share-icon" viewBox="0 0 24 24" fill="currentColor"><path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/></svg>
+              <span>Facebook</span>
+            </button>
+
+            <!-- Threads -->
+            <button class="share-btn share-threads" onclick="shareBetslipToPlatform('threads')" title="Share to Threads">
+              <svg class="share-icon" viewBox="0 0 24 24" fill="currentColor"><path d="M12.186 24C5.53 24 0 18.604 0 12.115 0 5.46 5.53 0 12.186 0c6.452 0 11.803 5.176 11.814 11.666 0 .393-.314.714-.707.714h-1.42c-.393 0-.707-.321-.707-.714-.01-5.118-4.148-9.255-9.18-9.255C6.96 2.411 2.822 6.548 2.822 11.666c0 5.118 4.138 9.255 9.164 9.255 4.398 0 7.82-3.21 8.528-7.534H12.186c-.393 0-.707-.321-.707-.714v-1.428c0-.393.314-.714.707-.714h10.963c.42 0 .744.356.707.773-.913 6.643-6.526 11.751-13.67 11.751z"/></svg>
+              <span>Threads</span>
+            </button>
+
+            <!-- Pinterest -->
+            <button class="share-btn share-pinterest" onclick="shareBetslipToPlatform('pinterest')" title="Share to Pinterest">
+              <svg class="share-icon" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0c-6.627 0-12 5.372-12 12 0 5.084 3.163 9.426 7.627 11.174-.105-.949-.2-2.405.042-3.441.218-.937 1.407-5.965 1.407-5.965s-.359-.719-.359-1.782c0-1.668.967-2.914 2.171-2.914 1.023 0 1.518.769 1.518 1.69 0 1.029-.655 2.568-.994 3.995-.283 1.194.599 2.169 1.777 2.169 2.133 0 3.772-2.249 3.772-5.495 0-2.873-2.064-4.882-5.012-4.882-3.414 0-5.418 2.561-5.418 5.207 0 1.031.397 2.138.893 2.738.098.119.112.224.083.345l-.333 1.36c-.053.22-.174.267-.402.161-1.499-.698-2.436-2.889-2.436-4.649 0-3.785 2.75-7.262 7.929-7.262 4.163 0 7.398 2.967 7.398 6.931 0 4.136-2.607 7.464-6.227 7.464-1.216 0-2.359-.631-2.75-1.378l-.748 2.853c-.271 1.043-1.002 2.35-1.492 3.146 1.124.347 2.317.535 3.554.535 6.627 0 12-5.373 12-12 0-6.628-5.373-12-12-12z"/></svg>
+              <span>Pinterest</span>
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
   <!-- --- MOBILE APP BOTTOM NAVIGATION BAR (MATCHING REFERENCE SCREENSHOT) --- -->
   <nav id="mobile-app-bottom-nav" class="mobile-bottom-nav">
     <a href="#predictions" class="bottom-nav-item" onclick="if(typeof scrollToSection==='function') scrollToSection('predictions');">
@@ -5827,12 +5955,12 @@
   </nav>
 
   <!-- --- LOAD SCRIPTS (Classic Day 1 Architecture) --- -->
-  <script src="js/data.js?v=20261026_ai_tip_expand_v5_full78"></script>
-  <script src="js/vipManager.js?v=20261026_ai_tip_expand_v5_full78"></script>
-  <script src="js/ui.js?v=20261026_ai_tip_expand_v5_full78"></script>
-  <script src="js/router.js?v=20261026_ai_tip_expand_v5_full78"></script>
-  <script src="js/app.js?v=20261026_ai_tip_expand_v5_full78"></script>
-  <script src="js/liveFixtures.js?v=20261026_ai_tip_expand_v5_full78"></script>
+  <script src="js/data.js?v=20261026_betslip_share_v1"></script>
+  <script src="js/vipManager.js?v=20261026_betslip_share_v1"></script>
+  <script src="js/ui.js?v=20261026_betslip_share_v1"></script>
+  <script src="js/router.js?v=20261026_betslip_share_v1"></script>
+  <script src="js/app.js?v=20261026_betslip_share_v1"></script>
+  <script src="js/liveFixtures.js?v=20261026_betslip_share_v1"></script>
   <script>
     // Clean global helper bindings
     window.addEventListener('DOMContentLoaded', () => {
