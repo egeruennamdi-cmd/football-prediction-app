@@ -4209,6 +4209,30 @@ header {
   transform: translateY(0);
 }
 
+#betslip-share-modal {
+  display: none;
+  position: fixed !important;
+  inset: 0 !important;
+  z-index: 10000005 !important;
+  align-items: center !important;
+  justify-content: center !important;
+  background: rgba(8, 11, 17, 0.88) !important;
+  backdrop-filter: blur(12px) !important;
+  -webkit-backdrop-filter: blur(12px) !important;
+  opacity: 0;
+  pointer-events: none;
+  visibility: hidden;
+  transition: opacity 0.25s ease, visibility 0.25s ease;
+}
+
+#betslip-share-modal.active {
+  display: flex !important;
+  opacity: 1 !important;
+  pointer-events: all !important;
+  visibility: visible !important;
+  z-index: 10000005 !important;
+}
+
 .betslip-share-content {
   max-width: 580px !important;
   width: 94% !important;
@@ -4352,59 +4376,52 @@ header {
 
 .share-fixture-row:hover {
   background: rgba(255, 255, 255, 0.05);
-  border-color: rgba(59, 130, 246, 0.25);
 }
 
 .share-fixture-info {
   display: flex;
   align-items: center;
   gap: 8px;
-  overflow: hidden;
   flex: 1;
 }
 
 .share-fixture-num {
-  font-size: 0.68rem;
+  font-size: 0.75rem;
   font-weight: 800;
-  color: #60a5fa;
-  background: rgba(59, 130, 246, 0.16);
-  padding: 2px 6px;
-  border-radius: 4px;
-  min-width: 22px;
-  text-align: center;
+  color: #3b82f6;
+  width: 22px;
+  flex-shrink: 0;
 }
 
 .share-fixture-teams {
   display: flex;
   flex-direction: column;
-  gap: 2px;
-  overflow: hidden;
+  gap: 1px;
 }
 
 .share-fixture-match {
-  font-size: 0.76rem;
+  font-size: 0.82rem;
   font-weight: 700;
-  color: #f8fafc;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
+  color: #ffffff;
 }
 
 .share-fixture-sub {
-  font-size: 0.68rem;
+  font-size: 0.7rem;
   color: #94a3b8;
   display: flex;
   align-items: center;
-  gap: 4px;
-  flex-wrap: wrap;
+  gap: 6px;
 }
 
 .share-fixture-odds {
-  font-size: 0.82rem;
+  font-size: 0.85rem;
   font-weight: 800;
-  color: #fbbf24;
-  white-space: nowrap;
-  padding-left: 8px;
+  color: #34d399;
+  font-family: monospace;
+  background: rgba(16, 185, 129, 0.12);
+  border: 1px solid rgba(16, 185, 129, 0.25);
+  padding: 3px 8px;
+  border-radius: 6px;
 }
 
 .betslip-ticket-footer {
@@ -4420,7 +4437,7 @@ header {
 /* Quick Action Buttons */
 .betslip-share-quick-actions {
   display: grid;
-  grid-template-columns: 1fr 1fr;
+  grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
   gap: 10px;
 }
 
@@ -4460,6 +4477,18 @@ header {
   background: rgba(255, 255, 255, 0.12);
   border-color: rgba(255, 255, 255, 0.3);
   color: #ffffff;
+}
+
+.btn-device-share {
+  background: rgba(16, 185, 129, 0.15);
+  border: 1px solid #10b981;
+  color: #34d399;
+}
+
+.btn-device-share:hover {
+  background: #10b981;
+  color: #ffffff;
+  box-shadow: 0 4px 12px rgba(16, 185, 129, 0.35);
 }
 
 /* Social Platforms Sharing Grid */

@@ -5631,7 +5631,7 @@
           style="width: 100%; display: flex; align-items: center; justify-content: center; gap: 6px; font-weight: 700; background: var(--brand-royal-blue); border-color: var(--brand-royal-blue);">
           ⚡ Convert & Place Bet
         </button>
-        <button class="btn btn-betslip-share" id="betslip-share-btn" onclick="openBetslipShareModal()"
+        <button class="btn btn-betslip-share" id="betslip-share-btn" onclick="event.stopPropagation(); event.preventDefault(); openBetslipShareModal(event);"
           style="width: 100%; display: flex; align-items: center; justify-content: center; gap: 6px; font-weight: 700; background: linear-gradient(135deg, #059669 0%, #10b981 100%); border: none; color: #ffffff; border-radius: 8px; padding: 9px 12px; font-size: 0.85rem; cursor: pointer; transition: all 0.2s ease; box-shadow: 0 4px 12px rgba(16, 185, 129, 0.25);">
           📤 Share Betslip
         </button>
@@ -5809,7 +5809,7 @@
   </div>
 
   <!-- --- ACTIVE BETSLIP SOCIAL SHARE MODAL (7-PLATFORM SYNC WITH DEEPPREDICTBET LOGO) --- -->
-  <div class="modal-overlay" id="betslip-share-modal" onclick="closeBetslipShareModal(event)">
+  <div class="modal-overlay" id="betslip-share-modal" style="display: none; position: fixed; inset: 0; z-index: 10000005; align-items: center; justify-content: center; background: rgba(8, 11, 17, 0.88); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);" onclick="closeBetslipShareModal(event)">
     <div class="modal-content betslip-share-content" onclick="event.stopPropagation()">
       <!-- Modal Header -->
       <div class="betslip-share-header">
@@ -5874,6 +5874,9 @@
           </button>
           <button class="btn-ticket-action btn-copy-text" onclick="copyBetslipShareText()">
             <span>📋</span> Copy Betslip Text
+          </button>
+          <button class="btn-ticket-action btn-device-share" id="betslip-device-share-btn" onclick="shareBetslipViaDevice()" style="display: none;">
+            <span>📲</span> Share via Device
           </button>
         </div>
 
