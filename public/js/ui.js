@@ -3884,6 +3884,40 @@ if (typeof document !== 'undefined') {
   }
 }
 
+var _betslipShareFormat = 'image';
+
+function setBetslipShareFormat(format) {
+  _betslipShareFormat = (format === 'text') ? 'text' : 'image';
+  try {
+    localStorage.setItem('betslip_share_format', _betslipShareFormat);
+  } catch (e) {}
+
+  const imgTab = document.getElementById("share-format-image-tab");
+  const txtTab = document.getElementById("share-format-text-tab");
+  const statusText = document.getElementById("share-format-status-text");
+
+  if (imgTab && txtTab) {
+    if (_betslipShareFormat === 'image') {
+      imgTab.classList.add("active");
+      imgTab.setAttribute("aria-selected", "true");
+      txtTab.classList.remove("active");
+      txtTab.setAttribute("aria-selected", "false");
+      if (statusText) {
+        statusText.innerHTML = 'Output: <b>Branded PNG Ticket Image</b> (Auto-copied & downloaded for direct post)';
+      }
+    } else {
+      txtTab.classList.add("active");
+      txtTab.setAttribute("aria-selected", "true");
+      imgTab.classList.remove("active");
+      imgTab.setAttribute("aria-selected", "false");
+      if (statusText) {
+        statusText.innerHTML = 'Output: <b>Text Predictions</b> (Clubs & odds formatted for social caption)';
+      }
+    }
+  }
+}
+window.setBetslipShareFormat = setBetslipShareFormat;
+
 function openBetslipShareModal(e) {
   try {
     if (e) {
@@ -3990,6 +4024,14 @@ function openBetslipShareModal(e) {
       } else {
         deviceShareBtn.style.display = "none";
       }
+    }
+
+    // Initialize share format from state / localStorage (default: 'image')
+    const savedFormat = (function() {
+      try { return localStorage.getItem('betslip_share_format'); } catch(e) { return null; }
+    })() || 'image';
+    if (typeof setBetslipShareFormat === 'function') {
+      setBetslipShareFormat(savedFormat);
     }
 
     // 4. Force modal visibility explicitly (overriding any inline style="display: none" from closeCurrentModal)
@@ -4122,7 +4164,24 @@ function buildBetslipShareText(platform) {
   return text;
 }
 
-function shareBetslipToPlatform(platform) {
+function downloadBlobFile(blob, filename) {
+  try {
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.download = filename || `DeepPredictBet-Betslip-${Date.now().toString().slice(-6)}.png`;
+    link.href = url;
+    document.body.appendChild(link);
+    link.click();
+    setTimeout(() => {
+      document.body.removeChild(link);
+      URL.revokeObjectURL(url);
+    }, 1500);
+  } catch (e) {
+    console.error("Blob download error:", e);
+  }
+}
+
+async function shareBetslipToPlatform(platform) {
   const data = getBetslipShareData();
   if (data.count === 0) {
     if (typeof showAppNotification === 'function') {
@@ -4133,6 +4192,180 @@ function shareBetslipToPlatform(platform) {
 
   const siteUrl = data.siteUrl || "https://deeppredictbet.pages.dev";
   const logoUrl = `${siteUrl}/assets/logo-3d.png`;
+
+  // Branch on selected format: 'image' vs 'text'
+  if (_betslipShareFormat === 'image') {
+    await shareBetslipImageToPlatform(platform, data, siteUrl, logoUrl);
+    return;
+  }
+
+  shareBetslipTextToPlatform(platform, data, siteUrl, logoUrl);
+}
+
+async function shareBetslipImageToPlatform(platform, data, siteUrl, logoUrl) {
+  let canvas = null;
+  try {
+    canvas = await generateBetslipTicketCanvas();
+  } catch (e) {
+    console.error("Error generating canvas ticket:", e);
+  }
+
+  if (!canvas) {
+    if (typeof showAppNotification === 'function') {
+      showAppNotification("⚠️ Ticket image creation fallback. Outputting text breakdown.");
+    }
+    shareBetslipTextToPlatform(platform, data, siteUrl, logoUrl);
+    return;
+  }
+
+  // Generate PNG Blob
+  const blob = await new Promise((resolve) => {
+    if (canvas.toBlob) {
+      canvas.toBlob(resolve, 'image/png');
+    } else {
+      resolve(null);
+    }
+  });
+
+  const filename = `DeepPredictBet-Betslip-${Date.now().toString().slice(-6)}.png`;
+
+  if (blob) {
+    // 1. Copy image directly to user's clipboard for instant Ctrl+V paste
+    if (navigator.clipboard && window.ClipboardItem) {
+      try {
+        await navigator.clipboard.write([
+          new ClipboardItem({ 'image/png': blob })
+        ]);
+      } catch (clipErr) {
+        console.warn("Clipboard image write permission not granted:", clipErr);
+      }
+    }
+
+    // 2. Automatically download the high-res PNG image
+    downloadBlobFile(blob, filename);
+  } else {
+    // Canvas download fallback via dataURL
+    try {
+      const link = document.createElement('a');
+      link.download = filename;
+      link.href = canvas.toDataURL('image/png');
+      document.body.appendChild(link);
+      link.click();
+      setTimeout(() => document.body.removeChild(link), 500);
+    } catch (e) {}
+  }
+
+  const platformNames = {
+    whatsapp: 'WhatsApp',
+    email: 'Email',
+    x: 'X',
+    instagram: 'Instagram',
+    facebook: 'Facebook',
+    threads: 'Threads',
+    pinterest: 'Pinterest'
+  };
+  const platName = platformNames[platform] || 'Social Media';
+
+  // Mobile Web Share API with image file support (if available on native devices)
+  if (blob && typeof navigator !== 'undefined' && navigator.share && navigator.canShare) {
+    try {
+      const file = new File([blob], filename, { type: 'image/png' });
+      if (navigator.canShare({ files: [file] })) {
+        const shareText = `🏆 DeepPredictBet AI Accumulator: ${data.count} Matches (@${data.totalOdds})\n⚡ Verified: ${siteUrl}`;
+        await navigator.share({
+          title: `DeepPredictBet AI Betslip (${data.count} Matches @${data.totalOdds})`,
+          text: shareText,
+          url: siteUrl,
+          files: [file]
+        });
+        if (typeof showAppNotification === 'function') {
+          showAppNotification(`🖼️ Shared branded PNG ticket to ${platName}!`);
+        }
+        return;
+      }
+    } catch (shareErr) {
+      console.log("Device share dismissed or bypassed, launching platform intent:", shareErr);
+    }
+  }
+
+  // Web intents for each platform
+  switch (platform) {
+    case 'whatsapp': {
+      if (typeof showAppNotification === 'function') {
+        showAppNotification("🖼️ PNG Ticket image copied & downloaded! Paste (Ctrl+V) directly into WhatsApp.");
+      }
+      const caption = `🏆 DeepPredictBet AI Accumulator (${data.count} Matches @${data.totalOdds})\n⚡ Verified by AI: ${siteUrl}\nOfficial Logo: ${logoUrl}`;
+      const waUrl = `https://api.whatsapp.com/send?text=${encodeURIComponent(caption)}`;
+      window.open(waUrl, '_blank', 'noopener,noreferrer');
+      break;
+    }
+
+    case 'email': {
+      if (typeof showAppNotification === 'function') {
+        showAppNotification("🖼️ PNG Ticket image downloaded! Attach it to your email.");
+      }
+      const subject = `DeepPredictBet AI Ticket: ${data.count} Matches (@${data.totalOdds} Odds)`;
+      const body = `Hi,\n\nAttached is my DeepPredictBet AI Accumulator ticket with ${data.count} curated matches (@${data.totalOdds} Total Odds).\n\n⚡ Verified on DeepPredictBet: ${siteUrl}\nOfficial Logo: ${logoUrl}\n\n(Branded PNG ticket image has been automatically downloaded to your device)`;
+      window.location.href = `mailto:?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+      break;
+    }
+
+    case 'x': {
+      if (typeof showAppNotification === 'function') {
+        showAppNotification("🖼️ PNG Ticket copied to clipboard & downloaded! Paste (Ctrl+V) into your tweet.");
+      }
+      const tweet = `🏆 DEEPPREDICTBET AI ACCA (@${data.totalOdds})\n🔥 ${data.count} Curated Matches with Verified AI Confidence!\n⚡ Check selections: ${siteUrl}\n#DeepPredictBet #Accumulator #FootballTips`;
+      const xUrl = `https://twitter.com/intent/tweet?text=${encodeURIComponent(tweet)}`;
+      window.open(xUrl, '_blank', 'noopener,noreferrer,width=600,height=450');
+      break;
+    }
+
+    case 'instagram': {
+      if (typeof showAppNotification === 'function') {
+        showAppNotification("🖼️ PNG Ticket downloaded & copied! Opening Instagram...");
+      }
+      window.open('https://www.instagram.com/', '_blank', 'noopener,noreferrer');
+      break;
+    }
+
+    case 'facebook': {
+      if (typeof showAppNotification === 'function') {
+        showAppNotification("🖼️ PNG Ticket copied to clipboard & downloaded! Paste into your Facebook post.");
+      }
+      const fbUrl = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(siteUrl)}`;
+      window.open(fbUrl, '_blank', 'noopener,noreferrer,width=600,height=500');
+      break;
+    }
+
+    case 'threads': {
+      if (typeof showAppNotification === 'function') {
+        showAppNotification("🖼️ PNG Ticket copied to clipboard & downloaded! Paste (Ctrl+V) into Threads.");
+      }
+      const threadText = `🏆 DEEPPREDICTBET AI ACCA (@${data.totalOdds})\n🔥 ${data.count} Curated Matches\n⚡ Verified by DeepPredictBet AI Engine: ${siteUrl}\n#DeepPredictBet`;
+      const threadsUrl = `https://www.threads.net/intent/post?text=${encodeURIComponent(threadText)}`;
+      window.open(threadsUrl, '_blank', 'noopener,noreferrer');
+      break;
+    }
+
+    case 'pinterest': {
+      if (typeof showAppNotification === 'function') {
+        showAppNotification("🖼️ PNG Ticket downloaded! Pinning to Pinterest...");
+      }
+      const pinDesc = `DeepPredictBet AI Accumulator - ${data.count} Curated Matches (@${data.totalOdds} Total Odds). Verified by AI on ${siteUrl}`;
+      const pinUrl = `https://pinterest.com/pin/create/button/?url=${encodeURIComponent(siteUrl)}&media=${encodeURIComponent(logoUrl)}&description=${encodeURIComponent(pinDesc)}`;
+      window.open(pinUrl, '_blank', 'noopener,noreferrer,width=750,height=600');
+      break;
+    }
+
+    default:
+      if (typeof showAppNotification === 'function') {
+        showAppNotification("🖼️ Branded PNG Ticket copied to clipboard & downloaded!");
+      }
+      break;
+  }
+}
+
+function shareBetslipTextToPlatform(platform, data, siteUrl, logoUrl) {
   const shareText = buildBetslipShareText(platform);
 
   switch (platform) {
@@ -4162,9 +4395,8 @@ function shareBetslipToPlatform(platform) {
 
     case 'instagram': {
       copyBetslipShareText(true);
-      downloadBetslipTicketImage();
       if (typeof showAppNotification === 'function') {
-        showAppNotification("📸 DeepPredictBet ticket saved & clubs copied! Opening Instagram...");
+        showAppNotification("📝 Active betslip text copied! Opening Instagram...");
       }
       window.open('https://www.instagram.com/', '_blank', 'noopener,noreferrer');
       break;
@@ -4509,6 +4741,11 @@ function downloadBetslipTicketImage() {
 }
 
 // Expose Social Share functions globally
+window._betslipShareFormat = _betslipShareFormat;
+window.setBetslipShareFormat = setBetslipShareFormat;
+window.downloadBlobFile = downloadBlobFile;
+window.shareBetslipImageToPlatform = shareBetslipImageToPlatform;
+window.shareBetslipTextToPlatform = shareBetslipTextToPlatform;
 window.openBetslipShareModal = openBetslipShareModal;
 window.closeBetslipShareModal = closeBetslipShareModal;
 window.getBetslipShareData = getBetslipShareData;

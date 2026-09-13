@@ -39,7 +39,7 @@
   <meta name="theme-color" content="#080b11">
   <meta name="msapplication-TileColor" content="#080b11">
 
-  <link rel="stylesheet" href="css/main.css?v=20261026_betslip_share_v4">
+  <link rel="stylesheet" href="css/main.css?v=20261026_betslip_share_v5">
 
   <script>
     function toggleMobileDrawer() {
@@ -5882,9 +5882,25 @@
           </button>
         </div>
 
-        <!-- Social Platforms Sharing Grid (All 7 Platforms) -->
+        <!-- Social Platforms Sharing Grid (All 7 Platforms with Format Output Selector) -->
         <div class="betslip-share-platforms-section">
-          <div class="share-platforms-heading">Direct Share to Social Media:</div>
+          <div class="share-format-selector-row">
+            <div class="share-platforms-heading">Direct Share to Social Media:</div>
+            <div class="share-format-tabs" role="tablist" aria-label="Output Format Selection">
+              <button type="button" class="share-format-tab active" id="share-format-image-tab" onclick="setBetslipShareFormat('image')" role="tab" aria-selected="true" title="Output Branded PNG Ticket Image">
+                <span class="format-tab-icon">🖼️</span>
+                <span>PNG Image</span>
+              </button>
+              <button type="button" class="share-format-tab" id="share-format-text-tab" onclick="setBetslipShareFormat('text')" role="tab" aria-selected="false" title="Output Text Predictions">
+                <span class="format-tab-icon">📝</span>
+                <span>Text Only</span>
+              </button>
+            </div>
+          </div>
+          <div class="share-format-status-badge" id="share-format-status-badge">
+            <span class="status-dot"></span>
+            <span id="share-format-status-text">Output: <b>Branded PNG Ticket Image</b> (Auto-copied & downloaded for direct post)</span>
+          </div>
           <div class="betslip-share-grid">
             <!-- WhatsApp -->
             <button class="share-btn share-whatsapp" onclick="shareBetslipToPlatform('whatsapp')" title="Share to WhatsApp">
@@ -5960,12 +5976,12 @@
   </nav>
 
   <!-- --- LOAD SCRIPTS (Classic Day 1 Architecture) --- -->
-  <script src="js/data.js?v=20261026_betslip_share_v4"></script>
-  <script src="js/vipManager.js?v=20261026_betslip_share_v4"></script>
-  <script src="js/ui.js?v=20261026_betslip_share_v4"></script>
-  <script src="js/router.js?v=20261026_betslip_share_v4"></script>
-  <script src="js/app.js?v=20261026_betslip_share_v4"></script>
-  <script src="js/liveFixtures.js?v=20261026_betslip_share_v4"></script>
+  <script src="js/data.js?v=20261026_betslip_share_v5"></script>
+  <script src="js/vipManager.js?v=20261026_betslip_share_v5"></script>
+  <script src="js/ui.js?v=20261026_betslip_share_v5"></script>
+  <script src="js/router.js?v=20261026_betslip_share_v5"></script>
+  <script src="js/app.js?v=20261026_betslip_share_v5"></script>
+  <script src="js/liveFixtures.js?v=20261026_betslip_share_v5"></script>
   <script>
     // Clean global helper bindings
     window.addEventListener('DOMContentLoaded', () => {
