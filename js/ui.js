@@ -4057,7 +4057,7 @@ function buildBetslipShareText(platform) {
   if (data.count === 0) return "";
 
   const siteUrl = data.siteUrl || "https://deeppredictbet.pages.dev";
-  const logoUrl = `${siteUrl}/assets/logo-3d-transparent.png`;
+  const logoUrl = `${siteUrl}/assets/logo-3d.png`;
 
   // Custom text per platform
   if (platform === 'x') {
@@ -4132,7 +4132,7 @@ function shareBetslipToPlatform(platform) {
   }
 
   const siteUrl = data.siteUrl || "https://deeppredictbet.pages.dev";
-  const logoUrl = `${siteUrl}/assets/logo-3d-transparent.png`;
+  const logoUrl = `${siteUrl}/assets/logo-3d.png`;
   const shareText = buildBetslipShareText(platform);
 
   switch (platform) {
@@ -4342,7 +4342,7 @@ function generateBetslipTicketCanvas() {
         drawCanvasContent(null);
       }
     };
-    logoImg.src = 'assets/logo-3d-transparent.png';
+    logoImg.src = 'assets/logo-3d.png';
     if (logoImg.complete) {
       triggerDraw();
     }
