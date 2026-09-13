@@ -1270,7 +1270,7 @@ function getBetslipShareData() {
     items,
     count: items.length,
     totalOdds: formattedOdds,
-    siteUrl: "https://deeppredictbet.pages.dev"
+    siteUrl: "https://deeppredictbet.com/"
   };
 }
 
@@ -1278,7 +1278,7 @@ function buildBetslipShareText(platform) {
   const data = getBetslipShareData();
   if (data.count === 0) return "";
 
-  const siteUrl = data.siteUrl || "https://deeppredictbet.pages.dev";
+  const siteUrl = data.siteUrl || "https://deeppredictbet.com/";
   const logoUrl = `${siteUrl}/assets/logo-3d.png`;
 
   // Custom text per platform
@@ -1370,7 +1370,7 @@ async function shareBetslipToPlatform(platform) {
     return;
   }
 
-  const siteUrl = data.siteUrl || "https://deeppredictbet.pages.dev";
+  const siteUrl = data.siteUrl || "https://deeppredictbet.com/";
   const logoUrl = `${siteUrl}/assets/logo-3d.png`;
 
   // Branch on selected format: 'image' vs 'text'
@@ -1612,7 +1612,7 @@ async function shareBetslipViaDevice() {
   const data = getBetslipShareData();
   if (data.count === 0) return;
   const shareText = buildBetslipShareText('whatsapp');
-  const siteUrl = data.siteUrl || "https://deeppredictbet.pages.dev";
+  const siteUrl = data.siteUrl || "https://deeppredictbet.com/";
 
   if (typeof navigator !== 'undefined' && navigator.share) {
     try {
@@ -1894,7 +1894,7 @@ function generateBetslipTicketCanvas() {
       ctx.fillStyle = '#38bdf8';
       ctx.font = 'bold 13px monospace';
       ctx.textAlign = 'right';
-      ctx.fillText('https://deeppredictbet.pages.dev', width - 45, footY + 4);
+      ctx.fillText('https://deeppredictbet.com/', width - 45, footY + 4);
 
       resolve(canvas);
     }
