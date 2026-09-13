@@ -1701,13 +1701,13 @@ function generateBetslipTicketCanvas() {
       return;
     }
 
-    const itemsToDraw = data.items.slice(0, 16);
+    const itemsToDraw = data.items;
     const canvas = document.createElement('canvas');
-    const width = 800;
+    const width = 860;
     const headerHeight = 220;
     const rowHeight = 44;
     const footerHeight = 90;
-    const height = headerHeight + (itemsToDraw.length * rowHeight) + footerHeight + (data.count > 16 ? 40 : 0);
+    const height = headerHeight + (itemsToDraw.length * rowHeight) + footerHeight;
 
     canvas.width = width;
     canvas.height = height;
@@ -1788,7 +1788,7 @@ function generateBetslipTicketCanvas() {
       ctx.strokeStyle = 'rgba(255, 255, 255, 0.12)';
       ctx.lineWidth = 1.5;
       ctx.beginPath();
-      ctx.roundRect(40, pillY, 220, pillH, 8);
+      ctx.roundRect(40, pillY, 230, pillH, 8);
       ctx.fill();
       ctx.stroke();
 
@@ -1803,33 +1803,35 @@ function generateBetslipTicketCanvas() {
       // Total Odds Pill
       ctx.fillStyle = 'rgba(30, 41, 59, 0.8)';
       ctx.beginPath();
-      ctx.roundRect(width - 260, pillY, 220, pillH, 8);
+      ctx.roundRect(width - 270, pillY, 230, pillH, 8);
       ctx.fill();
       ctx.stroke();
 
       ctx.fillStyle = '#94a3b8';
       ctx.font = 'bold 11px sans-serif';
-      ctx.fillText('TOTAL ACCUMULATOR ODDS', width - 244, pillY + 20);
+      ctx.fillText('TOTAL ACCUMULATOR ODDS', width - 254, pillY + 20);
       ctx.fillStyle = '#fbbf24';
       ctx.font = 'bold 20px sans-serif';
-      ctx.fillText(`@${data.totalOdds}`, width - 244, pillY + 41);
+      ctx.fillText(`@${data.totalOdds}`, width - 254, pillY + 41);
 
       // Status Pill (Center)
+      const centerPillW = 250;
+      const centerPillX = (width - centerPillW) / 2;
       ctx.fillStyle = 'rgba(16, 185, 129, 0.15)';
       ctx.strokeStyle = '#10b981';
       ctx.beginPath();
-      ctx.roundRect(280, pillY, 240, pillH, 8);
+      ctx.roundRect(centerPillX, pillY, centerPillW, pillH, 8);
       ctx.fill();
       ctx.stroke();
 
       ctx.fillStyle = '#34d399';
       ctx.font = 'bold 12px sans-serif';
       ctx.textAlign = 'center';
-      ctx.fillText('STATUS: VERIFIED', 400, pillY + 22);
+      ctx.fillText('STATUS: VERIFIED', width / 2, pillY + 22);
 
       ctx.fillStyle = '#a7f3d0';
       ctx.font = 'bold 14px sans-serif';
-      ctx.fillText('⚡ Engine Algorithmic EV+', 400, pillY + 41);
+      ctx.fillText('⚡ Engine Algorithmic EV+', width / 2, pillY + 41);
 
       // 3. Render Fixture Rows
       let startY = 210;
@@ -1851,16 +1853,16 @@ function generateBetslipTicketCanvas() {
         // Fixture (Home vs Away)
         ctx.fillStyle = '#ffffff';
         ctx.font = 'bold 15px sans-serif';
-        ctx.fillText(item.fixture, 95, rowY + 10);
+        ctx.fillText(item.fixture, 95, rowY + 10, 260);
 
         // League & Tip
         ctx.fillStyle = '#94a3b8';
         ctx.font = '12px sans-serif';
-        ctx.fillText(`[${item.league}]`, 375, rowY + 10);
+        ctx.fillText(`[${item.league}]`, 370, rowY + 10, 110);
 
         ctx.fillStyle = '#fbbf24';
         ctx.font = 'bold 13px sans-serif';
-        ctx.fillText(`Tip: ${item.tip}`, 530, rowY + 10);
+        ctx.fillText(`Tip: ${item.tip}`, 495, rowY + 10, 240);
 
         // Odds Badge
         ctx.fillStyle = '#34d399';
@@ -1868,15 +1870,6 @@ function generateBetslipTicketCanvas() {
         ctx.textAlign = 'right';
         ctx.fillText(`@${item.odds}`, width - 52, rowY + 10);
       });
-
-      // Extra count notice if capped
-      if (data.count > 16) {
-        const extraY = startY + (16 * rowHeight) + 10;
-        ctx.fillStyle = '#38bdf8';
-        ctx.font = 'italic 13px sans-serif';
-        ctx.textAlign = 'center';
-        ctx.fillText(`... and ${data.count - 16} additional curated matches on DeepPredictBet`, width / 2, extraY);
-      }
 
       // 4. Ticket Footer
       const footY = height - 45;
