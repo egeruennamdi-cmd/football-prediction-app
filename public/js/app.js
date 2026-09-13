@@ -1097,11 +1097,7 @@ function openBetslipShareModal(e) {
       return;
     }
 
-    // 2. Collapse floating betslip drawer so modal is fully visible and unobscured
-    const drawer = document.getElementById("floating-betslip-drawer");
-    if (drawer) {
-      drawer.classList.remove("open");
-    }
+    // 2. Active Betslip Builder drawer remains open and intact beneath modal overlay
 
     // 3. Populate Modal Fixture List with all clubs from Active Betslip Builder
     let totalOdds = 1.0;
