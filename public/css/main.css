@@ -4682,6 +4682,17 @@ header {
   box-shadow: 0 6px 16px rgba(230, 0, 35, 0.35);
 }
 
+.share-telegram {
+  background: #229ED9;
+  box-shadow: 0 4px 12px rgba(34, 158, 217, 0.28);
+}
+
+.share-telegram:hover {
+  background: #1b8ec5;
+  transform: translateY(-1px);
+  box-shadow: 0 6px 16px rgba(34, 158, 217, 0.4);
+}
+
 @media (max-width: 520px) {
   .betslip-share-grid {
     grid-template-columns: repeat(2, 1fr);
@@ -4690,4 +4701,32 @@ header {
     grid-template-columns: 1fr;
   }
 }
+
+/* Top Tips Tool Enhanced Layout & Interaction Styling */
+#deeppredictbet-tools,
+#tool-toptips,
+.tool-content-pane {
+  scroll-margin-top: 90px;
+}
+
+.toptips-row-container:hover {
+  background: rgba(255, 255, 255, 0.025);
+}
+
+.toptips-add-slip-btn:hover {
+  filter: brightness(1.12);
+  transform: translateY(-1px);
+}
+
+.toptips-add-slip-btn.in-slip {
+  background: linear-gradient(135deg, #10b981 0%, #059669 100%) !important;
+}
+
+.toptips-markets-btn:hover {
+  background: rgba(255, 255, 255, 0.12) !important;
+  border-color: rgba(255, 255, 255, 0.3) !important;
+  transform: translateY(-1px);
+}
+
+
 

@@ -3,6 +3,7 @@
 
 <head>
   <meta charset="UTF-8">
+  <base href="/">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta http-equiv="X-Content-Type-Options" content="nosniff">
   <meta http-equiv="X-Frame-Options" content="SAMEORIGIN">
@@ -37,7 +38,7 @@
   <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png?v=20261026_opt2">
   <link rel="manifest" href="/site.webmanifest?v=20261026_opt2">
   <meta name="theme-color" content="#080b11">
-  <link rel="stylesheet" href="css/main.css?v=20261026_betslip_share_v8">
+  <link rel="stylesheet" href="/css/main.css?v=20261026_betslip_share_v8">
 
   <script>
     function toggleMobileDrawer() {
@@ -95,7 +96,7 @@
           title="Open Menu Drawer">
           ☰
         </button>
-        <a href="#predictions" class="logo" onclick="if(typeof navigateToPage==='function'){navigateToPage('predictions');}else if(typeof handleRouteNavigation==='function'){handleRouteNavigation();}else{window.location.hash='#predictions';}"
+        <a href="/" class="logo" onclick="if(typeof navigateToPage==='function'){navigateToPage('predictions');}else if(typeof handleRouteNavigation==='function'){handleRouteNavigation();}else{window.location.hash='#predictions';}"
           style="text-transform: none; text-decoration: none; display: inline-flex; align-items: center; cursor: pointer;" title="DeepPredictBet Home">
           <img src="/assets/logo-3d.png?v=20261026_opt3_pure" alt="DeepPredictBet" class="brand-logo-img">
           <span class="sr-only" style="position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0,0,0,0); border: 0;">DeepPredictBet</span>
@@ -103,7 +104,7 @@
       </div>
       <nav>
         <ul class="nav-menu">
-          <li><a href="#predictions" class="nav-link">Home</a></li>
+          <li><a href="/" class="nav-link">Home</a></li>
 
           <!-- DROPDOWN 1: PREDICTIONS -->
           <li class="dropdown-li">
@@ -111,7 +112,7 @@
               Predictions <span style="font-size: 0.7rem; opacity: 0.7;">▼</span>
             </a>
             <div class="nav-dropdown">
-              <a href="#predictions" class="nav-dropdown-item" onclick="triggerQuickFilter('today', 'all')">
+              <a href="/" class="nav-dropdown-item" onclick="triggerQuickFilter('today', 'all')">
                 📅 Today's Predictions
               </a>
               <div class="nav-dropdown-submenu">
@@ -253,28 +254,28 @@
               Betting Tools <span style="font-size: 0.7rem; opacity: 0.7;">▼</span>
             </a>
             <div class="nav-dropdown">
-              <a href="#doctor" class="nav-dropdown-item" style="border-bottom: none;">
+              <a href="/bet-doctor" class="nav-dropdown-item" style="border-bottom: none;">
                 🩺 AI Bet Doctor
               </a>
-              <a href="#arbitrage" class="nav-dropdown-item" style="border-bottom: none;">
+              <a href="/arbitrage" class="nav-dropdown-item" style="border-bottom: none;">
                 🛡️ Arbitrage & SureBet Finder
               </a>
-              <a href="#generator" class="nav-dropdown-item" style="border-bottom: none;">
+              <a href="/generator" class="nav-dropdown-item" style="border-bottom: none;">
                 🤖 Bet Generator (Machine)
               </a>
-              <a href="#converter" class="nav-dropdown-item" style="border-bottom: none;">
+              <a href="/bet-code-converter" class="nav-dropdown-item" style="border-bottom: none;">
                 🎫 Bet Code Converter
               </a>
-              <a href="#backtester" class="nav-dropdown-item" style="border-bottom: none;">
+              <a href="/backtester" class="nav-dropdown-item" style="border-bottom: none;">
                 🧪 Strategy Backtester
               </a>
-              <a href="#valuebot" class="nav-dropdown-item" style="border-bottom: none;">
+              <a href="/valuebot" class="nav-dropdown-item" style="border-bottom: none;">
                 💰 Value Bet Bot
               </a>
-              <a href="#toptips" class="nav-dropdown-item" style="border-bottom: none;">
+              <a href="/top-tips" class="nav-dropdown-item" style="border-bottom: none;">
                 🌟 Top Tips Tracker
               </a>
-              <a href="#scanner" class="nav-dropdown-item" style="border-bottom: none;">
+              <a href="/live-scanner" class="nav-dropdown-item" style="border-bottom: none;">
                 📡 Live & Pre-Match Scanner
               </a>
             </div>
@@ -286,7 +287,7 @@
               Analytics <span style="font-size: 0.7rem; opacity: 0.7;">▼</span>
             </a>
             <div class="nav-dropdown">
-              <a href="#analytics" class="nav-dropdown-item" style="border-bottom: none;">
+              <a href="/analytics" class="nav-dropdown-item" style="border-bottom: none;">
                 📊 League Stats Ledger
               </a>
               <a href="#predictions" class="nav-dropdown-item" style="border-bottom: none;">
@@ -411,7 +412,7 @@
       </div>
 
       <!-- Item: Matches -->
-      <a href="#predictions" onclick="toggleMobileDrawer()" class="mobile-drawer-item active"
+      <a href="/" onclick="toggleMobileDrawer()" class="mobile-drawer-item active"
         style="display: flex; align-items: center; justify-content: space-between; padding: 10px 14px; border-radius: 12px; text-decoration: none; color: #047857; background: linear-gradient(135deg, rgba(16, 185, 129, 0.12) 0%, rgba(5, 150, 105, 0.06) 100%); border: 1px solid rgba(16, 185, 129, 0.3); font-weight: 800; font-size: 0.93rem; box-shadow: 0 2px 8px rgba(16, 185, 129, 0.12);">
         <span style="display: flex; align-items: center; gap: 12px;">
           <span
@@ -439,7 +440,7 @@
       </a>
 
       <!-- Item: Advanced Filters -->
-      <a href="#toptips" onclick="toggleMobileDrawer()" class="mobile-drawer-item"
+      <a href="/top-tips" onclick="toggleMobileDrawer()" class="mobile-drawer-item"
         style="display: flex; align-items: center; gap: 12px; padding: 10px 14px; border-radius: 12px; text-decoration: none; color: #0f172a; background: #f8fafc; border: 1px solid #e2e8f0; font-weight: 700; font-size: 0.93rem; transition: all 0.2s ease;">
         <span
           style="width: 32px; height: 32px; border-radius: 8px; background: rgba(239, 68, 68, 0.12); display: flex; align-items: center; justify-content: center; font-size: 1.05rem;">🎯</span>
@@ -447,7 +448,7 @@
       </a>
 
       <!-- Item: DeepPredict Machine -->
-      <a href="#generator" onclick="toggleMobileDrawer()" class="mobile-drawer-item"
+      <a href="/generator" onclick="toggleMobileDrawer()" class="mobile-drawer-item"
         style="display: flex; align-items: center; gap: 12px; padding: 10px 14px; border-radius: 12px; text-decoration: none; color: #0f172a; background: #f8fafc; border: 1px solid #e2e8f0; font-weight: 700; font-size: 0.93rem; transition: all 0.2s ease;">
         <span
           style="width: 32px; height: 32px; border-radius: 8px; background: rgba(168, 85, 247, 0.12); display: flex; align-items: center; justify-content: center; font-size: 1.05rem;">🎰</span>
@@ -525,19 +526,19 @@
         </div>
         <div id="mobile-acc-tools"
           style="display: none; flex-direction: column; border-top: 1px solid #e2e8f0; background: #ffffff; padding: 8px 12px 10px; gap: 6px;">
-          <a href="#doctor" onclick="toggleMobileDrawer()"
+          <a href="/bet-doctor" onclick="toggleMobileDrawer()"
             style="color: #334155; font-size: 0.86rem; text-decoration: none; font-weight: 700; padding: 6px 10px; border-radius: 8px; background: #f8fafc; display: flex; align-items: center; gap: 8px;">🩺
             AI Bet Doctor</a>
-          <a href="#arbitrage" onclick="toggleMobileDrawer()"
+          <a href="/arbitrage" onclick="toggleMobileDrawer()"
             style="color: #334155; font-size: 0.86rem; text-decoration: none; font-weight: 700; padding: 6px 10px; border-radius: 8px; background: #f8fafc; display: flex; align-items: center; gap: 8px;">🛡️
             Arbitrage Finder</a>
-          <a href="#converter" onclick="toggleMobileDrawer()"
+          <a href="/bet-code-converter" onclick="toggleMobileDrawer()"
             style="color: #334155; font-size: 0.86rem; text-decoration: none; font-weight: 700; padding: 6px 10px; border-radius: 8px; background: #f8fafc; display: flex; align-items: center; gap: 8px;">🎫
             Bet Code Converter</a>
-          <a href="#backtester" onclick="toggleMobileDrawer()"
+          <a href="/backtester" onclick="toggleMobileDrawer()"
             style="color: #334155; font-size: 0.86rem; text-decoration: none; font-weight: 700; padding: 6px 10px; border-radius: 8px; background: #f8fafc; display: flex; align-items: center; gap: 8px;">🧪
             Strategy Backtester</a>
-          <a href="#valuebot" onclick="toggleMobileDrawer()"
+          <a href="/valuebot" onclick="toggleMobileDrawer()"
             style="color: #334155; font-size: 0.86rem; text-decoration: none; font-weight: 700; padding: 6px 10px; border-radius: 8px; background: #f8fafc; display: flex; align-items: center; gap: 8px;">💰
             Value Bet Bot</a>
           <a href="javascript:void(0)" onclick="openVipFeatureManager(); toggleMobileDrawer();"
@@ -662,72 +663,6 @@
       </div>
 
 
-      <!-- ULTRA-PREMIUM HERO FEATURE SUITE SHOWCASE -->
-      <div class="glass-card"
-        style="max-width: 680px; margin: 0 auto 20px; padding: 22px 24px; border: 1.5px solid rgba(59, 130, 246, 0.45); background: linear-gradient(135deg, rgba(15, 23, 42, 0.95) 0%, rgba(30, 58, 138, 0.4) 50%, rgba(15, 23, 42, 0.95) 100%); border-radius: var(--radius-md); box-shadow: 0 12px 36px rgba(0, 0, 0, 0.6), inset 0 0 20px rgba(59, 130, 246, 0.15); text-align: center;">
-
-        <!-- Top Glowing Badge -->
-        <div
-          style="display: inline-flex; align-items: center; gap: 8px; background: rgba(37, 99, 235, 0.18); border: 1px solid rgba(59, 130, 246, 0.4); padding: 5px 14px; border-radius: 20px; margin-bottom: 14px;">
-          <span style="animation: pulse 1.5s infinite; color: #38bdf8; font-size: 0.8rem;">●</span>
-          <span
-            style="font-family: var(--font-display); font-size: 0.78rem; font-weight: 800; color: #38bdf8; text-transform: uppercase; letter-spacing: 1px;">⚡
-            ALL-IN-ONE NEURAL FOOTBALL ENGINE</span>
-        </div>
-
-        <!-- Main Glowing Feature Paragraph -->
-        <p
-          style="font-family: var(--font-body); font-size: 0.95rem; font-weight: 600; color: #e2e8f0; line-height: 1.6; margin: 0 0 16px 0; text-shadow: 0 2px 8px rgba(0,0,0,0.5);">
-          Access <span style="color: #38bdf8; font-weight: 800;">Real-Time Match Predictions</span>, <span
-            style="color: #60a5fa; font-weight: 800;">Booking Code Converter</span>, <span
-            style="color: #34d399; font-weight: 800;">Bet Generator</span>, <span
-            style="color: #f472b6; font-weight: 800;">AI Bet-Doctor Diagnostics</span>, <span
-            style="color: #fbbf24; font-weight: 800;">Arbitrage Finder</span>, <span
-            style="color: #a78bfa; font-weight: 800;">Live Scanner</span>, <span
-            style="color: #38bdf8; font-weight: 800;">Pre-Match Scanner</span>, <span
-            style="color: #34d399; font-weight: 800;">Top Tips Tracker</span>, <span
-            style="color: #fbbf24; font-weight: 800;">Advance Filters</span>, <span
-            style="color: #f472b6; font-weight: 800;">Value Bet Bot</span> and <span
-            style="color: #a78bfa; font-weight: 800;">Tactical Scout Preview</span>.
-        </p>
-
-        <!-- Interactive Feature Pills Grid -->
-        <div style="display: flex; flex-wrap: wrap; gap: 8px; justify-content: center;">
-          <span onclick="window.location.hash='#predictions'"
-            style="background: rgba(56, 189, 248, 0.12); border: 1px solid rgba(56, 189, 248, 0.35); color: #38bdf8; font-size: 0.72rem; font-weight: 800; padding: 4px 10px; border-radius: 12px; cursor: pointer; transition: all 0.2s ease;">⚽
-            Match Predictions</span>
-          <span onclick="window.location.hash='#converter'"
-            style="background: rgba(96, 165, 250, 0.12); border: 1px solid rgba(96, 165, 250, 0.35); color: #60a5fa; font-size: 0.72rem; font-weight: 800; padding: 4px 10px; border-radius: 12px; cursor: pointer; transition: all 0.2s ease;">🎫
-            Booking Code Converter</span>
-          <span onclick="triggerToolRoute('generator')"
-            style="background: rgba(52, 211, 153, 0.12); border: 1px solid rgba(52, 211, 153, 0.35); color: #34d399; font-size: 0.72rem; font-weight: 800; padding: 4px 10px; border-radius: 12px; cursor: pointer; transition: all 0.2s ease;">⚡
-            Bet Generator</span>
-          <span onclick="openBetDoctorModal()"
-            style="background: rgba(244, 114, 182, 0.12); border: 1px solid rgba(244, 114, 182, 0.35); color: #f472b6; font-size: 0.72rem; font-weight: 800; padding: 4px 10px; border-radius: 12px; cursor: pointer; transition: all 0.2s ease;">🩺
-            AI Bet-Doctor</span>
-          <span onclick="triggerToolRoute('arbitrage')"
-            style="background: rgba(251, 191, 36, 0.12); border: 1px solid rgba(251, 191, 36, 0.35); color: #fbbf24; font-size: 0.72rem; font-weight: 800; padding: 4px 10px; border-radius: 12px; cursor: pointer; transition: all 0.2s ease;">⚖️
-            Arbitrage Finder</span>
-          <span onclick="triggerToolRoute('scanner-live')"
-            style="background: rgba(167, 139, 250, 0.12); border: 1px solid rgba(167, 139, 250, 0.35); color: #a78bfa; font-size: 0.72rem; font-weight: 800; padding: 4px 10px; border-radius: 12px; cursor: pointer; transition: all 0.2s ease;">📡
-            Live Scanner</span>
-          <span onclick="triggerToolRoute('scanner-prematch')"
-            style="background: rgba(56, 189, 248, 0.12); border: 1px solid rgba(56, 189, 248, 0.35); color: #38bdf8; font-size: 0.72rem; font-weight: 800; padding: 4px 10px; border-radius: 12px; cursor: pointer; transition: all 0.2s ease;">🔍
-            Pre-Match Scanner</span>
-          <span onclick="triggerWatchlistFilter()"
-            style="background: rgba(52, 211, 153, 0.12); border: 1px solid rgba(52, 211, 153, 0.35); color: #34d399; font-size: 0.72rem; font-weight: 800; padding: 4px 10px; border-radius: 12px; cursor: pointer; transition: all 0.2s ease;">📊
-            Top Tips Tracker</span>
-          <span onclick="toggleAdvanceFilters()"
-            style="background: rgba(251, 191, 36, 0.12); border: 1px solid rgba(251, 191, 36, 0.35); color: #fbbf24; font-size: 0.72rem; font-weight: 800; padding: 4px 10px; border-radius: 12px; cursor: pointer; transition: all 0.2s ease;">🎛️
-            Advance Filters</span>
-          <span onclick="triggerToolRoute('valuebot')"
-            style="background: rgba(244, 114, 182, 0.12); border: 1px solid rgba(244, 114, 182, 0.35); color: #f472b6; font-size: 0.72rem; font-weight: 800; padding: 4px 10px; border-radius: 12px; cursor: pointer; transition: all 0.2s ease;">🤖
-            Value Bet Bot</span>
-          <span onclick="openGeneralScout()"
-            style="background: rgba(167, 139, 250, 0.12); border: 1px solid rgba(167, 139, 250, 0.35); color: #a78bfa; font-size: 0.72rem; font-weight: 800; padding: 4px 10px; border-radius: 12px; cursor: pointer; transition: all 0.2s ease;">🎯
-            Tactical Scout</span>
-        </div>
-      </div>
 
       <!-- Dynamic Hero Banner Image -->
       <div
@@ -1027,21 +962,6 @@
           </svg>
           Launch AI Scout
         </button>
-      </div>
-
-      <div class="hero-stats">
-        <div class="glass-card hero-stat-card">
-          <div class="hero-stat-val">87.6%</div>
-          <div class="hero-stat-lbl">Win Ratio</div>
-        </div>
-        <div class="glass-card hero-stat-card">
-          <div class="hero-stat-val">1,240+</div>
-          <div class="hero-stat-lbl">Matches Tracked</div>
-        </div>
-        <div class="glass-card hero-stat-card">
-          <div class="hero-stat-val">+48.2</div>
-          <div class="hero-stat-lbl">Units Profit</div>
-        </div>
       </div>
     </section>
 
@@ -1601,7 +1521,7 @@
     <div style="margin-bottom: 24px; border-bottom: 1px solid rgba(16, 185, 129, 0.3); padding-bottom: 16px;">
       <div
         style="font-size: 0.75rem; color: #10b981; font-weight: 800; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 4px;">
-        <a href="#predictions" style="color: #10b981; text-decoration: none;">Home</a> &gt; Bet Code Converter
+        <a href="/" style="color: #10b981; text-decoration: none;">Home</a> &gt; Bet Code Converter
       </div>
       <h1
         style="font-family: var(--font-display); font-size: 1.9rem; font-weight: 900; background: linear-gradient(135deg, #ffffff 0%, #10b981 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; margin: 0;">
@@ -2124,7 +2044,7 @@
     <div style="margin-bottom: 24px; border-bottom: 1px solid var(--border-color); padding-bottom: 16px;">
       <div
         style="font-size: 0.75rem; color: var(--text-secondary); font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 4px;">
-        <a href="#predictions" style="color: var(--primary); text-decoration: none;">Home</a> &gt; Real-Time Scanner
+        <a href="/" style="color: var(--primary); text-decoration: none;">Home</a> &gt; Real-Time Scanner
       </div>
       <h1
         style="font-family: var(--font-display); font-size: 1.8rem; font-weight: 900; color: var(--text-primary); margin: 0;">
@@ -3558,9 +3478,9 @@
 
             <!-- Matching Fixtures Table -->
             <div class="glass-card"
-              style="border: 1px solid var(--border-color); background: rgba(0, 0, 0, 0.15); overflow-x: auto; padding: 0;">
+              style="border: 1px solid var(--border-color); background: rgba(0, 0, 0, 0.18); overflow-x: auto; padding: 0; border-radius: var(--radius-md);">
               <div
-                style="display: grid; grid-template-columns: 1.5fr 1fr 1fr 1fr 1.2fr; min-width: 600px; align-items: center; padding: 12px 16px; border-bottom: 1px solid var(--border-color); font-weight: 700; color: var(--text-secondary); font-size: 0.85rem; background: rgba(255, 255, 255, 0.02);">
+                style="display: grid; grid-template-columns: 2.2fr 1.2fr 0.9fr 0.9fr 2.6fr; min-width: 900px; align-items: center; padding: 14px 18px; border-bottom: 1px solid var(--border-color); font-weight: 800; color: #94a3b8; font-size: 0.82rem; background: rgba(255, 255, 255, 0.03); text-transform: uppercase; letter-spacing: 0.5px;">
                 <span>Match Selection</span>
                 <span>Target Market</span>
                 <span>Model Probability</span>
@@ -4309,9 +4229,9 @@
           <li><a href="#predictions" class="footer-link">Matches</a></li>
           <li><a href="#predictions" class="footer-link">Leagues</a></li>
           <li><a href="#predictions" class="footer-link">Match Previews</a></li>
-          <li><a href="#toptips" class="footer-link">Advanced Filters</a></li>
-          <li><a href="#generator" class="footer-link">DeepPredict Machine</a></li>
-          <li><a href="#converter" class="footer-link">Bet Code Converter</a></li>
+          <li><a href="/smart-filters" class="footer-link">Advanced Filters</a></li>
+          <li><a href="/generator" class="footer-link">DeepPredict Machine</a></li>
+          <li><a href="/bet-code-converter" class="footer-link">Bet Code Converter</a></li>
         </ul>
       </div>
 
@@ -4319,14 +4239,14 @@
       <div class="footer-col">
         <h4 class="footer-col-title">TOOLS</h4>
         <ul class="footer-links">
-          <li><a href="#analytics" class="footer-link">Leagues Stats</a></li>
-          <li><a href="#predictions" class="footer-link">Daily Bets</a></li>
-          <li><a href="#scanner" class="footer-link">Live Scanner</a></li>
-          <li><a href="#scanner" class="footer-link">Pre-Match Scanner</a></li>
-          <li><a href="#backtester" class="footer-link">Strategy Backtester</a></li>
-          <li><a href="#valuebot" class="footer-link">Value Bet Bot</a></li>
-          <li><a href="#toptips" class="footer-link">Top Tips Tracker</a></li>
-          <li><a href="#analytics" class="footer-link">Leaderboards & Stats</a></li>
+          <li><a href="/analytics" class="footer-link">Leagues Stats</a></li>
+          <li><a href="/" class="footer-link">Daily Bets</a></li>
+          <li><a href="/live-scanner" class="footer-link">Live Scanner</a></li>
+          <li><a href="/pre-match-scanner" class="footer-link">Pre-Match Scanner</a></li>
+          <li><a href="/backtester" class="footer-link">Strategy Backtester</a></li>
+          <li><a href="/valuebot" class="footer-link">Value Bet Bot</a></li>
+          <li><a href="/top-tips" class="footer-link">Top Tips Tracker</a></li>
+          <li><a href="/analytics" class="footer-link">Leaderboards & Stats</a></li>
         </ul>
       </div>
 
@@ -5941,6 +5861,12 @@
               <svg class="share-icon" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0c-6.627 0-12 5.372-12 12 0 5.084 3.163 9.426 7.627 11.174-.105-.949-.2-2.405.042-3.441.218-.937 1.407-5.965 1.407-5.965s-.359-.719-.359-1.782c0-1.668.967-2.914 2.171-2.914 1.023 0 1.518.769 1.518 1.69 0 1.029-.655 2.568-.994 3.995-.283 1.194.599 2.169 1.777 2.169 2.133 0 3.772-2.249 3.772-5.495 0-2.873-2.064-4.882-5.012-4.882-3.414 0-5.418 2.561-5.418 5.207 0 1.031.397 2.138.893 2.738.098.119.112.224.083.345l-.333 1.36c-.053.22-.174.267-.402.161-1.499-.698-2.436-2.889-2.436-4.649 0-3.785 2.75-7.262 7.929-7.262 4.163 0 7.398 2.967 7.398 6.931 0 4.136-2.607 7.464-6.227 7.464-1.216 0-2.359-.631-2.75-1.378l-.748 2.853c-.271 1.043-1.002 2.35-1.492 3.146 1.124.347 2.317.535 3.554.535 6.627 0 12-5.373 12-12 0-6.628-5.373-12-12-12z"/></svg>
               <span>Pinterest</span>
             </button>
+
+            <!-- Telegram -->
+            <button class="share-btn share-telegram" onclick="shareBetslipToPlatform('telegram')" title="Share to Telegram">
+              <svg class="share-icon" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm4.64 6.8c-.15 1.58-.8 5.42-1.13 7.19-.14.75-.42 1-.68 1.03-.58.05-1.02-.38-1.58-.75-.88-.58-1.38-.94-2.23-1.5-.99-.65-.35-1.01.22-1.59.15-.15 2.71-2.48 2.76-2.69a.2.2 0 00-.05-.18c-.06-.05-.14-.03-.21-.02-.09.02-1.49.95-4.22 2.79-.4.27-.76.41-1.08.4-.36-.01-1.04-.2-1.55-.37-.63-.2-1.12-.31-1.08-.66.02-.18.27-.36.75-.55 2.92-1.27 4.86-2.11 5.83-2.51 2.78-1.16 3.35-1.36 3.73-1.36.08 0 .27.02.39.12.1.08.13.19.14.27-.01.06.01.24 0 .38z"/></svg>
+              <span>Telegram</span>
+            </button>
           </div>
         </div>
       </div>
@@ -5949,7 +5875,7 @@
 
   <!-- --- MOBILE APP BOTTOM NAVIGATION BAR (MATCHING REFERENCE SCREENSHOT) --- -->
   <nav id="mobile-app-bottom-nav" class="mobile-bottom-nav">
-    <a href="#predictions" class="bottom-nav-item" onclick="if(typeof scrollToSection==='function') scrollToSection('predictions');">
+    <a href="/" class="bottom-nav-item" onclick="if(typeof scrollToSection==='function') scrollToSection('predictions');">
       <span class="bottom-nav-icon">⚽</span>
       <span class="bottom-nav-label">Leagues</span>
     </a>
@@ -5959,11 +5885,11 @@
       </div>
       <span class="bottom-nav-label" style="color: #15803d; font-weight: 800;">VIP Tips</span>
     </a>
-    <a href="#generator" class="bottom-nav-item" onclick="if(typeof switchTool==='function') switchTool('machine');">
+    <a href="/generator" class="bottom-nav-item" onclick="if(typeof switchTool==='function') switchTool('machine');">
       <span class="bottom-nav-icon">👥</span>
       <span class="bottom-nav-label">Teams</span>
     </a>
-    <a href="#scanner" class="bottom-nav-item">
+    <a href="/live-scanner" class="bottom-nav-item">
       <span class="bottom-nav-icon">📺</span>
       <span class="bottom-nav-label">Live</span>
     </a>
@@ -5974,12 +5900,12 @@
   </nav>
 
   <!-- --- LOAD SCRIPTS (Classic Day 1 Architecture) --- -->
-  <script src="js/data.js?v=20261026_betslip_share_v8"></script>
-  <script src="js/vipManager.js?v=20261026_betslip_share_v8"></script>
-  <script src="js/ui.js?v=20261026_betslip_share_v8"></script>
-  <script src="js/router.js?v=20261026_betslip_share_v8"></script>
-  <script src="js/app.js?v=20261026_betslip_share_v8"></script>
-  <script src="js/liveFixtures.js?v=20261026_betslip_share_v8"></script>
+  <script src="/js/data.js?v=20261026_betslip_share_v8"></script>
+  <script src="/js/vipManager.js?v=20261026_betslip_share_v8"></script>
+  <script src="/js/ui.js?v=20261026_betslip_share_v8"></script>
+  <script src="/js/router.js?v=20261026_betslip_share_v8"></script>
+  <script src="/js/app.js?v=20261026_betslip_share_v8"></script>
+  <script src="/js/liveFixtures.js?v=20261026_betslip_share_v8"></script>
   <script>
     // Clean global helper bindings
     window.addEventListener('DOMContentLoaded', () => {

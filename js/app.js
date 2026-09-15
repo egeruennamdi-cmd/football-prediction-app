@@ -1567,7 +1567,8 @@ async function shareBetslipImageToPlatform(platform, data, siteUrl, logoUrl) {
     instagram: 'Instagram',
     facebook: 'Facebook',
     threads: 'Threads',
-    pinterest: 'Pinterest'
+    pinterest: 'Pinterest',
+    telegram: 'Telegram'
   };
   const platName = platformNames[platform] || 'Social Media';
 
@@ -1662,6 +1663,16 @@ async function shareBetslipImageToPlatform(platform, data, siteUrl, logoUrl) {
       break;
     }
 
+    case 'telegram': {
+      if (typeof showAppNotification === 'function') {
+        showAppNotification("🖼️ PNG Ticket image copied & downloaded! Paste or attach in Telegram.");
+      }
+      const tgCaption = `🏆 DeepPredictBet AI Accumulator (${data.count} Matches @${data.totalOdds})\n⚡ Verified: ${siteUrl}`;
+      const tgUrl = `https://t.me/share/url?url=${encodeURIComponent(siteUrl)}&text=${encodeURIComponent(tgCaption)}`;
+      window.open(tgUrl, '_blank', 'noopener,noreferrer');
+      break;
+    }
+
     default:
       if (typeof showAppNotification === 'function') {
         showAppNotification("🖼️ Branded PNG Ticket copied to clipboard & downloaded!");
@@ -1724,6 +1735,13 @@ function shareBetslipTextToPlatform(platform, data, siteUrl, logoUrl) {
       const pinDesc = buildBetslipShareText('pinterest');
       const pinUrl = `https://pinterest.com/pin/create/button/?url=${encodeURIComponent(siteUrl)}&media=${encodeURIComponent(logoUrl)}&description=${encodeURIComponent(pinDesc)}`;
       window.open(pinUrl, '_blank', 'noopener,noreferrer,width=750,height=600');
+      break;
+    }
+
+    case 'telegram': {
+      const tgText = buildBetslipShareText('telegram');
+      const tgUrl = `https://t.me/share/url?url=${encodeURIComponent(siteUrl)}&text=${encodeURIComponent(tgText)}`;
+      window.open(tgUrl, '_blank', 'noopener,noreferrer');
       break;
     }
 
@@ -2861,7 +2879,10 @@ runOnReady(() => {
   if (typeof switchTool === 'function') {
     const defaultTab = document.querySelector(`#deeppredictbet-tools .tabs-container > .tab-btn[onclick*="machine"]`);
     if (defaultTab) {
-      switchTool('machine', defaultTab);
+      const currentNormPath = (window.location.pathname || '').replace(/\/$/, '') || '/';
+      if (currentNormPath === '/' || currentNormPath === '/predictions' || currentNormPath === '/generator') {
+        switchTool('machine', defaultTab, true);
+      }
     }
   }
 
@@ -2938,38 +2959,33 @@ window.filterMatches = filterMatches;
 
 // Route sidebar and menu tool buttons to target suite pane
 window.triggerToolRoute = function triggerToolRoute(toolId, scannerMode) {
-  // Ensure view-generator page view is active
-  const genView = document.getElementById("view-generator");
-  if (genView && !genView.classList.contains("active")) {
-    const allViews = document.querySelectorAll(".page-view");
-    allViews.forEach(v => v.classList.remove("active"));
-    genView.classList.add("active");
+  if (toolId === 'scanner' || toolId === 'scanner-live') {
+    if (typeof navigateTo === 'function') navigateTo('/live-scanner');
+    return;
   }
-
-  // Handle live scanner section routing
-  if (toolId === 'scanner' || toolId === 'scanner-live' || toolId === 'scanner-prematch') {
-    const scannerSec = document.getElementById("live-scanner-section");
-    if (scannerSec) {
-      scannerSec.scrollIntoView({ behavior: 'smooth' });
-    }
-    const mode = scannerMode || (toolId.includes('prematch') ? 'prematch' : 'live');
-    if (typeof switchScannerMode === 'function') {
-      const modeBtn = document.querySelector(`.tabs-container .tab-btn[onclick*="${mode}"]`);
-      switchScannerMode(mode, modeBtn);
-    }
+  if (toolId === 'scanner-prematch') {
+    if (typeof navigateTo === 'function') navigateTo('/pre-match-scanner');
+    return;
+  }
+  const toolCleanMap = {
+    'doctor': '/bet-doctor',
+    'arbitrage': '/arbitrage',
+    'converter': '/bet-code-converter',
+    'machine': '/generator',
+    'generator': '/generator',
+    'backtester': '/backtester',
+    'toptips': '/top-tips',
+    'filters': '/smart-filters',
+    'valuebot': '/valuebot'
+  };
+  if (toolCleanMap[toolId] && typeof navigateTo === 'function') {
+    navigateTo(toolCleanMap[toolId]);
     return;
   }
 
-  // Delegate to switchTool for suite tools
+  // Fallback direct suite switch
   if (typeof switchTool === 'function') {
-    const suiteSec = document.getElementById("deeppredictbet-tools");
-    const targetBtn = suiteSec ? Array.from(suiteSec.querySelectorAll(".tabs-container .tab-btn")).find(b => {
-      const attr = b.getAttribute("onclick");
-      return attr && attr.includes(`'${toolId}'`);
-    }) : null;
-
-    switchTool(toolId, targetBtn);
-    if (suiteSec) suiteSec.scrollIntoView({ behavior: 'smooth' });
+    switchTool(toolId);
   }
 }
 
@@ -2990,23 +3006,29 @@ function triggerWatchlistFilter() {
   }
 }
 
-// Open general scout modal on header navigation trigger
-function openGeneralScout() {
+// Open AI Scout Modal for a specific match
+function openScoutModal(matchId) {
   const modal = document.getElementById("scout-modal");
   if (!modal) return;
 
-  window.appState.activeScoutMatchId = null;
-
-  const paramBanner = document.getElementById("scout-modal-parameters-banner");
-  if (paramBanner) {
-    paramBanner.style.display = "none";
+  const match = (typeof findMatchAnywhere === 'function' ? findMatchAnywhere(matchId) : null) || 
+                ((typeof MATCH_DATA !== 'undefined' && Array.isArray(MATCH_DATA)) ? (MATCH_DATA.find(m => String(m.id) === String(matchId)) || MATCH_DATA[0]) : null);
+  if (!match) {
+    openGeneralScout();
+    return;
   }
 
-  const modalTitle = document.getElementById("scout-modal-title");
-  if (modalTitle) {
-    modalTitle.innerText = "DeepPredict Master Scout";
+  // Set active context in global state
+  if (!window.appState) window.appState = {};
+  window.appState.activeScoutMatchId = match.id || matchId;
+
+  // Sync modal user coins display
+  const coinsDisplay = document.getElementById("modal-user-coins-display");
+  if (coinsDisplay) {
+    coinsDisplay.innerText = window.appState.userCoins || 500;
   }
 
+  // Reset modal tabs to Chat tab
   const chatTabBtn = document.getElementById("modal-tab-btn-chat");
   const statsTabBtn = document.getElementById("modal-tab-btn-stats");
   const h2hTabBtn = document.getElementById("modal-tab-btn-h2h");
@@ -3029,10 +3051,187 @@ function openGeneralScout() {
     oddsPane.style.display = "none";
   }
 
-  modal.style.display = "flex";
+  const homeName = match.homeTeam?.name || (typeof match.homeTeam === 'string' ? match.homeTeam : null) || 'Home';
+  const awayName = match.awayTeam?.name || (typeof match.awayTeam === 'string' ? match.awayTeam : null) || 'Away';
+
+  // Update modal titles
+  const modalTitle = document.getElementById("scout-modal-title");
+  if (modalTitle) {
+    modalTitle.innerText = `Scouting: ${homeName} vs ${awayName}`;
+  }
+
+  // Populates Scout Modal parameters banner
+  const paramBanner = document.getElementById("scout-modal-parameters-banner");
+  if (paramBanner) {
+    const hashStr = (homeName + awayName);
+    let hash = 0;
+    for (let i = 0; i < hashStr.length; i++) {
+      hash = hashStr.charCodeAt(i) + ((hash << 5) - hash);
+    }
+    const seed = Math.abs(hash);
+
+    const avgScored = parseFloat((1.0 + (seed % 19) * 0.1).toFixed(1));
+    const avgConceded = parseFloat((0.6 + (Math.floor(seed / 4) % 17) * 0.1).toFixed(1));
+    const avgXG = parseFloat((0.8 + (Math.floor(seed / 16) % 18) * 0.1).toFixed(1));
+    const corners = parseFloat((7.5 + (Math.floor(seed / 64) % 9) * 0.5).toFixed(1));
+
+    const homeFormVal = match.homeTeam?.form ? match.homeTeam.form.reduce((sum, val) => sum + (val === 'W' ? 20 : val === 'D' ? 10 : 0), 0) : 60;
+    const awayFormVal = match.awayTeam?.form ? match.awayTeam.form.reduce((sum, val) => sum + (val === 'W' ? 20 : val === 'D' ? 10 : 0), 0) : 50;
+    const avgForm = Math.round((homeFormVal + awayFormVal) / 2);
+
+    paramBanner.style.display = "block";
+    paramBanner.innerHTML = `
+      <div style="display: flex; flex-wrap: wrap; gap: 8px; justify-content: space-between; align-items: center;">
+        <span style="font-size: 0.72rem; color: var(--text-muted); font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px;">Model Parameters</span>
+        <div style="display: flex; gap: 6px; flex-wrap: wrap;">
+          <span style="font-size: 0.68rem; padding: 2px 6px; background: rgba(26,104,219,0.06); border: 1px solid rgba(26,104,219,0.12); border-radius: var(--radius-sm); color: var(--primary); font-weight: 600;">
+            📈 Form: ${avgForm}%
+          </span>
+          <span style="font-size: 0.68rem; padding: 2px 6px; background: rgba(16,185,129,0.06); border: 1px solid rgba(16,185,129,0.12); border-radius: var(--radius-sm); color: var(--secondary); font-weight: 600;">
+            ⚽ Goals: ${avgScored.toFixed(1)} / ${avgConceded.toFixed(1)}
+          </span>
+          <span style="font-size: 0.68rem; padding: 2px 6px; background: rgba(245,158,11,0.06); border: 1px solid rgba(245,158,11,0.12); border-radius: var(--radius-sm); color: var(--accent-gold); font-weight: 600;">
+            🧠 xG: ${avgXG.toFixed(1)}
+          </span>
+          <span style="font-size: 0.68rem; padding: 2px 6px; background: rgba(255,255,255,0.03); border: 1px solid var(--border-color); border-radius: var(--radius-sm); color: var(--text-secondary); font-weight: 600;">
+            📐 Corners: ${corners}
+          </span>
+        </div>
+      </div>
+    `;
+  }
+
+  // Clear chat log and render initial system greeting
+  const chatBody = document.getElementById("scout-chat-body");
+  if (chatBody) {
+    const conf = match.confidenceVal || match.confidence || 82;
+    const pHome = match.predictions?.home || match.probabilityHome || 45;
+    const pDraw = match.predictions?.draw || match.probabilityDraw || 28;
+    const pAway = match.predictions?.away || match.probabilityAway || 27;
+    chatBody.innerHTML = `
+      <div class="chat-bubble scout">
+        Hello! I am your <b>DeepPredict Scout</b>. Here is my strategic briefing for the upcoming fixture between <b>${homeName}</b> and <b>${awayName}</b>:
+        
+        <div class="scout-match-summary">
+          <div class="scout-sum-row">
+            <span>League</span>
+            <span>${match.leagueEmoji || '⚽'} ${match.league || 'League'}</span>
+          </div>
+          <div class="scout-sum-row">
+            <span>Confidence Rating</span>
+            <span>${conf}%</span>
+          </div>
+          <div class="scout-sum-row">
+            <span>Distribution (1 / X / 2)</span>
+            <span>${pHome}% / ${pDraw}% / ${pAway}%</span>
+          </div>
+          <div class="scout-sum-prediction">
+            <span>Recommended Angle</span>
+            <span>${pHome > pAway ? `${homeName} Win` : `${awayName} Win`}</span>
+          </div>
+        </div>
+        
+        <p style="margin-top: 10px;">${match.insight || 'High-value fixture monitored by deep neural probability models.'}</p>
+        <p style="margin-top: 10px; font-style: italic; font-size: 0.85rem; color: var(--text-muted);">Ask me questions like: "What is their direct tactical setup?" or "What are the in-play odds angles?"</p>
+      </div>
+    `;
+  }
+
+  // Force modal visibility explicitly (overriding any inline style="display: none" from closeCurrentModal)
   modal.classList.add("active");
+  modal.style.display = "flex";
+  modal.style.opacity = "1";
+  modal.style.pointerEvents = "all";
+  modal.style.visibility = "visible";
+  modal.style.zIndex = "1000000";
+  document.body.style.overflow = "hidden"; // Prevent background scroll
+}
+window.openScoutModal = openScoutModal;
+
+// Open AI Scout Modal in General/General mode (no specific match)
+function openGeneralScout() {
+  const modal = document.getElementById("scout-modal");
+  if (!modal) return;
+
+  if (!window.appState) window.appState = {};
+  window.appState.activeScoutMatchId = null;
+
+  const paramBanner = document.getElementById("scout-modal-parameters-banner");
+  if (paramBanner) {
+    paramBanner.style.display = "none";
+  }
+
+  const modalTitle = document.getElementById("scout-modal-title");
+  if (modalTitle) {
+    modalTitle.innerText = "DeepPredict Master Scout";
+  }
+
+  const chatTabBtn = document.getElementById("modal-tab-btn-chat");
+  const statsTabBtn = document.getElementById("modal-tab-btn-stats");
+  const h2hTabBtn = document.getElementById("modal-tab-btn-h2h");
+  const oddsTabBtn = document.getElementById("modal-tab-btn-odds");
+  if (chatTabBtn) chatTabBtn.classList.add("active");
+  if (statsTabBtn) statsTabBtn.classList.remove("active");
+  if (h2hTabBtn) h2hTabBtn.classList.remove("active");
+  if (oddsTabBtn) oddsTabBtn.classList.remove("active");
+
+  const chatPane = document.getElementById("modal-pane-chat");
+  const statsPane = document.getElementById("modal-pane-stats");
+  const h2hPane = document.getElementById("modal-pane-h2h");
+  const oddsPane = document.getElementById("modal-pane-odds");
+  if (chatPane) chatPane.style.display = "block";
+  if (statsPane) statsPane.style.display = "none";
+  if (h2hPane) h2hPane.style.display = "none";
+  if (oddsPane) oddsPane.style.display = "none";
+
+  const chatBody = document.getElementById("scout-chat-body");
+  if (chatBody && (!chatBody.innerHTML || chatBody.innerHTML.trim() === "")) {
+    const matchCount = (typeof MATCH_DATA !== 'undefined' && Array.isArray(MATCH_DATA)) ? MATCH_DATA.length : 40;
+    chatBody.innerHTML = `
+      <div class="chat-bubble scout">
+        Welcome to the <b>DeepPredict Master Briefing Center</b>. I analyze overall league trends, team forms, and algorithmic accuracy.
+        <br><br>
+        Currently, my algorithms are monitoring <b>${matchCount} major fixtures</b> today.
+        <br><br>
+        Ask me about league dynamics, match specific setups, or ask me to generate accumulator selections!
+      </div>
+    `;
+  }
+
+  // Force modal visibility explicitly (overriding any inline style="display: none" from closeCurrentModal)
+  modal.classList.add("active");
+  modal.style.display = "flex";
+  modal.style.opacity = "1";
+  modal.style.pointerEvents = "all";
+  modal.style.visibility = "visible";
+  modal.style.zIndex = "1000000";
   document.body.style.overflow = "hidden";
 }
+window.openGeneralScout = openGeneralScout;
+
+// Dedicated Scout Modal closer
+function closeScoutModal(event, force) {
+  const modal = document.getElementById("scout-modal");
+  if (!modal) return;
+
+  if (force || !event || event.target === modal || (event.target && event.target.id === "scout-modal") || (event.target && event.target.classList && event.target.classList.contains("modal-overlay"))) {
+    modal.classList.remove("active");
+    modal.style.display = "none";
+    modal.style.opacity = "0";
+    modal.style.pointerEvents = "none";
+    modal.style.visibility = "hidden";
+    document.body.style.overflow = "";
+    if (window.appState) {
+      window.appState.activeScoutMatchId = null;
+    }
+  }
+}
+window.closeScoutModal = closeScoutModal;
+
+function triggerCloseScoutModal() {
+  closeScoutModal(null, true);
+}
+window.triggerCloseScoutModal = triggerCloseScoutModal;
 
 function unlockPremiumPlanLigue2(leagueName, btn) {
   unlockPremiumPlan();
@@ -5692,7 +5891,7 @@ function applyDoctorPrescription() {
 }
 
 function convertAuditedTicket(code, bookie) {
-  window.location.hash = "#converter";
+  if (typeof navigateTo === 'function') { navigateTo('/bet-code-converter'); } else { window.location.hash = "#converter"; }
   if (typeof selectPaddiBookmaker === 'function') {
     selectPaddiBookmaker('src', bookie);
   }

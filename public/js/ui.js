@@ -1057,11 +1057,16 @@ function openScoutModal(matchId) {
   const modal = document.getElementById("scout-modal");
   if (!modal) return;
 
-  const match = MATCH_DATA.find(m => m.id === matchId);
-  if (!match) return;
+  const match = (typeof findMatchAnywhere === 'function' ? findMatchAnywhere(matchId) : null) || 
+                ((typeof MATCH_DATA !== 'undefined' && Array.isArray(MATCH_DATA)) ? (MATCH_DATA.find(m => String(m.id) === String(matchId)) || MATCH_DATA[0]) : null);
+  if (!match) {
+    openGeneralScout();
+    return;
+  }
 
   // Set active context in global state
-  window.appState.activeScoutMatchId = matchId;
+  if (!window.appState) window.appState = {};
+  window.appState.activeScoutMatchId = match.id || matchId;
 
   // Sync modal user coins display
   const coinsDisplay = document.getElementById("modal-user-coins-display");
@@ -1092,16 +1097,19 @@ function openScoutModal(matchId) {
     oddsPane.style.display = "none";
   }
 
+  const homeName = match.homeTeam?.name || (typeof match.homeTeam === 'string' ? match.homeTeam : null) || 'Home';
+  const awayName = match.awayTeam?.name || (typeof match.awayTeam === 'string' ? match.awayTeam : null) || 'Away';
+
   // Update modal titles
   const modalTitle = document.getElementById("scout-modal-title");
   if (modalTitle) {
-    modalTitle.innerText = `Scouting: ${match.homeTeam.name} vs ${match.awayTeam.name}`;
+    modalTitle.innerText = `Scouting: ${homeName} vs ${awayName}`;
   }
 
   // Populates Scout Modal parameters banner
   const paramBanner = document.getElementById("scout-modal-parameters-banner");
   if (paramBanner) {
-    const hashStr = (match.homeTeam.name + match.awayTeam.name);
+    const hashStr = (homeName + awayName);
     let hash = 0;
     for (let i = 0; i < hashStr.length; i++) {
       hash = hashStr.charCodeAt(i) + ((hash << 5) - hash);
@@ -1113,8 +1121,8 @@ function openScoutModal(matchId) {
     const avgXG = parseFloat((0.8 + (Math.floor(seed / 16) % 18) * 0.1).toFixed(1));
     const corners = parseFloat((7.5 + (Math.floor(seed / 64) % 9) * 0.5).toFixed(1));
 
-    const homeFormVal = match.homeTeam.form ? match.homeTeam.form.reduce((sum, val) => sum + (val === 'W' ? 20 : val === 'D' ? 10 : 0), 0) : 60;
-    const awayFormVal = match.awayTeam.form ? match.awayTeam.form.reduce((sum, val) => sum + (val === 'W' ? 20 : val === 'D' ? 10 : 0), 0) : 50;
+    const homeFormVal = match.homeTeam?.form ? match.homeTeam.form.reduce((sum, val) => sum + (val === 'W' ? 20 : val === 'D' ? 10 : 0), 0) : 60;
+    const awayFormVal = match.awayTeam?.form ? match.awayTeam.form.reduce((sum, val) => sum + (val === 'W' ? 20 : val === 'D' ? 10 : 0), 0) : 50;
     const avgForm = Math.round((homeFormVal + awayFormVal) / 2);
 
     paramBanner.style.display = "block";
@@ -1142,38 +1150,49 @@ function openScoutModal(matchId) {
   // Clear chat log and render initial system greeting
   const chatBody = document.getElementById("scout-chat-body");
   if (chatBody) {
+    const conf = match.confidenceVal || match.confidence || 82;
+    const pHome = match.predictions?.home || match.probabilityHome || 45;
+    const pDraw = match.predictions?.draw || match.probabilityDraw || 28;
+    const pAway = match.predictions?.away || match.probabilityAway || 27;
     chatBody.innerHTML = `
       <div class="chat-bubble scout">
-        Hello! I am your <b>DeepPredict Scout</b>. Here is my strategic briefing for the upcoming fixture between <b>${match.homeTeam.name}</b> and <b>${match.awayTeam.name}</b>:
+        Hello! I am your <b>DeepPredict Scout</b>. Here is my strategic briefing for the upcoming fixture between <b>${homeName}</b> and <b>${awayName}</b>:
         
         <div class="scout-match-summary">
           <div class="scout-sum-row">
             <span>League</span>
-            <span>${match.leagueEmoji} ${match.league}</span>
+            <span>${match.leagueEmoji || '⚽'} ${match.league || 'League'}</span>
           </div>
           <div class="scout-sum-row">
             <span>Confidence Rating</span>
-            <span>${match.confidenceVal}%</span>
+            <span>${conf}%</span>
           </div>
           <div class="scout-sum-row">
             <span>Distribution (1 / X / 2)</span>
-            <span>${match.predictions.home}% / ${match.predictions.draw}% / ${match.predictions.away}%</span>
+            <span>${pHome}% / ${pDraw}% / ${pAway}%</span>
           </div>
           <div class="scout-sum-prediction">
             <span>Recommended Angle</span>
-            <span>${match.predictions.home > match.predictions.away ? `${match.homeTeam.name} Win` : `${match.awayTeam.name} Win`}</span>
+            <span>${pHome > pAway ? `${homeName} Win` : `${awayName} Win`}</span>
           </div>
         </div>
         
-        <p style="margin-top: 10px;">${match.insight}</p>
+        <p style="margin-top: 10px;">${match.insight || 'High-value fixture monitored by deep neural probability models.'}</p>
         <p style="margin-top: 10px; font-style: italic; font-size: 0.85rem; color: var(--text-muted);">Ask me questions like: "What is their direct tactical setup?" or "What are the in-play odds angles?"</p>
       </div>
     `;
   }
 
+  // Force modal visibility explicitly (overriding any inline style="display: none" from closeCurrentModal)
   modal.classList.add("active");
+  modal.style.display = "flex";
+  modal.style.opacity = "1";
+  modal.style.pointerEvents = "all";
+  modal.style.visibility = "visible";
+  modal.style.zIndex = "1000000";
   document.body.style.overflow = "hidden"; // Prevent background scroll
 }
+window.openScoutModal = openScoutModal;
 
 // Open AI Scout Modal in General/General mode (no specific match)
 function openGeneralScout() {
@@ -1225,11 +1244,40 @@ function openGeneralScout() {
     `;
   }
 
-  modal.style.display = "flex";
+  // Force modal visibility explicitly (overriding any inline style="display: none" from closeCurrentModal)
   modal.classList.add("active");
+  modal.style.display = "flex";
+  modal.style.opacity = "1";
+  modal.style.pointerEvents = "all";
+  modal.style.visibility = "visible";
+  modal.style.zIndex = "1000000";
   document.body.style.overflow = "hidden";
 }
 window.openGeneralScout = openGeneralScout;
+
+// Dedicated Scout Modal closer
+function closeScoutModal(event, force) {
+  const modal = document.getElementById("scout-modal");
+  if (!modal) return;
+
+  if (force || !event || event.target === modal || (event.target && event.target.id === "scout-modal") || (event.target && event.target.classList && event.target.classList.contains("modal-overlay"))) {
+    modal.classList.remove("active");
+    modal.style.display = "none";
+    modal.style.opacity = "0";
+    modal.style.pointerEvents = "none";
+    modal.style.visibility = "hidden";
+    document.body.style.overflow = "";
+    if (window.appState) {
+      window.appState.activeScoutMatchId = null;
+    }
+  }
+}
+window.closeScoutModal = closeScoutModal;
+
+function triggerCloseScoutModal() {
+  closeScoutModal(null, true);
+}
+window.triggerCloseScoutModal = triggerCloseScoutModal;
 
 // Toggle active checkboxes in DeepPredict Machine cards
 function toggleCheckboxCard(card, event) {
@@ -1255,7 +1303,25 @@ function toggleCheckboxCard(card, event) {
 }
 
 // Switch between tools in DeepPredict Betting Suite
-window.switchTool = function switchTool(toolId, btn) {
+window.switchTool = function switchTool(toolId, btn, skipRouterPush) {
+  const toolRouteMap = {
+    'machine': '/generator',
+    'generator': '/generator',
+    'doctor': '/bet-doctor',
+    'arbitrage': '/arbitrage',
+    'backtester': '/backtester',
+    'toptips': '/top-tips',
+    'filters': '/smart-filters',
+    'valuebot': '/valuebot'
+  };
+  const isGenViewActive = document.getElementById('view-generator')?.classList.contains('active');
+  if (!skipRouterPush && isGenViewActive && toolRouteMap[toolId] && window.location.pathname !== toolRouteMap[toolId]) {
+    window.history.pushState(null, '', toolRouteMap[toolId]);
+    if (typeof updateNavActiveStates === 'function') {
+      updateNavActiveStates(toolRouteMap[toolId], toolId);
+    }
+  }
+
   const suiteSec = document.getElementById("deeppredictbet-tools");
   if (!suiteSec) return;
   
@@ -1311,7 +1377,18 @@ window.switchTool = function switchTool(toolId, btn) {
 }
 
 // Switch between Live In-Play and Pre-Match Odds scanner modes
-function switchScannerMode(mode, btn) {
+function switchScannerMode(mode, btn, skipRouterPush) {
+  const scannerRouteMap = {
+    'live': '/live-scanner',
+    'prematch': '/pre-match-scanner'
+  };
+  const isScannerViewActive = document.getElementById('view-scanner')?.classList.contains('active');
+  if (!skipRouterPush && isScannerViewActive && scannerRouteMap[mode] && window.location.pathname !== scannerRouteMap[mode]) {
+    window.history.pushState(null, '', scannerRouteMap[mode]);
+    if (typeof updateNavActiveStates === 'function') {
+      updateNavActiveStates(scannerRouteMap[mode], 'scanner');
+    }
+  }
   if (!btn) return;
   // Update button active state
   const parent = btn.parentElement;
@@ -2259,33 +2336,7 @@ function renderTopTipsTool() {
   if (!container) return;
   container.innerHTML = "";
 
-  const activeMarket = window.appState.activeTopTipsToolMarket || 'uo15';
-  let matching = MATCH_DATA.filter(m => m.topTips && m.topTips.includes(activeMarket));
-  
-  if (matching.length === 0) {
-    // Dynamic fallback matching for extended DeepPredictBet markets
-    matching = MATCH_DATA.filter(m => {
-      const tip = typeof getMatchTip === 'function' ? getMatchTip(m).toLowerCase() : '';
-      if (activeMarket === 'dnb') return tip.includes("dnb") || tip.includes("draw no bet");
-      if (activeMarket.startsWith('mg')) return tip.includes("goals") || tip.includes("multi");
-      if (activeMarket.startsWith('eg')) return tip.includes("goal");
-      if (activeMarket.startsWith('combo')) return tip.includes("+") || tip.includes("combo") || tip.includes("&");
-      if (activeMarket.startsWith('htft')) return tip.includes("/") || tip.includes("ht/ft");
-      if (activeMarket.startsWith('cards') || activeMarket === 'redcard') return tip.includes("card") || tip.includes("yellow") || tip.includes("red");
-      if (activeMarket === 'penalty') return tip.includes("penalty");
-      if (activeMarket.startsWith('ah')) return tip.includes("handicap") || tip.includes("-") || tip.includes("+");
-      return true;
-    });
-  }
-
-  if (matching.length === 0) {
-    container.innerHTML = `
-      <div style="text-align: center; padding: 24px; color: var(--text-muted); font-size: 0.85rem; grid-column: 1 / -1;">
-        No active matches currently meet this top tip criteria.
-      </div>
-    `;
-    return;
-  }
+  const activeMarket = (window.appState && window.appState.activeTopTipsToolMarket) ? window.appState.activeTopTipsToolMarket : 'uo05';
 
   // Market label mapping (Complete Exhaustive DeepPredictBet Suite)
   const labels = {
@@ -2369,38 +2420,363 @@ function renderTopTipsTool() {
     ah15: "Asian Handicap (-1.5)"
   };
 
-  matching.forEach(match => {
-    const row = document.createElement("div");
-    row.style.display = "grid";
-    row.style.gridTemplateColumns = "1.5fr 1fr 1fr 1fr 1.2fr";
-    row.style.alignItems = "center";
-    row.style.padding = "14px 16px";
-    row.style.borderBottom = "1px solid var(--border-color)";
-    row.style.fontSize = "0.85rem";
-    row.style.minWidth = "600px";
+  // 1. Collect strictly future, non-outdated matches
+  const baseList = (typeof window !== 'undefined' && Array.isArray(window.MATCH_DATA)) ? window.MATCH_DATA : (typeof MATCH_DATA !== 'undefined' && Array.isArray(MATCH_DATA) ? MATCH_DATA : []);
+  const authenticList = (typeof window !== 'undefined' && Array.isArray(window.AUTHENTIC_TOP_LEAGUES_FIXTURES)) ? window.AUTHENTIC_TOP_LEAGUES_FIXTURES : (typeof AUTHENTIC_TOP_LEAGUES_FIXTURES !== 'undefined' && Array.isArray(AUTHENTIC_TOP_LEAGUES_FIXTURES) ? AUTHENTIC_TOP_LEAGUES_FIXTURES : []);
 
-    const isWatched = (window.appState && Array.isArray(window.appState.watchlist)) ? window.appState.watchlist.includes(match.id) : false;
-    const prob = (match.confidenceVal + (match.id === 'match-1' ? 4 : -2));
+  const seenKeys = new Set();
+  const allFutureCandidates = [];
 
-    row.innerHTML = `
-      <div style="display: flex; align-items: center; gap: 8px;">
-        <span style="font-size: 1rem;">${match.homeTeam.logo}</span>
-        <span style="font-weight: 700; color: var(--text-primary);">${match.homeTeam.name} vs ${match.awayTeam.name}</span>
-        <span style="font-size: 0.75rem; color: var(--text-muted); margin-left: 4px;">(${match.leagueEmoji} ${match.league})</span>
-      </div>
-      <div style="color: var(--accent-gold); font-weight: 700;">${labels[activeMarket]}</div>
-      <div style="font-weight: 700; color: var(--secondary);">${prob}%</div>
-      <div style="font-family: var(--font-display); color: var(--text-secondary);">@${(1.2 + (100 - prob)/80).toFixed(2)}</div>
-      <div style="display: flex; gap: 8px; justify-content: flex-end;">
-        <button class="btn btn-secondary" style="padding: 4px 10px; font-size: 0.75rem;" onclick="openScoutModal('${match.id}')">Scout</button>
-        <button class="btn btn-primary" style="padding: 4px 10px; font-size: 0.75rem; background: ${isWatched ? 'var(--accent-gold)' : 'var(--primary)'};" onclick="toggleWatchlist('${match.id}', event)">
-          ${isWatched ? '★ Watched' : '☆ Watch'}
-        </button>
+  const addCandidateIfFuture = (m) => {
+    if (!m || isMatchOutdated(m) || !isStrictlyFutureMatch(m)) return;
+    const h = (m.homeTeam?.name || m.homeTeam || '').toLowerCase().trim();
+    const a = (m.awayTeam?.name || m.awayTeam || '').toLowerCase().trim();
+    const key = `${h}-${a}`;
+    if (h && a && !seenKeys.has(key)) {
+      seenKeys.add(key);
+      allFutureCandidates.push(m);
+    }
+  };
+
+  baseList.forEach(addCandidateIfFuture);
+  authenticList.forEach(addCandidateIfFuture);
+
+  // 2. Filter matching candidates for active market
+  let matching = allFutureCandidates.filter(m => m.topTips && m.topTips.includes(activeMarket));
+
+  if (matching.length === 0) {
+    matching = allFutureCandidates.filter(m => {
+      const tip = typeof getMatchTip === 'function' ? getMatchTip(m).toLowerCase() : (m.tip || '').toLowerCase();
+      if (activeMarket === 'dnb') return tip.includes("dnb") || tip.includes("draw no bet");
+      if (activeMarket.startsWith('mg')) return tip.includes("goals") || tip.includes("multi");
+      if (activeMarket.startsWith('eg')) return tip.includes("goal");
+      if (activeMarket.startsWith('combo')) return tip.includes("+") || tip.includes("combo") || tip.includes("&");
+      if (activeMarket.startsWith('htft')) return tip.includes("/") || tip.includes("ht/ft");
+      if (activeMarket.startsWith('cards') || activeMarket === 'redcard') return tip.includes("card") || tip.includes("yellow") || tip.includes("red");
+      if (activeMarket === 'penalty') return tip.includes("penalty");
+      if (activeMarket.startsWith('ah')) return tip.includes("handicap") || tip.includes("-") || tip.includes("+");
+      return true;
+    });
+  }
+
+  // Ensure table has at least 6-8 authentic future matches
+  if (matching.length < 6 && allFutureCandidates.length > 0) {
+    allFutureCandidates.forEach(m => {
+      if (!matching.some(x => String(x.id) === String(m.id)) && matching.length < 8) {
+        matching.push(m);
+      }
+    });
+  }
+
+  if (matching.length === 0) {
+    container.innerHTML = `
+      <div style="text-align: center; padding: 36px 20px; color: var(--text-muted); font-size: 0.88rem; grid-column: 1 / -1;">
+        No active future matches currently meet this top tip criteria. Please select another market!
       </div>
     `;
-    container.appendChild(row);
+    return;
+  }
+
+  // Render each match row
+  matching.forEach(match => {
+    if (!window._matchRegistry) window._matchRegistry = new Map();
+    window._matchRegistry.set(String(match.id), match);
+
+    const matchTimeStr = (typeof formatStandardMatchDateString === 'function')
+      ? formatStandardMatchDateString(match.time, match.rawDate, match.isLive)
+      : (match.time || '20th, September 2026, 16:30');
+
+    const pool = typeof getMatchMarketPool === 'function' ? getMatchMarketPool(match) : [];
+    const activeMarketLabel = labels[activeMarket] || "Target Market";
+    const matchedPoolItem = pool.find(p => p.category === activeMarket || p.tip.toLowerCase().includes(activeMarketLabel.toLowerCase())) || pool[0];
+
+    const initialTip = match.selectedTip || match.tip || (matchedPoolItem ? matchedPoolItem.tip : activeMarketLabel);
+    const initialOdds = (typeof match.odds === 'number' && match.odds > 1.0)
+      ? match.odds
+      : (matchedPoolItem ? matchedPoolItem.odds : (1.2 + (100 - (match.confidenceVal || 80)) / 80));
+    const parsedOdds = parseFloat(initialOdds).toFixed(2);
+    const prob = matchedPoolItem ? matchedPoolItem.confidence : Math.min(95, Math.max(55, (match.confidenceVal || 78) + (match.id === 'match-1' ? 4 : -2)));
+
+    const isWatched = (window.appState && Array.isArray(window.appState.watchlist)) ? window.appState.watchlist.includes(match.id) : false;
+    const isInSlip = (window.appState && Array.isArray(window.appState.betslip))
+      ? window.appState.betslip.some(item => String(item.matchId) === String(match.id) || (item.match && String(item.match.id) === String(match.id)))
+      : false;
+
+    // Build chips HTML for the AI Market Predictions tray (Attachment 3)
+    const chipsHtml = pool.map(item => {
+      const isSelected = item.tip === initialTip;
+      const activeClass = isSelected ? 'active-tip-chip' : '';
+      const safeTip = item.tip.replace(/'/g, "\\'");
+      const safeCat = item.categoryLabel.replace(/'/g, "\\'");
+      return `
+        <button type="button" class="expanded-tip-chip ${activeClass}" 
+                data-match-id="${match.id}" 
+                data-tip="${safeTip}" 
+                onclick="selectTopTipsRowMarketTip('${match.id}', '${safeTip}', ${item.odds}, '${safeCat}', event)" 
+                title="Select & Add '${safeTip}' (@${item.odds.toFixed(2)}) to Betslip">
+          <div class="chip-top-row">
+            <span class="chip-cat">${item.icon} ${item.categoryLabel}</span>
+            <span class="chip-odds">@${item.odds.toFixed(2)}</span>
+          </div>
+          <span class="chip-tip">${item.tip}</span>
+        </button>
+      `;
+    }).join('');
+
+    const rowContainer = document.createElement("div");
+    rowContainer.className = "toptips-row-container";
+    rowContainer.id = `toptips-row-container-${match.id}`;
+    rowContainer.style.borderBottom = "1px solid var(--border-color)";
+    rowContainer.style.transition = "background 0.2s ease";
+
+    rowContainer.innerHTML = `
+      <div class="toptips-row-main" style="display: grid; grid-template-columns: 2.2fr 1.2fr 0.9fr 0.9fr 2.6fr; min-width: 900px; align-items: center; padding: 14px 18px; font-size: 0.85rem;">
+        
+        <!-- 1. Match Selection: Logos, Teams, League & Future Date -->
+        <div style="display: flex; flex-direction: column; gap: 4px; padding-right: 12px;">
+          <div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap;">
+            <span style="font-size: 1.1rem; line-height: 1;">${match.homeTeam?.logo || '⚽'}</span>
+            <span style="font-weight: 800; color: #ffffff; font-size: 0.9rem;">${match.homeTeam?.name || 'Home'} vs ${match.awayTeam?.name || 'Away'}</span>
+            <span style="font-size: 0.72rem; color: #94a3b8; font-weight: 600;">(${match.leagueEmoji || '⚽'} ${match.league || 'League'})</span>
+          </div>
+          <div style="display: flex; align-items: center; gap: 6px; font-size: 0.74rem; color: #fbbf24; font-weight: 700;">
+            <span>🗓️ ${matchTimeStr}</span>
+          </div>
+        </div>
+
+        <!-- 2. Target Market -->
+        <div style="padding-right: 8px;">
+          <span id="toptips-market-val-${match.id}" style="color: var(--accent-gold); font-weight: 700; font-size: 0.86rem; display: block; line-height: 1.3;">
+            ${initialTip}
+          </span>
+        </div>
+
+        <!-- 3. Model Probability -->
+        <div>
+          <span style="font-weight: 800; color: var(--secondary); font-size: 0.92rem;">${prob}%</span>
+        </div>
+
+        <!-- 4. Average Odds -->
+        <div>
+          <span id="toptips-odds-val-${match.id}" style="font-family: var(--font-display); font-weight: 800; color: #f8fafc; font-size: 0.95rem;">
+            @${parsedOdds}
+          </span>
+        </div>
+
+        <!-- 5. Actions: + Add to Slip, Markets, Scout, Watch -->
+        <div style="display: flex; gap: 6px; justify-content: flex-end; align-items: center; flex-wrap: nowrap;">
+          <button type="button" 
+                  class="btn btn-primary toptips-add-slip-btn ${isInSlip ? 'in-slip' : ''}" 
+                  id="toptips-add-btn-${match.id}"
+                  data-match-id="${match.id}" 
+                  onclick="addTopTipsMatchToSlip('${match.id}', '${activeMarket}', event)"
+                  title="Add '${match.homeTeam?.name || 'Home'} vs ${match.awayTeam?.name || 'Away'}' to active betslip"
+                  style="padding: 6px 12px; font-size: 0.78rem; font-weight: 700; background: ${isInSlip ? 'linear-gradient(135deg, #10b981 0%, #059669 100%)' : 'linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%)'}; border: none; border-radius: 6px; color: #fff; cursor: pointer; display: inline-flex; align-items: center; gap: 5px; white-space: nowrap; transition: all 0.2s ease;">
+            <span style="font-size: 0.95rem; font-weight: 900; line-height: 1;">${isInSlip ? '✓' : '+'}</span>
+            <span id="toptips-add-label-${match.id}">${isInSlip ? 'In Slip' : 'Add to Slip'}</span>
+          </button>
+
+          <button type="button" 
+                  class="btn btn-secondary toptips-markets-btn" 
+                  id="toptips-markets-btn-${match.id}" 
+                  onclick="toggleTopTipsRowMarkets('${match.id}', event)"
+                  title="Expand / Collapse AI Market Predictions"
+                  style="padding: 6px 10px; font-size: 0.78rem; font-weight: 700; background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.15); border-radius: 6px; color: #f8fafc; cursor: pointer; display: inline-flex; align-items: center; gap: 4px; white-space: nowrap; transition: all 0.2s ease;">
+            <span id="toptips-markets-label-${match.id}">Markets</span>
+            <span class="ai-tip-chevron" id="toptips-markets-chevron-${match.id}" style="font-size: 0.7rem; display: inline-block; transition: transform 0.25s ease;">▼</span>
+          </button>
+
+          <button type="button" 
+                  class="btn btn-secondary" 
+                  style="padding: 6px 10px; font-size: 0.75rem; font-weight: 600; background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.15); border-radius: 6px; color: #f8fafc; cursor: pointer; white-space: nowrap;" 
+                  onclick="openScoutModal('${match.id}')">
+            Scout
+          </button>
+
+          <button type="button" 
+                  class="btn btn-primary" 
+                  style="padding: 6px 10px; font-size: 0.75rem; font-weight: 700; background: ${isWatched ? 'var(--accent-gold)' : 'rgba(255,255,255,0.06)'}; color: ${isWatched ? '#000' : '#fff'}; border: 1px solid rgba(255,255,255,0.15); border-radius: 6px; cursor: pointer; white-space: nowrap;" 
+                  onclick="toggleWatchlist('${match.id}', event)">
+            ${isWatched ? '★ Watched' : '☆ Watch'}
+          </button>
+        </div>
+
+      </div>
+
+      <!-- Expandable AI Market Predictions Tray (Attachment 3) -->
+      <div class="expanded-ai-tips-tray toptips-markets-tray" id="toptips-markets-tray-${match.id}" style="display: none; width: calc(100% - 36px); margin: 0 18px 14px 18px; padding: 12px 14px; background: rgba(15, 23, 42, 0.95); border: 1px solid rgba(59, 130, 246, 0.3); border-radius: 10px; box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4); box-sizing: border-box;">
+        <div class="expanded-tray-header" style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px; border-bottom: 1px solid rgba(255, 255, 255, 0.08); padding-bottom: 8px; flex-wrap: wrap; gap: 8px;">
+          <span class="expanded-tray-title" style="font-size: 0.8rem; color: #94a3b8; font-weight: 700; display: flex; align-items: center; gap: 6px;">
+            🎯 AI Market Predictions (${pool.length} Markets)
+          </span>
+          <span class="expanded-tray-subtitle" style="font-size: 0.72rem; color: var(--text-muted);">
+            Click any tip to select for betslip:
+          </span>
+        </div>
+        <div class="expanded-tips-chips" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 8px; max-height: 240px; overflow-y: auto;">
+          ${chipsHtml}
+        </div>
+      </div>
+    `;
+
+    container.appendChild(rowContainer);
   });
 }
+window.renderTopTipsTool = renderTopTipsTool;
+
+// Expand / Collapse AI Market Predictions in Top Tips Row
+function toggleTopTipsRowMarkets(matchId, event) {
+  const evt = event || (typeof window !== 'undefined' ? window.event : null);
+  if (evt) {
+    if (typeof evt.stopPropagation === 'function') evt.stopPropagation();
+    if (typeof evt.preventDefault === 'function') evt.preventDefault();
+  }
+  const sId = String(matchId);
+  const tray = document.getElementById(`toptips-markets-tray-${sId}`);
+  const chevron = document.getElementById(`toptips-markets-chevron-${sId}`);
+  const label = document.getElementById(`toptips-markets-label-${sId}`);
+  if (!tray) return;
+
+  const isOpen = tray.style.display !== 'none';
+  if (isOpen) {
+    tray.style.display = 'none';
+    if (chevron) chevron.style.transform = 'rotate(0deg)';
+    if (label) label.textContent = 'Markets';
+  } else {
+    tray.style.display = 'block';
+    if (chevron) chevron.style.transform = 'rotate(180deg)';
+    if (label) label.textContent = 'Close';
+  }
+}
+window.toggleTopTipsRowMarkets = toggleTopTipsRowMarkets;
+
+// Add Match from Top Tips Tool Row directly to Active Betslip
+function addTopTipsMatchToSlip(matchId, marketKey, event) {
+  const evt = event || (typeof window !== 'undefined' ? window.event : null);
+  if (evt) {
+    if (typeof evt.stopPropagation === 'function') evt.stopPropagation();
+    if (typeof evt.preventDefault === 'function') evt.preventDefault();
+  }
+  const sId = String(matchId);
+  const match = typeof findMatchAnywhere === 'function' ? findMatchAnywhere(sId, evt ? evt.target : null) : null;
+  if (!match) return;
+
+  if (isMatchOutdated(match)) {
+    if (typeof showAppNotification === 'function') {
+      showAppNotification("⚠️ Outdated or completed matches cannot be added to the active betslip.");
+    }
+    return;
+  }
+
+  const tipValEl = document.getElementById(`toptips-market-val-${sId}`);
+  const oddsValEl = document.getElementById(`toptips-odds-val-${sId}`);
+  const tip = match.selectedTip || match.tip || (tipValEl ? tipValEl.textContent.trim() : 'Home Win (1)');
+  const rawOdds = oddsValEl ? oddsValEl.textContent.replace('@', '').trim() : '';
+  const odds = (typeof match.odds === 'number' && match.odds > 1.0)
+    ? match.odds
+    : (parseFloat(rawOdds) || 1.85);
+
+  match.tip = tip;
+  match.odds = odds;
+
+  if (!window.appState) window.appState = { betslip: [] };
+  if (!Array.isArray(window.appState.betslip)) window.appState.betslip = [];
+
+  const existingIdx = window.appState.betslip.findIndex(item => {
+    if (String(item.matchId) === sId) return true;
+    if (item.match && String(item.match.id) === sId) return true;
+    const h = (item.match?.homeTeam?.name || item.homeTeam || '').toLowerCase();
+    const a = (item.match?.awayTeam?.name || item.awayTeam || '').toLowerCase();
+    const mH = (match.homeTeam?.name || match.homeTeam || '').toLowerCase();
+    const mA = (match.awayTeam?.name || match.awayTeam || '').toLowerCase();
+    return h && a && mH && mA && `${h}-${a}` === `${mH}-${mA}`;
+  });
+
+  const betItem = {
+    id: match.id || `betslip-${Date.now()}`,
+    matchId: match.id,
+    match: match,
+    homeTeam: match.homeTeam?.name || match.homeTeam,
+    awayTeam: match.awayTeam?.name || match.awayTeam,
+    tip: tip,
+    odds: odds
+  };
+
+  if (existingIdx !== -1) {
+    window.appState.betslip[existingIdx] = betItem;
+  } else {
+    window.appState.betslip.push(betItem);
+  }
+
+  try {
+    localStorage.setItem("dp_betslip", JSON.stringify(window.appState.betslip));
+  } catch (e) {}
+
+  if (typeof renderBetslip === 'function') renderBetslip();
+
+  // Update button feedback in row
+  const btn = document.getElementById(`toptips-add-btn-${sId}`);
+  if (btn) {
+    btn.style.background = 'linear-gradient(135deg, #10b981 0%, #059669 100%)';
+    btn.innerHTML = `<span style="font-size: 0.95rem; font-weight: 900; line-height: 1;">✓</span> <span id="toptips-add-label-${sId}">In Slip</span>`;
+  }
+
+  const drawer = document.getElementById("floating-betslip-drawer");
+  if (drawer && !drawer.classList.contains("open")) {
+    drawer.classList.add("open");
+  }
+
+  if (typeof showAppNotification === 'function') {
+    showAppNotification(`🎟️ Added to Slip: ${match.homeTeam?.name || 'Home'} vs ${match.awayTeam?.name || 'Away'} • ${tip} (@${odds.toFixed(2)})`);
+  }
+}
+window.addTopTipsMatchToSlip = addTopTipsMatchToSlip;
+
+// Select specific AI Market Prediction from Tray & Add to Betslip
+function selectTopTipsRowMarketTip(matchId, tipText, odds, categoryLabel, event) {
+  const evt = event || (typeof window !== 'undefined' ? window.event : null);
+  if (evt) {
+    if (typeof evt.stopPropagation === 'function') evt.stopPropagation();
+    if (typeof evt.preventDefault === 'function') evt.preventDefault();
+  }
+
+  const sId = String(matchId);
+  const match = typeof findMatchAnywhere === 'function' ? findMatchAnywhere(sId, evt ? (evt.target || evt) : null) : null;
+  const parsedOdds = typeof odds === 'number' && odds > 1.0 ? odds : 1.85;
+
+  if (match) {
+    match.selectedTip = tipText;
+    match.tip = tipText;
+    match.odds = parsedOdds;
+    match.tipCategory = categoryLabel || 'Market';
+    if (!window._matchRegistry) window._matchRegistry = new Map();
+    window._matchRegistry.set(sId, match);
+  }
+
+  // Update row values in DOM
+  const marketValEl = document.getElementById(`toptips-market-val-${sId}`);
+  if (marketValEl) marketValEl.textContent = `${tipText}`;
+
+  const oddsValEl = document.getElementById(`toptips-odds-val-${sId}`);
+  if (oddsValEl) oddsValEl.textContent = `@${parsedOdds.toFixed(2)}`;
+
+  // Highlight chip in tray
+  const tray = document.getElementById(`toptips-markets-tray-${sId}`);
+  if (tray) {
+    const chips = tray.querySelectorAll('.expanded-tip-chip');
+    chips.forEach(chip => {
+      chip.classList.remove('active-tip-chip');
+      const chipTip = chip.getAttribute('data-tip') || chip.textContent;
+      if (chipTip && (chipTip === tipText || chipTip.includes(tipText))) {
+        chip.classList.add('active-tip-chip');
+      }
+    });
+  }
+
+  // Automatically add or update in active betslip
+  addTopTipsMatchToSlip(sId, null, evt);
+}
+window.selectTopTipsRowMarketTip = selectTopTipsRowMarketTip;
 
 // Switch selected market inside Top Tips Betting Suite tool
 function switchTopTipsToolMarket(marketVal, btn) {
@@ -4387,7 +4763,8 @@ async function shareBetslipImageToPlatform(platform, data, siteUrl, logoUrl) {
     instagram: 'Instagram',
     facebook: 'Facebook',
     threads: 'Threads',
-    pinterest: 'Pinterest'
+    pinterest: 'Pinterest',
+    telegram: 'Telegram'
   };
   const platName = platformNames[platform] || 'Social Media';
 
@@ -4482,6 +4859,16 @@ async function shareBetslipImageToPlatform(platform, data, siteUrl, logoUrl) {
       break;
     }
 
+    case 'telegram': {
+      if (typeof showAppNotification === 'function') {
+        showAppNotification("🖼️ PNG Ticket image copied & downloaded! Paste or attach in Telegram.");
+      }
+      const tgCaption = `🏆 DeepPredictBet AI Accumulator (${data.count} Matches @${data.totalOdds})\n⚡ Verified: ${siteUrl}`;
+      const tgUrl = `https://t.me/share/url?url=${encodeURIComponent(siteUrl)}&text=${encodeURIComponent(tgCaption)}`;
+      window.open(tgUrl, '_blank', 'noopener,noreferrer');
+      break;
+    }
+
     default:
       if (typeof showAppNotification === 'function') {
         showAppNotification("🖼️ Branded PNG Ticket copied to clipboard & downloaded!");
@@ -4544,6 +4931,13 @@ function shareBetslipTextToPlatform(platform, data, siteUrl, logoUrl) {
       const pinDesc = buildBetslipShareText('pinterest');
       const pinUrl = `https://pinterest.com/pin/create/button/?url=${encodeURIComponent(siteUrl)}&media=${encodeURIComponent(logoUrl)}&description=${encodeURIComponent(pinDesc)}`;
       window.open(pinUrl, '_blank', 'noopener,noreferrer,width=750,height=600');
+      break;
+    }
+
+    case 'telegram': {
+      const tgText = buildBetslipShareText('telegram');
+      const tgUrl = `https://t.me/share/url?url=${encodeURIComponent(siteUrl)}&text=${encodeURIComponent(tgText)}`;
+      window.open(tgUrl, '_blank', 'noopener,noreferrer');
       break;
     }
 
@@ -9483,7 +9877,7 @@ function applyDoctorPrescription() {
 }
 
 function convertAuditedTicket(code, bookie) {
-  window.location.hash = "#converter";
+  if (typeof navigateTo === 'function') { navigateTo('/bet-code-converter'); } else { window.location.hash = "#converter"; }
   if (typeof selectPaddiBookmaker === 'function') {
     selectPaddiBookmaker('src', bookie);
   }
