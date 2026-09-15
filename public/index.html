@@ -439,11 +439,11 @@
       </div>
     </div>
 
-    <!-- --- HERO SECTION --- -->
-    <section class="hero container" style="margin-bottom: 24px;">
+        <!-- --- HERO SECTION --- -->
+    <section class="hero-section container" style="margin-bottom: 24px;">
       <!-- Language Switcher & Coins Counter Row -->
       <div class="mobile-lang-coins-row"
-        style="display: flex; align-items: center; justify-content: center; gap: 12px; margin: 0 auto 16px;">
+        style="display: flex; align-items: center; justify-content: center; gap: 12px; margin: 0 auto 20px;">
         <!-- Language Switcher Selector -->
         <select id="lang-switcher-mobile" onchange="changeAppLanguage(this.value)"
           style="background: rgba(15, 23, 42, 0.9); border: 1.5px solid rgba(59, 130, 246, 0.35); border-radius: 10px; padding: 6px 12px; color: #ffffff; outline: none; cursor: pointer; font-size: 0.85rem; font-weight: 700; font-family: var(--font-body); box-shadow: 0 4px 12px rgba(0,0,0,0.4);">
@@ -461,66 +461,134 @@
         </div>
       </div>
 
-      <!-- Dynamic Hero Banner Image -->
-      <div
-        style="max-width: 680px; margin: 0 auto 20px; overflow: hidden; border-radius: var(--radius-md); border: 1px solid rgba(59, 130, 246, 0.4); box-shadow: 0 12px 36px rgba(0,0,0,0.6);">
-        <img id="hero-img" src="/images/hero_banner.jpg" alt="Deep Predict AI Analytics"
-          style="width: 100%; height: auto; display: block; object-fit: cover;">
+      <div class="hero-grid">
+        <!-- Column 1: Left Copy & CTAs -->
+        <div class="hero-content">
+          <div class="hero-badge">
+            <span class="badge-dot"></span>
+            <span>AI-Driven Football Intelligence</span>
+          </div>
+
+          <h1 class="hero-title">
+            MAKE SMARTER BETTING DECISIONS <span class="hero-title-accent">WITH DATA &amp; AI</span>
+          </h1>
+
+          <p class="hero-subtitle">
+            Analyse your bet slip, explore data-driven football predictions, convert booking codes and discover betting opportunities — all from one intelligent platform.
+          </p>
+
+          <div class="hero-actions">
+            <a href="#bet-doctor" class="btn-hero-primary" onclick="if(typeof navigateToPage==='function'){navigateToPage('doctor');}else{window.location.hash='#bet-doctor';}">
+              <span>ANALYSE MY BET</span>
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                <line x1="5" y1="12" x2="19" y2="12"></line>
+                <polyline points="12 5 19 12 12 19"></polyline>
+              </svg>
+            </a>
+
+            <a href="#predictions" class="btn-hero-secondary" onclick="if(typeof triggerQuickFilter==='function'){triggerQuickFilter('today', 'all');}else if(typeof navigateToPage==='function'){navigateToPage('predictions');}else{window.location.hash='#predictions';}">
+              TODAY'S PREDICTIONS
+            </a>
+          </div>
+
+          <div class="hero-value-indicators">
+            <div class="hero-value-item"><span class="value-check">✓</span> AI-Powered Analysis</div>
+            <div class="hero-value-item"><span class="value-check">✓</span> Real-Time Football Data</div>
+            <div class="hero-value-item"><span class="value-check">✓</span> Multiple Betting Tools</div>
+            <div class="hero-value-item"><span class="value-check">✓</span> Mobile Friendly</div>
+          </div>
+
+          <div class="hero-disclaimer">
+            18+ • Bet responsibly • Betting involves risk. No outcome is guaranteed.
+          </div>
+        </div>
+
+        <!-- Column 2: Right Dashboard / Product Preview Visual -->
+        <div class="hero-preview-container">
+          <div class="hero-preview-card">
+            <!-- Header Tag & Live Status -->
+            <div class="hero-preview-header">
+              <div class="hero-preview-tag">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#38bdf8" stroke-width="2.5">
+                  <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon>
+                </svg>
+                <span>Live AI Analytics Engine</span>
+              </div>
+              <div class="hero-preview-status">
+                <span style="width:6px; height:6px; border-radius:50%; background:#10b981; display:inline-block;"></span>
+                <span>Active Model v4.2</span>
+              </div>
+            </div>
+
+            <!-- Snippet 1: Bet Doctor Slip Analysis -->
+            <div class="hero-doctor-snippet">
+              <div class="hero-doctor-meta">
+                <span style="font-weight: 800; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.5px; font-size: 0.72rem;">🩺 Bet Doctor Slip Diagnosis</span>
+                <span class="hero-health-pill">Slip Health: 88/100</span>
+              </div>
+              <div style="display: flex; justify-content: space-between; font-size: 0.76rem; color: #cbd5e1;">
+                <span>Leg 1: Chelsea vs Arsenal</span>
+                <span style="font-weight: 700; color: #34d399;">Over 2.5 Goals @ 1.82</span>
+              </div>
+              <div class="hero-doctor-prescription">
+                <strong>Prescription:</strong> Optimal edge detected. High volume simulations yield 76.4% probability with strong value cushion (+11.8%).
+              </div>
+            </div>
+
+            <!-- Snippet 2: Match Probabilities (1X2) & Tactical Edge -->
+            <div class="hero-match-snippet">
+              <div>
+                <div class="hero-match-teams">
+                  <span>Manchester City</span>
+                  <span style="color:#94a3b8; font-weight:400; font-size:0.75rem;">vs</span>
+                  <span>Liverpool</span>
+                </div>
+                <div class="hero-match-league">Premier League • Super Match Edge</div>
+              </div>
+
+              <!-- 1X2 Probabilities Bar -->
+              <div class="hero-prob-bar-container">
+                <div class="hero-prob-fill-home" style="width: 58%;" title="Home: 58%"></div>
+                <div class="hero-prob-fill-draw" style="width: 24%;" title="Draw: 24%"></div>
+                <div class="hero-prob-fill-away" style="width: 18%;" title="Away: 18%"></div>
+              </div>
+              <div class="hero-prob-labels">
+                <span class="home">1: 58% (1.75)</span>
+                <span class="draw">X: 24% (3.60)</span>
+                <span class="away">2: 18% (4.40)</span>
+              </div>
+            </div>
+
+            <!-- Snippet 3: Confidence & Odds -->
+            <div class="hero-preview-metrics">
+              <div class="hero-metric-pill">
+                <span>Confidence:</span>
+                <span class="val" style="color: #34d399;">86% (High)</span>
+              </div>
+              <div class="hero-metric-pill">
+                <span>Risk:</span>
+                <span class="val" style="color: #38bdf8;">Low-Mod</span>
+              </div>
+              <div class="hero-metric-pill">
+                <span>Edge:</span>
+                <span class="val" style="color: #fbbf24;">+14.2%</span>
+              </div>
+            </div>
+
+            <!-- Footer: Verified Status -->
+            <div class="hero-preview-footer">
+              <span>Verified Matchday Feed</span>
+              <span>Updated Real-Time</span>
+            </div>
+          </div>
+        </div>
       </div>
 
-      <!-- HERO PROMINENT AI SCOUT PROMPT HUB -->
-      <div class="glass-card"
-        style="max-width: 680px; margin: 0 auto 20px; padding: 18px 22px; border: 1.5px solid rgba(59, 130, 246, 0.5); background: linear-gradient(135deg, rgba(37, 99, 235, 0.12) 0%, rgba(29, 78, 216, 0.08) 100%); border-radius: var(--radius-md); box-shadow: 0 0 20px rgba(37, 99, 235, 0.25); text-align: left;">
-        <div
-          style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; flex-wrap: wrap; gap: 8px;">
-          <div
-            style="font-family: var(--font-display); font-size: 0.95rem; font-weight: 800; color: #3b82f6; text-transform: uppercase; letter-spacing: 0.5px; display: flex; align-items: center; gap: 8px;">
-            <span>🤖</span> AI Scout Command Hub
-          </div>
-          <div style="display: flex; gap: 6px; flex-wrap: wrap;">
-            <button onclick="quickPromptScout('Generate 40 selections')"
-              style="background: rgba(37, 99, 235, 0.2); border: 1px solid #3b82f6; color: #60a5fa; font-weight: 700; font-size: 0.72rem; padding: 4px 10px; border-radius: 12px; cursor: pointer;">✨
-              40 Selections</button>
-            <button onclick="quickPromptScout('Generate 30 selections')"
-              style="background: rgba(37, 99, 235, 0.2); border: 1px solid #3b82f6; color: #60a5fa; font-weight: 700; font-size: 0.72rem; padding: 4px 10px; border-radius: 12px; cursor: pointer;">✨
-              30 Selections</button>
-            <button onclick="quickPromptScout('Generate 20 selections')"
-              style="background: rgba(245, 158, 11, 0.2); border: 1px solid var(--accent-gold); color: var(--accent-gold); font-weight: 700; font-size: 0.72rem; padding: 4px 10px; border-radius: 12px; cursor: pointer;">✨
-              20 Selections</button>
-            <button onclick="quickPromptScout('What is the best tactical angle?')"
-              style="background: rgba(139, 92, 246, 0.2); border: 1px solid #8b5cf6; color: #a78bfa; font-weight: 700; font-size: 0.72rem; padding: 4px 10px; border-radius: 12px; cursor: pointer;">🎯
-              Tactical Angle</button>
-          </div>
-        </div>
-        <div class="scout-input-row" style="display: flex; gap: 10px; width: 100%;">
-          <input type="text" id="hero-scout-input"
-            placeholder="Type prompt (e.g. 'Generate 40 selections' or ask match tactics)..."
-            onkeypress="if(event.key==='Enter') triggerHeroScoutPrompt()"
-            style="background: rgba(0,0,0,0.65); border: 1.5px solid #3b82f6; color: #ffffff; font-weight: 600; font-size: 0.92rem; border-radius: var(--radius-md); padding: 12px 16px; flex-grow: 1; outline: none; box-shadow: 0 0 12px rgba(59,130,246,0.25);">
-          <button onclick="triggerHeroScoutPrompt()" class="btn btn-primary"
-            style="background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%); border: none; font-weight: 800; font-size: 0.88rem; padding: 12px 22px; border-radius: var(--radius-md); box-shadow: 0 4px 14px rgba(37,99,235,0.45); cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 6px; white-space: nowrap;">
-            <span>Ask Scout</span>
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
-              <line x1="22" y1="2" x2="11" y2="13" />
-              <polygon points="22 2 15 22 11 13 2 9 22 2" />
-            </svg>
-          </button>
-        </div>
-        <!-- Inline Result Output Container for Instant Hero Feedback -->
-        <div id="hero-scout-results"
-          style="display: none; margin-top: 14px; padding: 14px; background: rgba(15, 23, 42, 0.9); border: 1.5px solid rgba(59, 130, 246, 0.5); border-radius: var(--radius-sm); box-shadow: 0 0 20px rgba(37, 99, 235, 0.25);">
-        </div>
-      </div>
-
-      <div style="display: flex; gap: 16px; justify-content: center; margin-bottom: 8px;">
-        <a href="#predictions" class="btn btn-primary">Explore Live Picks</a>
-        <button class="btn btn-secondary" onclick="openGeneralScout()">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <path d="M12 2a8 8 0 0 0-8 8c0 5.25 8 12 8 12s8-6.75 8-12a8 8 0 0 0-8-8z" />
-            <circle cx="12" cy="10" r="3" />
-          </svg>
-          Launch AI Scout
-        </button>
+      <!-- Compatibility Container for Background Listeners -->
+      <div id="hero-compat-container" style="display: none;" aria-hidden="true">
+        <input type="text" id="hero-scout-input" value="" />
+        <div id="hero-scout-results"></div>
+        <img id="hero-img" alt="" />
       </div>
     </section>
 

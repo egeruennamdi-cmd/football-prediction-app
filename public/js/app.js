@@ -3283,7 +3283,7 @@ function showAppNotification(message) {
 // 2. Multi-Language Translations System
 const TRANSLATIONS = {
   en: {
-    heroTitle: 'Next-Gen Football Predictions Powered by AI',
+    heroTitle: 'MAKE SMARTER BETTING DECISIONS WITH DATA & AI',
     scoutBtn: 'Ask Scout',
     proBtn: 'Join Pro',
     dashboardTitle: 'Matches Dashboard',
@@ -3321,7 +3321,7 @@ function changeAppLanguage(lang) {
   
   const heroTitleEl = document.querySelector(".hero-title");
   if (heroTitleEl) {
-    if (lang === 'en') heroTitleEl.innerHTML = 'Next-Gen Football <span class="gradient-text">Predictions Powered by AI</span>';
+    if (lang === 'en') heroTitleEl.innerHTML = 'MAKE SMARTER BETTING DECISIONS <span class="hero-title-accent">WITH DATA & AI</span>';
     else if (lang === 'fr') heroTitleEl.innerHTML = 'Pronostics Football <span class="gradient-text">Nouvelle Génération par IA</span>';
     else if (lang === 'it') heroTitleEl.innerHTML = 'Pronostici Calcio <span class="gradient-text">di Nuova Generazione con IA</span>';
     else if (lang === 'es') heroTitleEl.innerHTML = 'Predicciones de Fútbol <span class="gradient-text">de Última Generación con IA</span>';
