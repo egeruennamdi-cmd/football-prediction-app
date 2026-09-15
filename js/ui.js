@@ -10541,3 +10541,79 @@ document.addEventListener('keydown', function (e) {
   }
 });
 
+
+
+/* --- HOMEPAGE BET CODE CONVERTER SHOWCASE HANDLERS --- */
+function swapShowcaseBookmakers() {
+  const fromEl = document.getElementById('showcase-betcode-from');
+  const toEl = document.getElementById('showcase-betcode-to');
+  if (fromEl && toEl) {
+    const tmp = fromEl.value;
+    fromEl.value = toEl.value;
+    toEl.value = tmp;
+  }
+}
+
+function executeShowcaseBetCodeConversion() {
+  const codeEl = document.getElementById('showcase-betcode-input');
+  const fromEl = document.getElementById('showcase-betcode-from');
+  const toEl = document.getElementById('showcase-betcode-to');
+
+  const code = (codeEl?.value || '').trim().toUpperCase();
+  const src = fromEl?.value || '';
+  const tgt = toEl?.value || '';
+
+  if (!src) {
+    if (typeof showToast === 'function') showToast('Please select a source bookmaker (FROM BOOKMAKER).', 'warning');
+    else if (typeof showAppNotification === 'function') showAppNotification('Please select a source bookmaker (FROM BOOKMAKER).', 'warning');
+    else alert('Please select a source bookmaker (FROM BOOKMAKER).');
+    if (fromEl) fromEl.focus();
+    return;
+  }
+
+  if (!tgt) {
+    if (typeof showToast === 'function') showToast('Please select a target bookmaker (TO BOOKMAKER).', 'warning');
+    else if (typeof showAppNotification === 'function') showAppNotification('Please select a target bookmaker (TO BOOKMAKER).', 'warning');
+    else alert('Please select a target bookmaker (TO BOOKMAKER).');
+    if (toEl) toEl.focus();
+    return;
+  }
+
+  if (src === tgt) {
+    if (typeof showToast === 'function') showToast('Source and Target bookmakers cannot be identical. Please select different platforms.', 'warning');
+    else if (typeof showAppNotification === 'function') showAppNotification('Source and Target bookmakers cannot be identical. Please select different platforms.', 'warning');
+    else alert('Source and Target bookmakers cannot be identical. Please select different platforms.');
+    return;
+  }
+
+  if (!code) {
+    if (typeof showToast === 'function') showToast('Please enter a booking code to convert.', 'warning');
+    else if (typeof showAppNotification === 'function') showAppNotification('Please enter a booking code to convert.', 'warning');
+    else alert('Please enter a booking code to convert.');
+    if (codeEl) {
+      codeEl.focus();
+      codeEl.style.borderColor = '#ef4444';
+      setTimeout(() => { if (codeEl) codeEl.style.borderColor = ''; }, 2000);
+    }
+    return;
+  }
+
+  // Synchronize inputs with full standalone converter page fields if present
+  const mainCodeEl = document.getElementById('betcode-src-code');
+  const mainSrcEl = document.getElementById('betcode-src-select');
+  const mainTgtEl = document.getElementById('betcode-tgt-select');
+  if (mainCodeEl) mainCodeEl.value = code;
+  if (mainSrcEl) mainSrcEl.value = src;
+  if (mainTgtEl) mainTgtEl.value = tgt;
+
+  // Execute conversion via existing conversion engine
+  if (typeof convertBetCode === 'function') {
+    convertBetCode(code, src, tgt);
+  } else if (typeof convertBetSlipCode === 'function') {
+    convertBetSlipCode();
+  }
+}
+
+window.swapShowcaseBookmakers = swapShowcaseBookmakers;
+window.executeShowcaseBetCodeConversion = executeShowcaseBetCodeConversion;
+

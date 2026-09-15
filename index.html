@@ -1033,6 +1033,116 @@
     </section>
 
 
+    
+    <!-- --- BET CODE CONVERTER SHOWCASE SECTION --- -->
+    <section id="converter-showcase-section" class="converter-showcase-section container">
+      <div class="converter-showcase-container">
+        <!-- Header -->
+        <div class="converter-showcase-header">
+          <div class="converter-showcase-badge">
+            <span>⚡ Instant Code Converter</span>
+          </div>
+          <h2 class="converter-showcase-headline">ONE BOOKING CODE. ANOTHER BOOKMAKER.</h2>
+          <p class="converter-showcase-subhead">
+            Convert supported booking codes between bookmakers without rebuilding your ticket manually.
+          </p>
+        </div>
+
+        <!-- Converter Form Card -->
+        <div class="converter-showcase-card">
+          <!-- Top Row: From & To Selects with Swap -->
+          <div class="converter-card-grid">
+            <div class="converter-form-group">
+              <label class="converter-form-label" for="showcase-betcode-from">FROM BOOKMAKER</label>
+              <div class="converter-select-wrap">
+                <select id="showcase-betcode-from" class="converter-select" aria-label="From Bookmaker">
+                  <option value="" disabled selected>[Select Bookmaker]</option>
+                  <option value="sportybet:ng">SportyBet</option>
+                  <option value="bet9ja">Bet9ja</option>
+                  <option value="1xbet:ng">1xBet</option>
+                  <option value="betking:ng">BetKing</option>
+                  <option value="betano:ng">Betano</option>
+                  <option value="msport:ng">MSport</option>
+                  <option value="_22bet_ng">22Bet</option>
+                  <option value="betwinner:ng">BetWinner</option>
+                  <option value="melbet:ng">Melbet</option>
+                  <option value="paripesa:ng">Paripesa</option>
+                  <option value="betway:ng">Betway</option>
+                  <option value="betpawa:ng">BetPawa</option>
+                </select>
+              </div>
+            </div>
+
+            <button type="button" class="converter-swap-btn" onclick="swapShowcaseBookmakers()" aria-label="Swap bookmakers" title="Swap bookmakers">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                <polyline points="17 1 21 5 17 9"></polyline>
+                <path d="M3 5h18"></path>
+                <polyline points="7 23 3 19 7 15"></polyline>
+                <path d="M21 19H3"></path>
+              </svg>
+            </button>
+
+            <div class="converter-form-group">
+              <label class="converter-form-label" for="showcase-betcode-to">TO BOOKMAKER</label>
+              <div class="converter-select-wrap">
+                <select id="showcase-betcode-to" class="converter-select" aria-label="To Bookmaker">
+                  <option value="" disabled selected>[Select Bookmaker]</option>
+                  <option value="sportybet:ng">SportyBet</option>
+                  <option value="bet9ja">Bet9ja</option>
+                  <option value="1xbet:ng">1xBet</option>
+                  <option value="betking:ng">BetKing</option>
+                  <option value="betano:ng">Betano</option>
+                  <option value="msport:ng">MSport</option>
+                  <option value="_22bet_ng">22Bet</option>
+                  <option value="betwinner:ng">BetWinner</option>
+                  <option value="melbet:ng">Melbet</option>
+                  <option value="paripesa:ng">Paripesa</option>
+                  <option value="betway:ng">Betway</option>
+                  <option value="betpawa:ng">BetPawa</option>
+                </select>
+              </div>
+            </div>
+          </div>
+
+          <!-- Bottom Row: Booking Code Input & CTA Button -->
+          <div class="converter-action-grid">
+            <div class="converter-form-group">
+              <label class="converter-form-label" for="showcase-betcode-input">BOOKING CODE</label>
+              <input
+                type="text"
+                id="showcase-betcode-input"
+                class="converter-input"
+                placeholder="[Enter booking code]"
+                autocomplete="off"
+                autocorrect="off"
+                autocapitalize="characters"
+                spellcheck="false"
+              />
+            </div>
+
+            <button
+              type="button"
+              class="btn-convert-showcase"
+              id="btn-convert-showcase-cta"
+              onclick="executeShowcaseBetCodeConversion()"
+            >
+              <span>CONVERT BOOKING CODE</span>
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                <line x1="5" y1="12" x2="19" y2="12"></line>
+                <polyline points="12 5 19 12 12 19"></polyline>
+              </svg>
+            </button>
+          </div>
+
+          <!-- Underneath Value Prop -->
+          <div class="converter-value-prop">
+            Fast <span>•</span> Simple <span>•</span> Multiple Supported Bookmakers
+          </div>
+        </div>
+      </div>
+    </section>
+
+
     <!-- --- DAILY BETS & TRENDS SECTION --- -->
     <section id="daily-bets-section" class="container" style="margin-bottom: 36px;">
       <!-- Daily Curated Picks Header -->

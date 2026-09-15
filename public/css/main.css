@@ -6242,3 +6242,278 @@ header {
   }
 }
 
+
+
+/* --- BET CODE CONVERTER SHOWCASE SECTION --- */
+.converter-showcase-section {
+  padding: 24px 0 44px;
+  position: relative;
+}
+
+.converter-showcase-container {
+  background: linear-gradient(135deg, rgba(15, 23, 42, 0.9) 0%, rgba(10, 15, 30, 0.98) 100%);
+  border: 1px solid rgba(16, 185, 129, 0.35);
+  border-radius: 20px;
+  padding: 36px 32px;
+  position: relative;
+  overflow: hidden;
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.1);
+}
+
+.converter-showcase-container::before {
+  content: "";
+  position: absolute;
+  top: -100px;
+  right: -100px;
+  width: 320px;
+  height: 320px;
+  background: radial-gradient(circle, rgba(16, 185, 129, 0.15) 0%, transparent 70%);
+  pointer-events: none;
+}
+
+.converter-showcase-container::after {
+  content: "";
+  position: absolute;
+  bottom: -100px;
+  left: -100px;
+  width: 300px;
+  height: 300px;
+  background: radial-gradient(circle, rgba(56, 189, 248, 0.12) 0%, transparent 70%);
+  pointer-events: none;
+}
+
+.converter-showcase-header {
+  text-align: center;
+  max-width: 680px;
+  margin: 0 auto 28px;
+  position: relative;
+  z-index: 2;
+}
+
+.converter-showcase-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: rgba(16, 185, 129, 0.1);
+  border: 1px solid rgba(16, 185, 129, 0.3);
+  color: #10b981;
+  font-size: 0.72rem;
+  font-weight: 800;
+  letter-spacing: 0.8px;
+  text-transform: uppercase;
+  padding: 4px 12px;
+  border-radius: var(--radius-full);
+  margin-bottom: 12px;
+}
+
+.converter-showcase-headline {
+  font-family: var(--font-display);
+  font-size: clamp(1.6rem, 2.6vw, 2.15rem);
+  font-weight: 900;
+  line-height: 1.15;
+  color: #ffffff;
+  text-transform: uppercase;
+  letter-spacing: -0.015em;
+  margin: 0 0 10px 0;
+}
+
+.converter-showcase-subhead {
+  font-size: 0.95rem;
+  line-height: 1.5;
+  color: #cbd5e1;
+  margin: 0;
+}
+
+/* Form Card */
+.converter-showcase-card {
+  max-width: 820px;
+  margin: 0 auto;
+  background: rgba(11, 17, 32, 0.92);
+  border: 1px solid rgba(16, 185, 129, 0.3);
+  border-radius: 16px;
+  padding: 24px 28px;
+  box-shadow: 0 16px 36px rgba(0, 0, 0, 0.6);
+  position: relative;
+  z-index: 2;
+}
+
+.converter-card-grid {
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  gap: 16px;
+  align-items: flex-end;
+  margin-bottom: 18px;
+}
+
+.converter-form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  text-align: left;
+}
+
+.converter-form-label {
+  font-size: 0.72rem;
+  font-weight: 800;
+  letter-spacing: 0.8px;
+  color: #94a3b8;
+  text-transform: uppercase;
+  font-family: var(--font-display);
+}
+
+.converter-select-wrap {
+  position: relative;
+}
+
+.converter-select,
+.converter-input {
+  width: 100%;
+  box-sizing: border-box;
+  height: 48px;
+  background: rgba(15, 23, 42, 0.95);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: 10px;
+  padding: 0 14px;
+  font-size: 0.92rem;
+  font-weight: 600;
+  color: #ffffff;
+  outline: none;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+  font-family: inherit;
+}
+
+.converter-select {
+  cursor: pointer;
+  appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 24 24' fill='none' stroke='%2394a3b8' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 14px center;
+  padding-right: 36px;
+}
+
+.converter-select option {
+  background: #0f172a;
+  color: #ffffff;
+}
+
+.converter-select:focus,
+.converter-input:focus {
+  border-color: #10b981;
+  box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.25);
+}
+
+.converter-input::placeholder {
+  color: #64748b;
+  font-weight: 400;
+}
+
+.converter-swap-btn {
+  width: 44px;
+  height: 48px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(16, 185, 129, 0.1);
+  border: 1px solid rgba(16, 185, 129, 0.3);
+  border-radius: 10px;
+  color: #10b981;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  flex-shrink: 0;
+}
+
+.converter-swap-btn:hover {
+  background: rgba(16, 185, 129, 0.2);
+  border-color: #10b981;
+  transform: rotate(180deg);
+}
+
+/* Bottom Code Input and CTA Row */
+.converter-action-grid {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 16px;
+  align-items: flex-end;
+}
+
+.btn-convert-showcase {
+  height: 48px;
+  padding: 0 28px;
+  border-radius: 10px;
+  font-family: var(--font-display);
+  font-weight: 800;
+  font-size: 0.9rem;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+  background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+  border: 1px solid rgba(52, 211, 153, 0.4);
+  color: #ffffff !important;
+  box-shadow: 0 4px 18px rgba(16, 185, 129, 0.4);
+  cursor: pointer;
+  transition: all 0.25s ease;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  white-space: nowrap;
+}
+
+.btn-convert-showcase:hover {
+  background: linear-gradient(135deg, #059669 0%, #047857 100%);
+  box-shadow: 0 6px 24px rgba(16, 185, 129, 0.55);
+  transform: translateY(-2px);
+}
+
+.converter-value-prop {
+  text-align: center;
+  margin-top: 18px;
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: #94a3b8;
+  letter-spacing: 0.5px;
+}
+
+.converter-value-prop span {
+  color: #38bdf8;
+  margin: 0 6px;
+}
+
+/* Mobile & Smartphone Responsive Styles */
+@media (max-width: 640px) {
+  .converter-showcase-section {
+    padding: 16px 0 32px;
+  }
+  .converter-showcase-container {
+    padding: 20px 16px;
+    border-radius: 16px;
+  }
+  .converter-showcase-card {
+    padding: 18px 14px;
+  }
+  .converter-card-grid {
+    grid-template-columns: 1fr;
+    gap: 10px;
+  }
+  .converter-swap-btn {
+    align-self: center;
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    margin: -2px auto;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
+  }
+  .converter-swap-btn:hover {
+    transform: none;
+  }
+  .converter-action-grid {
+    grid-template-columns: 1fr;
+    gap: 14px;
+  }
+  .btn-convert-showcase {
+    width: 100%;
+  }
+  .converter-value-prop {
+    font-size: 0.74rem;
+  }
+}
+
