@@ -10778,4 +10778,33 @@ window.calculatePerformanceMetrics = calculatePerformanceMetrics;
 window.switchPerformanceTimeframe = switchPerformanceTimeframe;
 window.openFullResultsHistory = openFullResultsHistory;
 
+// Secondary Tools Showcase Navigation Handler
+function handleToolOpen(toolKey, event) {
+  if (event && event.preventDefault) {
+    try { event.preventDefault(); } catch (e) {}
+  }
+  
+  const toolRouteMap = {
+    'generator': '/generator',
+    'live-scanner': '/live-scanner',
+    'pre-match-scanner': '/pre-match-scanner',
+    'valuebot': '/valuebot',
+    'arbitrage': '/arbitrage',
+    'analytics': '/analytics'
+  };
+
+  const targetPath = toolRouteMap[toolKey] || '/' + toolKey;
+  
+  if (typeof window.navigateTo === 'function') {
+    window.navigateTo(targetPath);
+  } else if (typeof window.navigateToPage === 'function') {
+    window.navigateToPage(toolKey);
+  } else {
+    window.location.href = targetPath;
+  }
+}
+
+window.handleToolOpen = handleToolOpen;
+
+
 
