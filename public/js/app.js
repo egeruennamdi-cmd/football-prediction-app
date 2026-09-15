@@ -7524,7 +7524,37 @@ function updateAuthUIState() {
   if (profileAvatarInitial) {
     profileAvatarInitial.innerText = isLoggedIn ? username.charAt(0).toUpperCase() : "👤";
   }
+
+  const mobileAuthText = document.getElementById("mobile-drawer-auth-text");
+  if (mobileAuthText) {
+    mobileAuthText.innerText = isLoggedIn ? ("Account: " + username) : "Login";
+  }
+
+  const ctaBtn = document.getElementById("nav-get-started-btn");
+  if (ctaBtn) {
+    if (isLoggedIn) {
+      ctaBtn.innerText = "VIP CLUB";
+      ctaBtn.title = "Punters VIP Club";
+      ctaBtn.onclick = function() { if (typeof openVipSubscriptionModal === 'function') openVipSubscriptionModal(); };
+    } else {
+      ctaBtn.innerText = "GET STARTED";
+      ctaBtn.title = "Get Started with DeepPredictBet";
+      ctaBtn.onclick = function() { if (typeof openAuthModal === 'function') openAuthModal('signup'); };
+    }
+  }
+
+  const drawerCta = document.getElementById("mobile-drawer-cta-btn");
+  if (drawerCta) {
+    if (isLoggedIn) {
+      drawerCta.innerHTML = "<span>👑</span> VIP CLUB";
+      drawerCta.onclick = function() { if (typeof toggleMobileDrawer === 'function') toggleMobileDrawer(); if (typeof openVipSubscriptionModal === 'function') openVipSubscriptionModal(); };
+    } else {
+      drawerCta.innerHTML = "<span>🚀</span> GET STARTED";
+      drawerCta.onclick = function() { if (typeof toggleMobileDrawer === 'function') toggleMobileDrawer(); if (typeof openAuthModal === 'function') openAuthModal('signup'); };
+    }
+  }
 }
+
 
 function logoutUser(e) {
   if (e && e.preventDefault) e.preventDefault();
