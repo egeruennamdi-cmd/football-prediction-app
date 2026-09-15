@@ -909,6 +909,130 @@
     </section>
 
 
+    
+    <!-- --- BET DOCTOR SHOWCASE SECTION --- -->
+    <section id="bet-doctor-showcase-section" class="bet-doctor-showcase-section container">
+      <div class="bet-doctor-showcase-container">
+        <!-- Left Column: Narrative & Actions -->
+        <div class="doctor-narrative-col">
+          <div class="doctor-badge">
+            <span>🩺 Slip Risk Intelligence</span>
+          </div>
+
+          <h2 class="doctor-headline">NOT SURE ABOUT YOUR BET SLIP?</h2>
+
+          <p class="doctor-subheadline">
+            Let DeepPredict Bet Doctor analyse your selections and highlight potential risks before you place your bet.
+          </p>
+
+          <div class="doctor-feature-pills">
+            <div class="doctor-feature-item">
+              <span class="doctor-feature-icon">🛡️</span>
+              <div><b>Ticket Health Diagnosis:</b> Evaluates accumulators for correlation traps, variance mismatches, and inflated risks.</div>
+            </div>
+            <div class="doctor-feature-item">
+              <span class="doctor-feature-icon">🚦</span>
+              <div><b>Tri-Tier Risk Categorisation:</b> Clearly marks every leg as Lower Risk, Moderate Risk, or Higher Risk.</div>
+            </div>
+            <div class="doctor-feature-item">
+              <span class="doctor-feature-icon">⚡</span>
+              <div><b>Instant Bookmaker Import:</b> Paste your booking code from SportyBet, Bet9ja, 1xBet, BetKing, and more.</div>
+            </div>
+          </div>
+
+          <div class="doctor-actions-row">
+            <a href="#bet-doctor" class="btn-doctor-primary" onclick="if(typeof triggerToolRoute==='function'){triggerToolRoute('doctor');}else if(typeof navigateTo==='function'){navigateTo('/bet-doctor');}else{window.location.hash='#bet-doctor';}">
+              <span>ANALYSE MY TICKET</span>
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                <line x1="5" y1="12" x2="19" y2="12"></line>
+                <polyline points="12 5 19 12 12 19"></polyline>
+              </svg>
+            </a>
+
+            <button type="button" class="btn-doctor-secondary" onclick="openHowBetDoctorWorksModal()">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="12" cy="12" r="10"></circle>
+                <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"></path>
+                <line x1="12" y1="17" x2="12.01" y2="17"></line>
+              </svg>
+              <span>HOW BET DOCTOR WORKS</span>
+            </button>
+          </div>
+
+          <div class="doctor-disclaimer-note">
+            <span>ℹ️</span>
+            <span>Decision-support technology for research and risk awareness. Does not guarantee winning bets. 18+.</span>
+          </div>
+        </div>
+
+        <!-- Right Column: Interactive Product Visual Demonstration -->
+        <div class="doctor-demo-col">
+          <div class="doctor-demo-card">
+            <div class="doctor-demo-watermark">Interactive Demo Preview</div>
+
+            <!-- Header with Health Gauge -->
+            <div class="doctor-demo-header">
+              <div class="doctor-health-gauge">
+                <span class="doctor-health-gauge-val">74</span>
+              </div>
+              <div class="doctor-demo-meta">
+                <div class="doctor-demo-meta-title">Ticket Health / Analysis</div>
+                <div class="doctor-demo-health-label">74/100 • Moderate Risk Slip</div>
+                <div class="doctor-demo-meta-sub">3 Selections Audited • 1 Potential Trap Detected</div>
+              </div>
+            </div>
+
+            <!-- Selections Analysed Strip -->
+            <div class="doctor-demo-stats-strip">
+              <span class="doctor-stat-chip chip-count">📊 3 Selections Analysed</span>
+              <span class="doctor-stat-chip chip-safe">🟢 1 Lower Risk</span>
+              <span class="doctor-stat-chip chip-mod">🟡 1 Moderate Risk</span>
+              <span class="doctor-stat-chip chip-high">🔴 1 Higher Risk</span>
+            </div>
+
+            <!-- Selections Diagnostic List -->
+            <div class="doctor-demo-list">
+              <!-- Leg 1: Lower Risk -->
+              <div class="doctor-demo-item item-safe">
+                <div>
+                  <div class="doctor-item-fixture">Arsenal vs Everton</div>
+                  <div class="doctor-item-pick">Pick: Arsenal Win (1X2) @ 1.38</div>
+                </div>
+                <span class="doctor-item-badge badge-safe">🟢 Lower Risk (84%)</span>
+              </div>
+
+              <!-- Leg 2: Moderate Risk -->
+              <div class="doctor-demo-item item-mod">
+                <div>
+                  <div class="doctor-item-fixture">Real Madrid vs Atlético Madrid</div>
+                  <div class="doctor-item-pick">Pick: Over 2.5 Total Goals @ 1.85</div>
+                </div>
+                <span class="doctor-item-badge badge-mod">🟡 Moderate Risk (66%)</span>
+              </div>
+
+              <!-- Leg 3: Higher Risk / Potential Trap -->
+              <div class="doctor-demo-item item-high">
+                <div>
+                  <div class="doctor-item-fixture">Napoli vs Atalanta</div>
+                  <div class="doctor-item-pick">Pick: Napoli Clean Sheet (Yes) @ 2.90</div>
+                </div>
+                <span class="doctor-item-badge badge-high">🔴 Higher Risk (Trap Alert)</span>
+              </div>
+            </div>
+
+            <!-- Doctor Prescription Box -->
+            <div class="doctor-demo-prescription">
+              <span style="font-size: 1.1rem; flex-shrink: 0;">💊</span>
+              <div>
+                <b>Doctor Prescription:</b> Napoli Clean Sheet introduces 68% variance drag. Swapping to <i>Both Teams to Score (Yes) @ 1.70</i> boosts Ticket Health to <b>89/100</b>.
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+
     <!-- --- DAILY BETS & TRENDS SECTION --- -->
     <section id="daily-bets-section" class="container" style="margin-bottom: 36px;">
       <!-- Daily Curated Picks Header -->
@@ -6128,6 +6252,69 @@
       window.addEventListener('load', bindVipTriggers);
     })();
   </script>
+
+  <!-- Modal: HOW BET DOCTOR WORKS -->
+  <div id="modal-how-bet-doctor-works" class="doctor-info-modal-backdrop" aria-hidden="true" role="dialog" aria-modal="true" onclick="if(event.target===this)closeHowBetDoctorWorksModal()">
+    <div class="doctor-info-modal">
+      <button type="button" class="doctor-info-modal-close" onclick="closeHowBetDoctorWorksModal()" aria-label="Close modal">✕</button>
+
+      <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 6px;">
+        <span style="font-size: 1.5rem;">🩺</span>
+        <h3 style="font-family: var(--font-display); font-size: 1.3rem; font-weight: 900; color: #ffffff; margin: 0; text-transform: uppercase;">
+          HOW BET DOCTOR WORKS
+        </h3>
+      </div>
+      <p style="color: #94a3b8; font-size: 0.85rem; margin: 0 0 16px 0; line-height: 1.45;">
+        Bet Doctor is an objective decision-support technology designed to audit sports accumulator slips before placement. Here is the diagnostic workflow:
+      </p>
+
+      <div class="doctor-steps-list">
+        <div class="doctor-step-item">
+          <div class="doctor-step-num">1</div>
+          <div class="doctor-step-content">
+            <h4>Import or Enter Your Selections</h4>
+            <p>Paste a booking code from any supported bookmaker (SportyBet, Bet9ja, 1xBet, etc.) or select matches and markets manually.</p>
+          </div>
+        </div>
+
+        <div class="doctor-step-item">
+          <div class="doctor-step-num">2</div>
+          <div class="doctor-step-content">
+            <h4>Algorithmic Risk Audit</h4>
+            <p>The engine benchmarks each leg against predictive statistical models, expected value margins, team form, and market liquidity.</p>
+          </div>
+        </div>
+
+        <div class="doctor-step-item">
+          <div class="doctor-step-num">3</div>
+          <div class="doctor-step-content">
+            <h4>Categorisation &amp; Trap Detection</h4>
+            <p>Every leg is color-classified as <b>Lower Risk (Green)</b>, <b>Moderate Risk (Amber)</b>, or <b>Higher Risk (Red)</b>, highlighting accumulator-killing traps.</p>
+          </div>
+        </div>
+
+        <div class="doctor-step-item">
+          <div class="doctor-step-num">4</div>
+          <div class="doctor-step-content">
+            <h4>Ticket Health Score &amp; Recommendations</h4>
+            <p>Receive a comprehensive 0–100 health score with suggested pick substitutions to maximize statistical stability while maintaining solid odds.</p>
+          </div>
+        </div>
+      </div>
+
+      <div style="background: rgba(15, 23, 42, 0.6); border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 10px; padding: 12px; margin-bottom: 20px; font-size: 0.76rem; color: #64748b; line-height: 1.4;">
+        <strong style="color: #cbd5e1;">Responsible Betting Reminder:</strong> Bet Doctor provides analytical research and risk assessments. It does not predict the future or guarantee winning bets. Bet responsibly.
+      </div>
+
+      <div style="display: flex; gap: 10px; justify-content: flex-end; flex-wrap: wrap;">
+        <button type="button" class="btn-doctor-secondary" onclick="closeHowBetDoctorWorksModal()" style="min-height: 38px; padding: 8px 16px;">CLOSE</button>
+        <a href="#bet-doctor" class="btn-doctor-primary" onclick="closeHowBetDoctorWorksModal(); if(typeof triggerToolRoute==='function'){triggerToolRoute('doctor');}else if(typeof navigateTo==='function'){navigateTo('/bet-doctor');}else{window.location.hash='#bet-doctor';}" style="min-height: 38px; padding: 8px 18px;">
+          <span>TRY BET DOCTOR NOW</span>
+        </a>
+      </div>
+    </div>
+  </div>
+
 </body>
 
 </html>

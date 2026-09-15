@@ -10511,3 +10511,33 @@ function renderTodayInsightsPreview() {
 }
 window.renderTodayInsightsPreview = renderTodayInsightsPreview;
 
+
+
+/* --- BET DOCTOR SHOWCASE MODAL LOGIC --- */
+function openHowBetDoctorWorksModal() {
+  const modal = document.getElementById('modal-how-bet-doctor-works');
+  if (modal) {
+    modal.classList.add('active');
+    modal.setAttribute('aria-hidden', 'false');
+    document.body.style.overflow = 'hidden';
+  }
+}
+
+function closeHowBetDoctorWorksModal() {
+  const modal = document.getElementById('modal-how-bet-doctor-works');
+  if (modal) {
+    modal.classList.remove('active');
+    modal.setAttribute('aria-hidden', 'true');
+    document.body.style.overflow = '';
+  }
+}
+
+window.openHowBetDoctorWorksModal = openHowBetDoctorWorksModal;
+window.closeHowBetDoctorWorksModal = closeHowBetDoctorWorksModal;
+
+document.addEventListener('keydown', function (e) {
+  if (e.key === 'Escape') {
+    closeHowBetDoctorWorksModal();
+  }
+});
+
