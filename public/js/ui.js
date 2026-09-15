@@ -10426,3 +10426,88 @@ if (typeof document !== 'undefined') {
   }
 }
 
+
+
+// Dynamic synchronization for TODAY'S FOOTBALL INSIGHTS homepage preview section
+function renderTodayInsightsPreview() {
+  const container = document.getElementById('today-insights-grid');
+  if (!container) return;
+  const list = (window.MATCH_DATA || (typeof MATCH_DATA !== 'undefined' ? MATCH_DATA : []));
+  if (!list || list.length === 0) return;
+
+  // We show 4 preview matches from authentic application data
+  const topMatches = list.slice(0, 4);
+
+  // If container is already populated with the exact matches, ensure analysis button listeners are wired
+  const existingCards = container.querySelectorAll('.insight-match-card');
+  if (existingCards.length === topMatches.length) {
+    topMatches.forEach((m, idx) => {
+      const card = existingCards[idx];
+      if (!card) return;
+      const btn = card.querySelector('.btn-insight-analysis');
+      if (btn && !btn.hasAttribute('data-insights-bound')) {
+        btn.setAttribute('data-insights-bound', 'true');
+        btn.onclick = (e) => {
+          if (e && e.preventDefault) e.preventDefault();
+          if (typeof openScoutModal === 'function') {
+            openScoutModal(m.id);
+          }
+        };
+      }
+    });
+    return;
+  }
+
+  container.innerHTML = topMatches.map(m => {
+    const tip = (typeof getMatchTip === 'function') ? getMatchTip(m) : 'Home Win (1)';
+    const odds = (typeof getMatchOdds === 'function') ? getMatchOdds(m) : 1.85;
+    const conf = m.confidenceVal || 80;
+    const confClass = conf >= 80 ? 'high' : 'medium';
+    const timeStr = m.time ? (m.time.includes(',') ? m.time.split(',')[2].trim() : m.time) : '16:30';
+    return `
+      <div class="insight-match-card" id="insight-card-${m.id}">
+        <div>
+          <div class="insight-card-top">
+            <span class="insight-league-badge">
+              <span class="insight-league-emoji">${m.leagueEmoji || '🏆'}</span> ${m.league || 'League'}
+            </span>
+            <span class="insight-kickoff-time">🕒 ${timeStr}</span>
+          </div>
+
+          <div class="insight-teams-wrapper">
+            <div class="insight-team-row home">
+              <span class="insight-team-logo">${m.homeTeam?.logo || '⚽'}</span>
+              <span class="insight-team-name">${m.homeTeam?.name || 'Home'}</span>
+            </div>
+            <div class="insight-team-row away">
+              <span class="insight-team-logo">${m.awayTeam?.logo || '⚽'}</span>
+              <span class="insight-team-name">${m.awayTeam?.name || 'Away'}</span>
+            </div>
+          </div>
+
+          <div class="insight-market-box">
+            <div class="insight-market-meta">
+              <span class="insight-market-label">SELECTED MARKET</span>
+              <span class="insight-odds-badge">@${Number(odds).toFixed(2)}</span>
+            </div>
+            <div class="insight-prediction-name">${tip}</div>
+          </div>
+        </div>
+
+        <div class="insight-card-footer">
+          <div class="insight-confidence">
+            <span class="insight-conf-dot ${confClass}"></span>
+            <span class="insight-conf-label">Confidence:</span>
+            <span class="insight-conf-value">${conf}%</span>
+          </div>
+          <button type="button" class="btn-insight-analysis" onclick="openScoutModal('${m.id}')" aria-label="View Analysis for ${m.homeTeam?.name || 'Home'} vs ${m.awayTeam?.name || 'Away'}">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+            <span>Analysis</span>
+          </button>
+        </div>
+      </div>
+    `;
+  }).join('');
+}
+window.renderTodayInsightsPreview = renderTodayInsightsPreview;
+
