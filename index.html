@@ -592,6 +592,125 @@
       </div>
     </section>
 
+    
+    <!-- --- WHAT DO YOU WANT TO DO? INTENT HUB SECTION --- -->
+    <section id="intent-hub-section" class="intent-hub-section container">
+      <div class="intent-hub-header">
+        <div class="intent-hub-badge">
+          <span>⚡ Quick Start</span>
+        </div>
+        <h2 class="intent-hub-title">WHAT DO YOU WANT TO DO?</h2>
+      </div>
+
+      <div class="intent-cards-grid">
+        <!-- CARD 1: PREDICT -->
+        <div class="intent-card intent-card-predict" id="intent-card-predict">
+          <div>
+            <div class="intent-card-header">
+              <div class="intent-card-icon icon-emerald">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <circle cx="12" cy="12" r="10"></circle>
+                  <path d="m4.93 4.93 4.24 4.24"></path>
+                  <path d="m14.83 9.17 4.24-4.24"></path>
+                  <path d="m14.83 14.83 4.24 4.24"></path>
+                  <path d="m9.17 14.83-4.24 4.24"></path>
+                  <circle cx="12" cy="12" r="4"></circle>
+                </svg>
+              </div>
+              <h3 class="intent-card-title">PREDICT</h3>
+            </div>
+            <p class="intent-card-desc">
+              Explore today's data-driven football predictions.
+            </p>
+          </div>
+          <a href="#predictions" class="btn-intent-cta btn-intent-predict" onclick="if(typeof triggerQuickFilter==='function'){triggerQuickFilter('today', 'all');}else if(typeof navigateTo==='function'){navigateTo('/predictions');}else{window.location.hash='#predictions';}">
+            <span>VIEW PREDICTIONS</span>
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+              <line x1="5" y1="12" x2="19" y2="12"></line>
+              <polyline points="12 5 19 12 12 19"></polyline>
+            </svg>
+          </a>
+        </div>
+
+        <!-- CARD 2: ANALYSE -->
+        <div class="intent-card intent-card-analyse" id="intent-card-analyse">
+          <div>
+            <div class="intent-card-header">
+              <div class="intent-card-icon icon-cyan">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M4.8 2.3A.3.3 0 1 0 5 2H4a2 2 0 0 0-2 2v5a6 6 0 0 0 6 6v0a6 6 0 0 0 6-6V4a2 2 0 0 0-2-2h-1a.2.2 0 1 0 .3.3"></path>
+                  <path d="M8 15v1a6 6 0 0 0 6 6v0a6 6 0 0 0 6-6v-4"></path>
+                  <circle cx="20" cy="10" r="2"></circle>
+                </svg>
+              </div>
+              <h3 class="intent-card-title">ANALYSE</h3>
+            </div>
+            <p class="intent-card-desc">
+              Let Bet Doctor analyse your selections and highlight potential risks.
+            </p>
+          </div>
+          <a href="#bet-doctor" class="btn-intent-cta btn-intent-analyse" onclick="if(typeof triggerToolRoute==='function'){triggerToolRoute('doctor');}else if(typeof navigateTo==='function'){navigateTo('/bet-doctor');}else{window.location.hash='#bet-doctor';}">
+            <span>ANALYSE MY BET</span>
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+              <line x1="5" y1="12" x2="19" y2="12"></line>
+              <polyline points="12 5 19 12 12 19"></polyline>
+            </svg>
+          </a>
+        </div>
+
+        <!-- CARD 3: CONVERT -->
+        <div class="intent-card intent-card-convert" id="intent-card-convert">
+          <div>
+            <div class="intent-card-header">
+              <div class="intent-card-icon icon-gold">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <rect width="20" height="12" x="2" y="6" rx="2"></rect>
+                  <path d="m10 12 4-2v4z"></path>
+                  <path d="M6 10h.01M6 14h.01"></path>
+                </svg>
+              </div>
+              <h3 class="intent-card-title">CONVERT</h3>
+            </div>
+            <p class="intent-card-desc">
+              Convert supported booking codes from one bookmaker format to another.
+            </p>
+          </div>
+          <a href="#converter" class="btn-intent-cta btn-intent-convert" onclick="if(typeof triggerToolRoute==='function'){triggerToolRoute('converter');}else if(typeof navigateTo==='function'){navigateTo('/bet-code-converter');}else{window.location.hash='#converter';}">
+            <span>CONVERT CODE</span>
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+              <line x1="5" y1="12" x2="19" y2="12"></line>
+              <polyline points="12 5 19 12 12 19"></polyline>
+            </svg>
+          </a>
+        </div>
+
+        <!-- CARD 4: DISCOVER -->
+        <div class="intent-card intent-card-discover" id="intent-card-discover">
+          <div>
+            <div class="intent-card-header">
+              <div class="intent-card-icon icon-purple">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <circle cx="12" cy="12" r="10"></circle>
+                  <polygon points="16.24 7.76 14.12 14.12 7.76 16.24 9.88 9.88 16.24 7.76"></polygon>
+                </svg>
+              </div>
+              <h3 class="intent-card-title">DISCOVER</h3>
+            </div>
+            <p class="intent-card-desc">
+              Explore value opportunities, scanners and advanced betting intelligence.
+            </p>
+          </div>
+          <a href="#generator" class="btn-intent-cta btn-intent-discover" onclick="if(typeof triggerToolRoute==='function'){triggerToolRoute('machine');}else if(typeof navigateTo==='function'){navigateTo('/generator');}else{window.location.hash='#generator';}">
+            <span>EXPLORE TOOLS</span>
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+              <line x1="5" y1="12" x2="19" y2="12"></line>
+              <polyline points="12 5 19 12 12 19"></polyline>
+            </svg>
+          </a>
+        </div>
+      </div>
+    </section>
+
     <!-- --- DAILY BETS & TRENDS SECTION --- -->
     <section id="daily-bets-section" class="container" style="margin-bottom: 36px;">
       <!-- Daily Curated Picks Header -->
