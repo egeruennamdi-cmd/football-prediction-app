@@ -7500,5 +7500,163 @@ header {
   }
 }
 
+/* ==========================================================================
+   HOMEPAGE BENEFITS SECTION (BETTING INTELLIGENCE IN ONE PLACE)
+   ========================================================================== */
+.benefits-section {
+  padding: 20px 0 48px;
+  position: relative;
+}
+
+.benefits-container {
+  background: linear-gradient(180deg, rgba(15, 23, 42, 0.75) 0%, rgba(10, 15, 29, 0.88) 100%);
+  border: 1px solid rgba(255, 255, 255, 0.09);
+  border-radius: 20px;
+  padding: 40px 32px;
+  box-shadow: 0 16px 36px -12px rgba(0, 0, 0, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.08);
+  position: relative;
+  overflow: hidden;
+}
+
+.benefits-container::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 50%;
+  height: 2px;
+  background: linear-gradient(90deg, transparent, rgba(56, 189, 248, 0.4), rgba(99, 102, 241, 0.4), transparent);
+  pointer-events: none;
+}
+
+.benefits-header {
+  text-align: center;
+  max-width: 720px;
+  margin: 0 auto 36px;
+}
+
+.benefits-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: rgba(56, 189, 248, 0.1);
+  border: 1px solid rgba(56, 189, 248, 0.28);
+  padding: 4px 14px;
+  border-radius: 9999px;
+  font-size: 0.76rem;
+  font-weight: 700;
+  color: #38bdf8;
+  letter-spacing: 0.6px;
+  text-transform: uppercase;
+  margin-bottom: 12px;
+}
+
+.benefits-headline {
+  font-size: clamp(1.4rem, 3.2vw, 2.15rem);
+  font-weight: 900;
+  color: #ffffff;
+  letter-spacing: -0.5px;
+  margin: 0 0 10px 0;
+  font-family: var(--font-display);
+}
+
+.benefits-subhead {
+  font-size: clamp(0.85rem, 1.5vw, 0.96rem);
+  color: #94a3b8;
+  line-height: 1.55;
+  margin: 0;
+}
+
+/* 6 Benefits Grid - Clean & Spacious */
+.benefits-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 22px;
+}
+
+.benefit-card {
+  background: rgba(30, 41, 59, 0.45);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 16px;
+  padding: 26px 22px 24px;
+  display: flex;
+  flex-direction: column;
+  transition: transform 0.2s ease, border-color 0.2s ease, background 0.2s ease, box-shadow 0.2s ease;
+  position: relative;
+  overflow: hidden;
+}
+
+.benefit-card:hover {
+  transform: translateY(-3px);
+  border-color: rgba(56, 189, 248, 0.3);
+  background: rgba(30, 41, 59, 0.75);
+  box-shadow: 0 12px 28px -8px rgba(0, 0, 0, 0.4);
+}
+
+.benefit-icon-wrap {
+  width: 44px;
+  height: 44px;
+  border-radius: 12px;
+  background: rgba(15, 23, 42, 0.75);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 18px;
+  transition: transform 0.2s ease;
+}
+
+.benefit-card:hover .benefit-icon-wrap {
+  transform: scale(1.05);
+}
+
+.benefit-title {
+  font-size: 1.05rem;
+  font-weight: 800;
+  color: #ffffff;
+  margin: 0 0 8px 0;
+  letter-spacing: 0.5px;
+  font-family: var(--font-display);
+  text-transform: uppercase;
+}
+
+.benefit-desc {
+  font-size: 0.86rem;
+  color: #94a3b8;
+  line-height: 1.55;
+  margin: 0;
+  flex-grow: 1;
+}
+
+/* Responsive Breakpoints */
+@media (max-width: 1024px) {
+  .benefits-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 18px;
+  }
+}
+
+@media (max-width: 640px) {
+  .benefits-section {
+    padding: 14px 0 36px;
+  }
+  .benefits-container {
+    padding: 24px 16px;
+    border-radius: 16px;
+  }
+  .benefits-header {
+    margin-bottom: 24px;
+  }
+  .benefits-grid {
+    grid-template-columns: 1fr;
+    gap: 14px;
+  }
+  .benefit-card {
+    padding: 20px 18px;
+  }
+}
+
+
 
 
