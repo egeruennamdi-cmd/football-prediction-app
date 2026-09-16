@@ -10806,5 +10806,40 @@ function handleToolOpen(toolKey, event) {
 
 window.handleToolOpen = handleToolOpen;
 
+// Homepage Pricing Comparison Tier Switcher (Production Pricing Synchronizer)
+window.selectedComparisonVipTier = 'monthly';
+function switchPricingComparisonTier(tier) {
+  window.selectedComparisonVipTier = tier;
+  const pillWeekly = document.getElementById('tier-pill-weekly');
+  const pillMonthly = document.getElementById('tier-pill-monthly');
+  const pillAnnual = document.getElementById('tier-pill-annual');
+  const priceEl = document.getElementById('comparison-vip-price');
+  const cycleEl = document.getElementById('comparison-vip-cycle');
+  
+  if (pillWeekly) pillWeekly.classList.toggle('active', tier === 'weekly');
+  if (pillMonthly) pillMonthly.classList.toggle('active', tier === 'monthly');
+  if (pillAnnual) pillAnnual.classList.toggle('active', tier === 'annual');
 
+  if (tier === 'weekly') {
+    if (priceEl) priceEl.textContent = '10,000';
+    if (cycleEl) cycleEl.textContent = '₦1,429 / day · Renews weekly · Cancel anytime';
+  } else if (tier === 'annual') {
+    if (priceEl) priceEl.textContent = '149,500';
+    if (cycleEl) cycleEl.textContent = '₦410 / day · Renews annually · Save 71%';
+  } else {
+    if (priceEl) priceEl.textContent = '27,000';
+    if (cycleEl) cycleEl.textContent = '₦900 / day · Renews monthly · Save 32%';
+  }
+}
+window.switchPricingComparisonTier = switchPricingComparisonTier;
 
+function smoothScrollToPremium() {
+  const el = document.getElementById('premium') || document.getElementById('vip-packages-section');
+  if (el) {
+    if (typeof window.navigateToPage === 'function' && window.currentPage !== 'predictions') {
+      window.navigateToPage('predictions');
+    }
+    el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }
+}
+window.smoothScrollToPremium = smoothScrollToPremium;

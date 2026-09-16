@@ -2436,6 +2436,155 @@
         </div>
       </div>
     </section>
+
+    <!-- --- HOMEPAGE PRICING & CONVERSION COMPARISON SECTION (FREE vs PRO/VIP) --- -->
+    <section id="premium" class="pricing-comparison-section container" aria-label="Plans and Pricing Comparison">
+      <div id="vip-packages-section" style="position: relative; top: -80px; visibility: hidden;"></div>
+      <div class="pricing-comparison-container">
+        <div class="pricing-comparison-header">
+          <div class="pricing-comparison-badge">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+            Transparent Plans
+          </div>
+          <h2 class="pricing-comparison-headline">START FREE. UNLOCK MORE WHEN YOU'RE READY.</h2>
+          <p class="pricing-comparison-subhead">Explore our verified mathematical predictions and analysis tools with no payment required, or upgrade to Pro / VIP for high-conviction banker picks, positive EV value finders, and real-time alerts.</p>
+        </div>
+
+        <div class="pricing-comparison-grid">
+          <!-- FREE TIER CARD -->
+          <div class="plan-comparison-card">
+            <div class="plan-card-top">
+              <div class="plan-tag">Free Forever</div>
+              <h3 class="plan-card-title">Starter Free</h3>
+              <p class="plan-card-desc">Essential football analytics, daily match predictions, and platform tools for everyday research.</p>
+            </div>
+
+            <div class="plan-price-block">
+              <div class="plan-price-amount">
+                <span class="plan-currency">₦</span>
+                <span class="plan-price-val">0</span>
+              </div>
+              <span class="plan-billing-cycle">Free access · No credit card required</span>
+            </div>
+
+            <div class="plan-divider"></div>
+            <div class="plan-features-label">Included with Free Access:</div>
+            
+            <ul class="plan-features-list">
+              <li class="plan-feature-item">
+                <span class="feature-icon check">✓</span>
+                <span><strong>Daily Match Predictions:</strong> 1X2 probabilities, Double Chance & Over/Under goals</span>
+              </li>
+              <li class="plan-feature-item">
+                <span class="feature-icon check">✓</span>
+                <span><strong>Bet Doctor:</strong> Paste tickets or booking codes for instant mathematical risk audit</span>
+              </li>
+              <li class="plan-feature-item">
+                <span class="feature-icon check">✓</span>
+                <span><strong>Bet Generator:</strong> Build custom slips by league, risk level, and target odds</span>
+              </li>
+              <li class="plan-feature-item">
+                <span class="feature-icon check">✓</span>
+                <span><strong>Bet Code Converter:</strong> Convert booking codes across 10+ major bookmakers</span>
+              </li>
+              <li class="plan-feature-item">
+                <span class="feature-icon check">✓</span>
+                <span><strong>League Analytics & Tables:</strong> Form guides, xG statistics, and standings</span>
+              </li>
+              <li class="plan-feature-item">
+                <span class="feature-icon check">✓</span>
+                <span><strong>Live Scoreboards:</strong> Real-time match status and score tracking</span>
+              </li>
+              <li class="plan-feature-item locked">
+                <span class="feature-icon cross">✕</span>
+                <span>VIP Banker high-conviction tips (85%+ confidence tier)</span>
+              </li>
+              <li class="plan-feature-item locked">
+                <span class="feature-icon cross">✕</span>
+                <span>Algorithmic Value Bet & Arbitrage SureBet scanners</span>
+              </li>
+            </ul>
+
+            <button type="button" class="btn-plan-cta btn-free-cta" onclick="document.getElementById('predictions')?.scrollIntoView({ behavior: 'smooth' })">
+              START FREE
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg>
+            </button>
+            <div class="plan-reassurance">Instant access to daily free tips</div>
+          </div>
+
+          <!-- PRO / VIP TIER CARD -->
+          <div class="plan-comparison-card featured">
+            <div class="featured-ribbon">Most Popular</div>
+            <div class="plan-card-top">
+              <div class="plan-tag vip-tag">Complete Access</div>
+              <h3 class="plan-card-title">Pro / VIP Pass</h3>
+              <p class="plan-card-desc">Designed for serious bettors seeking market edge, value bets, arbitrage detection, and automated alerts.</p>
+            </div>
+
+            <!-- Tier Selector Toggle -->
+            <div class="plan-tier-toggle-wrap">
+              <div class="plan-tier-toggle" role="tablist" aria-label="VIP Billing Cycle">
+                <button type="button" id="tier-pill-weekly" class="plan-tier-pill" onclick="switchPricingComparisonTier('weekly')">Weekly</button>
+                <button type="button" id="tier-pill-monthly" class="plan-tier-pill active" onclick="switchPricingComparisonTier('monthly')">Monthly</button>
+                <button type="button" id="tier-pill-annual" class="plan-tier-pill" onclick="switchPricingComparisonTier('annual')">Annual</button>
+              </div>
+            </div>
+
+            <div class="plan-price-block">
+              <div class="plan-price-amount">
+                <span class="plan-currency">₦</span>
+                <span class="plan-price-val" id="comparison-vip-price">27,000</span>
+              </div>
+              <span class="plan-billing-cycle" id="comparison-vip-cycle">₦900 / day · Renews monthly · Save 32%</span>
+            </div>
+
+            <div class="plan-divider"></div>
+            <div class="plan-features-label">Everything in Free, plus:</div>
+
+            <ul class="plan-features-list">
+              <li class="plan-feature-item">
+                <span class="feature-icon vip-check">✓</span>
+                <span><strong>VIP Banker Tips:</strong> Exclusive high-conviction match picks with comprehensive reasoning</span>
+              </li>
+              <li class="plan-feature-item">
+                <span class="feature-icon vip-check">✓</span>
+                <span><strong>Value Bet Finder:</strong> Real-time detection of bookmaker mispricings with positive expected value (+EV)</span>
+              </li>
+              <li class="plan-feature-item">
+                <span class="feature-icon vip-check">✓</span>
+                <span><strong>Arbitrage Finder:</strong> Cross-bookmaker SureBet scanner financial profit edge</span>
+              </li>
+              <li class="plan-feature-item">
+                <span class="feature-icon vip-check">✓</span>
+                <span><strong>Strategy Backtester:</strong> Historical model simulations and staking profitability analysis</span>
+              </li>
+              <li class="plan-feature-item">
+                <span class="feature-icon vip-check">✓</span>
+                <span><strong>Priority Alerts:</strong> Instant notifications for verified value opportunities via Telegram & Web</span>
+              </li>
+              <li class="plan-feature-item">
+                <span class="feature-icon vip-check">✓</span>
+                <span><strong>Full Gating Bypass:</strong> Unrestricted access across all analytical modules and scanners</span>
+              </li>
+              <li class="plan-feature-item">
+                <span class="feature-icon vip-check">✓</span>
+                <span><strong>Historical Audit Ledger:</strong> 100% transparent win/loss tracking and ROI history</span>
+              </li>
+              <li class="plan-feature-item">
+                <span class="feature-icon vip-check">✓</span>
+                <span><strong>Priority Support:</strong> Direct member assistance and algorithmic updates</span>
+              </li>
+            </ul>
+
+            <button type="button" class="btn-plan-cta btn-paid-cta" onclick="openVipSubscriptionModal(window.selectedComparisonVipTier || 'monthly')">
+              UPGRADE TO PRO
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon></svg>
+            </button>
+            <div class="plan-reassurance">🛡️ Verified Paystack & Monnify checkout · Cancel anytime</div>
+          </div>
+        </div>
+      </div>
+    </section>
   </main>
 
   <!-- --- PAGE VIEW 2: DEDICATED BET CODE CONVERTER PAGE --- -->
@@ -4671,64 +4820,7 @@
       </div>
     </section>
 
-    <!-- --- PREMIUM SUBSCRIPTION SECTION --- -->
-    <section id="premium" class="premium-section container">
-      <div class="section-info" style="margin: 0 auto 40px; text-align: center;">
-        <div class="section-subtitle">Unlock Edge</div>
-        <h2 class="section-title" style="margin-bottom: 12px;">Premium Subscriptions</h2>
-        <p style="max-width: 500px; margin: 0 auto;">Gain immediate access to premium match picks, detailed transition
-          matrices, and deeper tactical scout briefings.</p>
-      </div>
 
-      <div class="pricing-grid">
-        <!-- Free tier -->
-        <div class="glass-card price-card">
-          <div class="price-header">
-            <h3 class="price-title">Starter Pass</h3>
-            <p class="price-desc">Basic prediction distributions & live scoreboards.</p>
-          </div>
-          <div class="price-amount">
-            <span class="price-currency">$</span>
-            <span class="price-val">0</span>
-            <span class="price-period">/mo</span>
-          </div>
-          <ul class="price-features">
-            <li class="price-feature-item"><span class="price-feature-check">✓</span> 3 Basic predictions daily</li>
-            <li class="price-feature-item"><span class="price-feature-check">✓</span> Live scoreboard tracking</li>
-            <li class="price-feature-item"><span class="price-feature-check no">✗</span> Premium locks remains disabled
-            </li>
-            <li class="price-feature-item"><span class="price-feature-check no">✗</span> Live AI Scout chat briefings
-            </li>
-          </ul>
-          <button class="btn btn-secondary" onclick="alert('You are already registered on the Starter Pass!')">Current
-            Plan</button>
-        </div>
-
-        <!-- Premium tier -->
-        <div class="glass-card price-card featured">
-          <div class="badge-featured">Most Popular</div>
-          <div class="price-header">
-            <h3 class="price-title">Pro AI Pass</h3>
-            <p class="price-desc">Complete algorithmic suite, live scout logs & triggers.</p>
-          </div>
-          <div class="price-amount">
-            <span class="price-currency">$</span>
-            <span class="price-val">29</span>
-            <span class="price-period">/mo</span>
-          </div>
-          <ul class="price-features">
-            <li class="price-feature-item"><span class="price-feature-check">✓</span> Unlimited match predictions</li>
-            <li class="price-feature-item"><span class="price-feature-check">✓</span> 100% Unlock on El Clásico & high
-              odds picks</li>
-            <li class="price-feature-item"><span class="price-feature-check">✓</span> Real-time AI Scout chat
-              diagnostics</li>
-            <li class="price-feature-item"><span class="price-feature-check">✓</span> Direct probability model
-              breakdowns</li>
-          </ul>
-          <button class="btn btn-premium" onclick="unlockPremiumPlan()">Unlock Pro Access</button>
-        </div>
-      </div>
-    </section>
 
     <!-- --- LEAGUE STATS LEDGER SECTION --- -->
     <section id="league-stats-section" class="dashboard-section container"
