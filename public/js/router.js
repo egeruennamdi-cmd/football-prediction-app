@@ -332,8 +332,11 @@
     }
   });
 
-  // 9. Popstate listener for Browser Back & Forward buttons
+  // 9. Popstate and Hashchange listeners for Browser Back & Forward buttons and Hash links
   window.addEventListener('popstate', function () {
+    handleRouteNavigation();
+  });
+  window.addEventListener('hashchange', function () {
     handleRouteNavigation();
   });
 
