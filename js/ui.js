@@ -3685,6 +3685,66 @@ function claimDailyRewardNav() {
   alert("🎁 Daily Reward Claimed! +50 Mines Coins added to your account. Enjoy your analytical tools!");
 }
 
+// --- Help & Support Modal Controllers ---
+function openSupportModal(activeTab) {
+  const modal = document.getElementById("support-modal");
+  if (!modal) return;
+  modal.classList.add("active");
+  modal.style.display = "flex";
+  modal.style.zIndex = "1000000";
+  modal.style.opacity = "1";
+  modal.style.pointerEvents = "all";
+  modal.style.visibility = "visible";
+  document.body.style.overflow = "hidden";
+
+  let targetTab = 'faq';
+  if (activeTab === 'terms' || activeTab === 'disclaimer') targetTab = 'terms';
+  else if (activeTab === 'privacy') targetTab = 'privacy';
+  else if (activeTab === 'ticket' || activeTab === 'contact' || activeTab === 'feedback') targetTab = 'ticket';
+  else if (activeTab === 'faq') targetTab = 'faq';
+
+  switchSupportTab(targetTab);
+
+  if (activeTab === 'feedback') {
+    const subjectInp = document.getElementById("support-subject");
+    if (subjectInp) subjectInp.value = "Product Feedback & Bettor Review";
+  }
+}
+
+function closeSupportModal(event, force) {
+  if (force || (event && event.target && event.target.id === "support-modal")) {
+    const modal = document.getElementById("support-modal");
+    if (modal) {
+      modal.classList.remove("active");
+      modal.style.display = "none";
+      modal.style.opacity = "0";
+      modal.style.pointerEvents = "none";
+      modal.style.visibility = "hidden";
+    }
+    document.body.style.overflow = "";
+  }
+}
+
+function switchSupportTab(tab) {
+  const tabs = ["faq", "ticket", "terms", "privacy"];
+  tabs.forEach(t => {
+    const btn = document.getElementById(`supp-tab-${t}`);
+    const pane = document.getElementById(`supp-pane-${t}`);
+    if (btn) {
+      if (t === tab) btn.classList.add("active");
+      else btn.classList.remove("active");
+    }
+    if (pane) {
+      if (t === tab) pane.style.display = "block";
+      else pane.style.display = "none";
+    }
+  });
+}
+
+window.openSupportModal = openSupportModal;
+window.closeSupportModal = closeSupportModal;
+window.switchSupportTab = switchSupportTab;
+
 // User Profile Modal Controllers
 
 try { if (typeof openScoutModal === 'function') window.openScoutModal = openScoutModal; } catch (e) {}

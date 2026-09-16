@@ -8438,3 +8438,418 @@ header {
   }
 }
 
+/* ==========================================================================
+   HOMEPAGE FINAL CTA, RESPONSIBLE GAMBLING & 5-COLUMN FOOTER STYLING
+   ========================================================================== */
+
+/* --- SECTION 1: FINAL CTA --- */
+.final-cta-section {
+  padding: 30px 0 50px;
+  position: relative;
+}
+
+.final-cta-card {
+  background: radial-gradient(circle at 50% 0%, rgba(37, 99, 235, 0.18) 0%, rgba(15, 23, 42, 0.95) 75%), #0a0f1d;
+  border: 1px solid rgba(59, 130, 246, 0.28);
+  border-radius: 24px;
+  padding: 52px 36px;
+  text-align: center;
+  position: relative;
+  overflow: hidden;
+  box-shadow: 0 16px 48px rgba(0, 0, 0, 0.55), inset 0 1px 0 rgba(255, 255, 255, 0.1);
+}
+
+.final-cta-card::before {
+  content: '';
+  position: absolute;
+  top: -120px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 320px;
+  height: 240px;
+  background: radial-gradient(circle, rgba(59, 130, 246, 0.22) 0%, transparent 70%);
+  pointer-events: none;
+  filter: blur(40px);
+}
+
+.final-cta-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: rgba(37, 99, 235, 0.15);
+  border: 1px solid rgba(59, 130, 246, 0.35);
+  color: #60a5fa;
+  font-size: 0.76rem;
+  font-weight: 800;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  padding: 6px 14px;
+  border-radius: 20px;
+  margin-bottom: 20px;
+}
+
+.final-cta-title {
+  font-family: var(--font-display);
+  font-size: clamp(1.7rem, 3.4vw, 2.5rem);
+  font-weight: 900;
+  color: #ffffff;
+  text-transform: uppercase;
+  letter-spacing: -0.5px;
+  line-height: 1.2;
+  margin: 0 0 16px 0;
+}
+
+.final-cta-sub {
+  max-width: 660px;
+  margin: 0 auto 36px auto;
+  font-size: clamp(0.92rem, 1.5vw, 1.08rem);
+  color: #94a3b8;
+  line-height: 1.6;
+}
+
+.final-cta-actions {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.btn-final-cta-primary {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+  color: #ffffff !important;
+  font-weight: 900;
+  font-size: 0.95rem;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+  padding: 16px 36px;
+  min-height: 52px;
+  border-radius: 14px;
+  border: 1px solid rgba(52, 211, 153, 0.4);
+  box-shadow: 0 8px 24px rgba(16, 185, 129, 0.38);
+  cursor: pointer;
+  text-decoration: none;
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  white-space: nowrap;
+}
+
+.btn-final-cta-primary:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 12px 30px rgba(16, 185, 129, 0.5);
+  background: linear-gradient(135deg, #34d399 0%, #059669 100%);
+}
+
+.btn-final-cta-secondary {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  background: rgba(255, 255, 255, 0.05);
+  color: #f1f5f9 !important;
+  font-weight: 800;
+  font-size: 0.95rem;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+  padding: 16px 32px;
+  min-height: 52px;
+  border-radius: 14px;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  cursor: pointer;
+  text-decoration: none;
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  white-space: nowrap;
+}
+
+.btn-final-cta-secondary:hover {
+  background: rgba(255, 255, 255, 0.1);
+  border-color: rgba(59, 130, 246, 0.5);
+  transform: translateY(-2px);
+}
+
+/* --- SECTION 2: RESPONSIBLE GAMBLING --- */
+.responsible-gambling-section {
+  padding: 20px 0 60px;
+}
+
+.responsible-gambling-card {
+  background: linear-gradient(180deg, rgba(20, 24, 39, 0.95) 0%, rgba(11, 15, 26, 0.98) 100%);
+  border: 1px solid rgba(239, 68, 68, 0.3);
+  border-radius: 22px;
+  padding: 40px 32px;
+  box-shadow: 0 12px 36px rgba(0, 0, 0, 0.5);
+}
+
+.rg-header {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin-bottom: 24px;
+  flex-wrap: wrap;
+}
+
+.rg-badge-18 {
+  width: 48px;
+  height: 48px;
+  min-width: 48px;
+  border-radius: 50%;
+  background: rgba(239, 68, 68, 0.12);
+  border: 2.5px solid #ef4444;
+  color: #f87171;
+  font-weight: 900;
+  font-size: 1.15rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 0 16px rgba(239, 68, 68, 0.3);
+}
+
+.rg-title-wrap {
+  flex: 1;
+  min-width: 240px;
+}
+
+.rg-headline {
+  font-family: var(--font-display);
+  font-size: clamp(1.4rem, 2.6vw, 1.85rem);
+  font-weight: 900;
+  color: #ffffff;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin: 0 0 4px 0;
+}
+
+.rg-subhead {
+  color: #f87171;
+  font-size: 0.88rem;
+  font-weight: 700;
+  margin: 0;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.rg-core-warning {
+  background: rgba(239, 68, 68, 0.08);
+  border-left: 4px solid #ef4444;
+  border-radius: 0 10px 10px 0;
+  padding: 18px 22px;
+  margin-bottom: 28px;
+  color: #e2e8f0;
+  font-size: 0.95rem;
+  line-height: 1.6;
+}
+
+.rg-core-warning p {
+  margin: 0 0 8px 0;
+}
+
+.rg-core-warning p:last-child {
+  margin: 0;
+}
+
+.rg-core-warning strong {
+  color: #ffffff;
+}
+
+.rg-principles-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 16px;
+  margin-bottom: 30px;
+}
+
+.rg-principle-card {
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid rgba(255, 255, 255, 0.07);
+  border-radius: 12px;
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.rg-principle-title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.88rem;
+  font-weight: 800;
+  color: #f1f5f9;
+}
+
+.rg-principle-desc {
+  font-size: 0.78rem;
+  color: #94a3b8;
+  line-height: 1.45;
+  margin: 0;
+}
+
+.rg-resources-wrap {
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+  padding-top: 24px;
+}
+
+.rg-resources-title {
+  font-size: 0.84rem;
+  font-weight: 800;
+  color: #94a3b8;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-bottom: 14px;
+}
+
+.rg-resources-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.rg-resource-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  color: #cbd5e1;
+  padding: 9px 16px;
+  border-radius: 10px;
+  font-size: 0.82rem;
+  font-weight: 700;
+  text-decoration: none;
+  transition: all 0.2s ease;
+}
+
+.rg-resource-pill:hover {
+  background: rgba(59, 130, 246, 0.12);
+  border-color: rgba(59, 130, 246, 0.4);
+  color: #ffffff;
+  transform: translateY(-1px);
+}
+
+.rg-helpline-tag {
+  background: rgba(16, 185, 129, 0.2);
+  color: #34d399;
+  font-size: 0.72rem;
+  font-weight: 800;
+  padding: 2px 6px;
+  border-radius: 4px;
+}
+
+/* --- SECTION 3: REORGANIZED 5-COLUMN FOOTER --- */
+.footer-grid-5col {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 28px;
+  padding: 36px 0 28px 0;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  margin: 24px 0 20px 0;
+}
+
+.footer-col-5col {
+  display: flex;
+  flex-direction: column;
+}
+
+.footer-col-title-5col {
+  font-family: var(--font-display);
+  font-size: 0.82rem;
+  font-weight: 900;
+  letter-spacing: 1px;
+  color: #94a3b8;
+  text-transform: uppercase;
+  margin-bottom: 16px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.footer-links-5col {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.footer-link-item {
+  color: #cbd5e1;
+  font-size: 0.85rem;
+  font-weight: 600;
+  text-decoration: none;
+  transition: all 0.2s ease;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  cursor: pointer;
+  min-height: 24px;
+}
+
+.footer-link-item:hover {
+  color: #10b981;
+  transform: translateX(2px);
+}
+
+.footer-copyright-container {
+  padding: 18px 0 8px 0;
+  text-align: center;
+  color: #64748b;
+  font-size: 0.8rem;
+  line-height: 1.5;
+}
+
+.footer-copyright-container strong {
+  color: #94a3b8;
+}
+
+/* Responsive Overrides */
+@media (max-width: 1024px) {
+  .rg-principles-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  .footer-grid-5col {
+    grid-template-columns: repeat(3, 1fr);
+    gap: 24px;
+  }
+}
+
+@media (max-width: 640px) {
+  .final-cta-card {
+    padding: 36px 20px;
+    border-radius: 18px;
+  }
+  .btn-final-cta-primary,
+  .btn-final-cta-secondary {
+    width: 100%;
+  }
+  .responsible-gambling-card {
+    padding: 24px 18px;
+    border-radius: 16px;
+  }
+  .rg-principles-grid {
+    grid-template-columns: 1fr;
+  }
+  .footer-grid-5col {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 20px;
+  }
+  .rg-resources-grid {
+    flex-direction: column;
+  }
+  .rg-resource-pill {
+    width: 100%;
+    justify-content: space-between;
+  }
+}
+
+@media (max-width: 420px) {
+  .footer-grid-5col {
+    grid-template-columns: 1fr;
+    gap: 18px;
+  }
+}
+
