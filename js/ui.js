@@ -10843,3 +10843,31 @@ function smoothScrollToPremium() {
   }
 }
 window.smoothScrollToPremium = smoothScrollToPremium;
+
+// Homepage FAQ Accordion Controller
+function toggleFAQAccordion(faqIndex) {
+  const targetItem = document.getElementById(`faq-item-${faqIndex}`);
+  const targetBtn = document.getElementById(`faq-btn-${faqIndex}`);
+  if (!targetItem) return;
+
+  const isCurrentlyOpen = targetItem.classList.contains('open');
+
+  // Collapse other FAQ items for a clean single-open accordion flow
+  document.querySelectorAll('.faq-item').forEach((item) => {
+    if (item !== targetItem) {
+      item.classList.remove('open');
+      const btn = item.querySelector('.faq-question-btn');
+      if (btn) btn.setAttribute('aria-expanded', 'false');
+    }
+  });
+
+  // Toggle current item
+  if (isCurrentlyOpen) {
+    targetItem.classList.remove('open');
+    if (targetBtn) targetBtn.setAttribute('aria-expanded', 'false');
+  } else {
+    targetItem.classList.add('open');
+    if (targetBtn) targetBtn.setAttribute('aria-expanded', 'true');
+  }
+}
+window.toggleFAQAccordion = toggleFAQAccordion;
