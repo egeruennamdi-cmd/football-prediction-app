@@ -628,9 +628,87 @@
 
       <!-- Compatibility Container for Background Listeners -->
       <div id="hero-compat-container" style="display: none;" aria-hidden="true">
-        <input type="text" id="hero-scout-input" value="" aria-label="Tactical Scout Search" />
-        <div id="hero-scout-results"></div>
         <img id="hero-img" alt="" />
+      </div>
+    </section>
+
+    <!-- --- AI SCOUT COMMAND HUB SHOWCASE SECTION --- -->
+    <section id="ai-scout-showcase-section" class="ai-scout-showcase-section container">
+      <div class="ai-scout-showcase-container">
+        <!-- Header -->
+        <div class="ai-scout-showcase-header">
+          <div class="ai-scout-showcase-badge">
+            <span>🤖 AI Tactical Command Engine</span>
+          </div>
+          <h2 class="ai-scout-showcase-headline">AI SCOUT COMMAND HUB</h2>
+          <p class="ai-scout-showcase-subhead">
+            Generate custom multi-leg football accumulators, analyze tactical angles, or evaluate match dynamics instantly.
+          </p>
+        </div>
+
+        <!-- Command Card -->
+        <div class="ai-scout-showcase-card">
+          <!-- Card Header: Title & Quick Prompt Pills -->
+          <div class="scout-card-header">
+            <div class="scout-card-title">
+              <span>🤖</span> AI SCOUT COMMAND HUB
+            </div>
+            <div class="scout-quick-pills">
+              <button type="button" class="scout-pill-btn pill-emerald" onclick="quickPromptScout('Generate 40 selections', true)" title="Generate 40 AI Football Selections">
+                <span>✨</span> 40 Selections
+              </button>
+              <button type="button" class="scout-pill-btn pill-blue" onclick="quickPromptScout('Generate 30 selections', true)" title="Generate 30 AI Football Selections">
+                <span>✨</span> 30 Selections
+              </button>
+              <button type="button" class="scout-pill-btn pill-amber" onclick="quickPromptScout('Generate 20 selections', true)" title="Generate 20 AI Football Selections">
+                <span>✨</span> 20 Selections
+              </button>
+              <button type="button" class="scout-pill-btn pill-purple" onclick="quickPromptScout('What is the best tactical angle?', true)" title="Ask Match Tactics &amp; Angles">
+                <span>🎯</span> Tactical Angle
+              </button>
+            </div>
+          </div>
+
+          <!-- Command Input Row -->
+          <div class="scout-command-row">
+            <div class="scout-input-wrapper">
+              <svg class="scout-input-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="11" cy="11" r="8"></circle>
+                <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+              </svg>
+              <input
+                type="text"
+                id="hero-scout-input"
+                class="scout-command-input"
+                placeholder="Type prompt (e.g. 'Generate 40 selections' or ask match tactics)..."
+                onkeypress="if(event.key==='Enter') triggerHeroScoutPrompt()"
+                aria-label="Command AI Scout Prompt"
+                autocomplete="off"
+                spellcheck="false"
+              />
+            </div>
+            <button
+              type="button"
+              class="btn-ask-scout"
+              onclick="triggerHeroScoutPrompt()"
+              aria-label="Ask Scout"
+            >
+              <span>Ask Scout</span>
+              <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                <line x1="22" y1="2" x2="11" y2="13"></line>
+                <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
+              </svg>
+            </button>
+          </div>
+
+          <!-- Value Prop / Micro Copy -->
+          <div class="scout-value-prop">
+            Instant AI Selections <span>•</span> Poisson &amp; Elo Simulations <span>•</span> 1-Click Betslip Sync
+          </div>
+
+          <!-- Inline Dynamic Feedback & Generated Selections Output -->
+          <div id="hero-scout-results" class="hero-scout-results" style="display: none;"></div>
+        </div>
       </div>
     </section>
 

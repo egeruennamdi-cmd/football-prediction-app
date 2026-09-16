@@ -6519,6 +6519,357 @@ header {
 
 
 
+/* --- AI SCOUT COMMAND HUB SHOWCASE SECTION --- */
+.ai-scout-showcase-section {
+  padding: 10px 0 32px;
+  position: relative;
+}
+
+.ai-scout-showcase-container {
+  background: linear-gradient(135deg, rgba(15, 23, 42, 0.92) 0%, rgba(10, 15, 30, 0.98) 100%);
+  border: 1px solid rgba(56, 189, 248, 0.32);
+  border-radius: 20px;
+  padding: 36px 32px;
+  position: relative;
+  overflow: hidden;
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.08);
+}
+
+.ai-scout-showcase-container::before {
+  content: "";
+  position: absolute;
+  top: -120px;
+  right: -100px;
+  width: 360px;
+  height: 360px;
+  background: radial-gradient(circle, rgba(56, 189, 248, 0.16) 0%, transparent 70%);
+  pointer-events: none;
+}
+
+.ai-scout-showcase-container::after {
+  content: "";
+  position: absolute;
+  bottom: -120px;
+  left: -100px;
+  width: 340px;
+  height: 340px;
+  background: radial-gradient(circle, rgba(16, 185, 129, 0.14) 0%, transparent 70%);
+  pointer-events: none;
+}
+
+.ai-scout-showcase-header {
+  text-align: center;
+  max-width: 720px;
+  margin: 0 auto 26px;
+  position: relative;
+  z-index: 2;
+}
+
+.ai-scout-showcase-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: rgba(56, 189, 248, 0.1);
+  border: 1px solid rgba(56, 189, 248, 0.3);
+  color: #38bdf8;
+  font-size: 0.72rem;
+  font-weight: 800;
+  letter-spacing: 0.8px;
+  text-transform: uppercase;
+  padding: 4px 12px;
+  border-radius: var(--radius-full);
+  margin-bottom: 12px;
+}
+
+.ai-scout-showcase-headline {
+  font-family: var(--font-display);
+  font-size: clamp(1.5rem, 2.5vw, 2.05rem);
+  font-weight: 900;
+  line-height: 1.18;
+  color: #ffffff;
+  text-transform: uppercase;
+  letter-spacing: -0.015em;
+  margin: 0 0 10px 0;
+}
+
+.ai-scout-showcase-subhead {
+  font-size: 0.94rem;
+  line-height: 1.5;
+  color: #cbd5e1;
+  margin: 0;
+}
+
+/* Command Card Container */
+.ai-scout-showcase-card {
+  max-width: 960px;
+  margin: 0 auto;
+  background: rgba(11, 17, 32, 0.94);
+  border: 1px solid rgba(56, 189, 248, 0.3);
+  border-radius: 18px;
+  padding: 24px 28px;
+  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.6);
+  position: relative;
+  z-index: 2;
+}
+
+.scout-card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-bottom: 18px;
+}
+
+.scout-card-title {
+  font-family: var(--font-display);
+  font-size: 0.96rem;
+  font-weight: 900;
+  color: #38bdf8;
+  text-transform: uppercase;
+  letter-spacing: 0.6px;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.scout-quick-pills {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  align-items: center;
+}
+
+.scout-pill-btn {
+  border-radius: var(--radius-full);
+  font-size: 0.76rem;
+  font-weight: 700;
+  padding: 6px 13px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  white-space: nowrap;
+  touch-action: manipulation;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  min-height: 34px;
+}
+
+.scout-pill-btn.pill-emerald {
+  background: rgba(16, 185, 129, 0.12);
+  border: 1.5px solid #10b981;
+  color: #34d399;
+}
+.scout-pill-btn.pill-emerald:hover {
+  background: rgba(16, 185, 129, 0.26);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 14px rgba(16, 185, 129, 0.35);
+}
+
+.scout-pill-btn.pill-blue {
+  background: rgba(59, 130, 246, 0.12);
+  border: 1.5px solid #3b82f6;
+  color: #60a5fa;
+}
+.scout-pill-btn.pill-blue:hover {
+  background: rgba(59, 130, 246, 0.26);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 14px rgba(59, 130, 246, 0.35);
+}
+
+.scout-pill-btn.pill-amber {
+  background: rgba(245, 158, 11, 0.12);
+  border: 1.5px solid #f59e0b;
+  color: #fbbf24;
+}
+.scout-pill-btn.pill-amber:hover {
+  background: rgba(245, 158, 11, 0.26);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 14px rgba(245, 158, 11, 0.35);
+}
+
+.scout-pill-btn.pill-purple {
+  background: rgba(168, 85, 247, 0.12);
+  border: 1.5px solid #8b5cf6;
+  color: #c084fc;
+}
+.scout-pill-btn.pill-purple:hover {
+  background: rgba(168, 85, 247, 0.26);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 14px rgba(139, 92, 246, 0.35);
+}
+
+.scout-command-row {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  width: 100%;
+}
+
+.scout-input-wrapper {
+  position: relative;
+  flex: 1;
+  display: flex;
+  align-items: center;
+}
+
+.scout-input-icon {
+  position: absolute;
+  left: 16px;
+  color: #64748b;
+  pointer-events: none;
+  transition: color 0.2s;
+  z-index: 2;
+}
+
+.scout-command-input {
+  width: 100%;
+  background: rgba(15, 23, 42, 0.88);
+  border: 1.5px solid rgba(56, 189, 248, 0.35);
+  color: #ffffff;
+  font-weight: 600;
+  font-size: 0.95rem;
+  border-radius: 12px;
+  padding: 14px 18px 14px 44px;
+  outline: none;
+  box-sizing: border-box;
+  transition: all 0.2s ease;
+  box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.4);
+  font-family: inherit;
+}
+
+.scout-command-input:focus {
+  border-color: #38bdf8;
+  box-shadow: 0 0 16px rgba(56, 189, 248, 0.3), inset 0 2px 4px rgba(0, 0, 0, 0.4);
+}
+
+.scout-command-input:focus + .scout-input-icon,
+.scout-input-wrapper:focus-within .scout-input-icon {
+  color: #38bdf8;
+}
+
+.btn-ask-scout {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+  color: #ffffff;
+  font-family: var(--font-display);
+  font-weight: 800;
+  font-size: 0.95rem;
+  letter-spacing: 0.5px;
+  padding: 14px 26px;
+  border: none;
+  border-radius: 12px;
+  cursor: pointer;
+  white-space: nowrap;
+  box-shadow: 0 4px 18px rgba(16, 185, 129, 0.4);
+  transition: all 0.2s ease;
+  touch-action: manipulation;
+  min-height: 48px;
+}
+
+.btn-ask-scout:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 6px 22px rgba(16, 185, 129, 0.55);
+  background: linear-gradient(135deg, #34d399 0%, #059669 100%);
+}
+
+.btn-ask-scout:active {
+  transform: translateY(0);
+}
+
+.scout-value-prop {
+  margin-top: 14px;
+  font-size: 0.78rem;
+  color: #94a3b8;
+  text-align: center;
+  letter-spacing: 0.3px;
+}
+
+.scout-value-prop span {
+  color: #38bdf8;
+  margin: 0 6px;
+}
+
+.hero-scout-results {
+  margin-top: 18px;
+  padding: 18px 20px;
+  background: rgba(15, 23, 42, 0.95);
+  border: 1.5px solid rgba(56, 189, 248, 0.4);
+  border-radius: 14px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.6), 0 0 20px rgba(56, 189, 248, 0.15);
+  text-align: left;
+}
+
+/* Tablet & iPad Responsiveness (max-width: 991px) */
+@media (max-width: 991px) {
+  .ai-scout-showcase-container {
+    padding: 28px 22px;
+  }
+  .ai-scout-showcase-card {
+    padding: 20px 20px;
+  }
+}
+
+/* Tablet & Mobile Breakpoint (max-width: 768px) */
+@media (max-width: 768px) {
+  .scout-card-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 12px;
+  }
+  .scout-quick-pills {
+    width: 100%;
+    overflow-x: auto;
+    flex-wrap: nowrap;
+    -webkit-overflow-scrolling: touch;
+    padding-bottom: 6px;
+    scrollbar-width: none;
+  }
+  .scout-quick-pills::-webkit-scrollbar {
+    display: none;
+  }
+}
+
+/* Mobile Smartphone Breakpoint (max-width: 576px) */
+@media (max-width: 576px) {
+  .ai-scout-showcase-section {
+    padding: 8px 0 24px;
+  }
+  .ai-scout-showcase-container {
+    padding: 20px 14px;
+    border-radius: 16px;
+  }
+  .ai-scout-showcase-card {
+    padding: 16px 14px;
+    border-radius: 14px;
+  }
+  .scout-command-row {
+    flex-direction: column;
+    gap: 10px;
+    width: 100%;
+  }
+  .scout-input-wrapper {
+    width: 100%;
+  }
+  .scout-command-input {
+    font-size: 16px !important; /* Prevent iOS Safari auto-zoom */
+    padding: 12px 14px 12px 40px;
+  }
+  .btn-ask-scout {
+    width: 100%;
+    min-height: 48px;
+    font-size: 0.95rem;
+  }
+  .scout-value-prop {
+    font-size: 0.73rem;
+  }
+}
+
+
+
 /* --- DEEPPREDICTBET USER JOURNEY SECTION --- */
 .user-journey-section {
   padding: 24px 0 44px;
