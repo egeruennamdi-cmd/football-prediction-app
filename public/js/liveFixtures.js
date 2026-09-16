@@ -773,9 +773,15 @@
     }
   }
 
-  // Trigger prefetch on script load
+  // Trigger non-blocking prefetch during browser idle or delayed fallback
   if (typeof window !== 'undefined') {
-    setTimeout(prefetchGlobalFixturesAndLive, 800);
+    if ('requestIdleCallback' in window) {
+      window.requestIdleCallback(() => {
+        setTimeout(prefetchGlobalFixturesAndLive, 2000);
+      }, { timeout: 4000 });
+    } else {
+      setTimeout(prefetchGlobalFixturesAndLive, 3000);
+    }
   }
 
   window.loadLiveFixturesForLeague = loadLiveFixturesForLeague;

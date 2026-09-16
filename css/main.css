@@ -8853,3 +8853,85 @@ header {
   }
 }
 
+/* ==========================================================================
+   HOMEPAGE OPTIMIZATION PASS: ACCESSIBILITY, TOUCH TARGETS & MOBILE UX
+   ========================================================================== */
+
+/* 1. Global Focus-Visible for Accessible Keyboard Navigation */
+a:focus-visible,
+button:focus-visible,
+input:focus-visible,
+select:focus-visible,
+textarea:focus-visible,
+[tabindex]:focus-visible {
+  outline: 2px solid #38bdf8 !important;
+  outline-offset: 3px !important;
+}
+
+/* 2. Touch Target Calibration (>= 44px) */
+.mobile-hamburger-btn {
+  min-width: 44px !important;
+  min-height: 44px !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  touch-action: manipulation;
+}
+
+.nav-cta-btn {
+  min-height: 44px !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+}
+
+.btn-intent-cta {
+  min-height: 44px !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+}
+
+.btn-insight-analysis {
+  min-height: 44px !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  padding: 8px 14px !important;
+}
+
+.journey-step-link {
+  min-height: 44px !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  padding: 10px 0 !important;
+}
+
+/* 3. Mobile Header Overflow & Spacing Fixes */
+@media (max-width: 420px) {
+  .nav-actions #nav-get-started-btn {
+    display: none !important;
+  }
+  .nav-actions {
+    gap: 6px !important;
+  }
+}
+
+/* 4. Prevent iOS Safari Viewport Auto-Zoom on Form Focus */
+@media (max-width: 768px) {
+  input, select, textarea {
+    font-size: 16px !important;
+  }
+}
+
+/* 5. Typography Contrast Enhancement (WCAG AA Compliance) */
+.doctor-step-content p,
+.journey-step-desc,
+.faq-answer p,
+.benefits-card-desc,
+.tool-feature-item,
+.performance-stat-label {
+  color: #94a3b8 !important;
+}
+
+

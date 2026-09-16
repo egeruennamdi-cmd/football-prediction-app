@@ -9,26 +9,68 @@
   <meta http-equiv="X-Frame-Options" content="SAMEORIGIN">
   <meta name="referrer" content="strict-origin-when-cross-origin">
   <meta name="description"
-    content="DeepPredictBet - Premium AI-powered football predictions, live match analytics, head-to-head stats, and tactical scout briefings.">
-  <title>DeepPredictBet | Next-Gen AI Football Predictions & Analytics</title>
+    content="DeepPredictBet provides AI-driven football predictions, bet slip audits with Bet Doctor, instant cross-bookmaker booking code conversion, and statistical betting analytics.">
+  <title>DeepPredictBet — AI Football Predictions, Bet Doctor &amp; Code Converter</title>
+  <link rel="canonical" href="https://deeppredictbet.com/">
+
   <!-- Open Graph / Social Media SEO Meta Tags -->
   <meta property="og:type" content="website">
   <meta property="og:url" content="https://deeppredictbet.com/">
-  <meta property="og:title" content="DeepPredictBet | Next-Gen AI Football Predictions & Analytics">
+  <meta property="og:title" content="DeepPredictBet — AI Football Predictions, Bet Doctor &amp; Code Converter">
   <meta property="og:description"
-    content="DeepPredictBet - Premium AI-powered football predictions, live match analytics, head-to-head stats, and tactical scout briefings.">
+    content="DeepPredictBet provides AI-driven football predictions, bet slip audits with Bet Doctor, instant cross-bookmaker booking code conversion, and statistical betting analytics.">
   <meta property="og:site_name" content="DeepPredictBet">
   <meta property="og:image" content="https://deeppredictbet.com/assets/logo-3d.png">
   <meta property="og:image:width" content="1200">
   <meta property="og:image:height" content="630">
+
   <!-- Twitter Meta Tags -->
   <meta name="twitter:card" content="summary_large_image">
   <meta name="twitter:url" content="https://deeppredictbet.com/">
-  <meta name="twitter:title" content="DeepPredictBet | Next-Gen AI Football Predictions & Analytics">
+  <meta name="twitter:title" content="DeepPredictBet — AI Football Predictions, Bet Doctor &amp; Code Converter">
   <meta name="twitter:description"
-    content="DeepPredictBet - Premium AI-powered football predictions, live match analytics, head-to-head stats, and tactical scout briefings.">
+    content="DeepPredictBet provides AI-driven football predictions, bet slip audits with Bet Doctor, instant cross-bookmaker booking code conversion, and statistical betting analytics.">
   <meta name="twitter:image" content="https://deeppredictbet.com/assets/logo-3d.png">
   <meta name="build-version" content="2026.08.10.1230">
+
+  <!-- Schema.org JSON-LD Structured Data -->
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@graph": [
+      {
+        "@type": "WebSite",
+        "@id": "https://deeppredictbet.com/#website",
+        "url": "https://deeppredictbet.com/",
+        "name": "DeepPredictBet",
+        "description": "AI Football Predictions, Bet Doctor & Code Converter",
+        "inLanguage": "en"
+      },
+      {
+        "@type": "WebApplication",
+        "@id": "https://deeppredictbet.com/#webapp",
+        "url": "https://deeppredictbet.com/",
+        "name": "DeepPredictBet",
+        "applicationCategory": "SportsApplication",
+        "operatingSystem": "All",
+        "browserRequirements": "Requires modern JavaScript-enabled browser",
+        "description": "AI-driven football betting analytics, bet slip health audits with Bet Doctor, and cross-bookmaker booking code conversion.",
+        "offers": {
+          "@type": "Offer",
+          "price": "0",
+          "priceCurrency": "USD"
+        },
+        "featureList": [
+          "Daily Algorithmic Football Predictions",
+          "Bet Doctor Accumulator Risk Audit & Health Scoring",
+          "Cross-Bookmaker Booking Code Converter",
+          "Value Bet and Arbitrage Opportunity Scanner",
+          "Historical Strategy Backtester"
+        ]
+      }
+    ]
+  }
+  </script>
   
   <!-- Favicon & Mobile App Icons (Option 2: DPB Monogram with Obsidian & Royal Blue Football Background) -->
   <link rel="icon" type="image/x-icon" href="/favicon.ico?v=20261026_opt2">
@@ -119,7 +161,7 @@
         <!-- DeepPredictBet Logo -->
         <a href="/" class="logo" onclick="if(typeof navigateToPage==='function'){navigateToPage('predictions');}else if(typeof handleRouteNavigation==='function'){handleRouteNavigation();}else{window.location.hash='#predictions';}"
           style="text-transform: none; text-decoration: none; display: inline-flex; align-items: center; cursor: pointer;" title="DeepPredictBet Home">
-          <img src="/assets/logo-3d.png?v=20261026_opt3_pure" alt="DeepPredictBet" class="brand-logo-img">
+          <img src="/assets/logo-3d.png?v=20261026_opt3_pure" alt="DeepPredictBet" class="brand-logo-img" width="180" height="44" fetchpriority="high" decoding="async">
           <span class="sr-only" style="position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0,0,0,0); border: 0;">DeepPredictBet</span>
         </a>
       </div>
@@ -190,7 +232,7 @@
       <!-- RIGHT: Language + Coins + Login + GET STARTED CTA -->
       <div class="nav-actions" style="display: flex; align-items: center; gap: 10px;">
         <!-- Language Switcher Selector -->
-        <select id="lang-switcher" onchange="changeAppLanguage(this.value)"
+        <select id="lang-switcher" onchange="changeAppLanguage(this.value)" aria-label="Select Language"
           style="background: var(--bg-dark); border: 1px solid var(--border-color); border-radius: var(--radius-sm); padding: 5px 8px; color: var(--text-primary); outline: none; cursor: pointer; font-size: 0.75rem; font-weight: 600; font-family: var(--font-body);">
           <option value="en">🇺🇸 EN</option>
           <option value="fr">🇫🇷 FR</option>
@@ -445,7 +487,7 @@
       <div class="mobile-lang-coins-row"
         style="display: flex; align-items: center; justify-content: center; gap: 12px; margin: 0 auto 20px;">
         <!-- Language Switcher Selector -->
-        <select id="lang-switcher-mobile" onchange="changeAppLanguage(this.value)"
+        <select id="lang-switcher-mobile" onchange="changeAppLanguage(this.value)" aria-label="Select Language"
           style="background: rgba(15, 23, 42, 0.9); border: 1.5px solid rgba(59, 130, 246, 0.35); border-radius: 10px; padding: 6px 12px; color: #ffffff; outline: none; cursor: pointer; font-size: 0.85rem; font-weight: 700; font-family: var(--font-body); box-shadow: 0 4px 12px rgba(0,0,0,0.4);">
           <option value="en">🇺🇸 EN</option>
           <option value="fr">🇫🇷 FR</option>
@@ -586,7 +628,7 @@
 
       <!-- Compatibility Container for Background Listeners -->
       <div id="hero-compat-container" style="display: none;" aria-hidden="true">
-        <input type="text" id="hero-scout-input" value="" />
+        <input type="text" id="hero-scout-input" value="" aria-label="Tactical Scout Search" />
         <div id="hero-scout-results"></div>
         <img id="hero-img" alt="" />
       </div>
@@ -1839,7 +1881,7 @@
           <div
             style="display: flex; align-items: center; gap: 8px; min-width: 260px; flex-grow: 0.5; position: relative; overflow: visible !important;">
             <span style="font-size: 0.9rem; color: var(--text-secondary);">🔍</span>
-            <input type="text" id="timeline-search-input" placeholder="Search Team, League, Country..."
+            <input type="text" id="timeline-search-input" placeholder="Search Team, League, Country..." aria-label="Search Team, League, or Country"
               oninput="onSearchInputChange(this.value)" onfocus="onSearchInputFocus(this.value)"
               onclick="onSearchInputFocus(this.value)" ontouchstart="onSearchInputFocus(this.value)" autocomplete="off"
               style="background: var(--bg-dark); border: 1px solid var(--border-color); border-radius: var(--radius-sm); padding: 8px 12px; color: var(--text-primary); font-size: 0.75rem; outline: none; width: 100%; font-family: var(--font-body); transition: var(--transition-fast); touch-action: manipulation;">
@@ -1867,10 +1909,10 @@
 
             <!-- Date Selector (Calendar blocks style) -->
             <div style="display: flex; flex-direction: column; gap: 4px;">
-              <label
+              <label for="cal-date-select"
                 style="font-size: 0.7rem; color: var(--text-secondary); font-weight: 700; text-transform: uppercase;">1.
                 Select Date</label>
-              <select id="cal-date-select" onchange="runCalFilter(this.id)"
+              <select id="cal-date-select" onchange="runCalFilter(this.id)" aria-label="Filter predictions by date"
                 style="background: var(--bg-dark); border: 1px solid var(--border-color); border-radius: var(--radius-sm); padding: 8px; color: var(--text-primary); font-size: 0.75rem; cursor: pointer; outline: none; width: 100%;">
                 <option value="today">Today</option>
                 <option value="tomorrow">Tomorrow</option>
@@ -1880,10 +1922,10 @@
 
             <!-- Country Selector -->
             <div style="display: flex; flex-direction: column; gap: 4px;">
-              <label
+              <label for="cal-country-select"
                 style="font-size: 0.7rem; color: var(--text-secondary); font-weight: 700; text-transform: uppercase;">2.
                 Country</label>
-              <select id="cal-country-select" onchange="runCalFilter(this.id)"
+              <select id="cal-country-select" onchange="runCalFilter(this.id)" aria-label="Filter predictions by country"
                 onfocus="if(this.options.length<=2&&typeof populateCalSelectors==='function')populateCalSelectors()"
                 onclick="if(this.options.length<=2&&typeof populateCalSelectors==='function')populateCalSelectors()"
                 style="background: var(--bg-dark); border: 1px solid var(--border-color); border-radius: var(--radius-sm); padding: 8px; color: var(--text-primary); font-size: 0.75rem; cursor: pointer; outline: none; width: 100%;">
@@ -1931,10 +1973,10 @@
 
             <!-- League Selector -->
             <div style="display: flex; flex-direction: column; gap: 4px;">
-              <label
+              <label for="cal-league-select"
                 style="font-size: 0.7rem; color: var(--text-secondary); font-weight: 700; text-transform: uppercase;">3.
                 League</label>
-              <select id="cal-league-select" onchange="runCalFilter(this.id)"
+              <select id="cal-league-select" onchange="runCalFilter(this.id)" aria-label="Filter predictions by league"
                 onfocus="if(this.options.length<=2&&typeof populateCalSelectors==='function')populateCalSelectors()"
                 onclick="if(this.options.length<=2&&typeof populateCalSelectors==='function')populateCalSelectors()"
                 style="background: var(--bg-dark); border: 1px solid var(--border-color); border-radius: var(--radius-sm); padding: 8px; color: var(--text-primary); font-size: 0.75rem; cursor: pointer; outline: none; width: 100%;">
@@ -1960,10 +2002,10 @@
 
             <!-- Team Selector -->
             <div style="display: flex; flex-direction: column; gap: 4px;">
-              <label
+              <label for="cal-team-select"
                 style="font-size: 0.7rem; color: var(--text-secondary); font-weight: 700; text-transform: uppercase;">4.
                 Team</label>
-              <select id="cal-team-select" onchange="runCalFilter(this.id)"
+              <select id="cal-team-select" onchange="runCalFilter(this.id)" aria-label="Filter predictions by team"
                 onfocus="if(this.options.length<=2&&typeof populateCalSelectors==='function')populateCalSelectors()"
                 onclick="if(this.options.length<=2&&typeof populateCalSelectors==='function')populateCalSelectors()"
                 style="background: var(--bg-dark); border: 1px solid var(--border-color); border-radius: var(--radius-sm); padding: 8px; color: var(--text-primary); font-size: 0.75rem; cursor: pointer; outline: none; width: 100%;">
@@ -2347,7 +2389,7 @@
 
             <!-- Sidebar Search Bar -->
             <div style="position: relative; margin-bottom: 4px;">
-              <input type="text" id="sidebar-topleagues-search-input" placeholder="Search top leagues..."
+              <input type="text" id="sidebar-topleagues-search-input" placeholder="Search top leagues..." aria-label="Search top leagues"
                 style="background: var(--bg-dark-accent); border: 1px solid var(--border-color); border-radius: var(--radius-sm); padding: 8px 12px 8px 34px; color: var(--text-primary); font-size: 0.8rem; width: 100%; font-family: var(--font-body);"
                 oninput="filterSidebarTopLeagues()" onfocus="renderSidebarTopLeagues()"
                 onclick="renderSidebarTopLeagues()">
@@ -2415,7 +2457,7 @@
 
           <!-- Sidebar Search Bar -->
           <div style="position: relative; margin-bottom: 4px;">
-            <input type="text" id="sidebar-search-input" placeholder="Search country or league..."
+            <input type="text" id="sidebar-search-input" placeholder="Search country or league..." aria-label="Search country or league"
               style="background: var(--bg-dark-accent); border: 1px solid var(--border-color); border-radius: var(--radius-sm); padding: 8px 12px 8px 34px; color: var(--text-primary); font-size: 0.8rem; width: 100%; font-family: var(--font-body);"
               oninput="filterSidebarCountries()" onfocus="renderSidebarCountries()" onclick="renderSidebarCountries()">
             <span
@@ -2911,10 +2953,10 @@
         style="font-size: 0.75rem; color: #10b981; font-weight: 800; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 4px;">
         <a href="/" style="color: #10b981; text-decoration: none;">Home</a> &gt; Bet Code Converter
       </div>
-      <h1
+      <h2 class="view-panel-title"
         style="font-family: var(--font-display); font-size: 1.9rem; font-weight: 900; background: linear-gradient(135deg, #ffffff 0%, #10b981 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; margin: 0;">
         🎫 Bet Code Converter Engine
-      </h1>
+      </h2>
       <p style="font-size: 0.82rem; color: var(--text-secondary); margin-top: 4px;">Convert booking codes seamlessly
         between over 90 global and regional bookmakers.</p>
     </div>
@@ -3434,10 +3476,10 @@
         style="font-size: 0.75rem; color: var(--text-secondary); font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 4px;">
         <a href="/" style="color: var(--primary); text-decoration: none;">Home</a> &gt; Real-Time Scanner
       </div>
-      <h1
+      <h2 class="view-panel-title"
         style="font-family: var(--font-display); font-size: 1.8rem; font-weight: 900; color: var(--text-primary); margin: 0;">
         📡 Live In-Play & Pre-Match Scanner
-      </h1>
+      </h2>
       <p style="font-size: 0.82rem; color: var(--text-secondary); margin-top: 4px;">Track live match indicators, goal
         momentum, and configure custom Telegram alert triggers.</p>
     </div>
@@ -3555,10 +3597,10 @@
         style="font-size: 0.75rem; color: var(--text-secondary); font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 4px;">
         <a href="#predictions" style="color: var(--primary); text-decoration: none;">Home</a> &gt; Betting Tools
       </div>
-      <h1
+      <h2 class="view-panel-title"
         style="font-family: var(--font-display); font-size: 1.8rem; font-weight: 900; color: var(--text-primary); margin: 0;">
         🤖 DeepPredict Betting Suite
-      </h1>
+      </h2>
       <p style="font-size: 0.82rem; color: var(--text-secondary); margin-top: 4px;">Access algorithmic ticket
         generators, strategy backtesters, top tips trackers, and expected value bots.</p>
     </div>
@@ -4934,10 +4976,10 @@
         <a href="#predictions" style="color: var(--primary); text-decoration: none;">Home</a> &gt; Analytics &
         Leaderboard
       </div>
-      <h1
+      <h2 class="view-panel-title"
         style="font-family: var(--font-display); font-size: 1.8rem; font-weight: 900; color: var(--text-primary); margin: 0;">
         📊 League Stats & Punters Leaderboard
-      </h1>
+      </h2>
       <p style="font-size: 0.82rem; color: var(--text-secondary); margin-top: 4px;">Explore historical league stat
         ledgers, team performance metrics, and top virtual tipster rankings.</p>
     </div>
@@ -5879,9 +5921,9 @@
           Match Teams Here
         </div>
         <div class="form-group" style="display: flex; flex-direction: column; gap: 6px; margin-bottom: 16px;">
-          <label style="font-size: 0.75rem; font-weight: 600; color: var(--text-secondary);">Select Market
+          <label for="tip-market-select" style="font-size: 0.75rem; font-weight: 600; color: var(--text-secondary);">Select Market
             Outcome</label>
-          <select id="tip-market-select"
+          <select id="tip-market-select" aria-label="Select Market Outcome"
             style="background: var(--bg-dark); border: 1px solid var(--border-color); border-radius: var(--radius-sm); padding: 8px; color: var(--text-primary); cursor: pointer; font-size: 0.8rem; outline: none; width: 100%;">
             <option value="Home Win (1)">Home Win (1)</option>
             <option value="Draw (X)">Draw (X)</option>
@@ -5893,9 +5935,9 @@
           </select>
         </div>
         <div class="form-group" style="display: flex; flex-direction: column; gap: 6px; margin-bottom: 20px;">
-          <label style="font-size: 0.75rem; font-weight: 600; color: var(--text-secondary);">Stake Amount (Mines
+          <label for="tip-coins-stake" style="font-size: 0.75rem; font-weight: 600; color: var(--text-secondary);">Stake Amount (Mines
             Coins)</label>
-          <input type="number" id="tip-coins-stake" value="50" min="10" max="500"
+          <input type="number" id="tip-coins-stake" aria-label="Stake Amount in Coins" value="50" min="10" max="500"
             style="background: var(--bg-dark); border: 1px solid var(--border-color); border-radius: var(--radius-sm); padding: 8px; color: var(--text-primary); font-size: 0.8rem; outline: none; width: 100%;">
         </div>
         <button class="btn btn-primary" onclick="submitPunterTip()"
@@ -7311,13 +7353,13 @@
     </a>
   </nav>
 
-  <!-- --- LOAD SCRIPTS (Classic Day 1 Architecture) --- -->
-  <script src="/js/data.js?v=20261026_betslip_share_v8"></script>
-  <script src="/js/vipManager.js?v=20261026_betslip_share_v8"></script>
-  <script src="/js/ui.js?v=20261026_betslip_share_v8"></script>
-  <script src="/js/router.js?v=20261026_betslip_share_v8"></script>
-  <script src="/js/app.js?v=20261026_betslip_share_v8"></script>
-  <script src="/js/liveFixtures.js?v=20261026_betslip_share_v8"></script>
+  <!-- --- LOAD SCRIPTS (Parallel Non-Blocking Architecture) --- -->
+  <script defer src="/js/data.js?v=20261026_betslip_share_v8"></script>
+  <script defer src="/js/vipManager.js?v=20261026_betslip_share_v8"></script>
+  <script defer src="/js/ui.js?v=20261026_betslip_share_v8"></script>
+  <script defer src="/js/router.js?v=20261026_betslip_share_v8"></script>
+  <script defer src="/js/app.js?v=20261026_betslip_share_v8"></script>
+  <script defer src="/js/liveFixtures.js?v=20261026_betslip_share_v8"></script>
   <script>
     // Clean global helper bindings
     window.addEventListener('DOMContentLoaded', () => {
