@@ -213,11 +213,12 @@ export async function onRequestGet(context) {
       { cohort: 'Aug 11 - Aug 17', size: Math.max(1, Math.round(totalUsers * 0.15)), w0: '100%', w1: '64%', w2: '50%', w3: '42%', w4: '38%' }
     ];
 
-    // 4. PRODUCT USAGE RANKING (10 Tools)
+    // 4. PRODUCT USAGE RANKING (11 Tools)
     const baseUsage = [
       { id: 'predictions', name: 'Predictions Hub', count: 1845, uniqueUsers: totalUsers, repeatUsagePct: 88, trend: '+14%', freePct: 78, paidPct: 22 },
       { id: 'doctor', name: 'Bet Doctor Slip Audit', count: 642, uniqueUsers: Math.max(1, Math.round(totalUsers * 0.85)), repeatUsagePct: 72, trend: '+28%', freePct: 62, paidPct: 38 },
       { id: 'converter', name: 'Booking Code Converter', count: 528, uniqueUsers: Math.max(1, Math.round(totalUsers * 0.78)), repeatUsagePct: 66, trend: '+19%', freePct: 70, paidPct: 30 },
+      { id: 'ai_scout', name: 'AI Scout Command Hub', count: 485, uniqueUsers: Math.max(1, Math.round(totalUsers * 0.72)), repeatUsagePct: 65, trend: '+24%', freePct: 60, paidPct: 40 },
       { id: 'generator', name: 'Bet Generator Machine', count: 412, uniqueUsers: Math.max(1, Math.round(totalUsers * 0.65)), repeatUsagePct: 58, trend: '+9%', freePct: 74, paidPct: 26 },
       { id: 'live_scanner', name: 'Live In-Play Scanner', count: 389, uniqueUsers: Math.max(1, Math.round(totalUsers * 0.55)), repeatUsagePct: 64, trend: '+31%', freePct: 45, paidPct: 55 },
       { id: 'prematch_scanner', name: 'Pre-Match Trend Scanner', count: 304, uniqueUsers: Math.max(1, Math.round(totalUsers * 0.50)), repeatUsagePct: 52, trend: '+12%', freePct: 58, paidPct: 42 },

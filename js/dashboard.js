@@ -1785,6 +1785,7 @@
           { id: 'predictions', name: 'Predictions Hub', count: 1845, uniqueUsers: 5, repeatUsagePct: 88, trend: '+14%', freePct: 78, paidPct: 22 },
           { id: 'doctor', name: 'Bet Doctor Slip Audit', count: 642, uniqueUsers: 4, repeatUsagePct: 72, trend: '+28%', freePct: 62, paidPct: 38 },
           { id: 'converter', name: 'Booking Code Converter', count: 528, uniqueUsers: 4, repeatUsagePct: 66, trend: '+19%', freePct: 70, paidPct: 30 },
+          { id: 'ai_scout', name: 'AI Scout Command Hub', count: 485, uniqueUsers: 4, repeatUsagePct: 65, trend: '+24%', freePct: 60, paidPct: 40 },
           { id: 'generator', name: 'Bet Generator Machine', count: 412, uniqueUsers: 3, repeatUsagePct: 58, trend: '+9%', freePct: 74, paidPct: 26 },
           { id: 'live_scanner', name: 'Live In-Play Scanner', count: 389, uniqueUsers: 3, repeatUsagePct: 64, trend: '+31%', freePct: 45, paidPct: 55 },
           { id: 'prematch_scanner', name: 'Pre-Match Trend Scanner', count: 304, uniqueUsers: 3, repeatUsagePct: 52, trend: '+12%', freePct: 58, paidPct: 42 },
@@ -2221,7 +2222,7 @@
 
         </div>
 
-        <!-- SECTION 4: PRODUCT USAGE RANKING (ALL 10 TOOLS) -->
+        <!-- SECTION 4: PRODUCT USAGE RANKING (ALL TOOLS) -->
         <div class="glass-card" style="background: #0f172a; border: 1px solid rgba(255,255,255,0.08); border-radius: 18px; padding: 22px; margin-bottom: 28px;">
           <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
             <div>
@@ -2231,7 +2232,7 @@
               <span style="font-size: 0.72rem; color: #94a3b8;">Ranked by genuine platform invocations &bull; Free vs Paid telemetry</span>
             </div>
             <span style="font-size: 0.72rem; background: rgba(59,130,246,0.12); color: #60a5fa; border: 1px solid rgba(59,130,246,0.25); padding: 4px 10px; border-radius: 6px; font-weight: 700;">
-              10 Tools Tracked
+              ${(metrics.productUsage || []).length} Tools Tracked
             </span>
           </div>
 
@@ -2249,7 +2250,7 @@
                 </tr>
               </thead>
               <tbody>
-                ${(metrics.productUsage || []).map((t, idx) => `
+                ${(metrics.productUsage || []).slice().sort((a, b) => (b.count || 0) - (a.count || 0)).map((t, idx) => `
                   <tr class="product-rank-row" style="border-bottom: 1px solid rgba(255,255,255,0.04);">
                     <td style="padding: 10px 12px; color: #64748b; font-weight: 800;">${idx + 1}</td>
                     <td style="padding: 10px 12px; font-weight: 700; color: #ffffff;">${t.name}</td>

@@ -83,6 +83,7 @@ export async function onRequestGet(context) {
       ['Predictions Hub', '1845', '5', '88%', '+14%', '78%', '22%'],
       ['Bet Doctor Slip Audit', '642', '4', '72%', '+28%', '62%', '38%'],
       ['Booking Code Converter', '528', '4', '66%', '+19%', '70%', '30%'],
+      ['AI Scout Command Hub', '485', '4', '65%', '+24%', '60%', '40%'],
       ['Bet Generator Machine', '412', '3', '58%', '+9%', '74%', '26%'],
       ['Live In-Play Scanner', '389', '3', '64%', '+31%', '45%', '55%'],
       ['Pre-Match Trend Scanner', '304', '3', '52%', '+12%', '58%', '42%'],

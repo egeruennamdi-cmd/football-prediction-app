@@ -3178,6 +3178,10 @@ function openGeneralScout() {
   const modal = document.getElementById("scout-modal");
   if (!modal) return;
 
+  if (typeof window.trackEvent === 'function') {
+    window.trackEvent('SCANNER_USED', { tool: 'ai_scout', scanner_type: 'ai_scout' });
+  }
+
   if (!window.appState) window.appState = {};
   window.appState.activeScoutMatchId = null;
 
