@@ -2513,6 +2513,15 @@ function saveConvertedTicketToProfile() {
   window.appState.savedTickets = window.appState.savedTickets || [];
   window.appState.savedTickets.unshift(window.tempConvertedTicket);
 
+  try {
+    let stored = [];
+    const raw = localStorage.getItem('dp_saved_tickets');
+    if (raw) stored = JSON.parse(raw);
+    if (!Array.isArray(stored)) stored = [];
+    stored.unshift(window.tempConvertedTicket);
+    localStorage.setItem('dp_saved_tickets', JSON.stringify(stored));
+  } catch (e) {}
+
   showAppNotification("💾 Converted ticket saved to your User Hub history!");
 
   if (typeof renderInlineSavedTickets === 'function') {
@@ -5744,6 +5753,33 @@ function runBetDoctorAudit(showScanAnim = true) {
   const healthColor = healthScore >= 85 ? '#10b981' : (healthScore >= 70 ? '#f59e0b' : '#ef4444');
   const healthLabel = healthScore >= 85 ? 'EXCELLENT (OPTIMIZED & HIGH WIN RATE)' : (healthScore >= 70 ? 'MODERATE RISK (1 WARNING FLAG)' : 'CRITICAL RISK (2 TRAP MATCHES DETECTED)');
 
+  // Record audit into user's doctor history for dashboard tracking
+  try {
+    let docHistory = JSON.parse(localStorage.getItem('dp_doctor_history') || '[]');
+    if (!Array.isArray(docHistory)) docHistory = [];
+    const existingIndex = docHistory.findIndex(h => h.code === codeVal);
+    const entry = {
+      id: 'doc_' + Date.now(),
+      code: codeVal,
+      bookie: bookieName,
+      date: new Date().toLocaleDateString(),
+      timestamp: Date.now(),
+      healthScore: healthScore,
+      healthColor: healthColor,
+      healthLabel: healthLabel,
+      selections: isHighRisk ? 4 : (isModerate ? 3 : 5),
+      riskDistribution: isHighRisk ? 'High Risk' : (isModerate ? 'Moderate Risk' : 'Low Risk (Optimized)'),
+      status: 'Audited'
+    };
+    if (existingIndex >= 0) {
+      docHistory[existingIndex] = entry;
+    } else {
+      docHistory.unshift(entry);
+    }
+    if (docHistory.length > 20) docHistory = docHistory.slice(0, 20);
+    localStorage.setItem('dp_doctor_history', JSON.stringify(docHistory));
+  } catch (e) {}
+
   // Optional backend API ping on localhost
   if (typeof window !== 'undefined' && (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1')) {
     try {
@@ -6949,6 +6985,15 @@ function saveGeneratedTicket() {
   };
 
   window.appState.savedTickets.push(ticket);
+
+  try {
+    let stored = [];
+    const raw = localStorage.getItem('dp_saved_tickets');
+    if (raw) stored = JSON.parse(raw);
+    if (!Array.isArray(stored)) stored = [];
+    stored.unshift(ticket);
+    localStorage.setItem('dp_saved_tickets', JSON.stringify(stored));
+  } catch (e) {}
 
   if (typeof showAppNotification === 'function') {
     showAppNotification(`💾 Ticket '${code}' saved to profile history!`);

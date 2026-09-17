@@ -101,6 +101,27 @@
       viewId: 'view-analytics',
       title: 'League Stats & Analytics — DeepPredict Data Hub',
       navKey: 'analytics'
+    },
+    '/dashboard': {
+      viewId: 'view-my-deeppredict',
+      title: 'My DeepPredict — Personal Betting Command Center',
+      navKey: 'dashboard'
+    },
+    '/my-deeppredict': {
+      redirect: '/dashboard'
+    },
+    '/admin': {
+      viewId: 'view-founder-analytics',
+      title: 'DeepPredictBet Admin — Founder & Executive Business Intelligence',
+      navKey: 'admin'
+    },
+    '/admin/analytics': {
+      viewId: 'view-founder-analytics',
+      title: 'DeepPredictBet Admin — Business Intelligence & Telemetry',
+      navKey: 'admin'
+    },
+    '/founder-analytics': {
+      redirect: '/admin'
     }
   };
 
@@ -125,6 +146,11 @@
     '#filters': '/smart-filters',
     '#smart-filters': '/smart-filters',
     '#analytics': '/analytics',
+    '#dashboard': '/dashboard',
+    '#my-deeppredict': '/dashboard',
+    '#admin': '/admin',
+    '#admin/analytics': '/admin/analytics',
+    '#founder-analytics': '/admin',
     '#predictions': '/',
     '#home': '/'
   };
@@ -157,12 +183,13 @@
   function handleRouteNavigation(options = {}) {
     // Check if there is an old hash that needs to be upgraded to a clean route
     const currentHash = window.location.hash.toLowerCase();
+    let currentPath = window.location.pathname;
     if (currentHash && HASH_REDIRECTS[currentHash]) {
       const targetCleanPath = HASH_REDIRECTS[currentHash];
       window.history.replaceState(null, '', targetCleanPath);
+      currentPath = targetCleanPath;
     }
 
-    const currentPath = window.location.pathname;
     const { path, config } = resolveRoute(currentPath);
 
     // If normalized path differs from current (e.g. alias redirect)
@@ -189,6 +216,16 @@
     // Update document title if specified
     if (config.title) {
       document.title = config.title;
+    }
+
+    // Hide Universal Date Bar on dedicated dashboard views for clean command center focus
+    const dateBar = document.getElementById('universal-date-bar-wrapper');
+    if (dateBar) {
+      if (targetViewId === 'view-my-deeppredict' || targetViewId === 'view-founder-analytics') {
+        dateBar.style.display = 'none';
+      } else {
+        dateBar.style.display = 'flex';
+      }
     }
 
     // Update navigation active states across navbar, mobile drawer, and bottom nav
@@ -230,6 +267,33 @@
     if (targetViewId === 'view-converter') {
       if (typeof window.renderRecentConvertedSlips === 'function') {
         window.renderRecentConvertedSlips();
+      }
+    }
+
+    // Handle My DeepPredict customer dashboard initializer
+    if (targetViewId === 'view-my-deeppredict') {
+      const hashSub = window.location.hash ? window.location.hash.slice(1) : 'overview';
+      if (typeof window.renderCustomerDashboard === 'function') {
+        window.renderCustomerDashboard(hashSub);
+      } else {
+        setTimeout(() => {
+          if (typeof window.renderCustomerDashboard === 'function') {
+            window.renderCustomerDashboard(hashSub);
+          }
+        }, 50);
+      }
+    }
+
+    // Handle Founder Analytics dashboard initializer
+    if (targetViewId === 'view-founder-analytics') {
+      if (typeof window.renderFounderDashboard === 'function') {
+        window.renderFounderDashboard();
+      } else {
+        setTimeout(() => {
+          if (typeof window.renderFounderDashboard === 'function') {
+            window.renderFounderDashboard();
+          }
+        }, 50);
       }
     }
 
@@ -365,7 +429,12 @@
       'toptips': '/top-tips',
       'valuebot': '/valuebot',
       'filters': '/smart-filters',
-      'analytics': '/analytics'
+      'analytics': '/analytics',
+      'dashboard': '/dashboard',
+      'my-deeppredict': '/dashboard',
+      'admin': '/admin',
+      'admin/analytics': '/admin/analytics',
+      'founder-analytics': '/admin'
     };
     navigateTo(map[routeId] || '/' + routeId);
   };

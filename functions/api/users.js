@@ -1,4 +1,4 @@
-﻿/**
+/**
  * Cloudflare Pages Function: /api/users
  * Real-time Global User Ledger backed by Cloudflare KV Storage
  */
@@ -36,6 +36,12 @@ export async function onRequestOptions() {
 
 export async function onRequestGet(context) {
   try {
+    const url = new URL(context.request.url);
+    const selfEmail = (url.searchParams.get('email') || '').trim().toLowerCase();
+    const authHeader = context.request.headers.get('Authorization') || '';
+    const adminKey = url.searchParams.get('adminKey') || '';
+    const isAdmin = authHeader.includes('deep_admin_78_key') || adminKey === 'deep_admin_78_key' || authHeader.includes('admin@deeppredictbet.com');
+
     let members = [];
     
     // 1. Direct Cloudflare KV REST fetch (authoritative across all edge locations)
@@ -69,10 +75,49 @@ export async function onRequestGet(context) {
       members = [...SEED_ADMIN];
     }
 
+    // Tenancy Filter: If selfEmail is provided, return ONLY that specific user
+    if (selfEmail) {
+      const foundUser = members.find(m => (m.email || '').toLowerCase() === selfEmail);
+      if (foundUser) {
+        // Strip sensitive internal hash if present
+        const safeUser = { ...foundUser };
+        delete safeUser.passwordHash;
+        return new Response(JSON.stringify({
+          success: true,
+          user: safeUser
+        }), {
+          status: 200,
+          headers: corsHeaders()
+        });
+      } else {
+        return new Response(JSON.stringify({
+          success: false,
+          error: 'User profile not found'
+        }), {
+          status: 404,
+          headers: corsHeaders()
+        });
+      }
+    }
+
+    // If requesting full roster, ensure caller has admin privileges or return scrubbed list
+    const safeMembers = members.map(m => {
+      const safe = { ...m };
+      delete safe.passwordHash;
+      if (!isAdmin) {
+        // Obfuscate email for non-admin callers to protect privacy
+        const parts = (safe.email || '').split('@');
+        if (parts.length === 2) {
+          safe.email = parts[0].substring(0, 2) + '***@' + parts[1];
+        }
+      }
+      return safe;
+    });
+
     return new Response(JSON.stringify({
       success: true,
-      totalUsers: members.length,
-      users: members
+      totalUsers: safeMembers.length,
+      users: safeMembers
     }), {
       status: 200,
       headers: corsHeaders()
@@ -135,6 +180,14 @@ export async function onRequestPost(context) {
       registeredUser = members[existingIndex];
       if (cleanName) registeredUser.fullName = cleanName;
       if (cleanUser) registeredUser.username = cleanUser;
+      if (body.role !== undefined) registeredUser.role = body.role;
+      if (body.coinsBalance !== undefined) registeredUser.coinsBalance = body.coinsBalance;
+      if (body.savedTickets !== undefined) registeredUser.savedTickets = body.savedTickets;
+      if (body.watchlist !== undefined) registeredUser.watchlist = body.watchlist;
+      if (body.alerts !== undefined) registeredUser.alerts = body.alerts;
+      if (body.subscription !== undefined) registeredUser.subscription = body.subscription;
+      if (body.coinsLedger !== undefined) registeredUser.coinsLedger = body.coinsLedger;
+      registeredUser.lastActiveAt = new Date().toISOString();
       members[existingIndex] = registeredUser;
     } else {
       registeredUser = {
@@ -144,6 +197,12 @@ export async function onRequestPost(context) {
         username: cleanUser || cleanName.split(' ')[0] || 'Punter',
         role: body.role || 'PRO',
         coinsBalance: body.coinsBalance ?? 500,
+        savedTickets: body.savedTickets || [],
+        watchlist: body.watchlist || [],
+        alerts: body.alerts || { telegram: true, scanner: true, digest: false },
+        subscription: body.subscription || { active: false, tier: 'none' },
+        coinsLedger: body.coinsLedger || [],
+        lastActiveAt: new Date().toISOString(),
         createdAt: body.createdAt || new Date().toISOString()
       };
       members.unshift(registeredUser);

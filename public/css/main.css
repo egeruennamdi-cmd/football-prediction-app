@@ -3217,23 +3217,13 @@ header {
 
 /* ==========================================================================
    MOBILE HAMBURGER & LEFT NAVIGATION DRAWER (PINNED TO LEFT)
+   Strictly hidden on desktop.
+   Visible only on mobile devices, tablets, and iPads.
    ========================================================================== */
-@media (min-width: 992px) {
-  .mobile-hamburger-btn {
-    display: none !important;
-  }
-}
-
-@media (max-width: 991px) {
-  .mobile-hamburger-btn {
-    display: inline-flex !important;
-  }
-  header .nav-menu {
-    display: none !important;
-  }
-}
-
 .mobile-hamburger-btn {
+  display: none !important;
+  visibility: hidden !important;
+  pointer-events: none !important;
   align-items: center;
   justify-content: center;
   background: rgba(255, 255, 255, 0.1);
@@ -3252,6 +3242,48 @@ header {
   background: rgba(255, 255, 255, 0.22);
   border-color: #3b82f6;
   color: #60a5fa;
+}
+
+/* Mobile Devices, Tablets & iPads: Hamburger visible, desktop nav hidden */
+@media (max-width: 991px), (pointer: coarse) and (max-width: 1024px) {
+  html:not(.is-desktop) .mobile-hamburger-btn,
+  body:not(.is-desktop) .mobile-hamburger-btn {
+    display: inline-flex !important;
+    visibility: visible !important;
+    pointer-events: auto !important;
+  }
+  html:not(.is-desktop) header .nav-menu,
+  html:not(.is-desktop) header .desktop-nav,
+  body:not(.is-desktop) header .nav-menu,
+  body:not(.is-desktop) header .desktop-nav {
+    display: none !important;
+  }
+}
+
+/* Desktop Displays: Hamburger strictly hidden, desktop nav visible */
+@media (min-width: 992px), (hover: hover) and (pointer: fine) {
+  .mobile-hamburger-btn {
+    display: none !important;
+    visibility: hidden !important;
+    pointer-events: none !important;
+  }
+  header .nav-menu,
+  header .desktop-nav {
+    display: flex !important;
+  }
+}
+
+/* Explicit Desktop Environment Enforcer */
+html.is-desktop .mobile-hamburger-btn,
+body.is-desktop .mobile-hamburger-btn {
+  display: none !important;
+  visibility: hidden !important;
+  pointer-events: none !important;
+  width: 0 !important;
+  height: 0 !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  border: none !important;
 }
 
 #mobile-nav-drawer {
@@ -9219,14 +9251,13 @@ textarea:focus-visible,
   outline-offset: 3px !important;
 }
 
-/* 2. Touch Target Calibration (>= 44px) */
-.mobile-hamburger-btn {
-  min-width: 44px !important;
-  min-height: 44px !important;
-  display: inline-flex !important;
-  align-items: center !important;
-  justify-content: center !important;
-  touch-action: manipulation;
+/* 2. Touch Target Calibration (>= 44px on touch/mobile/tablet devices) */
+@media (max-width: 991px), (pointer: coarse) and (max-width: 1024px) {
+  html:not(.is-desktop) .mobile-hamburger-btn {
+    min-width: 44px !important;
+    min-height: 44px !important;
+    touch-action: manipulation;
+  }
 }
 
 .nav-cta-btn {
@@ -9284,5 +9315,201 @@ textarea:focus-visible,
 .performance-stat-label {
   color: #94a3b8 !important;
 }
+
+/* --- DASHBOARDS RESPONSIVENESS & TOUCH OPTIMIZATION --- */
+@media (max-width: 992px) {
+  #view-my-deeppredict .main-container > div:nth-of-type(3),
+  #view-founder-analytics .main-container > div:nth-of-type(3) {
+    grid-template-columns: 1fr !important;
+  }
+}
+
+@media (max-width: 640px) {
+  #view-my-deeppredict .glass-card,
+  #view-founder-analytics .glass-card {
+    padding: 16px !important;
+  }
+  #view-founder-analytics table {
+    min-width: 580px;
+  }
+}
+
+/* --- MY DEEPPREDICT CUSTOMER COMMAND CENTER STYLES --- */
+.dp-dashboard-layout {
+  display: grid;
+  grid-template-columns: 240px 1fr;
+  gap: 24px;
+  align-items: start;
+}
+
+@media (max-width: 900px) {
+  .dp-dashboard-layout {
+    grid-template-columns: 1fr;
+  }
+  .dp-sidebar-desktop {
+    display: none !important;
+  }
+}
+
+.dp-sidebar-nav {
+  background: rgba(15, 23, 42, 0.95);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 16px;
+  padding: 16px 12px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  min-height: 560px;
+  position: sticky;
+  top: 80px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+}
+
+.dp-sidebar-group {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.dp-sidebar-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 14px;
+  border-radius: 10px;
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: #94a3b8;
+  background: transparent;
+  border: none;
+  width: 100%;
+  text-align: left;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  text-decoration: none;
+}
+
+.dp-sidebar-item:hover {
+  color: #f8fafc;
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.dp-sidebar-item.active {
+  color: #38bdf8;
+  background: linear-gradient(90deg, rgba(56, 189, 248, 0.15) 0%, rgba(37, 99, 235, 0.05) 100%);
+  border-left: 3px solid #38bdf8;
+  font-weight: 800;
+}
+
+.dp-sidebar-item .dp-icon {
+  font-size: 1.1rem;
+  width: 22px;
+  text-align: center;
+  display: inline-block;
+}
+
+.dp-sidebar-divider {
+  height: 1px;
+  background: rgba(255, 255, 255, 0.08);
+  margin: 12px 0;
+}
+
+/* Mobile Bottom Navigation for Customer Dashboard */
+.dp-mobile-bottom-nav {
+  display: none;
+}
+
+@media (max-width: 900px) {
+  .dp-mobile-bottom-nav {
+    display: flex;
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    background: rgba(15, 23, 42, 0.98);
+    border-top: 1px solid rgba(59, 130, 246, 0.3);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    z-index: 1000;
+    justify-content: space-around;
+    padding: 8px 4px calc(8px + env(safe-area-inset-bottom));
+    box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.6);
+  }
+
+  .dp-mobile-nav-btn {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 3px;
+    background: transparent;
+    border: none;
+    color: #94a3b8;
+    font-size: 0.7rem;
+    font-weight: 700;
+    cursor: pointer;
+    min-width: 58px;
+    padding: 4px 6px;
+    border-radius: 8px;
+    transition: color 0.2s ease;
+  }
+
+  .dp-mobile-nav-btn.active {
+    color: #38bdf8;
+  }
+
+  .dp-mobile-nav-btn .dp-nav-icon {
+    font-size: 1.25rem;
+  }
+}
+
+.dp-status-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 3px 8px;
+  border-radius: 6px;
+  font-size: 0.72rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+}
+.dp-status-badge.pending {
+  background: rgba(245, 158, 11, 0.15);
+  border: 1px solid #f59e0b;
+  color: #fbbf24;
+}
+.dp-status-badge.won {
+  background: rgba(16, 185, 129, 0.15);
+  border: 1px solid #10b981;
+  color: #34d399;
+}
+.dp-status-badge.lost {
+  background: rgba(239, 68, 68, 0.15);
+  border: 1px solid #ef4444;
+  color: #f87171;
+}
+
+.dp-tab-pill {
+  padding: 6px 14px;
+  border-radius: 20px;
+  font-size: 0.78rem;
+  font-weight: 700;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  color: #94a3b8;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+.dp-tab-pill:hover {
+  color: #ffffff;
+  background: rgba(255, 255, 255, 0.1);
+}
+.dp-tab-pill.active {
+  background: #3b82f6;
+  border-color: #3b82f6;
+  color: #ffffff;
+  font-weight: 800;
+}
+
 
 

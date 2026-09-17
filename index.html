@@ -80,7 +80,118 @@
   <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png?v=20261026_opt2">
   <link rel="manifest" href="/site.webmanifest?v=20261026_opt2">
   <meta name="theme-color" content="#080b11">
-  <link rel="stylesheet" href="/css/main.css?v=20261026_betslip_share_v8">
+  <link rel="stylesheet" href="/css/main.css?v=20261026_desktop_nohamburger_v10">
+
+  <!-- Senior Engineering Guard: Desktop vs Mobile/Tablet/iPad Navigation Gating -->
+  <style id="dp-hamburger-desktop-gate">
+    /* 1. Base default: Strictly hide hamburger on desktop */
+    .mobile-hamburger-btn {
+      display: none !important;
+      visibility: hidden !important;
+      pointer-events: none !important;
+    }
+
+    /* 2. On desktop (hover & fine pointer, e.g. mice/trackpads), hamburger is 100% hidden */
+    @media (hover: hover) and (pointer: fine) {
+      .mobile-hamburger-btn {
+        display: none !important;
+        visibility: hidden !important;
+        pointer-events: none !important;
+      }
+      header .desktop-nav,
+      header .nav-menu {
+        display: flex !important;
+      }
+    }
+
+    /* 3. On standard desktop viewports (>= 992px), hamburger is 100% hidden */
+    @media (min-width: 992px) {
+      .mobile-hamburger-btn {
+        display: none !important;
+        visibility: hidden !important;
+        pointer-events: none !important;
+      }
+      header .desktop-nav,
+      header .nav-menu {
+        display: flex !important;
+      }
+    }
+
+    /* 4. ONLY on mobile devices, tablets, and iPads (touch pointer / coarse OR screen <= 991px): */
+    @media (max-width: 991px), (pointer: coarse) and (max-width: 1024px) {
+      html:not(.is-desktop) .mobile-hamburger-btn,
+      body:not(.is-desktop) .mobile-hamburger-btn {
+        display: inline-flex !important;
+        visibility: visible !important;
+        pointer-events: auto !important;
+      }
+      html:not(.is-desktop) header .desktop-nav,
+      html:not(.is-desktop) header .nav-menu,
+      body:not(.is-desktop) header .desktop-nav,
+      body:not(.is-desktop) header .nav-menu {
+        display: none !important;
+      }
+    }
+
+    /* 5. Explicit desktop class override */
+    html.is-desktop .mobile-hamburger-btn,
+    body.is-desktop .mobile-hamburger-btn {
+      display: none !important;
+      visibility: hidden !important;
+      pointer-events: none !important;
+      width: 0 !important;
+      height: 0 !important;
+      margin: 0 !important;
+      padding: 0 !important;
+      border: none !important;
+    }
+  </style>
+  <script>
+    (function() {
+      function enforceDeviceNavGate() {
+        var ua = navigator.userAgent || '';
+        var isTouch = ('ontouchstart' in window) || (navigator.maxTouchPoints > 0);
+        var isIpad = /iPad/i.test(ua) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+        var isMobileOrTablet = isIpad || /Android|iPhone|iPod|Mobile|Tablet|Silk/i.test(ua);
+        var width = window.innerWidth || document.documentElement.clientWidth;
+
+        // Desktop condition: not a mobile/tablet OS, and either has mouse or wide screen
+        var isDesktop = !isMobileOrTablet && (!isTouch || width >= 992);
+
+        var btn = document.querySelector('.mobile-hamburger-btn');
+        var nav = document.querySelector('header .desktop-nav') || document.querySelector('header .nav-menu');
+
+        if (isDesktop) {
+          document.documentElement.classList.add('is-desktop');
+          document.documentElement.classList.remove('is-mobile-tablet');
+          if (btn) {
+            btn.style.setProperty('display', 'none', 'important');
+            btn.style.setProperty('visibility', 'hidden', 'important');
+            btn.style.setProperty('pointer-events', 'none', 'important');
+            btn.setAttribute('aria-hidden', 'true');
+          }
+          if (nav) nav.style.removeProperty('display');
+        } else {
+          document.documentElement.classList.remove('is-desktop');
+          document.documentElement.classList.add('is-mobile-tablet');
+          if (btn) {
+            btn.style.setProperty('display', 'inline-flex', 'important');
+            btn.style.setProperty('visibility', 'visible', 'important');
+            btn.style.setProperty('pointer-events', 'auto', 'important');
+            btn.removeAttribute('aria-hidden');
+          }
+          if (nav) nav.style.setProperty('display', 'none', 'important');
+        }
+      }
+
+      enforceDeviceNavGate();
+      if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', enforceDeviceNavGate);
+      }
+      window.addEventListener('resize', enforceDeviceNavGate);
+      window.enforceDeviceNavGate = enforceDeviceNavGate;
+    })();
+  </script>
 
   <script>
     function toggleMobileDrawer() {
@@ -153,8 +264,7 @@
       <!-- LEFT: DeepPredictBet Logo + Mobile Hamburger -->
       <div class="nav-left" style="display: flex; align-items: center; gap: 10px;">
         <!-- 3 Dash Lines Icon Button (Visible on mobile/tablet) -->
-        <button class="mobile-hamburger-btn" onclick="toggleMobileDrawer()" aria-label="Open Navigation Menu"
-          title="Open Menu Drawer">
+        <button class="mobile-hamburger-btn" onclick="toggleMobileDrawer()" aria-label="Open Navigation Menu" title="Open Menu Drawer" style="display: none;">
           ☰
         </button>
 
@@ -222,7 +332,12 @@
             <a href="#predictions" onclick="if(typeof triggerQuickFilter==='function'){triggerQuickFilter('yesterday', 'all');}" class="nav-link">Results</a>
           </li>
 
-          <!-- 6. Pricing -->
+          <!-- 6. My DeepPredict Dashboard -->
+          <li>
+            <a href="/dashboard" class="nav-link" title="My DeepPredict Personal Dashboard">Dashboard</a>
+          </li>
+
+          <!-- 7. Pricing -->
           <li>
             <a href="#vip-packages-section" class="nav-link">Pricing</a>
           </li>
@@ -322,6 +437,14 @@
           style="font-size: 0.7rem; font-weight: 900; color: #38bdf8; text-transform: uppercase; letter-spacing: 0.8px; background: rgba(56, 189, 248, 0.08); border-left: 3px solid #38bdf8; padding: 4px 8px; border-radius: 0 6px 6px 0;">⚡
           Main Navigation</span>
       </div>
+
+      <!-- 0. Item: My DeepPredict Dashboard -->
+      <a href="/dashboard" onclick="toggleMobileDrawer()" class="mobile-drawer-item"
+        style="display: flex; align-items: center; gap: 12px; padding: 12px 14px; border-radius: 12px; text-decoration: none; color: #f8fafc; background: linear-gradient(135deg, rgba(59,130,246,0.15) 0%, rgba(37,99,235,0.05) 100%); border: 1px solid rgba(59,130,246,0.3); font-weight: 700; font-size: 0.95rem; min-height: 48px; box-sizing: border-box; transition: all 0.2s ease;">
+        <span
+          style="width: 32px; height: 32px; border-radius: 8px; background: rgba(59, 130, 246, 0.2); display: flex; align-items: center; justify-content: center; font-size: 1.1rem;">📊</span>
+        <span>My DeepPredict</span>
+      </a>
 
       <!-- 1. Item: Predictions -->
       <a href="#predictions" onclick="toggleMobileDrawer()" class="mobile-drawer-item"
@@ -5628,6 +5751,16 @@
     </section>
   </main>
 
+  <!-- --- PAGE VIEW 6: MY DEEPPREDICT (CUSTOMER DASHBOARD) --- -->
+  <main id="view-my-deeppredict" class="page-view container" style="display: none; padding-top: 24px;">
+    <!-- Content rendered dynamically by renderCustomerDashboard() in js/dashboard.js -->
+  </main>
+
+  <!-- --- PAGE VIEW 7: FOUNDER / ADMIN ANALYTICS (BUSINESS INTELLIGENCE) --- -->
+  <main id="view-founder-analytics" class="page-view container" style="display: none; padding-top: 24px;">
+    <!-- Content rendered dynamically by renderFounderDashboard() in js/dashboard.js -->
+  </main>
+
   <!-- --- FOOTER --- -->
   <footer class="deeppredictbet-footer">
     <!-- Footer Top Row -->
@@ -6691,10 +6824,17 @@
           </div>
         </div>
 
-        <!-- Admin Member Analytics Trigger -->
-        <button onclick="closeProfileModal(null, true); openAdminUsersModal();"
+        <!-- Open My DeepPredict Dashboard Action -->
+        <button onclick="closeProfileModal(null, true); if(typeof navigateTo==='function'){navigateTo('/dashboard');}else{window.location.pathname='/dashboard';}"
+          class="btn btn-primary"
+          style="width: 100%; margin-bottom: 10px; padding: 12px; font-weight: 800; font-size: 0.9rem; border-radius: 10px; display: flex; align-items: center; justify-content: center; gap: 8px;">
+          📊 Open My DeepPredict Dashboard
+        </button>
+
+        <!-- Founder Analytics Console Trigger -->
+        <button onclick="closeProfileModal(null, true); if(typeof navigateTo==='function'){navigateTo('/founder-analytics');}else{openAdminUsersModal();}"
           style="width: 100%; background: rgba(16, 185, 129, 0.15); border: 1px solid #10b981; color: #34d399; font-weight: 800; font-size: 0.88rem; padding: 10px; border-radius: 10px; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; margin-bottom: 10px; text-transform: uppercase; letter-spacing: 0.3px;">
-          👥 Member Analytics & Admin Hub
+          👑 Founder Analytics & BI Console
         </button>
 
         <!-- Logout Action Button -->
@@ -7436,6 +7576,7 @@
   <script defer src="/js/vipManager.js?v=20261026_betslip_share_v8"></script>
   <script defer src="/js/ui.js?v=20261026_betslip_share_v8"></script>
   <script defer src="/js/router.js?v=20261026_betslip_share_v8"></script>
+  <script defer src="/js/dashboard.js?v=20261026_betslip_share_v8"></script>
   <script defer src="/js/app.js?v=20261026_betslip_share_v8"></script>
   <script defer src="/js/liveFixtures.js?v=20261026_betslip_share_v8"></script>
   <script>

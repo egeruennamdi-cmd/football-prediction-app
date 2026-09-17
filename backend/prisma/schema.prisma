@@ -36,8 +36,93 @@ model User {
   referralCode  String          @unique @default(uuid())
   conversions   ConversionLog[]
   auditedSlips  AuditedSlip[]
+  savedTickets  SavedTicket[]
+  watchlists    UserWatchlist[]
+  subscriptions Subscription[]
+  coinLedger    CoinTransaction[]
+  lastActiveAt  DateTime        @default(now())
   createdAt     DateTime        @default(now())
   updatedAt     DateTime        @updatedAt
+}
+
+enum TicketStatus {
+  PENDING
+  WON
+  LOST
+  VOID
+  CANCELLED
+}
+
+model SavedTicket {
+  id              String       @id @default(uuid())
+  bookingCode     String
+  bookmaker       String
+  totalOdds       Float
+  selectionsCount Int          @default(1)
+  selections      Json
+  status          TicketStatus @default(PENDING)
+  source          String       @default("GENERATOR")
+  stake           Float?
+  potentialWin    Float?
+  userId          String
+  user            User         @relation(fields: [userId], references: [id])
+  createdAt       DateTime     @default(now())
+}
+
+model UserWatchlist {
+  id          String   @id @default(uuid())
+  matchId     String
+  fixtureName String
+  league      String
+  kickoffTime String
+  primaryTip  String?
+  odds        Float?
+  userId      String
+  user        User     @relation(fields: [userId], references: [id])
+  createdAt   DateTime @default(now())
+
+  @@unique([userId, matchId])
+}
+
+model Subscription {
+  id               String    @id @default(uuid())
+  tier             String
+  status           String    @default("ACTIVE")
+  amount           Float
+  currency         String    @default("NGN")
+  paymentReference String?
+  paymentGateway   String?
+  startDate        DateTime  @default(now())
+  expiresAt        DateTime
+  cancelledAt      DateTime?
+  userId           String
+  user             User      @relation(fields: [userId], references: [id])
+  createdAt        DateTime  @default(now())
+}
+
+model CoinTransaction {
+  id           String   @id @default(uuid())
+  amount       Int
+  balanceAfter Int
+  action       String
+  reference    String?
+  userId       String
+  user         User     @relation(fields: [userId], references: [id])
+  createdAt    DateTime @default(now())
+}
+
+model PlatformDailyTelemetry {
+  date               String   @id
+  predictionViews    Int      @default(0)
+  doctorAudits       Int      @default(0)
+  converterRequests  Int      @default(0)
+  converterSuccesses Int      @default(0)
+  generatorRuns      Int      @default(0)
+  scannerViews       Int      @default(0)
+  newRegistrations   Int      @default(0)
+  newSubscriptions   Int      @default(0)
+  revenueNgn         Float    @default(0.0)
+  updatedAt          DateTime @updatedAt
 }
 
 model ConversionLog {
