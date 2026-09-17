@@ -7152,33 +7152,29 @@
       <!-- Privacy Policy Pane -->
       <div id="supp-pane-privacy" class="modal-tab-pane"
         style="display: none; padding: 0 20px 20px; max-height: 380px; overflow-y: auto;">
-        <h4 style="font-size: 0.95rem; font-weight: 700; color: var(--primary); margin-bottom: 8px;">DeepPredict Privacy
-          Policy</h4>
+        <h4 style="font-size: 0.95rem; font-weight: 700; color: var(--primary); margin-bottom: 8px;">DeepPredict Privacy & Product Analytics Policy</h4>
         <p style="font-size: 0.8rem; color: var(--text-secondary); line-height: 1.5; margin-bottom: 10px;">
-          At DeepPredictBet, we prioritize your privacy and are committed to protecting any personal data collected when
-          you interact with our platform.
+          At DeepPredictBet, user privacy and data security are foundational engineering principles. We practice strict data minimization across all prediction algorithms and betting tools.
         </p>
         <h5
           style="font-size: 0.85rem; font-weight: 700; color: var(--text-primary); margin-top: 10px; margin-bottom: 4px;">
-          1. Information Collection & Storage</h5>
+          1. Strict Anti-Surveillance Architecture</h5>
         <p style="font-size: 0.78rem; color: var(--text-muted); line-height: 1.4; margin-bottom: 10px;">
-          We store non-sensitive local user state (such as custom watchlist selections, saved strategy filters, coin
-          balances, and app preferences) locally in your web browser. No personal payment credentials are saved on
-          public servers.
+          • <b>Zero Password Logging:</b> Passwords and security credentials are never collected or transmitted in analytics.<br>
+          • <b>Zero Payment Credential Access:</b> Credit card numbers, expiration dates, and CVVs are handled exclusively through secure banking gateways and are never stored on DeepPredictBet servers.<br>
+          • <b>Zero Betslip / Booking Code Exposure:</b> Your actual booking codes, individual accumulator selections, and private betting slips are strictly segregated and never stored or logged in analytics events.
         </p>
         <h5
           style="font-size: 0.85rem; font-weight: 700; color: var(--text-primary); margin-top: 10px; margin-bottom: 4px;">
-          2. Cybersecurity & Data Defense</h5>
+          2. Non-Invasive Product Analytics</h5>
         <p style="font-size: 0.78rem; color: var(--text-muted); line-height: 1.4; margin-bottom: 10px;">
-          Our platform is protected by multi-layer anti-DDoS defenses, strict Content-Security-Policies, XSS
-          sanitization, and HTTPS encryption protocols.
+          We collect only the minimum required non-sensitive product telemetry (e.g. tool interaction counts, converter success rates, aggregate health scores, and platform latency) using anonymous session identifiers. This telemetry directly powers our real-time platform stability and model accuracy evaluations.
         </p>
         <h5
           style="font-size: 0.85rem; font-weight: 700; color: var(--text-primary); margin-top: 10px; margin-bottom: 4px;">
-          3. Cookies & Analytics</h5>
+          3. Local Client Storage & Data Ownership</h5>
         <p style="font-size: 0.78rem; color: var(--text-muted); line-height: 1.4; margin-bottom: 0;">
-          We use lightweight, privacy-focused analytical telemetry to optimize server performance and page loading speed
-          without tracking user identities.
+          Your personal watchlist, custom slip history, and user preferences remain securely in your local browser storage. You retain total control over your device data at all times.
         </p>
       </div>
     </div>
@@ -7573,6 +7569,7 @@
 
   <!-- --- LOAD SCRIPTS (Parallel Non-Blocking Architecture) --- -->
   <script defer src="/js/data.js?v=20261026_betslip_share_v8"></script>
+  <script defer src="/js/analytics.js?v=20261026_betslip_share_v8"></script>
   <script defer src="/js/vipManager.js?v=20261026_betslip_share_v8"></script>
   <script defer src="/js/ui.js?v=20261026_betslip_share_v8"></script>
   <script defer src="/js/router.js?v=20261026_betslip_share_v8"></script>

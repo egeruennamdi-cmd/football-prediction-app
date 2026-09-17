@@ -1492,9 +1492,15 @@
     if (watchlist.includes(matchId)) {
       watchlist = watchlist.filter(id => id !== matchId);
       showToast('Match unfollowed', 'info');
+      if (typeof window.trackEvent === 'function') {
+        window.trackEvent('WATCHLIST_REMOVED', { tool: 'watchlist' });
+      }
     } else {
       watchlist.push(matchId);
       showToast('★ Match followed and added to watchlist!', 'success');
+      if (typeof window.trackEvent === 'function') {
+        window.trackEvent('WATCHLIST_ADDED', { tool: 'watchlist' });
+      }
     }
     setLocalArray('dp_watchlist', watchlist);
     if (window.appState) window.appState.watchlist = watchlist;
@@ -1509,6 +1515,9 @@
   };
 
   window.openCustomerDashboardHelp = function () {
+    if (typeof window.trackEvent === 'function') {
+      window.trackEvent('ALERT_OPENED', { tool: 'alerts', alert_type: 'telegram' });
+    }
     if (typeof window.showAppNotification === 'function') {
       window.showAppNotification('Need help? Join our official Telegram support: @deeppredictbet', 'info');
     } else {
@@ -1518,6 +1527,9 @@
 
   window.copyTicketCode = function (code) {
     if (!code) return;
+    if (typeof window.trackEvent === 'function') {
+      window.trackEvent('TICKET_VIEWED', { tool: 'ticket_manager' });
+    }
     navigator.clipboard.writeText(code).then(() => {
       showToast(`📋 Booking code '${code}' copied to clipboard!`, 'success');
     }).catch(() => {
@@ -1540,6 +1552,9 @@
     setLocalArray('dp_watchlist', watchlist);
     if (window.appState) window.appState.watchlist = watchlist;
     showToast('Match removed from watchlist', 'info');
+    if (typeof window.trackEvent === 'function') {
+      window.trackEvent('WATCHLIST_REMOVED', { tool: 'watchlist' });
+    }
     renderCustomerDashboard(currentCustomerTab);
   };
 
@@ -1548,6 +1563,9 @@
     alerts[key] = !!val;
     setLocalObject('dp_user_alerts', alerts);
     showToast(`Notification setting updated: ${key} = ${val ? 'ON' : 'OFF'}`, 'success');
+    if (typeof window.trackEvent === 'function') {
+      window.trackEvent('ALERT_CREATED', { tool: 'alerts', alert_type: key });
+    }
   };
 
   window.claimDailyBonusCoins = function () {

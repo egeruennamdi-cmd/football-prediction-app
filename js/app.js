@@ -2522,6 +2522,15 @@ function saveConvertedTicketToProfile() {
     localStorage.setItem('dp_saved_tickets', JSON.stringify(stored));
   } catch (e) {}
 
+  if (typeof window.trackEvent === 'function') {
+    window.trackEvent('TICKET_SAVED', {
+      tool: 'converter',
+      source: 'CONVERTER',
+      selection_count: (window.tempConvertedTicket && window.tempConvertedTicket.matches) ? window.tempConvertedTicket.matches.length : 4,
+      total_odds: parseFloat((window.tempConvertedTicket && window.tempConvertedTicket.odds) || 0)
+    });
+  }
+
   showAppNotification("💾 Converted ticket saved to your User Hub history!");
 
   if (typeof renderInlineSavedTickets === 'function') {
@@ -3030,6 +3039,13 @@ function openScoutModal(matchId) {
   // Set active context in global state
   if (!window.appState) window.appState = {};
   window.appState.activeScoutMatchId = match.id || matchId;
+  if (typeof window.trackEvent === 'function') {
+    window.trackEvent('PREDICTION_VIEWED', {
+      tool: 'predictions',
+      league: match.league || match.competition || 'League',
+      market: match.prediction || match.tip || '1X2'
+    });
+  }
 
   // Sync modal user coins display
   const coinsDisplay = document.getElementById("modal-user-coins-display");
@@ -5735,6 +5751,14 @@ function runBetDoctorAudit(showScanAnim = true) {
   const bookieInfo = typeof getBookieAffiliateInfo === 'function' ? getBookieAffiliateInfo(bookieVal) : { name: 'SportyBet' };
   const bookieName = bookieInfo.name || (bookieVal.charAt(0).toUpperCase() + bookieVal.slice(1));
 
+  if (typeof window.trackEvent === 'function') {
+    window.trackEvent('BET_DOCTOR_STARTED', {
+      tool: 'bet_doctor',
+      source_bookmaker: bookieName,
+      selection_count: 4
+    });
+  }
+
   // Determine state based on code or doctorState
   window.doctorState = window.doctorState || { currentSample: 'highrisk', isOptimized: false };
   if (codeVal.includes("SAFE") || codeVal.includes("92")) {
@@ -5779,6 +5803,18 @@ function runBetDoctorAudit(showScanAnim = true) {
     if (docHistory.length > 20) docHistory = docHistory.slice(0, 20);
     localStorage.setItem('dp_doctor_history', JSON.stringify(docHistory));
   } catch (e) {}
+
+  if (typeof window.trackEvent === 'function') {
+    window.trackEvent('BET_DOCTOR_COMPLETED', {
+      tool: 'bet_doctor',
+      source_bookmaker: bookieName,
+      selection_count: isHighRisk ? 4 : (isModerate ? 3 : 5),
+      health_score: healthScore,
+      health_label: healthLabel,
+      trap_matches_detected: isHighRisk ? 2 : (isModerate ? 1 : 0),
+      success: true
+    });
+  }
 
   // Optional backend API ping on localhost
   if (typeof window !== 'undefined' && (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1')) {
@@ -6995,6 +7031,15 @@ function saveGeneratedTicket() {
     localStorage.setItem('dp_saved_tickets', JSON.stringify(stored));
   } catch (e) {}
 
+  if (typeof window.trackEvent === 'function') {
+    window.trackEvent('TICKET_SAVED', {
+      tool: 'generator',
+      source: 'GENERATOR',
+      selection_count: ticket.selectionsCount || (ticket.matches ? ticket.matches.length : 1),
+      total_odds: parseFloat(ticket.totalOdds || ticket.odds || 0)
+    });
+  }
+
   if (typeof showAppNotification === 'function') {
     showAppNotification(`💾 Ticket '${code}' saved to profile history!`);
   }
@@ -7190,6 +7235,11 @@ function handleAuthSignup(e) {
     localStorage.setItem("currentUsername", username);
     localStorage.setItem("currentUserEmail", email);
   } catch(err) {}
+
+  if (typeof window.trackEvent === 'function') {
+    window.trackEvent('USER_REGISTERED', { tool: 'auth', plan: 'PRO' });
+    window.trackEvent('USER_LOGIN', { tool: 'auth', plan: 'PRO' });
+  }
 
   if (typeof updateAuthUIState === 'function') updateAuthUIState();
   closeAuthModal(null, true);
@@ -8966,8 +9016,27 @@ async function convertBetCode(code, src, target) {
       if (progressText) progressText.innerText = "✅ Conversion verified via BetPaddi Live Engine!";
       setTimeout(() => {
         renderConversionResults(sourceCode, sourceBookie, targetBookie, data.data);
+      if (typeof window.trackEvent === 'function') {
+        window.trackEvent('CONVERTER_COMPLETED', {
+          tool: 'converter',
+          source_bookmaker: formatBookieLabel(sourceBookie),
+          destination_bookmaker: formatBookieLabel(targetBookie),
+          total_odds: parseFloat(data.data.totalOdds || 0),
+          selection_count: Array.isArray(data.data.matches) ? data.data.matches.length : 4,
+          success: true
+        });
+      }
       }, 400);
     } else {
+      if (typeof window.trackEvent === 'function') {
+        window.trackEvent('CONVERTER_FAILED', {
+          tool: 'converter',
+          source_bookmaker: formatBookieLabel(sourceBookie),
+          destination_bookmaker: formatBookieLabel(targetBookie),
+          reason_category: (data.error || data.message || 'Verification failure').substring(0, 60),
+          success: false
+        });
+      }
       const errMsg = data.error || data.message || "Conversion failed. Please verify that this booking code is active and matches have not started yet.";
       if (progressText) progressText.innerText = `⚠️ ${errMsg}`;
       if (typeof showAppNotification === 'function') showAppNotification(`⚠️ ${errMsg}`, "warning");
@@ -9286,6 +9355,13 @@ function setStoredVipSubscription(sub) {
 }
 
 function openVipSubscriptionModal(preferredTier = 'annual', triggerFeature = null) {
+  if (typeof window.trackEvent === 'function') {
+    window.trackEvent('SUBSCRIPTION_VIEWED', {
+      tool: 'vip_packages',
+      tier: preferredTier,
+      trigger_source: (triggerFeature && triggerFeature.name) ? triggerFeature.name : 'direct'
+    });
+  }
   const modal = document.getElementById('vip-subscription-modal');
   if (!modal) return;
   
@@ -9371,6 +9447,15 @@ function selectPageVipPackage(tierKey) {
 window.selectPageVipPackage = selectPageVipPackage;
 
 function proceedToVipPayment() {
+  const _checkoutPkg = (typeof VIP_PACKAGES !== 'undefined' && VIP_PACKAGES[currentSelectedVipTier]) ? VIP_PACKAGES[currentSelectedVipTier] : { id: 'annual', price: '₦149,500' };
+  if (typeof window.trackEvent === 'function') {
+    window.trackEvent('CHECKOUT_STARTED', {
+      tool: 'vip_packages',
+      tier: _checkoutPkg.id,
+      amount_ngn: _checkoutPkg.price,
+      currency: 'NGN'
+    });
+  }
   const pkg = VIP_PACKAGES[currentSelectedVipTier] || VIP_PACKAGES.annual;
 
   const paywallPane = document.getElementById('vip-pane-paywall');
@@ -9463,6 +9548,22 @@ function processVipPayment() {
 
     setStoredVipSubscription(subscriptionData);
 
+    if (typeof window.trackEvent === 'function') {
+      window.trackEvent('PAYMENT_SUCCEEDED', {
+        tool: 'vip_packages',
+        tier: pkg.id,
+        amount_ngn: pkg.price,
+        currency: 'NGN',
+        payment_method: currentVipPaymentMethod,
+        success: true
+      });
+      window.trackEvent('SUBSCRIPTION_STARTED', {
+        tool: 'vip_packages',
+        tier: pkg.id,
+        success: true
+      });
+    }
+
     const paymentPane = document.getElementById('vip-pane-payment');
     const successPane = document.getElementById('vip-pane-success');
     if (paymentPane) paymentPane.style.display = 'none';
@@ -9525,6 +9626,9 @@ function confirmCancelVipSubscription() {
 
   sub.status = 'cancelled';
   setStoredVipSubscription(sub);
+  if (typeof window.trackEvent === 'function') {
+    window.trackEvent('SUBSCRIPTION_CANCELLED', { tool: 'vip_packages', tier: sub.tier, status: 'cancelled' });
+  }
   closeEasyToCancelModal(null, true);
 
   const expiryDate = new Date(sub.expiresAt).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' });
@@ -9711,3 +9815,36 @@ if (typeof document !== 'undefined' && !window._betslipAddCaptureListenerAttache
   document.addEventListener('pointerup', handleCaptureAddToSlip, true);
   document.addEventListener('touchend', handleCaptureAddToSlip, { capture: true, passive: false });
 }
+
+
+// Universal Watchlist & Prediction Pin Controller
+function toggleWatchlist(matchId, event) {
+  if (event) {
+    if (typeof event.stopPropagation === 'function') event.stopPropagation();
+    if (typeof event.preventDefault === 'function') event.preventDefault();
+  }
+  if (!window.appState) window.appState = {};
+  if (!Array.isArray(window.appState.watchlist)) window.appState.watchlist = [];
+
+  const idx = window.appState.watchlist.indexOf(matchId);
+  const isAdding = (idx === -1);
+  if (isAdding) {
+    window.appState.watchlist.push(matchId);
+    if (typeof showToast === 'function') showToast('★ Match added to watchlist!', 'success');
+    if (typeof window.trackEvent === 'function') {
+      window.trackEvent('WATCHLIST_ADDED', { tool: 'watchlist' });
+      window.trackEvent('PREDICTION_SAVED', { tool: 'predictions' });
+    }
+  } else {
+    window.appState.watchlist.splice(idx, 1);
+    if (typeof showToast === 'function') showToast('Match removed from watchlist', 'info');
+    if (typeof window.trackEvent === 'function') {
+      window.trackEvent('WATCHLIST_REMOVED', { tool: 'watchlist' });
+    }
+  }
+
+  try {
+    localStorage.setItem('dp_watchlist', JSON.stringify(window.appState.watchlist));
+  } catch(e) {}
+}
+window.toggleWatchlist = toggleWatchlist;

@@ -235,7 +235,16 @@
     if (config.tool && ['arbitrage', 'valuebot', 'backtester', 'doctor'].includes(config.tool)) {
       if (typeof checkFeatureVipAccess === 'function') {
         // VIP check prompts modal without breaking view
-      checkFeatureVipAccess(config.tool);
+        checkFeatureVipAccess(config.tool);
+      }
+    }
+
+    // Product Telemetry Event Mapping
+    if (typeof window.trackEvent === 'function') {
+      if (path === '/live-scanner') {
+        window.trackEvent('SCANNER_USED', { tool: 'live_scanner', scanner_type: 'live' });
+      } else if (['/arbitrage', '/valuebot', '/smart-filters'].includes(path)) {
+        window.trackEvent('SCANNER_USED', { tool: 'scanner', scanner_type: config.navKey || path.slice(1) });
       }
     }
 
