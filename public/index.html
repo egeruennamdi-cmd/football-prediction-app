@@ -344,25 +344,9 @@
         </ul>
       </nav>
 
-      <!-- RIGHT: Language + Coins + Login + GET STARTED CTA -->
+      <!-- RIGHT: Top Header User Profile / Login (Displays USER name at top right header when logged in) -->
       <div class="nav-actions" style="display: flex; align-items: center; gap: 10px;">
-        <!-- Language Switcher Selector -->
-        <select id="lang-switcher" onchange="changeAppLanguage(this.value)" aria-label="Select Language"
-          style="background: var(--bg-dark); border: 1px solid var(--border-color); border-radius: var(--radius-sm); padding: 5px 8px; color: var(--text-primary); outline: none; cursor: pointer; font-size: 0.75rem; font-weight: 600; font-family: var(--font-body);">
-          <option value="en">🇺🇸 EN</option>
-          <option value="fr">🇫🇷 FR</option>
-          <option value="it">🇮🇹 IT</option>
-          <option value="es">🇪🇸 ES</option>
-        </select>
-
-        <!-- Mines Coins Pill -->
-        <div
-          style="display: flex; align-items: center; gap: 6px; background: rgba(245, 158, 11, 0.08); border: 1px solid rgba(245, 158, 11, 0.2); border-radius: var(--radius-full); padding: 4px 10px; font-size: 0.8rem; font-weight: 700; color: var(--accent-gold); cursor: pointer;"
-          onclick="openStoreModal('shop')" title="Mines Coins Store">
-          <span>🪙</span> <span id="header-coins-count">500</span>
-        </div>
-
-        <!-- Login / Authenticated Profile Button -->
+        <!-- Login / Authenticated Profile Button (Displays USER name at top right header when logged in) -->
         <div id="nav-auth-container" onclick="handleNavAuthClick()"
           style="display: flex; align-items: center; gap: 6px; cursor: pointer; touch-action: manipulation; -webkit-tap-highlight-color: transparent; user-select: none; -webkit-user-select: none; position: relative; z-index: 100;"
           title="Account / Login">
@@ -372,12 +356,12 @@
               style="width: 28px; height: 28px; border-radius: 50%; border: 1.5px solid rgba(59,130,246,0.6); display: flex; align-items: center; justify-content: center; font-size: 0.8rem; background: linear-gradient(135deg, rgba(37,99,235,0.4) 0%, rgba(29,78,216,0.7) 100%); color: #ffffff; font-weight: 800; flex-shrink: 0; pointer-events: none;">
               👤
             </div>
-            <span id="nav-user-label" style="display: inline-block; max-width: 90px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; vertical-align: middle; pointer-events: none;">Login</span>
+            <span id="nav-user-label" style="display: inline-block; max-width: 160px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; vertical-align: middle; pointer-events: none;">Login</span>
           </div>
         </div>
 
-        <!-- Primary CTA: GET STARTED -->
-        <button type="button" id="nav-get-started-btn" class="nav-cta-btn" onclick="openAuthModal('signup')"
+        <!-- Mobile-Only Header CTA Button (Hidden on desktop via CSS, preserved on tablet/mobile) -->
+        <button type="button" id="nav-get-started-btn" class="nav-cta-btn mobile-header-cta-btn" onclick="openAuthModal('signup')"
           style="background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%); color: #ffffff; border: 1px solid rgba(255, 255, 255, 0.2); border-radius: 8px; padding: 7px 16px; font-weight: 800; font-size: 0.82rem; letter-spacing: 0.5px; text-transform: uppercase; cursor: pointer; transition: all 0.2s ease; box-shadow: 0 4px 14px rgba(37, 99, 235, 0.35); white-space: nowrap;">
           GET STARTED
         </button>
@@ -551,6 +535,30 @@
   <!-- --- UNIVERSAL STICKY SUB-HEADER DATE & LIVE BAR (ON EVERY PAGE) --- -->
   <div id="universal-date-bar-wrapper">
     <div class="deeppredictbet-date-bar-container" style="display: flex; justify-content: center; width: 100%;"></div>
+
+    <!-- Desktop-Only Action Strip: Language + Coins + VIP Club CTA (Immediately Under Universal Date Bar) -->
+    <div id="desktop-datebar-actions" class="desktop-datebar-actions">
+      <!-- Language Switcher Selector -->
+      <select id="lang-switcher" class="lang-switcher-select" onchange="changeAppLanguage(this.value)" aria-label="Select Language"
+        style="background: #0f172a; border: 1px solid rgba(255, 255, 255, 0.16); border-radius: 8px; padding: 6px 10px; color: #ffffff; outline: none; cursor: pointer; font-size: 0.8rem; font-weight: 700; font-family: var(--font-body); box-shadow: 0 2px 8px rgba(0,0,0,0.3); transition: all 0.2s ease;">
+        <option value="en">🇺🇸 EN</option>
+        <option value="fr">🇫🇷 FR</option>
+        <option value="it">🇮🇹 IT</option>
+        <option value="es">🇪🇸 ES</option>
+      </select>
+
+      <!-- Mines Coins Pill -->
+      <div class="header-coins-pill desktop-coins-pill" onclick="openStoreModal('shop')" title="Mines Coins Store"
+        style="display: flex; align-items: center; gap: 7px; background: rgba(245, 158, 11, 0.12); border: 1.5px solid rgba(245, 158, 11, 0.35); border-radius: 9999px; padding: 5px 14px; font-size: 0.85rem; font-weight: 800; color: var(--accent-gold); cursor: pointer; box-shadow: 0 2px 10px rgba(245, 158, 11, 0.2); transition: all 0.2s ease;">
+        <span>🪙</span> <span id="header-coins-count" class="header-coins-count">500</span>
+      </div>
+
+      <!-- Primary CTA: VIP CLUB / GET STARTED -->
+      <button type="button" id="desktop-datebar-cta-btn" class="nav-cta-btn desktop-cta-btn" onclick="openAuthModal('signup')"
+        style="background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%); color: #ffffff; border: 1px solid rgba(255, 255, 255, 0.2); border-radius: 8px; padding: 7px 18px; font-weight: 800; font-size: 0.84rem; letter-spacing: 0.5px; text-transform: uppercase; cursor: pointer; transition: all 0.2s ease; box-shadow: 0 4px 14px rgba(37, 99, 235, 0.4); white-space: nowrap;">
+        GET STARTED
+      </button>
+    </div>
   </div>
 
   <!-- --- MAIN PAGE VIEW 1: PREDICTIONS & HOME --- -->
