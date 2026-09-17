@@ -3379,7 +3379,7 @@ function changeAppLanguage(lang) {
     suiteTitleEl.innerText = trans.suiteTitle;
   }
 
-  const langSelectors = document.querySelectorAll("#lang-switcher, #lang-switcher-mobile, .lang-switcher-select");
+  const langSelectors = document.querySelectorAll("#lang-switcher, #desktop-lang-switcher, #lang-switcher-mobile, .lang-switcher-select");
   langSelectors.forEach(sel => { sel.value = lang; });
   showAppNotification(`Language switched to: ${lang.toUpperCase()}`);
 }
