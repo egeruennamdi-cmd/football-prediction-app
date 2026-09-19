@@ -1347,6 +1347,11 @@ function filterMachineMarketCategory(category, chipBtn) {
   if (bar && chipBtn) {
     bar.querySelectorAll('button').forEach(b => b.classList.remove('active'));
     chipBtn.classList.add('active');
+    if (typeof chipBtn.scrollIntoView === 'function') {
+      try {
+        chipBtn.scrollIntoView({ behavior: 'smooth', inline: 'center', block: 'nearest' });
+      } catch (e) {}
+    }
   }
   const container = document.getElementById('machine-markets-grid') || document.querySelector('#tool-machine .form-checkbox-group');
   if (!container) return;
@@ -1359,6 +1364,9 @@ function filterMachineMarketCategory(category, chipBtn) {
       card.style.display = 'none';
     }
   });
+  try {
+    container.scrollTop = 0;
+  } catch (e) {}
 }
 window.filterMachineMarketCategory = filterMachineMarketCategory;
 
