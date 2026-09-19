@@ -3852,20 +3852,17 @@
       <div class="glass-card tool-glass-container" style="padding: 24px; min-height: 400px; position: relative;">
 
         <!-- TOOL 1: DEEPPREDICTBET MACHINE -->
-        <div id="tool-machine" class="tool-content-pane active" style="display: flex; flex-direction: column;">
-          <div
-            style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 12px; margin-bottom: 20px; border-bottom: 1px solid rgba(59, 130, 246, 0.3); padding-bottom: 12px;">
-            <div>
-              <h3
-                style="font-size: 1.35rem; font-family: var(--font-display); font-weight: 900; background: linear-gradient(135deg, #ffffff 0%, #3b82f6 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; margin-bottom: 4px;">
+        <div id="tool-machine" class="tool-content-pane active">
+          <div class="machine-tool-header">
+            <div class="machine-tool-header-info">
+              <h3 class="machine-tool-title">
                 🤖 DeepPredict Machine Ticket Generator
               </h3>
-              <p style="font-size: 0.8rem; color: var(--text-secondary); margin: 0;">
+              <p class="machine-tool-desc">
                 Let the algorithm generate high-probability bet slips tailored to your specific odds and market filters.
               </p>
             </div>
-            <span
-              style="background: rgba(37, 99, 235, 0.15); border: 1px solid rgba(59, 130, 246, 0.4); color: #3b82f6; font-size: 0.75rem; font-weight: 800; padding: 6px 14px; border-radius: 20px; text-transform: uppercase;">
+            <span class="machine-tool-badge">
               ⚡ Algorithmic Slip Engine
             </span>
           </div>
@@ -3892,359 +3889,357 @@
                 </div>
 
                 <!-- Category Quick-Filter Bar -->
-                <div class="machine-category-chips" id="machine-category-chips-bar"
-                  style="display: flex; gap: 6px; overflow-x: auto; padding-bottom: 6px; margin-bottom: 10px; scrollbar-width: thin;">
-                  <button type="button" class="tab-btn active" onclick="filterMachineMarketCategory('all', this)" style="padding: 3px 10px; font-size: 0.72rem; border-radius: 14px; white-space: nowrap;">All Markets</button>
-                  <button type="button" class="tab-btn" onclick="filterMachineMarketCategory('1x2', this)" style="padding: 3px 10px; font-size: 0.72rem; border-radius: 14px; white-space: nowrap;">1X2 Tips</button>
-                  <button type="button" class="tab-btn" onclick="filterMachineMarketCategory('overunder', this)" style="padding: 3px 10px; font-size: 0.72rem; border-radius: 14px; white-space: nowrap;">Over/Under Goals</button>
-                  <button type="button" class="tab-btn" onclick="filterMachineMarketCategory('btts', this)" style="padding: 3px 10px; font-size: 0.72rem; border-radius: 14px; white-space: nowrap;">BTTS</button>
-                  <button type="button" class="tab-btn" onclick="filterMachineMarketCategory('doublechance', this)" style="padding: 3px 10px; font-size: 0.72rem; border-radius: 14px; white-space: nowrap;">Double Chance</button>
-                  <button type="button" class="tab-btn" onclick="filterMachineMarketCategory('dnb', this)" style="padding: 3px 10px; font-size: 0.72rem; border-radius: 14px; white-space: nowrap;">Draw No Bet</button>
-                  <button type="button" class="tab-btn" onclick="filterMachineMarketCategory('combo', this)" style="padding: 3px 10px; font-size: 0.72rem; border-radius: 14px; white-space: nowrap;">Combos</button>
-                  <button type="button" class="tab-btn" onclick="filterMachineMarketCategory('htft', this)" style="padding: 3px 10px; font-size: 0.72rem; border-radius: 14px; white-space: nowrap;">HT / FT</button>
-                  <button type="button" class="tab-btn" onclick="filterMachineMarketCategory('multigoals', this)" style="padding: 3px 10px; font-size: 0.72rem; border-radius: 14px; white-space: nowrap;">Multi-Goals & Ranges</button>
-                  <button type="button" class="tab-btn" onclick="filterMachineMarketCategory('teamspec', this)" style="padding: 3px 10px; font-size: 0.72rem; border-radius: 14px; white-space: nowrap;">Team Goals & Clean Sheet</button>
-                  <button type="button" class="tab-btn" onclick="filterMachineMarketCategory('corners', this)" style="padding: 3px 10px; font-size: 0.72rem; border-radius: 14px; white-space: nowrap;">Corners Tips</button>
-                  <button type="button" class="tab-btn" onclick="filterMachineMarketCategory('cards', this)" style="padding: 3px 10px; font-size: 0.72rem; border-radius: 14px; white-space: nowrap;">Cards & Bookings</button>
-                  <button type="button" class="tab-btn" onclick="filterMachineMarketCategory('handicap', this)" style="padding: 3px 10px; font-size: 0.72rem; border-radius: 14px; white-space: nowrap;">Asian / Euro Handicap</button>
+                <div class="machine-category-chips" id="machine-category-chips-bar">
+                  <button type="button" class="tab-btn active" onclick="filterMachineMarketCategory('all', this)">All Markets</button>
+                  <button type="button" class="tab-btn" onclick="filterMachineMarketCategory('1x2', this)">1X2 Tips</button>
+                  <button type="button" class="tab-btn" onclick="filterMachineMarketCategory('overunder', this)">Over/Under Goals</button>
+                  <button type="button" class="tab-btn" onclick="filterMachineMarketCategory('btts', this)">BTTS</button>
+                  <button type="button" class="tab-btn" onclick="filterMachineMarketCategory('doublechance', this)">Double Chance</button>
+                  <button type="button" class="tab-btn" onclick="filterMachineMarketCategory('dnb', this)">Draw No Bet</button>
+                  <button type="button" class="tab-btn" onclick="filterMachineMarketCategory('combo', this)">Combos</button>
+                  <button type="button" class="tab-btn" onclick="filterMachineMarketCategory('htft', this)">HT / FT</button>
+                  <button type="button" class="tab-btn" onclick="filterMachineMarketCategory('multigoals', this)">Multi-Goals & Ranges</button>
+                  <button type="button" class="tab-btn" onclick="filterMachineMarketCategory('teamspec', this)">Team Goals & Clean Sheet</button>
+                  <button type="button" class="tab-btn" onclick="filterMachineMarketCategory('corners', this)">Corners Tips</button>
+                  <button type="button" class="tab-btn" onclick="filterMachineMarketCategory('cards', this)">Cards & Bookings</button>
+                  <button type="button" class="tab-btn" onclick="filterMachineMarketCategory('handicap', this)">Asian / Euro Handicap</button>
                 </div>
 
-                <div class="form-checkbox-group" id="machine-markets-grid"
-                  style="max-height: 290px; overflow-y: auto; padding-right: 6px; scrollbar-width: thin;">
+                <div class="form-checkbox-group" id="machine-markets-grid">
                   <!-- 1X2 & Match Outcomes -->
-                  <div class="checkbox-card selected" data-category="1x2" onclick="toggleCheckboxCard(this, event)">
+                  <div class="checkbox-card selected" data-category="1x2" onclick="toggleCheckboxCard(this, event)" title="1X2: Home Win (1)">
                     <input type="checkbox" checked value="win1" id="mkt-1">
                     <span>1X2: Home Win (1)</span>
                   </div>
-                  <div class="checkbox-card" data-category="1x2" onclick="toggleCheckboxCard(this, event)">
+                  <div class="checkbox-card" data-category="1x2" onclick="toggleCheckboxCard(this, event)" title="1X2: Draw (X)">
                     <input type="checkbox" value="draw" id="mkt-x">
                     <span>1X2: Draw (X)</span>
                   </div>
-                  <div class="checkbox-card selected" data-category="1x2" onclick="toggleCheckboxCard(this, event)">
+                  <div class="checkbox-card selected" data-category="1x2" onclick="toggleCheckboxCard(this, event)" title="1X2: Away Win (2)">
                     <input type="checkbox" checked value="win2" id="mkt-2">
                     <span>1X2: Away Win (2)</span>
                   </div>
 
                   <!-- Double Chance -->
-                  <div class="checkbox-card" data-category="doublechance" onclick="toggleCheckboxCard(this, event)">
+                  <div class="checkbox-card" data-category="doublechance" onclick="toggleCheckboxCard(this, event)" title="Double Chance: 1X">
                     <input type="checkbox" value="dc1x" id="mkt-dc1x">
                     <span>Double Chance: 1X</span>
                   </div>
-                  <div class="checkbox-card" data-category="doublechance" onclick="toggleCheckboxCard(this, event)">
+                  <div class="checkbox-card" data-category="doublechance" onclick="toggleCheckboxCard(this, event)" title="Double Chance: 12">
                     <input type="checkbox" value="dc12" id="mkt-dc12">
                     <span>Double Chance: 12</span>
                   </div>
-                  <div class="checkbox-card" data-category="doublechance" onclick="toggleCheckboxCard(this, event)">
+                  <div class="checkbox-card" data-category="doublechance" onclick="toggleCheckboxCard(this, event)" title="Double Chance: X2">
                     <input type="checkbox" value="dcx2" id="mkt-dcx2">
                     <span>Double Chance: X2</span>
                   </div>
 
                   <!-- Draw No Bet -->
-                  <div class="checkbox-card" data-category="dnb" onclick="toggleCheckboxCard(this, event)">
+                  <div class="checkbox-card" data-category="dnb" onclick="toggleCheckboxCard(this, event)" title="Draw No Bet (DNB)">
                     <input type="checkbox" value="dnb" id="mkt-dnb">
                     <span>Draw No Bet (DNB)</span>
                   </div>
 
                   <!-- Over / Under Goals Full Time -->
-                  <div class="checkbox-card" data-category="overunder" onclick="toggleCheckboxCard(this, event)">
+                  <div class="checkbox-card" data-category="overunder" onclick="toggleCheckboxCard(this, event)" title="Under/Over: 0.5">
                     <input type="checkbox" value="uo05" id="mkt-uo05">
                     <span>Under/Over: 0.5</span>
                   </div>
-                  <div class="checkbox-card" data-category="overunder" onclick="toggleCheckboxCard(this, event)">
+                  <div class="checkbox-card" data-category="overunder" onclick="toggleCheckboxCard(this, event)" title="Under/Over: 1.5">
                     <input type="checkbox" value="uo15" id="mkt-uo15">
                     <span>Under/Over: 1.5</span>
                   </div>
-                  <div class="checkbox-card selected" data-category="overunder" onclick="toggleCheckboxCard(this, event)">
+                  <div class="checkbox-card selected" data-category="overunder" onclick="toggleCheckboxCard(this, event)" title="Under/Over: 2.5">
                     <input type="checkbox" checked value="uo25" id="mkt-ov2.5">
                     <span>Under/Over: 2.5</span>
                   </div>
-                  <div class="checkbox-card" data-category="overunder" onclick="toggleCheckboxCard(this, event)">
+                  <div class="checkbox-card" data-category="overunder" onclick="toggleCheckboxCard(this, event)" title="Under/Over: 3.5">
                     <input type="checkbox" value="uo35" id="mkt-uo35">
                     <span>Under/Over: 3.5</span>
                   </div>
-                  <div class="checkbox-card" data-category="overunder" onclick="toggleCheckboxCard(this, event)">
+                  <div class="checkbox-card" data-category="overunder" onclick="toggleCheckboxCard(this, event)" title="Under/Over: 4.5">
                     <input type="checkbox" value="uo45" id="mkt-uo45">
                     <span>Under/Over: 4.5</span>
                   </div>
-                  <div class="checkbox-card" data-category="overunder" onclick="toggleCheckboxCard(this, event)">
+                  <div class="checkbox-card" data-category="overunder" onclick="toggleCheckboxCard(this, event)" title="Under/Over: 5.5">
                     <input type="checkbox" value="uo55" id="mkt-uo55">
                     <span>Under/Over: 5.5</span>
                   </div>
 
                   <!-- Over / Under Half Time & 2nd Half -->
-                  <div class="checkbox-card" data-category="overunder" onclick="toggleCheckboxCard(this, event)">
+                  <div class="checkbox-card" data-category="overunder" onclick="toggleCheckboxCard(this, event)" title="Under/Over HT: 0.5">
                     <input type="checkbox" value="uoht05" id="mkt-uoht05">
                     <span>Under/Over HT: 0.5</span>
                   </div>
-                  <div class="checkbox-card" data-category="overunder" onclick="toggleCheckboxCard(this, event)">
+                  <div class="checkbox-card" data-category="overunder" onclick="toggleCheckboxCard(this, event)" title="Under/Over HT: 1.5">
                     <input type="checkbox" value="uoht15" id="mkt-uoht15">
                     <span>Under/Over HT: 1.5</span>
                   </div>
-                  <div class="checkbox-card" data-category="overunder" onclick="toggleCheckboxCard(this, event)">
+                  <div class="checkbox-card" data-category="overunder" onclick="toggleCheckboxCard(this, event)" title="Under/Over HT: 2.5">
                     <input type="checkbox" value="uoht25" id="mkt-uoht25">
                     <span>Under/Over HT: 2.5</span>
                   </div>
-                  <div class="checkbox-card" data-category="overunder" onclick="toggleCheckboxCard(this, event)">
+                  <div class="checkbox-card" data-category="overunder" onclick="toggleCheckboxCard(this, event)" title="Under/Over 2nd Half: 0.5">
                     <input type="checkbox" value="uo2h05" id="mkt-uo2h05">
                     <span>Under/Over 2nd Half: 0.5</span>
                   </div>
-                  <div class="checkbox-card" data-category="overunder" onclick="toggleCheckboxCard(this, event)">
+                  <div class="checkbox-card" data-category="overunder" onclick="toggleCheckboxCard(this, event)" title="Under/Over 2nd Half: 1.5">
                     <input type="checkbox" value="uo2h15" id="mkt-uo2h15">
                     <span>Under/Over 2nd Half: 1.5</span>
                   </div>
-                  <div class="checkbox-card" data-category="overunder" onclick="toggleCheckboxCard(this, event)">
+                  <div class="checkbox-card" data-category="overunder" onclick="toggleCheckboxCard(this, event)" title="Under/Over 2nd Half: 2.5">
                     <input type="checkbox" value="uo2h25" id="mkt-uo2h25">
                     <span>Under/Over 2nd Half: 2.5</span>
                   </div>
 
                   <!-- Multi-Goals & Ranges -->
-                  <div class="checkbox-card" data-category="multigoals" onclick="toggleCheckboxCard(this, event)">
+                  <div class="checkbox-card" data-category="multigoals" onclick="toggleCheckboxCard(this, event)" title="Multi-Goals: 1-2 Goals">
                     <input type="checkbox" value="mg12" id="mkt-mg12">
                     <span>Multi-Goals: 1-2 Goals</span>
                   </div>
-                  <div class="checkbox-card" data-category="multigoals" onclick="toggleCheckboxCard(this, event)">
+                  <div class="checkbox-card" data-category="multigoals" onclick="toggleCheckboxCard(this, event)" title="Multi-Goals: 1-3 Goals">
                     <input type="checkbox" value="mg13" id="mkt-mg13">
                     <span>Multi-Goals: 1-3 Goals</span>
                   </div>
-                  <div class="checkbox-card" data-category="multigoals" onclick="toggleCheckboxCard(this, event)">
+                  <div class="checkbox-card" data-category="multigoals" onclick="toggleCheckboxCard(this, event)" title="Multi-Goals: 2-3 Goals">
                     <input type="checkbox" value="mg23" id="mkt-mg23">
                     <span>Multi-Goals: 2-3 Goals</span>
                   </div>
-                  <div class="checkbox-card" data-category="multigoals" onclick="toggleCheckboxCard(this, event)">
+                  <div class="checkbox-card" data-category="multigoals" onclick="toggleCheckboxCard(this, event)" title="Multi-Goals: 2-4 Goals">
                     <input type="checkbox" value="mg24" id="mkt-mg24">
                     <span>Multi-Goals: 2-4 Goals</span>
                   </div>
-                  <div class="checkbox-card" data-category="multigoals" onclick="toggleCheckboxCard(this, event)">
+                  <div class="checkbox-card" data-category="multigoals" onclick="toggleCheckboxCard(this, event)" title="Multi-Goals: 2-5 Goals">
                     <input type="checkbox" value="mg25" id="mkt-mg25">
                     <span>Multi-Goals: 2-5 Goals</span>
                   </div>
-                  <div class="checkbox-card" data-category="multigoals" onclick="toggleCheckboxCard(this, event)">
+                  <div class="checkbox-card" data-category="multigoals" onclick="toggleCheckboxCard(this, event)" title="Multi-Goals: 3-5 Goals">
                     <input type="checkbox" value="mg35" id="mkt-mg35">
                     <span>Multi-Goals: 3-5 Goals</span>
                   </div>
-                  <div class="checkbox-card" data-category="multigoals" onclick="toggleCheckboxCard(this, event)">
+                  <div class="checkbox-card" data-category="multigoals" onclick="toggleCheckboxCard(this, event)" title="Multi-Goals: 4-6 Goals">
                     <input type="checkbox" value="mg46" id="mkt-mg46">
                     <span>Multi-Goals: 4-6 Goals</span>
                   </div>
-                  <div class="checkbox-card" data-category="multigoals" onclick="toggleCheckboxCard(this, event)">
+                  <div class="checkbox-card" data-category="multigoals" onclick="toggleCheckboxCard(this, event)" title="Exact Goals: 0 Goals">
                     <input type="checkbox" value="eg0" id="mkt-eg0">
                     <span>Exact Goals: 0 Goals</span>
                   </div>
-                  <div class="checkbox-card" data-category="multigoals" onclick="toggleCheckboxCard(this, event)">
+                  <div class="checkbox-card" data-category="multigoals" onclick="toggleCheckboxCard(this, event)" title="Exact Goals: 1 Goal">
                     <input type="checkbox" value="eg1" id="mkt-eg1">
                     <span>Exact Goals: 1 Goal</span>
                   </div>
-                  <div class="checkbox-card" data-category="multigoals" onclick="toggleCheckboxCard(this, event)">
+                  <div class="checkbox-card" data-category="multigoals" onclick="toggleCheckboxCard(this, event)" title="Exact Goals: 2 Goals">
                     <input type="checkbox" value="eg2" id="mkt-eg2">
                     <span>Exact Goals: 2 Goals</span>
                   </div>
-                  <div class="checkbox-card" data-category="multigoals" onclick="toggleCheckboxCard(this, event)">
+                  <div class="checkbox-card" data-category="multigoals" onclick="toggleCheckboxCard(this, event)" title="Exact Goals: 3 Goals">
                     <input type="checkbox" value="eg3" id="mkt-eg3">
                     <span>Exact Goals: 3 Goals</span>
                   </div>
-                  <div class="checkbox-card" data-category="multigoals" onclick="toggleCheckboxCard(this, event)">
+                  <div class="checkbox-card" data-category="multigoals" onclick="toggleCheckboxCard(this, event)" title="Exact Goals: 4+ Goals">
                     <input type="checkbox" value="eg4" id="mkt-eg4">
                     <span>Exact Goals: 4+ Goals</span>
                   </div>
 
                   <!-- BTTS (Both Teams to Score) -->
-                  <div class="checkbox-card selected" data-category="btts" onclick="toggleCheckboxCard(this, event)">
+                  <div class="checkbox-card selected" data-category="btts" onclick="toggleCheckboxCard(this, event)" title="BTTS / GG (Both Score)">
                     <input type="checkbox" checked value="btts" id="mkt-btts">
                     <span>BTTS / GG (Both Score)</span>
                   </div>
-                  <div class="checkbox-card" data-category="btts" onclick="toggleCheckboxCard(this, event)">
+                  <div class="checkbox-card" data-category="btts" onclick="toggleCheckboxCard(this, event)" title="BTTS No / NG">
                     <input type="checkbox" value="btts_no" id="mkt-btts_no">
                     <span>BTTS No / NG</span>
                   </div>
-                  <div class="checkbox-card" data-category="btts" onclick="toggleCheckboxCard(this, event)">
+                  <div class="checkbox-card" data-category="btts" onclick="toggleCheckboxCard(this, event)" title="BTTS - Half Time">
                     <input type="checkbox" value="bttsht" id="mkt-bttsht">
                     <span>BTTS - Half Time</span>
                   </div>
-                  <div class="checkbox-card" data-category="btts" onclick="toggleCheckboxCard(this, event)">
+                  <div class="checkbox-card" data-category="btts" onclick="toggleCheckboxCard(this, event)" title="BTTS - 2nd Half">
                     <input type="checkbox" value="btts2h" id="mkt-btts2h">
                     <span>BTTS - 2nd Half</span>
                   </div>
-                  <div class="checkbox-card" data-category="btts" onclick="toggleCheckboxCard(this, event)">
+                  <div class="checkbox-card" data-category="btts" onclick="toggleCheckboxCard(this, event)" title="BTTS Both Halves">
                     <input type="checkbox" value="btts_both" id="mkt-btts_both">
                     <span>BTTS Both Halves</span>
                   </div>
 
                   <!-- Combos (1X2 + Goals / GG) -->
-                  <div class="checkbox-card" data-category="combo" onclick="toggleCheckboxCard(this, event)">
+                  <div class="checkbox-card" data-category="combo" onclick="toggleCheckboxCard(this, event)" title="1X2 + Over 2.5 Combo">
                     <input type="checkbox" value="combo_1x2_uo" id="mkt-combo_1x2_uo">
                     <span>1X2 + Over 2.5 Combo</span>
                   </div>
-                  <div class="checkbox-card" data-category="combo" onclick="toggleCheckboxCard(this, event)">
+                  <div class="checkbox-card" data-category="combo" onclick="toggleCheckboxCard(this, event)" title="1X2 + Under 2.5 Combo">
                     <input type="checkbox" value="combo_1x2_under" id="mkt-combo_1x2_under">
                     <span>1X2 + Under 2.5 Combo</span>
                   </div>
-                  <div class="checkbox-card" data-category="combo" onclick="toggleCheckboxCard(this, event)">
+                  <div class="checkbox-card" data-category="combo" onclick="toggleCheckboxCard(this, event)" title="1X2 + GG Combo">
                     <input type="checkbox" value="combo_1x2_gg" id="mkt-combo_1x2_gg">
                     <span>1X2 + GG Combo</span>
                   </div>
-                  <div class="checkbox-card" data-category="combo" onclick="toggleCheckboxCard(this, event)">
+                  <div class="checkbox-card" data-category="combo" onclick="toggleCheckboxCard(this, event)" title="Double Chance + Over 2.5">
                     <input type="checkbox" value="combo_dc_uo" id="mkt-combo_dc_uo">
                     <span>Double Chance + Over 2.5</span>
                   </div>
-                  <div class="checkbox-card" data-category="combo" onclick="toggleCheckboxCard(this, event)">
+                  <div class="checkbox-card" data-category="combo" onclick="toggleCheckboxCard(this, event)" title="Double Chance + GG">
                     <input type="checkbox" value="combo_dc_gg" id="mkt-combo_dc_gg">
                     <span>Double Chance + GG</span>
                   </div>
 
                   <!-- Half Time / Full Time (HT/FT) -->
-                  <div class="checkbox-card" data-category="htft" onclick="toggleCheckboxCard(this, event)">
+                  <div class="checkbox-card" data-category="htft" onclick="toggleCheckboxCard(this, event)" title="HT/FT: 1/1 (Home/Home)">
                     <input type="checkbox" value="htft_11" id="mkt-htft_11">
                     <span>HT/FT: 1/1 (Home/Home)</span>
                   </div>
-                  <div class="checkbox-card" data-category="htft" onclick="toggleCheckboxCard(this, event)">
+                  <div class="checkbox-card" data-category="htft" onclick="toggleCheckboxCard(this, event)" title="HT/FT: X/1 (Draw/Home)">
                     <input type="checkbox" value="htft_x1" id="mkt-htft_x1">
                     <span>HT/FT: X/1 (Draw/Home)</span>
                   </div>
-                  <div class="checkbox-card" data-category="htft" onclick="toggleCheckboxCard(this, event)">
+                  <div class="checkbox-card" data-category="htft" onclick="toggleCheckboxCard(this, event)" title="HT/FT: 2/1 (Away/Home)">
                     <input type="checkbox" value="htft_21" id="mkt-htft_21">
                     <span>HT/FT: 2/1 (Away/Home)</span>
                   </div>
-                  <div class="checkbox-card" data-category="htft" onclick="toggleCheckboxCard(this, event)">
+                  <div class="checkbox-card" data-category="htft" onclick="toggleCheckboxCard(this, event)" title="HT/FT: 1/X (Home/Draw)">
                     <input type="checkbox" value="htft_1x" id="mkt-htft_1x">
                     <span>HT/FT: 1/X (Home/Draw)</span>
                   </div>
-                  <div class="checkbox-card" data-category="htft" onclick="toggleCheckboxCard(this, event)">
+                  <div class="checkbox-card" data-category="htft" onclick="toggleCheckboxCard(this, event)" title="HT/FT: X/X (Draw/Draw)">
                     <input type="checkbox" value="htft_xx" id="mkt-htft_xx">
                     <span>HT/FT: X/X (Draw/Draw)</span>
                   </div>
-                  <div class="checkbox-card" data-category="htft" onclick="toggleCheckboxCard(this, event)">
+                  <div class="checkbox-card" data-category="htft" onclick="toggleCheckboxCard(this, event)" title="HT/FT: 2/X (Away/Draw)">
                     <input type="checkbox" value="htft_2x" id="mkt-htft_2x">
                     <span>HT/FT: 2/X (Away/Draw)</span>
                   </div>
-                  <div class="checkbox-card" data-category="htft" onclick="toggleCheckboxCard(this, event)">
+                  <div class="checkbox-card" data-category="htft" onclick="toggleCheckboxCard(this, event)" title="HT/FT: 1/2 (Home/Away)">
                     <input type="checkbox" value="htft_12" id="mkt-htft_12">
                     <span>HT/FT: 1/2 (Home/Away)</span>
                   </div>
-                  <div class="checkbox-card" data-category="htft" onclick="toggleCheckboxCard(this, event)">
+                  <div class="checkbox-card" data-category="htft" onclick="toggleCheckboxCard(this, event)" title="HT/FT: X/2 (Draw/Away)">
                     <input type="checkbox" value="htft_x2" id="mkt-htft_x2">
                     <span>HT/FT: X/2 (Draw/Away)</span>
                   </div>
-                  <div class="checkbox-card" data-category="htft" onclick="toggleCheckboxCard(this, event)">
+                  <div class="checkbox-card" data-category="htft" onclick="toggleCheckboxCard(this, event)" title="HT/FT: 2/2 (Away/Away)">
                     <input type="checkbox" value="htft_22" id="mkt-htft_22">
                     <span>HT/FT: 2/2 (Away/Away)</span>
                   </div>
 
                   <!-- Team Goals & Clean Sheet -->
-                  <div class="checkbox-card" data-category="teamspec" onclick="toggleCheckboxCard(this, event)">
+                  <div class="checkbox-card" data-category="teamspec" onclick="toggleCheckboxCard(this, event)" title="Win Either Half">
                     <input type="checkbox" value="wineither" id="mkt-wineither">
                     <span>Win Either Half</span>
                   </div>
-                  <div class="checkbox-card" data-category="teamspec" onclick="toggleCheckboxCard(this, event)">
+                  <div class="checkbox-card" data-category="teamspec" onclick="toggleCheckboxCard(this, event)" title="Win Both Halves">
                     <input type="checkbox" value="winboth" id="mkt-winboth">
                     <span>Win Both Halves</span>
                   </div>
-                  <div class="checkbox-card" data-category="teamspec" onclick="toggleCheckboxCard(this, event)">
+                  <div class="checkbox-card" data-category="teamspec" onclick="toggleCheckboxCard(this, event)" title="Home Over 0.5 Goals">
                     <input type="checkbox" value="huo05" id="mkt-huo05">
                     <span>Home Over 0.5 Goals</span>
                   </div>
-                  <div class="checkbox-card" data-category="teamspec" onclick="toggleCheckboxCard(this, event)">
+                  <div class="checkbox-card" data-category="teamspec" onclick="toggleCheckboxCard(this, event)" title="Home Over 1.5 Goals">
                     <input type="checkbox" value="huo15" id="mkt-huo15">
                     <span>Home Over 1.5 Goals</span>
                   </div>
-                  <div class="checkbox-card" data-category="teamspec" onclick="toggleCheckboxCard(this, event)">
+                  <div class="checkbox-card" data-category="teamspec" onclick="toggleCheckboxCard(this, event)" title="Away Over 0.5 Goals">
                     <input type="checkbox" value="auo05" id="mkt-auo05">
                     <span>Away Over 0.5 Goals</span>
                   </div>
-                  <div class="checkbox-card" data-category="teamspec" onclick="toggleCheckboxCard(this, event)">
+                  <div class="checkbox-card" data-category="teamspec" onclick="toggleCheckboxCard(this, event)" title="Away Over 1.5 Goals">
                     <input type="checkbox" value="auo15" id="mkt-auo15">
                     <span>Away Over 1.5 Goals</span>
                   </div>
-                  <div class="checkbox-card" data-category="teamspec" onclick="toggleCheckboxCard(this, event)">
+                  <div class="checkbox-card" data-category="teamspec" onclick="toggleCheckboxCard(this, event)" title="Home Clean Sheet">
                     <input type="checkbox" value="hcs" id="mkt-hcs">
                     <span>Home Clean Sheet</span>
                   </div>
-                  <div class="checkbox-card" data-category="teamspec" onclick="toggleCheckboxCard(this, event)">
+                  <div class="checkbox-card" data-category="teamspec" onclick="toggleCheckboxCard(this, event)" title="Away Clean Sheet">
                     <input type="checkbox" value="acs" id="mkt-acs">
                     <span>Away Clean Sheet</span>
                   </div>
-                  <div class="checkbox-card" data-category="teamspec" onclick="toggleCheckboxCard(this, event)">
+                  <div class="checkbox-card" data-category="teamspec" onclick="toggleCheckboxCard(this, event)" title="Home Win to Nil">
                     <input type="checkbox" value="hw2n" id="mkt-hw2n">
                     <span>Home Win to Nil</span>
                   </div>
-                  <div class="checkbox-card" data-category="teamspec" onclick="toggleCheckboxCard(this, event)">
+                  <div class="checkbox-card" data-category="teamspec" onclick="toggleCheckboxCard(this, event)" title="Away Win to Nil">
                     <input type="checkbox" value="aw2n" id="mkt-aw2n">
                     <span>Away Win to Nil</span>
                   </div>
-                  <div class="checkbox-card" data-category="teamspec" onclick="toggleCheckboxCard(this, event)">
+                  <div class="checkbox-card" data-category="teamspec" onclick="toggleCheckboxCard(this, event)" title="First Team to Score">
                     <input type="checkbox" value="first_goal" id="mkt-first_goal">
                     <span>First Team to Score</span>
                   </div>
 
                   <!-- Corners Tips -->
-                  <div class="checkbox-card" data-category="corners" onclick="toggleCheckboxCard(this, event)">
+                  <div class="checkbox-card" data-category="corners" onclick="toggleCheckboxCard(this, event)" title="Total Corners: 6.5">
                     <input type="checkbox" value="c65" id="mkt-c65">
                     <span>Total Corners: 6.5</span>
                   </div>
-                  <div class="checkbox-card" data-category="corners" onclick="toggleCheckboxCard(this, event)">
+                  <div class="checkbox-card" data-category="corners" onclick="toggleCheckboxCard(this, event)" title="Total Corners: 7.5">
                     <input type="checkbox" value="c75" id="mkt-c75">
                     <span>Total Corners: 7.5</span>
                   </div>
-                  <div class="checkbox-card" data-category="corners" onclick="toggleCheckboxCard(this, event)">
+                  <div class="checkbox-card" data-category="corners" onclick="toggleCheckboxCard(this, event)" title="Total Corners: 8.5">
                     <input type="checkbox" value="c85" id="mkt-c85">
                     <span>Total Corners: 8.5</span>
                   </div>
-                  <div class="checkbox-card" data-category="corners" onclick="toggleCheckboxCard(this, event)">
+                  <div class="checkbox-card" data-category="corners" onclick="toggleCheckboxCard(this, event)" title="Total Corners: 9.5">
                     <input type="checkbox" value="c95" id="mkt-c95">
                     <span>Total Corners: 9.5</span>
                   </div>
-                  <div class="checkbox-card" data-category="corners" onclick="toggleCheckboxCard(this, event)">
+                  <div class="checkbox-card" data-category="corners" onclick="toggleCheckboxCard(this, event)" title="Total Corners: 10.5">
                     <input type="checkbox" value="c105" id="mkt-c105">
                     <span>Total Corners: 10.5</span>
                   </div>
-                  <div class="checkbox-card" data-category="corners" onclick="toggleCheckboxCard(this, event)">
+                  <div class="checkbox-card" data-category="corners" onclick="toggleCheckboxCard(this, event)" title="Total Corners: 11.5">
                     <input type="checkbox" value="c115" id="mkt-c115">
                     <span>Total Corners: 11.5</span>
                   </div>
-                  <div class="checkbox-card" data-category="corners" onclick="toggleCheckboxCard(this, event)">
+                  <div class="checkbox-card" data-category="corners" onclick="toggleCheckboxCard(this, event)" title="Total Corners: 12.5">
                     <input type="checkbox" value="c125" id="mkt-c125">
                     <span>Total Corners: 12.5</span>
                   </div>
-                  <div class="checkbox-card" data-category="corners" onclick="toggleCheckboxCard(this, event)">
+                  <div class="checkbox-card" data-category="corners" onclick="toggleCheckboxCard(this, event)" title="1st Half Corners: 4.5">
                     <input type="checkbox" value="c45ht" id="mkt-c45ht">
                     <span>1st Half Corners: 4.5</span>
                   </div>
-                  <div class="checkbox-card" data-category="corners" onclick="toggleCheckboxCard(this, event)">
+                  <div class="checkbox-card" data-category="corners" onclick="toggleCheckboxCard(this, event)" title="Most Corners 1X2">
                     <input type="checkbox" value="c1x2" id="mkt-c1x2">
                     <span>Most Corners 1X2</span>
                   </div>
 
                   <!-- Cards & Bookings -->
-                  <div class="checkbox-card" data-category="cards" onclick="toggleCheckboxCard(this, event)">
+                  <div class="checkbox-card" data-category="cards" onclick="toggleCheckboxCard(this, event)" title="Total Cards: Over 3.5">
                     <input type="checkbox" value="cards35" id="mkt-cards35">
                     <span>Total Cards: Over 3.5</span>
                   </div>
-                  <div class="checkbox-card" data-category="cards" onclick="toggleCheckboxCard(this, event)">
+                  <div class="checkbox-card" data-category="cards" onclick="toggleCheckboxCard(this, event)" title="Total Cards: Over 4.5">
                     <input type="checkbox" value="cards45" id="mkt-cards45">
                     <span>Total Cards: Over 4.5</span>
                   </div>
-                  <div class="checkbox-card" data-category="cards" onclick="toggleCheckboxCard(this, event)">
+                  <div class="checkbox-card" data-category="cards" onclick="toggleCheckboxCard(this, event)" title="Total Cards: Over 5.5">
                     <input type="checkbox" value="cards55" id="mkt-cards55">
                     <span>Total Cards: Over 5.5</span>
                   </div>
-                  <div class="checkbox-card" data-category="cards" onclick="toggleCheckboxCard(this, event)">
+                  <div class="checkbox-card" data-category="cards" onclick="toggleCheckboxCard(this, event)" title="Red Card (Yes/No)">
                     <input type="checkbox" value="redcard" id="mkt-redcard">
                     <span>Red Card (Yes/No)</span>
                   </div>
-                  <div class="checkbox-card" data-category="cards" onclick="toggleCheckboxCard(this, event)">
+                  <div class="checkbox-card" data-category="cards" onclick="toggleCheckboxCard(this, event)" title="Penalty Awarded">
                     <input type="checkbox" value="penalty" id="mkt-penalty">
                     <span>Penalty Awarded</span>
                   </div>
 
                   <!-- Asian / Euro Handicap -->
-                  <div class="checkbox-card" data-category="handicap" onclick="toggleCheckboxCard(this, event)">
+                  <div class="checkbox-card" data-category="handicap" onclick="toggleCheckboxCard(this, event)" title="European Handicap (-1)">
                     <input type="checkbox" value="eh1" id="mkt-eh1">
                     <span>European Handicap (-1)</span>
                   </div>
-                  <div class="checkbox-card" data-category="handicap" onclick="toggleCheckboxCard(this, event)">
+                  <div class="checkbox-card" data-category="handicap" onclick="toggleCheckboxCard(this, event)" title="Asian Handicap (-0.5 / +0.5)">
                     <input type="checkbox" value="ah05" id="mkt-ah05">
                     <span>Asian Handicap (-0.5 / +0.5)</span>
                   </div>
-                  <div class="checkbox-card" data-category="handicap" onclick="toggleCheckboxCard(this, event)">
+                  <div class="checkbox-card" data-category="handicap" onclick="toggleCheckboxCard(this, event)" title="Asian Handicap (-1.5 / +1.5)">
                     <input type="checkbox" value="ah15" id="mkt-ah15">
                     <span>Asian Handicap (-1.5 / +1.5)</span>
                   </div>
@@ -4252,41 +4247,41 @@
               </div>
 
               <!-- Odds range slider -->
-              <div class="form-group" style="margin-top: 12px;">
+              <div class="form-group" style="margin-top: 12px; width: 100%; min-width: 0; box-sizing: border-box;">
                 <label
                   style="font-size: 0.85rem; font-weight: 600; color: var(--text-secondary); margin-bottom: 4px; display: block;">Odds
                   Range per Match: <span id="odds-range-val" style="color: var(--primary); font-weight: 700;">1.20 -
                     2.40</span></label>
-                <div style="display: flex; gap: 12px; align-items: center;">
-                  <span style="font-size: 0.75rem; color: var(--text-muted);">1.20</span>
+                <div style="display: flex; gap: 12px; align-items: center; width: 100%; min-width: 0; box-sizing: border-box;">
+                  <span style="font-size: 0.75rem; color: var(--text-muted); flex-shrink: 0;">1.20</span>
                   <input type="range" id="odds-max-slider" min="1.40" max="20.50" step="0.10" value="2.40"
-                    style="flex-grow: 1; accent-color: var(--primary); cursor: pointer;"
+                    style="flex: 1; min-width: 0; accent-color: var(--primary); cursor: pointer;"
                     oninput="updateOddsSliderVal(this.value)">
-                  <span style="font-size: 0.75rem; color: var(--text-muted);">20.50</span>
+                  <span style="font-size: 0.75rem; color: var(--text-muted); flex-shrink: 0;">20.50</span>
                 </div>
               </div>
 
               <!-- Probabilities interval slider -->
-              <div class="form-group" style="margin-top: 12px;">
+              <div class="form-group" style="margin-top: 12px; width: 100%; min-width: 0; box-sizing: border-box;">
                 <label
                   style="font-size: 0.85rem; font-weight: 600; color: var(--text-secondary); margin-bottom: 4px; display: block;">Probabilities
                   interval : <span id="prob-range-val" style="color: var(--primary); font-weight: 700;">[1% -
                     100%]</span></label>
-                <div style="display: flex; gap: 12px; align-items: center;">
-                  <span style="font-size: 0.75rem; color: var(--text-muted);">1%</span>
+                <div style="display: flex; gap: 12px; align-items: center; width: 100%; min-width: 0; box-sizing: border-box;">
+                  <span style="font-size: 0.75rem; color: var(--text-muted); flex-shrink: 0;">1%</span>
                   <input type="range" id="prob-min-slider" min="1" max="99" value="1"
-                    style="flex-grow: 1; accent-color: var(--primary); cursor: pointer;"
+                    style="flex: 1; min-width: 0; accent-color: var(--primary); cursor: pointer;"
                     oninput="updateProbSliderVal(this.value)">
-                  <span style="font-size: 0.75rem; color: var(--text-muted);">100%</span>
+                  <span style="font-size: 0.75rem; color: var(--text-muted); flex-shrink: 0;">100%</span>
                 </div>
               </div>
 
               <!-- Match Count select -->
-              <div class="form-group" style="margin-top: 12px; display: flex; flex-direction: column; gap: 6px;">
+              <div class="form-group" style="margin-top: 12px; display: flex; flex-direction: column; gap: 6px; width: 100%; min-width: 0; box-sizing: border-box;">
                 <label for="machine-match-count"
                   style="font-size: 0.85rem; font-weight: 600; color: var(--text-secondary);">Number of Matches</label>
                 <select id="machine-match-count"
-                  style="background: var(--bg-dark-accent); border: 1px solid var(--border-color); border-radius: var(--radius-sm); padding: 8px 12px; color: var(--text-primary); outline: none; cursor: pointer;">
+                  style="width: 100%; max-width: 100%; box-sizing: border-box; background: var(--bg-dark-accent); border: 1px solid var(--border-color); border-radius: var(--radius-sm); padding: 8px 12px; color: var(--text-primary); outline: none; cursor: pointer;">
                   <option value="3">3 matches</option>
                   <option value="4" selected>4 matches</option>
                   <option value="5">5 matches</option>
@@ -4304,13 +4299,13 @@
 
               <button type="button" class="btn btn-primary" id="btn-generate-machine-ticket"
                 onclick="generateMachineTicket()"
-                style="margin-top: 16px; width: 100%; touch-action: manipulation; cursor: pointer; position: relative; z-index: 10;">
+                style="margin-top: 16px; width: 100%; max-width: 100%; box-sizing: border-box; touch-action: manipulation; cursor: pointer; position: relative; z-index: 10;">
                 ⚡ Generate Bet Slip
               </button>
 
               <!-- Mobile Quick Ticket Summary Card (Pops right under button on mobile) -->
               <div id="mobile-ticket-quick-card"
-                style="display: none; margin-top: 16px; padding: 14px; background: linear-gradient(135deg, rgba(37, 99, 235, 0.25) 0%, rgba(29, 78, 216, 0.2) 100%); border: 1.5px solid #3b82f6; border-radius: var(--radius-md); box-shadow: 0 0 25px rgba(59, 130, 246, 0.4); text-align: center;">
+                style="display: none; margin-top: 16px; padding: 14px; width: 100%; max-width: 100%; box-sizing: border-box; background: linear-gradient(135deg, rgba(37, 99, 235, 0.25) 0%, rgba(29, 78, 216, 0.2) 100%); border: 1.5px solid #3b82f6; border-radius: var(--radius-md); box-shadow: 0 0 25px rgba(59, 130, 246, 0.4); text-align: center;">
                 <div
                   style="font-size: 0.75rem; color: #60a5fa; font-weight: 800; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 8px;">
                   ⚡ DeepPredict Ticket Generated!</div>
@@ -4344,7 +4339,7 @@
             </div>
 
             <!-- Right Column -->
-            <div style="display: flex; flex-direction: column; gap: 20px;">
+            <div class="machine-right-col">
               <!-- Ticket Preview Output -->
               <div class="machine-ticket-preview">
                 <div class="machine-ticket-header">

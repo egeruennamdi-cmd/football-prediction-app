@@ -6874,13 +6874,13 @@ function generateMachineTicket() {
     let html = "";
     ticketItems.forEach((item) => {
       html += `
-        <div style="display: flex; justify-content: space-between; align-items: center; padding: 10px 12px; background: rgba(255,255,255,0.04); border: 1px solid var(--border-color); border-radius: var(--radius-sm); margin-bottom: 8px; text-align: left;">
-          <div>
-            <div style="font-size: 0.7rem; color: var(--text-muted); text-transform: uppercase;">${item.leagueEmoji} ${item.league}${item.time ? ` • <span style="color: #fbbf24; font-weight: 600;">📅 ${item.time}</span>` : ''}</div>
-            <div style="font-size: 0.85rem; font-weight: 700; color: var(--text-primary); margin: 2px 0;">${item.homeTeam} vs ${item.awayTeam}</div>
-            <div style="font-size: 0.75rem; color: #60a5fa; font-weight: 600;">Prediction: ${item.tip}</div>
+        <div style="display: flex; justify-content: space-between; align-items: center; padding: 10px 12px; background: rgba(255,255,255,0.04); border: 1px solid var(--border-color); border-radius: var(--radius-sm); margin-bottom: 8px; text-align: left; width: 100%; max-width: 100%; min-width: 0; box-sizing: border-box; gap: 12px;">
+          <div style="flex: 1; min-width: 0; overflow: hidden;">
+            <div style="font-size: 0.7rem; color: var(--text-muted); text-transform: uppercase; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${item.leagueEmoji} ${item.league}${item.time ? ` • <span style="color: #fbbf24; font-weight: 600;">📅 ${item.time}</span>` : ''}</div>
+            <div style="font-size: 0.85rem; font-weight: 700; color: var(--text-primary); margin: 2px 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;" title="${item.homeTeam} vs ${item.awayTeam}">${item.homeTeam} vs ${item.awayTeam}</div>
+            <div style="font-size: 0.75rem; color: #60a5fa; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;" title="${item.tip}">Prediction: ${item.tip}</div>
           </div>
-          <div style="font-size: 1.05rem; font-weight: 800; color: var(--secondary); font-family: var(--font-display);">@${item.odds.toFixed(2)}</div>
+          <div style="font-size: 1.05rem; font-weight: 800; color: var(--secondary); font-family: var(--font-display); flex-shrink: 0;">@${item.odds.toFixed(2)}</div>
         </div>
       `;
     });
