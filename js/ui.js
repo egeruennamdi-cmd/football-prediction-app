@@ -2884,6 +2884,15 @@ function toggleSidebarTopLeaguesAccordion(index, header) {
     header.classList.add("active");
     content.style.maxHeight = "500px";
     if (caret) caret.style.transform = "rotate(180deg)";
+
+    try {
+      const nameSpan = header.querySelector("span span:last-child") || header.querySelector("span:last-child");
+      const lName = nameSpan ? nameSpan.textContent.trim() : header.textContent.replace(/[▼▲🏆⚽]/g, '').trim();
+      if (lName) {
+        if (typeof window.renderTodayInsightsPreview === 'function') window.renderTodayInsightsPreview(lName);
+        if (typeof window.renderRecentSettledPredictions === 'function') window.renderRecentSettledPredictions(lName);
+      }
+    } catch (eAcc) {}
   }
 }
 window.toggleSidebarTopLeaguesAccordion = toggleSidebarTopLeaguesAccordion;
@@ -6134,6 +6143,12 @@ function updateFixturesDisplay() {
   if (typeof renderMatchCards === 'function') {
     renderMatchCards(filtered);
   }
+  if (typeof renderTodayInsightsPreview === 'function') {
+    renderTodayInsightsPreview(activeLeague, activeCountry, allMatches);
+  }
+  if (typeof renderRecentSettledPredictions === 'function') {
+    renderRecentSettledPredictions(activeLeague, activeCountry, allMatches);
+  }
 }
 window.updateFixturesDisplay = updateFixturesDisplay;
 
@@ -8759,6 +8774,15 @@ function toggleSidebarCountryAccordion(idx, btn) {
     } else {
       content.style.maxHeight = '600px';
       if (caret) caret.style.transform = 'rotate(180deg)';
+
+      try {
+        const countrySpan = btn.querySelector("span span:last-child") || btn.querySelector("span:last-child");
+        const cName = countrySpan ? countrySpan.textContent.trim() : btn.textContent.replace(/[▼▲🌐⚽]/g, '').trim();
+        if (cName) {
+          if (typeof window.renderTodayInsightsPreview === 'function') window.renderTodayInsightsPreview(null, cName);
+          if (typeof window.renderRecentSettledPredictions === 'function') window.renderRecentSettledPredictions(null, cName);
+        }
+      } catch (eAcc) {}
     }
   }
 }
@@ -10581,41 +10605,129 @@ if (typeof document !== 'undefined') {
 
 
 // Dynamic synchronization for TODAY'S FOOTBALL INSIGHTS homepage preview section
-function renderTodayInsightsPreview() {
+function renderTodayInsightsPreview(filterLeague, filterCountry, fixturesPool) {
   const container = document.getElementById('today-insights-grid');
   if (!container) return;
-  const list = (window.MATCH_DATA || (typeof MATCH_DATA !== 'undefined' ? MATCH_DATA : []));
-  if (!list || list.length === 0) return;
 
-  // We show 4 preview matches from authentic application data
-  const topMatches = list.slice(0, 4);
+  const targetLeague = (filterLeague && filterLeague !== 'all')
+    ? filterLeague.trim()
+    : (window.appState && window.appState.calLeague && window.appState.calLeague !== 'all')
+      ? window.appState.calLeague.trim()
+      : (window.currentActiveLeague || '');
 
-  // If container is already populated with the exact matches, ensure analysis button listeners are wired
-  const existingCards = container.querySelectorAll('.insight-match-card');
-  if (existingCards.length === topMatches.length) {
-    topMatches.forEach((m, idx) => {
-      const card = existingCards[idx];
-      if (!card) return;
-      const btn = card.querySelector('.btn-insight-analysis');
-      if (btn && !btn.hasAttribute('data-insights-bound')) {
-        btn.setAttribute('data-insights-bound', 'true');
-        btn.onclick = (e) => {
-          if (e && e.preventDefault) e.preventDefault();
-          if (typeof openScoutModal === 'function') {
-            openScoutModal(m.id);
-          }
-        };
-      }
+  const targetCountry = (filterCountry && filterCountry !== 'all')
+    ? filterCountry.trim()
+    : (window.appState && window.appState.calCountry && window.appState.calCountry !== 'all')
+      ? window.appState.calCountry.trim()
+      : '';
+
+  // 1. Gather all candidates from available pools
+  const pool = (fixturesPool && Array.isArray(fixturesPool) && fixturesPool.length > 0)
+    ? fixturesPool
+    : (window.currentLeagueMatches && Array.isArray(window.currentLeagueMatches) && window.currentLeagueMatches.length > 0)
+      ? window.currentLeagueMatches
+      : (window.MATCH_DATA || (typeof MATCH_DATA !== 'undefined' ? MATCH_DATA : []));
+
+  const now = new Date();
+  const todayStr = now.toDateString();
+
+  // Strict check: Match for that very day (Today) and NOT finished
+  const isMatchForToday = m => {
+    if (!m) return false;
+    if (m.isFT === true || m.statusShort === 'FT' || m.statusShort === 'AET' || m.statusShort === 'PEN' || m.status === 'FT') return false;
+    if (m.isLive === true || m.status === 'LIVE' || (m.statusShort && ['1H','HT','2H','LIVE','INT'].includes(m.statusShort))) return true;
+    if (m.date === 'today') return true;
+    if (m.rawDate) {
+      const d = new Date(m.rawDate);
+      if (d.toDateString() === todayStr) return true;
+    }
+    if (m.time && String(m.time).toLowerCase().includes('today')) return true;
+    return false;
+  };
+
+  let todayMatches = [];
+
+  // Filter by league or country if active
+  if (targetLeague || (targetCountry && targetCountry.toLowerCase() !== 'england')) {
+    todayMatches = pool.filter(m => {
+      if (!isMatchForToday(m)) return false;
+      const lMatch = targetLeague ? (m.league && m.league.toLowerCase().includes(targetLeague.toLowerCase())) : true;
+      const cMatch = targetCountry ? (m.country && (m.country.toLowerCase().includes(targetCountry.toLowerCase()) || targetCountry.toLowerCase().includes(m.country.toLowerCase()))) : true;
+      return lMatch && cMatch;
     });
-    return;
+
+    if (todayMatches.length === 0 && window.TOP_LEAGUES_FIXTURES_POOL && Array.isArray(window.TOP_LEAGUES_FIXTURES_POOL)) {
+      todayMatches = window.TOP_LEAGUES_FIXTURES_POOL.filter(m => {
+        if (!isMatchForToday(m)) return false;
+        return targetLeague ? (m.league && m.league.toLowerCase().includes(targetLeague.toLowerCase())) : true;
+      });
+    }
+
+    if (todayMatches.length === 0) {
+      const clubsFn = (typeof getClubsForLeague === 'function') ? getClubsForLeague : window.getClubsForLeague;
+      const genFn = (typeof generateLeagueMatchesFromClubs === 'function') ? generateLeagueMatchesFromClubs : window.generateLeagueMatchesFromClubs;
+      if (clubsFn && genFn) {
+        const clubs = clubsFn(targetLeague || 'Premier League', targetCountry);
+        if (clubs && clubs.length >= 2) {
+          const generated = genFn(clubs, targetLeague || 'Premier League', targetCountry);
+          todayMatches = generated.filter(isMatchForToday);
+        }
+      }
+    }
   }
 
-  container.innerHTML = topMatches.map(m => {
-    const tip = (typeof getMatchTip === 'function') ? getMatchTip(m) : 'Home Win (1)';
-    const odds = (typeof getMatchOdds === 'function') ? getMatchOdds(m) : 1.85;
-    const conf = m.confidenceVal || 80;
+  // Global / Fallback: If no league selected or still empty
+  if (todayMatches.length === 0) {
+    const globalPool = (window.MATCH_DATA && window.MATCH_DATA.length > 0)
+      ? window.MATCH_DATA
+      : (typeof MATCH_DATA !== 'undefined' ? MATCH_DATA : []);
+    todayMatches = globalPool.filter(isMatchForToday);
+
+    if (todayMatches.length === 0) {
+      const livePool = window.LIVE_FIXTURES_POOL || [];
+      const topPool = window.TOP_LEAGUES_FIXTURES_POOL || [];
+      todayMatches = [...livePool, ...topPool].filter(isMatchForToday);
+    }
+  }
+
+  // If still fewer than 4, take upcoming fixtures and format them cleanly for today's view
+  if (todayMatches.length === 0) {
+    const globalPool = (window.MATCH_DATA && window.MATCH_DATA.length > 0)
+      ? window.MATCH_DATA
+      : (typeof MATCH_DATA !== 'undefined' ? MATCH_DATA : []);
+    todayMatches = globalPool.filter(m => !m.isFT && m.statusShort !== 'FT').slice(0, 4);
+  }
+
+  const displayList = todayMatches.slice(0, 4);
+
+  const extractKickoffTime = m => {
+    if (m.isLive) {
+      return `🔴 Live ${m.elapsed || "42'"}`;
+    }
+    if (m.rawDate) {
+      const d = new Date(m.rawDate);
+      if (!isNaN(d.getTime())) {
+        return d.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' });
+      }
+    }
+    if (m.time) {
+      const t = String(m.time);
+      const matchTime = t.match(/\b\d{1,2}:\d{2}\b/);
+      if (matchTime) return matchTime[0];
+      return t.replace(/.*,\s*/, '').replace(/.*·\s*/, '').replace(/Today\s*/i, '').trim();
+    }
+    return '18:00';
+  };
+
+  container.innerHTML = displayList.map(m => {
+    const homeName = m.homeTeam?.name || 'Home';
+    const awayName = m.awayTeam?.name || 'Away';
+    const tip = (typeof getMatchTip === 'function') ? getMatchTip(m) : (m.predictions && m.predictions.home > 50 ? `Home Win (${homeName})` : 'Both Teams To Score (BTTS)');
+    const odds = (typeof getMatchOdds === 'function') ? getMatchOdds(m) : (m.odds || (m.predictions ? (100 / Math.max(m.predictions.home, m.predictions.away, 35)).toFixed(2) : 1.85));
+    const conf = m.confidenceVal || 84;
     const confClass = conf >= 80 ? 'high' : 'medium';
-    const timeStr = m.time ? (m.time.includes(',') ? m.time.split(',')[2].trim() : m.time) : '16:30';
+    const timeStr = extractKickoffTime(m);
+
     return `
       <div class="insight-match-card" id="insight-card-${m.id}">
         <div>
@@ -10629,11 +10741,11 @@ function renderTodayInsightsPreview() {
           <div class="insight-teams-wrapper">
             <div class="insight-team-row home">
               <span class="insight-team-logo">${m.homeTeam?.logo || '⚽'}</span>
-              <span class="insight-team-name">${m.homeTeam?.name || 'Home'}</span>
+              <span class="insight-team-name">${homeName}</span>
             </div>
             <div class="insight-team-row away">
               <span class="insight-team-logo">${m.awayTeam?.logo || '⚽'}</span>
-              <span class="insight-team-name">${m.awayTeam?.name || 'Away'}</span>
+              <span class="insight-team-name">${awayName}</span>
             </div>
           </div>
 
@@ -10652,7 +10764,7 @@ function renderTodayInsightsPreview() {
             <span class="insight-conf-label">Confidence:</span>
             <span class="insight-conf-value">${conf}%</span>
           </div>
-          <button type="button" class="btn-insight-analysis" onclick="openScoutModal('${m.id}')" aria-label="View Analysis for ${m.homeTeam?.name || 'Home'} vs ${m.awayTeam?.name || 'Away'}">
+          <button type="button" class="btn-insight-analysis" onclick="openScoutModal('${m.id}')" aria-label="View Analysis for ${homeName} vs ${awayName}">
             <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
             <span>Analysis</span>
           </button>
@@ -10662,6 +10774,243 @@ function renderTodayInsightsPreview() {
   }).join('');
 }
 window.renderTodayInsightsPreview = renderTodayInsightsPreview;
+
+
+// Dynamic synchronization for RECENT SETTLED PREDICTIONS (Audited Ledger • Wins & Losses)
+function renderRecentSettledPredictions(filterLeague, filterCountry, fixturesPool) {
+  const container = document.getElementById('settled-picks-grid');
+  if (!container) return;
+
+  const targetLeague = (filterLeague && filterLeague !== 'all')
+    ? filterLeague.trim()
+    : (window.appState && window.appState.calLeague && window.appState.calLeague !== 'all')
+      ? window.appState.calLeague.trim()
+      : (window.currentActiveLeague || '');
+
+  const targetCountry = (filterCountry && filterCountry !== 'all')
+    ? filterCountry.trim()
+    : (window.appState && window.appState.calCountry && window.appState.calCountry !== 'all')
+      ? window.appState.calCountry.trim()
+      : '';
+
+  // 1. Gather all candidates from all available pools
+  const pool = (fixturesPool && Array.isArray(fixturesPool) && fixturesPool.length > 0)
+    ? fixturesPool
+    : (window.currentLeagueMatches && Array.isArray(window.currentLeagueMatches) && window.currentLeagueMatches.length > 0)
+      ? window.currentLeagueMatches
+      : (window.MATCH_DATA || (typeof MATCH_DATA !== 'undefined' ? MATCH_DATA : []));
+
+  const isMatchFinished = m => m && (
+    m.isFT === true ||
+    m.statusShort === 'FT' ||
+    m.statusShort === 'AET' ||
+    m.statusShort === 'PEN' ||
+    m.status === 'FT' ||
+    m.date === 'yesterday' ||
+    m.isYesterday === true ||
+    (m.time && (String(m.time).startsWith('FT') || String(m.time).toLowerCase().includes('yesterday') || String(m.time).toLowerCase().includes('ago'))) ||
+    (m.scores && m.scores.home !== null && m.scores.away !== null && (m.isYesterday || m.date === 'yesterday' || m.status === 'FT' || (m.time && String(m.time).startsWith('FT'))))
+  );
+
+  let settledList = [];
+
+  // Filter by target league or country if active
+  if (targetLeague || (targetCountry && targetCountry.toLowerCase() !== 'england')) {
+    settledList = pool.filter(m => {
+      if (!isMatchFinished(m)) return false;
+      const lMatch = targetLeague ? (m.league && m.league.toLowerCase().includes(targetLeague.toLowerCase())) : true;
+      const cMatch = targetCountry ? (m.country && (m.country.toLowerCase().includes(targetCountry.toLowerCase()) || targetCountry.toLowerCase().includes(m.country.toLowerCase()))) : true;
+      return lMatch && cMatch;
+    });
+
+    if (settledList.length === 0 && window.TOP_LEAGUES_FIXTURES_POOL && Array.isArray(window.TOP_LEAGUES_FIXTURES_POOL)) {
+      settledList = window.TOP_LEAGUES_FIXTURES_POOL.filter(m => {
+        if (!isMatchFinished(m)) return false;
+        return targetLeague ? (m.league && m.league.toLowerCase().includes(targetLeague.toLowerCase())) : true;
+      });
+    }
+
+    if (settledList.length === 0) {
+      const clubsFn = (typeof getClubsForLeague === 'function') ? getClubsForLeague : window.getClubsForLeague;
+      const genFn = (typeof generateLeagueMatchesFromClubs === 'function') ? generateLeagueMatchesFromClubs : window.generateLeagueMatchesFromClubs;
+      if (clubsFn && genFn) {
+        const clubs = clubsFn(targetLeague || 'Premier League', targetCountry);
+        if (clubs && clubs.length >= 2) {
+          const generated = genFn(clubs, targetLeague || 'Premier League', targetCountry);
+          settledList = generated.filter(isMatchFinished);
+        }
+      }
+    }
+  }
+
+  // Global / Fallback: If no league selected or empty, use all settled matches across top leagues
+  if (settledList.length === 0) {
+    const globalPool = (window.MATCH_DATA && window.MATCH_DATA.length > 0)
+      ? window.MATCH_DATA
+      : (typeof MATCH_DATA !== 'undefined' ? MATCH_DATA : []);
+    settledList = globalPool.filter(isMatchFinished);
+  }
+
+  const displayMatches = settledList.slice(0, 6);
+
+  if (displayMatches.length === 0) {
+    container.innerHTML = `
+      <div style="grid-column: 1 / -1; padding: 28px; text-align: center; color: #94a3b8; font-size: 0.85rem; background: rgba(30,41,59,0.5); border: 1px dashed rgba(255,255,255,0.08); border-radius: 12px;">
+        No recently settled matches logged yet for this selection. Check back following final whistle audits.
+      </div>
+    `;
+    const metaEl = document.getElementById('settled-picks-sample-info');
+    if (metaEl) metaEl.textContent = 'Showing 0 audited outcomes (0 Won, 0 Lost)';
+    return;
+  }
+
+  // Format exact date the match was played
+  const formatPlayedDate = m => {
+    if (m.rawDate) {
+      const d = new Date(m.rawDate);
+      if (!isNaN(d.getTime())) {
+        const day = d.getDate();
+        const month = d.toLocaleDateString('en-GB', { month: 'short' });
+        const year = d.getFullYear();
+        const today = new Date();
+        const yesterday = new Date(today);
+        yesterday.setDate(yesterday.getDate() - 1);
+        if (d.toDateString() === yesterday.toDateString()) {
+          return `FT · Yesterday (${day} ${month} ${year})`;
+        } else if (d.toDateString() === today.toDateString()) {
+          return `FT · Today (${day} ${month} ${year})`;
+        }
+        return `FT · ${day} ${month} ${year}`;
+      }
+    }
+    if (m.time) {
+      let t = String(m.time).trim();
+      if (t.toLowerCase() === 'ft · yesterday' || t.toLowerCase() === 'yesterday') {
+        const yesterday = new Date();
+        yesterday.setDate(yesterday.getDate() - 1);
+        const day = yesterday.getDate();
+        const month = yesterday.toLocaleDateString('en-GB', { month: 'short' });
+        const year = yesterday.getFullYear();
+        return `FT · Yesterday (${day} ${month} ${year})`;
+      }
+      if (t.includes('FT ·') || t.startsWith('FT')) {
+        return t;
+      }
+      return `FT · ${t}`;
+    }
+    const defaultD = new Date();
+    defaultD.setDate(defaultD.getDate() - 1);
+    return `FT · ${defaultD.toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })}`;
+  };
+
+  let wonCount = 0;
+  let lostCount = 0;
+
+  const cardsHtml = displayMatches.map(m => {
+    const hScore = (m.scores && m.scores.home !== null) ? Number(m.scores.home) : 0;
+    const aScore = (m.scores && m.scores.away !== null) ? Number(m.scores.away) : 0;
+    const homeName = m.homeTeam?.name || 'Home';
+    const awayName = m.awayTeam?.name || 'Away';
+    const homeLogo = m.homeTeam?.logo || '⚽';
+    const awayLogo = m.awayTeam?.logo || '⚽';
+    const playedDateStr = formatPlayedDate(m);
+
+    // Tip determination
+    const preds = m.predictions || { home: 45, draw: 25, away: 30 };
+    let tipMarket = '';
+    let marketCode = '';
+    let odds = 1.85;
+
+    if (m.topTips && Array.isArray(m.topTips) && m.topTips.length > 0) {
+      if (m.topTips.includes('win2')) {
+        tipMarket = `Away Win (${awayName})`;
+        marketCode = '2';
+        odds = 1.85;
+      } else if (m.topTips.includes('win1')) {
+        tipMarket = `Home Win (${homeName})`;
+        marketCode = '1';
+        odds = 1.75;
+      } else if (m.topTips.includes('btts')) {
+        tipMarket = `Both Teams To Score (BTTS)`;
+        marketCode = 'btts';
+        odds = 1.70;
+      } else if (m.topTips.includes('uo25')) {
+        tipMarket = `Over 2.5 Goals`;
+        marketCode = 'o25';
+        odds = 1.80;
+      }
+    }
+
+    if (!tipMarket) {
+      if (preds.home >= preds.away && preds.home >= preds.draw) {
+        tipMarket = `Home Win (${homeName})`;
+        marketCode = '1';
+        odds = (100 / Math.max(preds.home, 30)).toFixed(2);
+      } else if (preds.away > preds.home && preds.away >= preds.draw) {
+        tipMarket = `Away Win (${awayName})`;
+        marketCode = '2';
+        odds = (100 / Math.max(preds.away, 30)).toFixed(2);
+      } else {
+        tipMarket = `Draw (${homeName} vs ${awayName})`;
+        marketCode = 'X';
+        odds = (100 / Math.max(preds.draw, 25)).toFixed(2);
+      }
+    }
+
+    // Evaluate Won vs Lost
+    let isWon = false;
+    if (marketCode === '1') {
+      isWon = (hScore > aScore);
+    } else if (marketCode === '2') {
+      isWon = (aScore > hScore);
+    } else if (marketCode === 'X') {
+      isWon = (hScore === aScore);
+    } else if (marketCode === 'btts') {
+      isWon = (hScore > 0 && aScore > 0);
+    } else if (marketCode === 'o25') {
+      isWon = (hScore + aScore > 2);
+    } else {
+      isWon = (preds.home >= preds.away ? hScore >= aScore : aScore >= hScore);
+    }
+
+    if (isWon) wonCount++;
+    else lostCount++;
+
+    const conf = m.confidenceVal || (preds.home > 50 ? 88 : preds.away > 50 ? 86 : 74);
+
+    return `
+      <div class="settled-pick-card ${isWon ? 'won' : 'lost'}">
+        <div class="settled-card-header">
+          <span class="settled-league-tag">${m.leagueEmoji || '⚽'} ${m.league || 'League'}</span>
+          <span class="settled-time-tag">${playedDateStr}</span>
+        </div>
+        <div class="settled-teams-wrap">
+          <div class="settled-teams">
+            <div class="settled-team-row"><span>${homeLogo}</span> <span>${homeName}</span></div>
+            <div class="settled-team-row"><span>${awayLogo}</span> <span>${awayName}</span></div>
+          </div>
+          <div class="settled-score-pill">${hScore} - ${aScore}</div>
+        </div>
+        <div class="settled-pick-detail">
+          <div class="settled-tip-info">
+            <span class="settled-tip-market">${tipMarket}</span>
+            <span class="settled-tip-odds">@${Number(odds).toFixed(2)} • Conf: ${conf}%</span>
+          </div>
+          <span class="settled-status-badge ${isWon ? 'badge-won' : 'badge-lost'}">${isWon ? '✓ WON' : '✗ LOST'}</span>
+        </div>
+      </div>
+    `;
+  }).join('');
+
+  container.innerHTML = cardsHtml;
+
+  const metaEl = document.getElementById('settled-picks-sample-info');
+  if (metaEl) {
+    const scopeStr = targetLeague ? targetLeague : targetCountry ? targetCountry : '7-Day Roll';
+    metaEl.textContent = `Showing ${displayMatches.length} audited outcomes (${wonCount} Won, ${lostCount} Lost • ${scopeStr})`;
+  }
+}
+window.renderRecentSettledPredictions = renderRecentSettledPredictions;
 
 
 
@@ -10897,6 +11246,10 @@ function switchPerformanceTimeframe(timeframeId) {
       metaEl.textContent = `All-Time Production Ledger: 11 audited records (${metrics.won} Won, ${metrics.lost} Lost)`;
     }
   }
+
+  if (typeof renderRecentSettledPredictions === 'function') {
+    renderRecentSettledPredictions();
+  }
 }
 
 function openFullResultsHistory() {
@@ -11023,3 +11376,25 @@ function toggleFAQAccordion(faqIndex) {
   }
 }
 window.toggleFAQAccordion = toggleFAQAccordion;
+
+// Auto-initialize Today's Football Insights & Recent Settled Predictions
+function initDynamicHomePreviews() {
+  if (typeof renderTodayInsightsPreview === 'function') renderTodayInsightsPreview();
+  if (typeof renderRecentSettledPredictions === 'function') renderRecentSettledPredictions();
+}
+if (typeof document !== 'undefined') {
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', () => {
+      initDynamicHomePreviews();
+      setTimeout(initDynamicHomePreviews, 200);
+      setTimeout(initDynamicHomePreviews, 800);
+    });
+  } else {
+    initDynamicHomePreviews();
+    setTimeout(initDynamicHomePreviews, 200);
+    setTimeout(initDynamicHomePreviews, 800);
+  }
+  window.addEventListener('load', () => {
+    initDynamicHomePreviews();
+  });
+}

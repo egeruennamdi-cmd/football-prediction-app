@@ -635,6 +635,12 @@
     if (typeof window.renderMatchCards === 'function') {
       window.renderMatchCards(matches);
     }
+    if (typeof window.renderTodayInsightsPreview === 'function') {
+      window.renderTodayInsightsPreview(leagueName, countryName, matches);
+    }
+    if (typeof window.renderRecentSettledPredictions === 'function') {
+      window.renderRecentSettledPredictions(leagueName, countryName, matches);
+    }
     setTitle(displayTitle, 'live', matches.length);
   }
 
@@ -652,6 +658,12 @@
       ? MATCH_DATA : (window.MATCH_DATA || []);
     ensureVisible();
     if (typeof window.renderMatchCards === 'function') window.renderMatchCards(all);
+    if (typeof window.renderTodayInsightsPreview === 'function') {
+      window.renderTodayInsightsPreview();
+    }
+    if (typeof window.renderRecentSettledPredictions === 'function') {
+      window.renderRecentSettledPredictions();
+    }
     const title = document.getElementById('matches-section-title');
     if (title) title.innerHTML = `All Match Predictions <span style="font-size:.75rem;color:var(--text-muted);margin-left:6px;">(${all.length} fixtures)</span>`;
     document.querySelectorAll('.sidebar-league-btn').forEach(b => b.classList.remove('active'));
@@ -680,6 +692,13 @@
       const initialMatches = generateLeagueMatchesFromClubs(localClubs, leagueName, resolvedCountry);
       window.currentLeagueMatches = initialMatches;
       window.MATCH_DATA = initialMatches;
+    }
+
+    if (typeof window.renderTodayInsightsPreview === 'function') {
+      window.renderTodayInsightsPreview(leagueName, resolvedCountry, window.currentLeagueMatches);
+    }
+    if (typeof window.renderRecentSettledPredictions === 'function') {
+      window.renderRecentSettledPredictions(leagueName, resolvedCountry, window.currentLeagueMatches);
     }
 
     // Synchronize Top Filter Selectors so subsequent calendar/date clicks respect the chosen country
@@ -767,6 +786,10 @@
       });
       if (allUpcoming.length > 0) {
         window.TOP_LEAGUES_FIXTURES_POOL = allUpcoming;
+        if (!window.currentLeagueMatches) {
+          if (typeof window.renderTodayInsightsPreview === 'function') window.renderTodayInsightsPreview();
+          if (typeof window.renderRecentSettledPredictions === 'function') window.renderRecentSettledPredictions();
+        }
       }
     } catch (e2) {
       console.debug('[LiveFixtures] Top leagues prefetch:', e2.message);

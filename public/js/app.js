@@ -5720,6 +5720,12 @@ function updateFixturesDisplay() {
   if (typeof renderMatchCards === 'function') {
     renderMatchCards(filtered);
   }
+  if (typeof renderTodayInsightsPreview === 'function') {
+    renderTodayInsightsPreview(activeLeague, activeCountry, allMatches);
+  }
+  if (typeof renderRecentSettledPredictions === 'function') {
+    renderRecentSettledPredictions(activeLeague, activeCountry, allMatches);
+  }
 }
 window.updateFixturesDisplay = updateFixturesDisplay;
 
@@ -8394,6 +8400,15 @@ function toggleSidebarTopLeaguesAccordion(index, header) {
     header.classList.add("active");
     content.style.maxHeight = "500px";
     if (caret) caret.style.transform = "rotate(180deg)";
+
+    try {
+      const nameSpan = header.querySelector("span span:last-child") || header.querySelector("span:last-child");
+      const lName = nameSpan ? nameSpan.textContent.trim() : header.textContent.replace(/[▼▲🏆⚽]/g, '').trim();
+      if (lName) {
+        if (typeof window.renderTodayInsightsPreview === 'function') window.renderTodayInsightsPreview(lName);
+        if (typeof window.renderRecentSettledPredictions === 'function') window.renderRecentSettledPredictions(lName);
+      }
+    } catch (eAcc) {}
   }
 }
 window.toggleSidebarTopLeaguesAccordion = toggleSidebarTopLeaguesAccordion;
@@ -8765,6 +8780,15 @@ function toggleSidebarCountryAccordion(idx, btn) {
     } else {
       content.style.maxHeight = '600px';
       if (caret) caret.style.transform = 'rotate(180deg)';
+
+      try {
+        const countrySpan = btn.querySelector("span span:last-child") || btn.querySelector("span:last-child");
+        const cName = countrySpan ? countrySpan.textContent.trim() : btn.textContent.replace(/[▼▲🌐⚽]/g, '').trim();
+        if (cName) {
+          if (typeof window.renderTodayInsightsPreview === 'function') window.renderTodayInsightsPreview(null, cName);
+          if (typeof window.renderRecentSettledPredictions === 'function') window.renderRecentSettledPredictions(null, cName);
+        }
+      } catch (eAcc) {}
     }
   }
 }
@@ -9877,3 +9901,19 @@ function toggleWatchlist(matchId, event) {
   } catch(e) {}
 }
 window.toggleWatchlist = toggleWatchlist;
+
+// Ensure renderTodayInsightsPreview & renderRecentSettledPredictions are accessible from app.js context
+if (typeof renderTodayInsightsPreview === 'undefined') {
+  function renderTodayInsightsPreview(filterLeague, filterCountry, fixturesPool) {
+    if (typeof window.renderTodayInsightsPreview === 'function' && window.renderTodayInsightsPreview !== renderTodayInsightsPreview) {
+      return window.renderTodayInsightsPreview(filterLeague, filterCountry, fixturesPool);
+    }
+  }
+}
+if (typeof renderRecentSettledPredictions === 'undefined') {
+  function renderRecentSettledPredictions(filterLeague, filterCountry, fixturesPool) {
+    if (typeof window.renderRecentSettledPredictions === 'function' && window.renderRecentSettledPredictions !== renderRecentSettledPredictions) {
+      return window.renderRecentSettledPredictions(filterLeague, filterCountry, fixturesPool);
+    }
+  }
+}
