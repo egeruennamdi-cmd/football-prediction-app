@@ -1304,7 +1304,63 @@ function toggleCheckboxCard(card, event) {
       card.classList.remove("selected");
     }
   }
+
+  if (typeof updateMachineSelectedCount === 'function') {
+    updateMachineSelectedCount();
+  }
 }
+
+function updateMachineSelectedCount() {
+  const container = document.getElementById('machine-markets-grid') || document.querySelector('#tool-machine .form-checkbox-group');
+  if (!container) return;
+  const totalChecked = container.querySelectorAll('input[type="checkbox"]:checked').length;
+  const countBadge = document.getElementById('machine-selected-count');
+  if (countBadge) {
+    countBadge.textContent = totalChecked + ' Selected';
+  }
+}
+window.updateMachineSelectedCount = updateMachineSelectedCount;
+
+function selectMachineAllMarkets(selectState) {
+  const container = document.getElementById('machine-markets-grid') || document.querySelector('#tool-machine .form-checkbox-group');
+  if (!container) return;
+  const cards = container.querySelectorAll('.checkbox-card');
+  cards.forEach(card => {
+    if (card.style.display !== 'none') {
+      const cb = card.querySelector('input[type="checkbox"]');
+      if (cb) {
+        cb.checked = !!selectState;
+        if (selectState) {
+          card.classList.add('selected');
+        } else {
+          card.classList.remove('selected');
+        }
+      }
+    }
+  });
+  updateMachineSelectedCount();
+}
+window.selectMachineAllMarkets = selectMachineAllMarkets;
+
+function filterMachineMarketCategory(category, chipBtn) {
+  const bar = document.getElementById('machine-category-chips-bar');
+  if (bar && chipBtn) {
+    bar.querySelectorAll('button').forEach(b => b.classList.remove('active'));
+    chipBtn.classList.add('active');
+  }
+  const container = document.getElementById('machine-markets-grid') || document.querySelector('#tool-machine .form-checkbox-group');
+  if (!container) return;
+  const cards = container.querySelectorAll('.checkbox-card');
+  cards.forEach(card => {
+    const cardCat = card.getAttribute('data-category');
+    if (!category || category === 'all' || cardCat === category) {
+      card.style.display = 'flex';
+    } else {
+      card.style.display = 'none';
+    }
+  });
+}
+window.filterMachineMarketCategory = filterMachineMarketCategory;
 
 // Switch between tools in DeepPredict Betting Suite
 window.switchTool = function switchTool(toolId, btn, skipRouterPush) {
@@ -6706,11 +6762,20 @@ function generateMachineTicket() {
     const maxOddsEl = document.getElementById("odds-max-slider");
     const maxOddsCap = maxOddsEl ? parseFloat(maxOddsEl.value) || 2.40 : 2.40;
 
-    // 4. Market options pool
-    const marketOptions = [
-      "Home Win (1)", "Over 1.5 Goals", "Both Teams To Score (BTTS)",
-      "Double Chance (1X)", "Away Win (2)", "Under 3.5 Goals", "Over 2.5 Goals", "Draw No Bet (1)"
+    // 4. Resolve selected markets dynamically from the checkboxes
+    const checkedBoxes = Array.from(document.querySelectorAll("#tool-machine .form-checkbox-group .checkbox-card input[type='checkbox']:checked"));
+    const selectedMarketLabels = checkedBoxes.map(cb => {
+      const card = cb.closest('.checkbox-card');
+      const span = card ? card.querySelector('span') : null;
+      return span ? span.textContent.trim() : cb.value;
+    }).filter(Boolean);
+
+    const fallbackMarketOptions = [
+      "1X2: Home Win (1)", "Under/Over: 1.5", "BTTS / GG (Both Score)",
+      "Double Chance: 1X", "1X2: Away Win (2)", "Under/Over: 3.5", "Under/Over: 2.5", "Draw No Bet (DNB)"
     ];
+
+    const marketOptions = selectedMarketLabels.length > 0 ? selectedMarketLabels : fallbackMarketOptions;
 
     const ticketItems = [];
     let totalOdds = 1.0;

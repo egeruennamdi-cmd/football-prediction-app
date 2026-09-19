@@ -6713,11 +6713,20 @@ function generateMachineTicket() {
     const maxOddsEl = document.getElementById("odds-max-slider");
     const maxOddsCap = maxOddsEl ? parseFloat(maxOddsEl.value) || 2.40 : 2.40;
 
-    // 4. Market options pool
-    const marketOptions = [
-      "Home Win (1)", "Over 1.5 Goals", "Both Teams To Score (BTTS)",
-      "Double Chance (1X)", "Away Win (2)", "Under 3.5 Goals", "Over 2.5 Goals", "Draw No Bet (1)"
+    // 4. Resolve selected markets dynamically from the checkboxes
+    const checkedBoxes = Array.from(document.querySelectorAll("#tool-machine .form-checkbox-group .checkbox-card input[type='checkbox']:checked"));
+    const selectedMarketLabels = checkedBoxes.map(cb => {
+      const card = cb.closest('.checkbox-card');
+      const span = card ? card.querySelector('span') : null;
+      return span ? span.textContent.trim() : cb.value;
+    }).filter(Boolean);
+
+    const fallbackMarketOptions = [
+      "1X2: Home Win (1)", "Under/Over: 1.5", "BTTS / GG (Both Score)",
+      "Double Chance: 1X", "1X2: Away Win (2)", "Under/Over: 3.5", "Under/Over: 2.5", "Draw No Bet (DNB)"
     ];
+
+    const marketOptions = selectedMarketLabels.length > 0 ? selectedMarketLabels : fallbackMarketOptions;
 
     const ticketItems = [];
     let totalOdds = 1.0;
