@@ -1986,6 +1986,11 @@
               </div>
 
               <!-- Action Buttons -->
+              <button type="button" id="founder-vip-manage-btn" onclick="window.openVipFeatureManager()" class="btn btn-secondary founder-vip-manage-btn"
+                style="font-size: 0.78rem; padding: 8px 16px; font-weight: 800; display: flex; align-items: center; gap: 6px; background: rgba(168,85,247,0.18); border: 1.5px solid rgba(168,85,247,0.55); color: #d8b4fe; border-radius: 20px; cursor: pointer; box-shadow: 0 2px 12px rgba(168,85,247,0.25); transition: all 0.2s ease;"
+                title="Configure VIP-Protected Features & Access Gating">
+                <span style="font-size: 0.9rem;">⚙️</span> <span>Manage VIP Features</span>
+              </button>
               <a href="/dashboard" onclick="if(typeof navigateTo==='function'){navigateTo('/dashboard');return false;}" class="btn btn-secondary founder-to-customer-btn" style="font-size: 0.78rem; padding: 8px 14px; font-weight: 700; display: flex; align-items: center; gap: 6px; background: rgba(59,130,246,0.15); border: 1px solid rgba(59,130,246,0.4); color: #60a5fa; border-radius: 10px; cursor: pointer; text-decoration: none;" title="Switch to Customer Command Center">
                 👤 Customer Dashboard
               </a>
@@ -2701,8 +2706,58 @@
           </div>
         </div>
 
+        <!-- SECTION 13: ⚙️ VIP FEATURE GATING & ACCESS CONTROL HUB -->
+        <div class="glass-card" style="background: #0f172a; border: 1.5px solid rgba(168,85,247,0.35); border-radius: 18px; margin-top: 24px; overflow: hidden; box-shadow: 0 10px 30px rgba(0,0,0,0.5), 0 0 25px rgba(168,85,247,0.15);">
+          <!-- Section Header -->
+          <div style="padding: 20px 22px; border-bottom: 1px solid rgba(255,255,255,0.08); display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 14px; background: linear-gradient(135deg, rgba(88,28,135,0.25) 0%, rgba(15,23,42,0.85) 100%);">
+            <div style="display: flex; align-items: center; gap: 12px;">
+              <span style="font-size: 1.5rem; background: rgba(168,85,247,0.18); border: 1.5px solid rgba(168,85,247,0.5); border-radius: 12px; padding: 6px 10px;">⚙️</span>
+              <div>
+                <div style="display: flex; align-items: center; gap: 8px;">
+                  <h3 style="margin: 0; font-size: 1.15rem; font-weight: 900; color: #ffffff;">VIP Feature Gating & Access Control Hub</h3>
+                  <span style="background: rgba(168,85,247,0.25); color: #d8b4fe; border: 1px solid rgba(168,85,247,0.5); font-size: 0.65rem; font-weight: 900; padding: 2px 7px; border-radius: 20px;">LIVE GATING</span>
+                </div>
+                <span style="font-size: 0.74rem; color: #94a3b8; margin-top: 2px; display: block;">Configure in real-time which platform tools require an active VIP pass</span>
+              </div>
+            </div>
+
+            <!-- Stats Pills & Controls -->
+            <div style="display: flex; align-items: center; flex-wrap: wrap; gap: 8px;">
+              <div id="founder-vip-stats-pills" style="display: flex; align-items: center; gap: 6px;">
+                <!-- Populated dynamically by renderFounderVipSection() -->
+              </div>
+              <div style="display: flex; gap: 6px; margin-left: 6px;">
+                <button type="button" onclick="window.batchToggleVipFeatures(true)" style="background: rgba(16,185,129,0.15); border: 1px solid rgba(16,185,129,0.4); color: #34d399; font-weight: 800; font-size: 0.72rem; padding: 6px 10px; border-radius: 8px; cursor: pointer;" title="Set all tools to require VIP">
+                  👑 All VIP
+                </button>
+                <button type="button" onclick="window.batchToggleVipFeatures(false)" style="background: rgba(239,68,68,0.15); border: 1px solid rgba(239,68,68,0.4); color: #f87171; font-weight: 800; font-size: 0.72rem; padding: 6px 10px; border-radius: 8px; cursor: pointer;" title="Set all tools to free">
+                  🔓 All Free
+                </button>
+                <button type="button" onclick="window.resetVipFeaturesToDefault()" style="background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.15); color: #cbd5e1; font-weight: 700; font-size: 0.72rem; padding: 6px 10px; border-radius: 8px; cursor: pointer;" title="Reset to default VIP gating configuration">
+                  🔄 Defaults
+                </button>
+                <button type="button" onclick="window.openVipFeatureManager()" style="background: rgba(168,85,247,0.18); border: 1px solid rgba(168,85,247,0.5); color: #c084fc; font-weight: 800; font-size: 0.72rem; padding: 6px 12px; border-radius: 8px; cursor: pointer;" title="Open full modal manager">
+                  ⚙️ Modal View
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Section Body: Feature Grid -->
+          <div style="padding: 20px;">
+            <div id="founder-vip-features-grid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 14px;">
+              <!-- Populated dynamically by renderFounderVipSection() -->
+            </div>
+          </div>
+        </div>
+
       </div>
     `;
+
+    // Immediately populate the VIP features in Founder Console
+    if (typeof window.renderFounderVipSection === 'function') {
+      window.renderFounderVipSection();
+    }
   }
 
   function renderFounderUserRows(users) {

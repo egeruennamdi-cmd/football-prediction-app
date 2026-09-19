@@ -68,6 +68,22 @@ const DEFAULT_VIP_FEATURES = {
     icon: '⭐',
     isVip: false,
     description: 'Real-time statistical streaks and market trends across European and worldwide leagues.'
+  },
+  ai_scout: {
+    id: 'ai_scout',
+    name: 'AI Scout Command Hub',
+    category: 'Scout Suite',
+    icon: '⚡',
+    isVip: false,
+    description: 'Real-time tactical intelligence, squad analytics & predictive in-play form breakdown.'
+  },
+  predictions: {
+    id: 'predictions',
+    name: 'Predictions Hub & Daily Fixtures',
+    category: 'Predictions Suite',
+    icon: '🔮',
+    isVip: false,
+    description: 'Algorithmic 1X2, Over/Under, and BTTS match outcome probabilities across all global leagues.'
   }
 };
 
@@ -296,42 +312,119 @@ function closeVipFeatureManager(e, force = false) {
 
 function renderVipFeatureManagerList() {
   const container = document.getElementById('vip-features-list-container');
-  if (!container) return;
+  if (container) {
+    const config = getVipFeaturesConfig();
+    container.innerHTML = '';
+
+    Object.keys(config).forEach(key => {
+      const feat = config[key];
+      const isVip = Boolean(feat.isVip);
+
+      const item = document.createElement('div');
+      item.style.cssText = 'display: flex; align-items: center; justify-content: space-between; background: rgba(255,255,255,0.04); border: 1px solid ' + (isVip ? 'rgba(16,185,129,0.45)' : 'rgba(255,255,255,0.08)') + '; border-radius: 14px; padding: 12px 14px; transition: all 0.2s ease;';
+
+      item.innerHTML = `
+        <div style="display: flex; align-items: center; gap: 12px; max-width: 80%;">
+          <div style="width: 36px; height: 36px; border-radius: 10px; background: rgba(255,255,255,0.06); display: flex; align-items: center; justify-content: center; font-size: 1.25rem; flex-shrink: 0;">
+            ${feat.icon || '⭐'}
+          </div>
+          <div>
+            <div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap;">
+              <span style="font-weight: 800; font-size: 0.88rem; color: #ffffff;">${feat.name}</span>
+              <span style="font-size: 0.65rem; font-weight: 900; padding: 2px 7px; border-radius: 6px; text-transform: uppercase; ${isVip ? 'background: rgba(16,185,129,0.2); color: #34d399; border: 1px solid rgba(16,185,129,0.4);' : 'background: rgba(255,255,255,0.08); color: #94a3b8; border: 1px solid rgba(255,255,255,0.1);'}">
+                ${isVip ? '👑 VIP ONLY' : 'FREE'}
+              </span>
+            </div>
+            <div style="font-size: 0.72rem; color: #94a3b8; margin-top: 2px; line-height: 1.35;">
+              ${feat.description}
+            </div>
+          </div>
+        </div>
+        <label class="vip-switch-toggle" style="position: relative; display: inline-block; width: 48px; height: 26px; flex-shrink: 0; cursor: pointer;">
+          <input type="checkbox" ${isVip ? 'checked' : ''} onchange="toggleFeatureVipStatus('${feat.id}', this.checked)" style="opacity: 0; width: 0; height: 0;">
+          <span class="vip-switch-slider ${isVip ? 'active' : ''}"></span>
+        </label>
+      `;
+
+      container.appendChild(item);
+    });
+  }
+
+  // Also update embedded Founder Dashboard section if present
+  renderFounderVipSection();
+}
+
+function renderFounderVipSection() {
+  const gridContainer = document.getElementById('founder-vip-features-grid');
+  const statsContainer = document.getElementById('founder-vip-stats-pills');
+  if (!gridContainer) return;
 
   const config = getVipFeaturesConfig();
-  container.innerHTML = '';
+  const keys = Object.keys(config);
+  let vipCount = 0;
+  let freeCount = 0;
 
-  Object.keys(config).forEach(key => {
+  keys.forEach(k => {
+    if (config[k].isVip) vipCount++;
+    else freeCount++;
+  });
+
+  if (statsContainer) {
+    statsContainer.innerHTML = `
+      <span style="background: rgba(168,85,247,0.15); border: 1px solid rgba(168,85,247,0.4); color: #c084fc; font-size: 0.74rem; font-weight: 800; padding: 4px 10px; border-radius: 8px;">
+        ⚙️ ${keys.length} Tools
+      </span>
+      <span style="background: rgba(16,185,129,0.15); border: 1px solid rgba(16,185,129,0.4); color: #34d399; font-size: 0.74rem; font-weight: 800; padding: 4px 10px; border-radius: 8px;">
+        👑 ${vipCount} VIP
+      </span>
+      <span style="background: rgba(59,130,246,0.15); border: 1px solid rgba(59,130,246,0.4); color: #60a5fa; font-size: 0.74rem; font-weight: 800; padding: 4px 10px; border-radius: 8px;">
+        🔓 ${freeCount} Free
+      </span>
+    `;
+  }
+
+  gridContainer.innerHTML = '';
+  keys.forEach(key => {
     const feat = config[key];
     const isVip = Boolean(feat.isVip);
 
-    const item = document.createElement('div');
-    item.style.cssText = 'display: flex; align-items: center; justify-content: space-between; background: rgba(255,255,255,0.04); border: 1px solid ' + (isVip ? 'rgba(16,185,129,0.45)' : 'rgba(255,255,255,0.08)') + '; border-radius: 14px; padding: 12px 14px; transition: all 0.2s ease;';
+    const card = document.createElement('div');
+    card.className = 'glass-card founder-vip-tool-card';
+    card.style.cssText = 'background: rgba(15, 23, 42, 0.85); border: 1.5px solid ' + (isVip ? 'rgba(168, 85, 247, 0.45)' : 'rgba(255, 255, 255, 0.08)') + '; border-radius: 14px; padding: 16px; display: flex; flex-direction: column; justify-content: space-between; gap: 12px; transition: all 0.2s ease;';
 
-    item.innerHTML = `
-      <div style="display: flex; align-items: center; gap: 12px; max-width: 80%;">
-        <div style="width: 36px; height: 36px; border-radius: 10px; background: rgba(255,255,255,0.06); display: flex; align-items: center; justify-content: center; font-size: 1.25rem; flex-shrink: 0;">
-          ${feat.icon || '⭐'}
-        </div>
-        <div>
-          <div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap;">
-            <span style="font-weight: 800; font-size: 0.88rem; color: #ffffff;">${feat.name}</span>
-            <span style="font-size: 0.65rem; font-weight: 900; padding: 2px 7px; border-radius: 6px; text-transform: uppercase; ${isVip ? 'background: rgba(16,185,129,0.2); color: #34d399; border: 1px solid rgba(16,185,129,0.4);' : 'background: rgba(255,255,255,0.08); color: #94a3b8; border: 1px solid rgba(255,255,255,0.1);'}">
-              ${isVip ? '👑 VIP ONLY' : 'FREE'}
-            </span>
+    card.innerHTML = `
+      <div>
+        <div style="display: flex; align-items: flex-start; justify-content: space-between; gap: 10px; margin-bottom: 8px;">
+          <div style="display: flex; align-items: center; gap: 10px;">
+            <div style="width: 36px; height: 36px; border-radius: 10px; background: rgba(255,255,255,0.06); display: flex; align-items: center; justify-content: center; font-size: 1.25rem; flex-shrink: 0;">
+              ${feat.icon || '⭐'}
+            </div>
+            <div>
+              <div style="font-weight: 800; font-size: 0.88rem; color: #ffffff;">${feat.name}</div>
+              <span style="font-size: 0.65rem; color: #94a3b8; font-weight: 600;">${feat.category || 'Platform Suite'}</span>
+            </div>
           </div>
-          <div style="font-size: 0.72rem; color: #94a3b8; margin-top: 2px; line-height: 1.35;">
-            ${feat.description}
-          </div>
+          <span style="font-size: 0.65rem; font-weight: 900; padding: 3px 8px; border-radius: 6px; text-transform: uppercase; ${isVip ? 'background: rgba(168,85,247,0.2); color: #c084fc; border: 1px solid rgba(168,85,247,0.45);' : 'background: rgba(59,130,246,0.15); color: #60a5fa; border: 1px solid rgba(59,130,246,0.3);'}">
+            ${isVip ? '👑 VIP ONLY' : '🔓 FREE'}
+          </span>
         </div>
+        <p style="font-size: 0.72rem; color: #94a3b8; margin: 0; line-height: 1.4;">
+          ${feat.description}
+        </p>
       </div>
-      <label class="vip-switch-toggle" style="position: relative; display: inline-block; width: 48px; height: 26px; flex-shrink: 0; cursor: pointer;">
-        <input type="checkbox" ${isVip ? 'checked' : ''} onchange="toggleFeatureVipStatus('${feat.id}', this.checked)" style="opacity: 0; width: 0; height: 0;">
-        <span class="vip-switch-slider ${isVip ? 'active' : ''}"></span>
-      </label>
+
+      <div style="display: flex; align-items: center; justify-content: space-between; padding-top: 10px; border-top: 1px solid rgba(255,255,255,0.06);">
+        <span style="font-size: 0.72rem; color: ${isVip ? '#d8b4fe' : '#94a3b8'}; font-weight: 700;">
+          ${isVip ? 'Locked behind VIP Paywall' : 'Available to all Punters'}
+        </span>
+        <label class="vip-switch-toggle" style="position: relative; display: inline-block; width: 46px; height: 24px; flex-shrink: 0; cursor: pointer;">
+          <input type="checkbox" ${isVip ? 'checked' : ''} onchange="toggleFeatureVipStatus('${feat.id}', this.checked)" style="opacity: 0; width: 0; height: 0;">
+          <span class="vip-switch-slider ${isVip ? 'active' : ''}"></span>
+        </label>
+      </div>
     `;
 
-    container.appendChild(item);
+    gridContainer.appendChild(card);
   });
 }
 
@@ -350,6 +443,7 @@ window.refreshVipFeatureBadges = refreshVipFeatureBadges;
 window.openVipFeatureManager = openVipFeatureManager;
 window.closeVipFeatureManager = closeVipFeatureManager;
 window.renderVipFeatureManagerList = renderVipFeatureManagerList;
+window.renderFounderVipSection = renderFounderVipSection;
 
 if (typeof document !== 'undefined') {
   if (document.readyState === 'loading') {
