@@ -5790,12 +5790,8 @@
         </a>
       </div>
 
-      <!-- Extreme Right: VIP Packages & VIP Club -->
+      <!-- Extreme Right: VIP Club -->
       <div class="footer-vip-actions" style="display: flex; align-items: center; gap: 10px; margin-left: auto; flex-wrap: wrap;">
-        <button type="button" id="footer-vip-packages-btn" class="footer-vip-link" onclick="openVipSubscriptionModal('annual')"
-          style="color: #34d399; font-weight: 800; font-size: 0.86rem; border: 1px solid rgba(16, 185, 129, 0.35); background: rgba(16, 185, 129, 0.08); border-radius: 20px; padding: 7px 16px; cursor: pointer; display: inline-flex; align-items: center; gap: 6px; transition: all 0.2s ease;">
-          <span style="font-size: 0.9rem;">👑</span> <span>VIP Packages</span>
-        </button>
         <button type="button" id="footer-vip-btn" class="btn" onclick="openVipSubscriptionModal('annual')"
           style="background: linear-gradient(135deg, #15803d 0%, #166534 100%); color: #ffffff; border: 1px solid #22c55e; font-weight: 800; font-size: 0.84rem; padding: 7px 16px; border-radius: 20px; display: inline-flex; align-items: center; gap: 6px; box-shadow: 0 2px 10px rgba(34, 197, 94, 0.35); cursor: pointer; transition: all 0.2s ease;">
           <span style="font-size: 0.9rem;">👑</span> <span id="footer-vip-btn-text">VIP Club</span>
@@ -7652,14 +7648,7 @@
       window.closeVipSubscriptionModal = hideVipModal;
 
       function bindVipTriggers() {
-        var pkgBtn = document.getElementById('footer-vip-packages-btn');
         var clubBtn = document.getElementById('footer-vip-btn');
-        if (pkgBtn) {
-          pkgBtn.onclick = function (e) {
-            if (e) { e.preventDefault(); e.stopPropagation(); }
-            showVipModal('annual');
-          };
-        }
         if (clubBtn) {
           clubBtn.onclick = function (e) {
             if (e) { e.preventDefault(); e.stopPropagation(); }
