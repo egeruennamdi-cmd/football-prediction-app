@@ -161,7 +161,8 @@ const MATCH_DATA = [
     isYesterday: true,
     league: "Premier League",
     leagueEmoji: "🏴󠁧󠁢󠁥󠁮󠁧󠁿",
-    time: "FT · Yesterday",
+    rawDate: 1789921800000,
+    time: "FT · 20 Sep 2026",
     isLive: false,
     status: "FT",
     statusShort: "FT",
@@ -180,40 +181,16 @@ const MATCH_DATA = [
     predictions: { home: 28, draw: 24, away: 48 },
     confidence: "high",
     confidenceVal: 86,
+    settledPick: {
+      market: "Away Win (Chelsea)",
+      odds: 1.85,
+      confidence: 86,
+      isWon: true
+    },
     insight: "Chelsea claimed a thrilling 3-2 West London derby victory at Craven Cottage.",
     isPremium: false,
     aiAnalysis: "High-tempo London derby: Chelsea's direct wide transitions and clinical offensive finishing (Palmer 2 assists, Madueke goal) overcame Fulham's aggressive second-half press. Both Teams To Score (BTTS) and Over 2.5 hit comfortably.",
     topTips: ["uo15", "uo25", "btts", "win2"]
-  },
-  {
-    id: "match-7b",
-    date: "yesterday",
-    isYesterday: true,
-    league: "Premier League",
-    leagueEmoji: "🏴󠁧󠁢󠁥󠁮󠁧󠁿",
-    time: "FT · Yesterday",
-    isLive: false,
-    status: "FT",
-    statusShort: "FT",
-    isFT: true,
-    homeTeam: {
-      name: "Brighton",
-      logo: "🕊️🔵",
-      form: ["W", "W", "D", "W", "L"]
-    },
-    awayTeam: {
-      name: "Manchester United",
-      logo: "👿",
-      form: ["L", "W", "W", "L", "W"]
-    },
-    scores: { home: 2, away: 1 },
-    predictions: { home: 44, draw: 28, away: 28 },
-    confidence: "high",
-    confidenceVal: 84,
-    insight: "Brighton edged Manchester United 2-1 with a dramatic 95th-minute stoppage-time header.",
-    isPremium: false,
-    aiAnalysis: "Amex Stadium battle: Danny Welbeck opened scoring against his former club, Amad Diallo leveled at 60', before João Pedro sealed the 2-1 win at 90+5'. Over 2.5 goals and BTTS landed as projected.",
-    topTips: ["uo15", "uo25", "btts", "win1"]
   },
   {
     id: "match-8",
@@ -221,7 +198,8 @@ const MATCH_DATA = [
     isYesterday: true,
     league: "La Liga",
     leagueEmoji: "🇪🇸",
-    time: "FT · 3 Days Ago",
+    rawDate: 1789934400000,
+    time: "FT · 20 Sep 2026",
     isLive: false,
     status: "FT",
     statusShort: "FT",
@@ -240,40 +218,16 @@ const MATCH_DATA = [
     predictions: { home: 40, draw: 35, away: 25 },
     confidence: "medium",
     confidenceVal: 70,
+    settledPick: {
+      market: "Home Win (Atletico)",
+      odds: 1.95,
+      confidence: 70,
+      isWon: false
+    },
     insight: "A tight defensive 1-1 draw under Simeone's resilient block.",
     isPremium: false,
     aiAnalysis: "Low block comparison: Both teams set up with high defensive lines in possession but dropped to structured 4-4-2 blocks, neutralizing offensive wing runs.",
     topTips: ["uo15", "c75", "c85", "c95"]
-  },
-  {
-    id: "match-9",
-    date: "yesterday",
-    isYesterday: true,
-    league: "Bundesliga",
-    leagueEmoji: "🇩🇪",
-    time: "FT · 4 Days Ago",
-    isLive: false,
-    status: "FT",
-    statusShort: "FT",
-    isFT: true,
-    homeTeam: {
-      name: "Bayer Leverkusen",
-      logo: "🔴🦁",
-      form: ["W", "W", "W", "W", "D"]
-    },
-    awayTeam: {
-      name: "Frankfurt",
-      logo: "🦅",
-      form: ["D", "L", "W", "L", "W"]
-    },
-    scores: { home: 3, away: 1 },
-    predictions: { home: 65, draw: 22, away: 13 },
-    confidence: "high",
-    confidenceVal: 88,
-    insight: "Leverkusen continues their dominant campaign with 3-1 goal intensity.",
-    isPremium: true,
-    aiAnalysis: "Alonso's patterns: Leverkusen operated with inverted wing-backs that created central 3v2 overloads, yielding a 3.10 Expected Goals (xG) output.",
-    topTips: ["uo15", "uo35", "uoht05", "c75", "c85"]
   },
   {
     id: "match-10",
@@ -281,7 +235,8 @@ const MATCH_DATA = [
     isYesterday: true,
     league: "Premier League",
     leagueEmoji: "🏴󠁧󠁢󠁥󠁮󠁧󠁿",
-    time: "FT · Yesterday",
+    rawDate: 1789830000000,
+    time: "FT · 19 Sep 2026",
     isLive: false,
     status: "FT",
     statusShort: "FT",
@@ -300,100 +255,16 @@ const MATCH_DATA = [
     predictions: { home: 68, draw: 18, away: 14 },
     confidence: "high",
     confidenceVal: 91,
+    settledPick: {
+      market: "Home Win (Tottenham)",
+      odds: 1.55,
+      confidence: 91,
+      isWon: true
+    },
     insight: "Tottenham dismantled Everton 4-0 at the Tottenham Hotspur Stadium.",
     isPremium: false,
     aiAnalysis: "Postecoglou high press in full flow: Son Heung-min scored twice alongside goals from Romero and Bissouma. Clean sheet and Over 2.5 landed with ease.",
     topTips: ["uo15", "uo25", "uo35", "win1"]
-  },
-  {
-    id: "match-11",
-    date: "yesterday",
-    isYesterday: true,
-    league: "Premier League",
-    leagueEmoji: "🏴󠁧󠁢󠁥󠁮󠁧󠁿",
-    time: "FT · Yesterday",
-    isLive: false,
-    status: "FT",
-    statusShort: "FT",
-    isFT: true,
-    homeTeam: {
-      name: "Aston Villa",
-      logo: "🦁🟣",
-      form: ["L", "W", "W", "D", "W"]
-    },
-    awayTeam: {
-      name: "Arsenal",
-      logo: "🔴",
-      form: ["W", "W", "W", "W", "D"]
-    },
-    scores: { home: 0, away: 2 },
-    predictions: { home: 26, draw: 28, away: 46 },
-    confidence: "high",
-    confidenceVal: 87,
-    insight: "Arsenal produced a clinical 2-0 away victory at Villa Park.",
-    isPremium: false,
-    aiAnalysis: "Arteta's tactical control: Leandro Trossard scored within 2 minutes of coming on, followed by Thomas Partey's strike to avenge last season's double defeat.",
-    topTips: ["uo15", "uo25", "win2"]
-  },
-  {
-    id: "match-12",
-    date: "yesterday",
-    isYesterday: true,
-    league: "Premier League",
-    leagueEmoji: "🏴󠁧󠁢󠁥󠁮󠁧󠁿",
-    time: "FT · 3 Weeks Ago",
-    isLive: false,
-    status: "FT",
-    statusShort: "FT",
-    isFT: true,
-    homeTeam: {
-      name: "Brighton",
-      logo: "🕊️🔵",
-      form: ["W", "D", "W", "L", "D"]
-    },
-    awayTeam: {
-      name: "West Ham",
-      logo: "⚒️",
-      form: ["L", "W", "D", "L", "L"]
-    },
-    scores: { home: 1, away: 1 },
-    predictions: { home: 48, draw: 30, away: 22 },
-    confidence: "medium",
-    confidenceVal: 72,
-    insight: "Evenly fought 1-1 tactical battle at the Amex Stadium.",
-    isPremium: false,
-    aiAnalysis: "West Ham scored on a rapid counter while Brighton dominated 68% possession and equalized late.",
-    topTips: ["btts", "uo15", "draw"]
-  },
-  {
-    id: "match-13",
-    date: "yesterday",
-    isYesterday: true,
-    league: "Serie A",
-    leagueEmoji: "🇮🇹",
-    time: "FT · 1 Week Ago",
-    isLive: false,
-    status: "FT",
-    statusShort: "FT",
-    isFT: true,
-    homeTeam: {
-      name: "Napoli",
-      logo: "🔵👑",
-      form: ["W", "W", "W", "L", "W"]
-    },
-    awayTeam: {
-      name: "Parma",
-      logo: "🟡🔵",
-      form: ["W", "D", "L", "L", "W"]
-    },
-    scores: { home: 2, away: 1 },
-    predictions: { home: 65, draw: 20, away: 15 },
-    confidence: "high",
-    confidenceVal: 87,
-    insight: "Conte's Napoli secured a thrilling 2-1 comeback victory in stoppage time.",
-    isPremium: false,
-    aiAnalysis: "High intensity pressing in the final 20 minutes overwhelmed Parma down the flanks.",
-    topTips: ["uo15", "uo25", "win1"]
   },
   {
     id: "match-14",
@@ -401,7 +272,8 @@ const MATCH_DATA = [
     isYesterday: true,
     league: "Serie A",
     leagueEmoji: "🇮🇹",
-    time: "FT · 2 Weeks Ago",
+    rawDate: 1789847100000,
+    time: "FT · 19 Sep 2026",
     isLive: false,
     status: "FT",
     statusShort: "FT",
@@ -420,10 +292,201 @@ const MATCH_DATA = [
     predictions: { home: 35, draw: 32, away: 33 },
     confidence: "medium",
     confidenceVal: 76,
+    settledPick: {
+      market: "Home Win (Lazio)",
+      odds: 2.40,
+      confidence: 76,
+      isWon: false
+    },
     insight: "High-octane 2-2 thriller at the Stadio Olimpico.",
     isPremium: false,
     aiAnalysis: "Both sides traded 4 goals in open transitions, beating the Over 2.5 and BTTS algorithms comfortably.",
     topTips: ["btts", "uo25", "uo35"]
+  },
+  {
+    id: "match-11",
+    date: "yesterday",
+    isYesterday: true,
+    league: "Premier League",
+    leagueEmoji: "🏴󠁧󠁢󠁥󠁮󠁧󠁿",
+    rawDate: 1789839000000,
+    time: "FT · 19 Sep 2026",
+    isLive: false,
+    status: "FT",
+    statusShort: "FT",
+    isFT: true,
+    homeTeam: {
+      name: "Aston Villa",
+      logo: "🦁🟣",
+      form: ["L", "W", "W", "D", "W"]
+    },
+    awayTeam: {
+      name: "Arsenal",
+      logo: "🔴",
+      form: ["W", "W", "W", "W", "D"]
+    },
+    scores: { home: 0, away: 2 },
+    predictions: { home: 26, draw: 28, away: 46 },
+    confidence: "high",
+    confidenceVal: 87,
+    settledPick: {
+      market: "Away Win (Arsenal)",
+      odds: 1.80,
+      confidence: 87,
+      isWon: true
+    },
+    insight: "Arsenal produced a clinical 2-0 away victory at Villa Park.",
+    isPremium: false,
+    aiAnalysis: "Arteta's tactical control: Leandro Trossard scored within 2 minutes of coming on, followed by Thomas Partey's strike to avenge last season's double defeat.",
+    topTips: ["uo15", "uo25", "win2"]
+  },
+  {
+    id: "match-12",
+    date: "yesterday",
+    isYesterday: true,
+    league: "Premier League",
+    leagueEmoji: "🏴󠁧󠁢󠁥󠁮󠁧󠁿",
+    rawDate: 1789761600000,
+    time: "FT · 18 Sep 2026",
+    isLive: false,
+    status: "FT",
+    statusShort: "FT",
+    isFT: true,
+    homeTeam: {
+      name: "Brighton",
+      logo: "🕊️🔵",
+      form: ["W", "D", "W", "L", "D"]
+    },
+    awayTeam: {
+      name: "West Ham",
+      logo: "⚒️",
+      form: ["L", "W", "D", "L", "L"]
+    },
+    scores: { home: 1, away: 1 },
+    predictions: { home: 48, draw: 30, away: 22 },
+    confidence: "medium",
+    confidenceVal: 72,
+    settledPick: {
+      market: "Home Win (Brighton)",
+      odds: 1.90,
+      confidence: 72,
+      isWon: false
+    },
+    insight: "Evenly fought 1-1 tactical battle at the Amex Stadium.",
+    isPremium: false,
+    aiAnalysis: "West Ham scored on a rapid counter while Brighton dominated 68% possession and equalized late.",
+    topTips: ["btts", "uo15", "draw"]
+  },
+  {
+    id: "match-7b",
+    date: "yesterday",
+    isYesterday: true,
+    league: "Premier League",
+    leagueEmoji: "🏴󠁧󠁢󠁥󠁮󠁧󠁿",
+    rawDate: 1789821000000,
+    time: "FT · 19 Sep 2026",
+    isLive: false,
+    status: "FT",
+    statusShort: "FT",
+    isFT: true,
+    homeTeam: {
+      name: "Brighton",
+      logo: "🕊️🔵",
+      form: ["W", "W", "D", "W", "L"]
+    },
+    awayTeam: {
+      name: "Manchester United",
+      logo: "👿",
+      form: ["L", "W", "W", "L", "W"]
+    },
+    scores: { home: 2, away: 1 },
+    predictions: { home: 44, draw: 28, away: 28 },
+    confidence: "high",
+    confidenceVal: 84,
+    settledPick: {
+      market: "Home Win (Brighton)",
+      odds: 2.45,
+      confidence: 84,
+      isWon: true
+    },
+    insight: "Brighton edged Manchester United 2-1 with a dramatic 95th-minute stoppage-time header.",
+    isPremium: false,
+    aiAnalysis: "Amex Stadium battle: Danny Welbeck opened scoring against his former club, Amad Diallo leveled at 60', before João Pedro sealed the 2-1 win at 90+5'. Over 2.5 goals and BTTS landed as projected.",
+    topTips: ["uo15", "uo25", "btts", "win1"]
+  },
+  {
+    id: "match-9",
+    date: "yesterday",
+    isYesterday: true,
+    league: "Bundesliga",
+    leagueEmoji: "🇩🇪",
+    rawDate: 1789831800000,
+    time: "FT · 19 Sep 2026",
+    isLive: false,
+    status: "FT",
+    statusShort: "FT",
+    isFT: true,
+    homeTeam: {
+      name: "Bayer Leverkusen",
+      logo: "🔴🦁",
+      form: ["W", "W", "W", "W", "D"]
+    },
+    awayTeam: {
+      name: "Frankfurt",
+      logo: "🦅",
+      form: ["D", "L", "W", "L", "W"]
+    },
+    scores: { home: 3, away: 1 },
+    predictions: { home: 65, draw: 22, away: 13 },
+    confidence: "high",
+    confidenceVal: 88,
+    settledPick: {
+      market: "Home Win (Bayer Leverkusen)",
+      odds: 1.55,
+      confidence: 88,
+      isWon: true
+    },
+    insight: "Leverkusen continues their dominant campaign with 3-1 goal intensity.",
+    isPremium: true,
+    aiAnalysis: "Alonso's patterns: Leverkusen operated with inverted wing-backs that created central 3v2 overloads, yielding a 3.10 Expected Goals (xG) output.",
+    topTips: ["uo15", "uo35", "uoht05", "c75", "c85"]
+  },
+  {
+    id: "match-13",
+    date: "yesterday",
+    isYesterday: true,
+    league: "Serie A",
+    leagueEmoji: "🇮🇹",
+    rawDate: 1789933500000,
+    time: "FT · 20 Sep 2026",
+    isLive: false,
+    status: "FT",
+    statusShort: "FT",
+    isFT: true,
+    homeTeam: {
+      name: "Napoli",
+      logo: "🔵👑",
+      form: ["W", "W", "W", "L", "W"]
+    },
+    awayTeam: {
+      name: "Parma",
+      logo: "🟡🔵",
+      form: ["W", "D", "L", "L", "W"]
+    },
+    scores: { home: 2, away: 1 },
+    predictions: { home: 65, draw: 20, away: 15 },
+    confidence: "high",
+    confidenceVal: 87,
+    settledPick: {
+      market: "Home Win (Napoli)",
+      odds: 1.48,
+      confidence: 87,
+      isWon: true
+    },
+    insight: "Conte's Napoli secured a thrilling 2-1 comeback victory in stoppage time.",
+    isPremium: false,
+    aiAnalysis: "High intensity pressing in the final 20 minutes overwhelmed Parma down the flanks.",
+    topTips: ["uo15", "uo25", "win1"]
   },
   {
     id: "match-15",
@@ -431,7 +494,8 @@ const MATCH_DATA = [
     isYesterday: true,
     league: "La Liga",
     leagueEmoji: "🇪🇸",
-    time: "FT · 1 Week Ago",
+    rawDate: 1789839000000,
+    time: "FT · 19 Sep 2026",
     isLive: false,
     status: "FT",
     statusShort: "FT",
@@ -450,6 +514,12 @@ const MATCH_DATA = [
     predictions: { home: 58, draw: 26, away: 16 },
     confidence: "high",
     confidenceVal: 86,
+    settledPick: {
+      market: "Home Win (Real Sociedad)",
+      odds: 1.72,
+      confidence: 86,
+      isWon: true
+    },
     insight: "Sociedad produced a clean sheet 3-0 demolition at the Reale Arena.",
     isPremium: false,
     aiAnalysis: "Valencia's defensive transition was exposed repeatedly on counter-attacks.",
@@ -461,7 +531,8 @@ const MATCH_DATA = [
     isYesterday: true,
     league: "Champions League",
     leagueEmoji: "🇪🇺",
-    time: "FT · 2 Weeks Ago",
+    rawDate: 1789675200000,
+    time: "FT · 17 Sep 2026",
     isLive: false,
     status: "FT",
     statusShort: "FT",
@@ -480,6 +551,12 @@ const MATCH_DATA = [
     predictions: { home: 85, draw: 10, away: 5 },
     confidence: "high",
     confidenceVal: 98,
+    settledPick: {
+      market: "Over 3.5 Goals",
+      odds: 1.62,
+      confidence: 94,
+      isWon: true
+    },
     insight: "Record-breaking 9-2 European victory at the Allianz Arena.",
     isPremium: true,
     aiAnalysis: "Total dominance. Bayern generated 6.45 xG and 29 shots on target.",

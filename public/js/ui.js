@@ -10864,43 +10864,56 @@ function renderRecentSettledPredictions(filterLeague, filterCountry, fixturesPoo
     return;
   }
 
-  // Format exact date the match was played
+  // Format exact date the match was played with rigorous temporal accuracy
   const formatPlayedDate = m => {
+    const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
     if (m.rawDate) {
       const d = new Date(m.rawDate);
       if (!isNaN(d.getTime())) {
-        const day = d.getDate();
-        const month = d.toLocaleDateString('en-GB', { month: 'short' });
-        const year = d.getFullYear();
-        const today = new Date();
-        const yesterday = new Date(today);
-        yesterday.setDate(yesterday.getDate() - 1);
-        if (d.toDateString() === yesterday.toDateString()) {
-          return `FT · Yesterday (${day} ${month} ${year})`;
-        } else if (d.toDateString() === today.toDateString()) {
-          return `FT · Today (${day} ${month} ${year})`;
-        }
+        const day = d.getUTCDate();
+        const month = MONTHS[d.getUTCMonth()];
+        const year = d.getUTCFullYear();
         return `FT · ${day} ${month} ${year}`;
       }
     }
     if (m.time) {
       let t = String(m.time).trim();
-      if (t.toLowerCase() === 'ft · yesterday' || t.toLowerCase() === 'yesterday') {
+      // Check if it already has an exact calendar date (e.g. "FT · 20 Sep 2026")
+      const dateMatch = t.match(/(\d{1,2}\s+[A-Za-z]{3,4}\s+\d{4})/);
+      if (dateMatch) {
+        return `FT · ${dateMatch[1]}`;
+      }
+      // Check for "yesterday"
+      if (t.toLowerCase().includes('yesterday')) {
         const yesterday = new Date();
         yesterday.setDate(yesterday.getDate() - 1);
         const day = yesterday.getDate();
-        const month = yesterday.toLocaleDateString('en-GB', { month: 'short' });
+        const month = MONTHS[yesterday.getMonth()];
         const year = yesterday.getFullYear();
-        return `FT · Yesterday (${day} ${month} ${year})`;
+        return `FT · ${day} ${month} ${year}`;
       }
-      if (t.includes('FT ·') || t.startsWith('FT')) {
+      // Check for "X Days Ago"
+      const daysMatch = t.match(/(\d+)\s*days?\s*ago/i);
+      if (daysMatch) {
+        const d = new Date();
+        d.setDate(d.getDate() - parseInt(daysMatch[1], 10));
+        return `FT · ${d.getDate()} ${MONTHS[d.getMonth()]} ${d.getFullYear()}`;
+      }
+      // Check for "X Weeks Ago"
+      const weeksMatch = t.match(/(\d+)\s*weeks?\s*ago/i);
+      if (weeksMatch) {
+        const d = new Date();
+        d.setDate(d.getDate() - (parseInt(weeksMatch[1], 10) * 7));
+        return `FT · ${d.getDate()} ${MONTHS[d.getMonth()]} ${d.getFullYear()}`;
+      }
+      if (t.startsWith('FT ·') || t.startsWith('FT')) {
         return t;
       }
       return `FT · ${t}`;
     }
     const defaultD = new Date();
     defaultD.setDate(defaultD.getDate() - 1);
-    return `FT · ${defaultD.toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })}`;
+    return `FT · ${defaultD.getDate()} ${MONTHS[defaultD.getMonth()]} ${defaultD.getFullYear()}`;
   };
 
   let wonCount = 0;
@@ -10915,68 +10928,40 @@ function renderRecentSettledPredictions(filterLeague, filterCountry, fixturesPoo
     const awayLogo = m.awayTeam?.logo || '⚽';
     const playedDateStr = formatPlayedDate(m);
 
-    // Tip determination
-    const preds = m.predictions || { home: 45, draw: 25, away: 30 };
+    // Tip, odds, confidence, and outcome determination
     let tipMarket = '';
-    let marketCode = '';
-    let odds = 1.85;
+    let odds = '1.85';
+    let conf = 80;
+    let isWon = false;
 
-    if (m.topTips && Array.isArray(m.topTips) && m.topTips.length > 0) {
-      if (m.topTips.includes('win2')) {
-        tipMarket = `Away Win (${awayName})`;
-        marketCode = '2';
-        odds = 1.85;
-      } else if (m.topTips.includes('win1')) {
-        tipMarket = `Home Win (${homeName})`;
-        marketCode = '1';
-        odds = 1.75;
-      } else if (m.topTips.includes('btts')) {
-        tipMarket = `Both Teams To Score (BTTS)`;
-        marketCode = 'btts';
-        odds = 1.70;
-      } else if (m.topTips.includes('uo25')) {
-        tipMarket = `Over 2.5 Goals`;
-        marketCode = 'o25';
-        odds = 1.80;
-      }
-    }
+    if (m.settledPick) {
+      tipMarket = m.settledPick.market;
+      odds = Number(m.settledPick.odds).toFixed(2);
+      conf = m.settledPick.confidence;
+      isWon = m.settledPick.isWon;
+    } else {
+      const preds = m.predictions || { home: 45, draw: 25, away: 30 };
+      conf = m.confidenceVal || (preds.home > 50 ? 88 : preds.away > 50 ? 86 : 74);
 
-    if (!tipMarket) {
       if (preds.home >= preds.away && preds.home >= preds.draw) {
         tipMarket = `Home Win (${homeName})`;
-        marketCode = '1';
-        odds = (100 / Math.max(preds.home, 30)).toFixed(2);
+        const prob = Math.max(preds.home, 35);
+        odds = ((100 / prob) * 0.95).toFixed(2);
+        isWon = (hScore > aScore);
       } else if (preds.away > preds.home && preds.away >= preds.draw) {
         tipMarket = `Away Win (${awayName})`;
-        marketCode = '2';
-        odds = (100 / Math.max(preds.away, 30)).toFixed(2);
+        const prob = Math.max(preds.away, 35);
+        odds = ((100 / prob) * 0.95).toFixed(2);
+        isWon = (aScore > hScore);
       } else {
-        tipMarket = `Draw (${homeName} vs ${awayName})`;
-        marketCode = 'X';
-        odds = (100 / Math.max(preds.draw, 25)).toFixed(2);
+        tipMarket = `Under 2.5 Goals`;
+        odds = '1.75';
+        isWon = (hScore + aScore < 3);
       }
-    }
-
-    // Evaluate Won vs Lost
-    let isWon = false;
-    if (marketCode === '1') {
-      isWon = (hScore > aScore);
-    } else if (marketCode === '2') {
-      isWon = (aScore > hScore);
-    } else if (marketCode === 'X') {
-      isWon = (hScore === aScore);
-    } else if (marketCode === 'btts') {
-      isWon = (hScore > 0 && aScore > 0);
-    } else if (marketCode === 'o25') {
-      isWon = (hScore + aScore > 2);
-    } else {
-      isWon = (preds.home >= preds.away ? hScore >= aScore : aScore >= hScore);
     }
 
     if (isWon) wonCount++;
     else lostCount++;
-
-    const conf = m.confidenceVal || (preds.home > 50 ? 88 : preds.away > 50 ? 86 : 74);
 
     return `
       <div class="settled-pick-card ${isWon ? 'won' : 'lost'}">

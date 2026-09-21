@@ -439,16 +439,25 @@
       [clubs[7] || clubs[3], clubs[6] || clubs[2], "Tomorrow, 20:30", "tomorrow", false, null, null]
     ];
 
+    const now = Date.now();
+    const dayMs = 86400000;
+
+    const fmtPastDate = (daysAgo) => {
+      const d = new Date(now - daysAgo * dayMs);
+      const day = d.getDate();
+      const mon = d.toLocaleDateString('en-GB', { month: 'short' });
+      const yr = d.getFullYear();
+      return `FT · ${day} ${mon} ${yr}`;
+    };
+
     const recentFinishedPairs = [
-      [clubs[0], clubs[2] || clubs[1], "FT · Yesterday", "yesterday", true, 2, 1],
-      [clubs[1] || clubs[0], clubs[3] || clubs[2], "FT · Yesterday", "yesterday", true, 1, 0],
-      [clubs[4] || clubs[1], clubs[5] || clubs[0], "FT · Yesterday", "yesterday", true, 3, 2],
-      [clubs[6] || clubs[0], clubs[7] || clubs[2], "FT · Yesterday", "yesterday", true, 0, 0]
+      [clubs[0], clubs[2] || clubs[1], fmtPastDate(1), "yesterday", true, 2, 1, 1], // Home Win -> WON
+      [clubs[1] || clubs[0], clubs[3] || clubs[2], fmtPastDate(1), "yesterday", true, 1, 1, 1], // Home Win tip, draw 1-1 -> LOST
+      [clubs[4] || clubs[1], clubs[5] || clubs[0], fmtPastDate(2), "yesterday", true, 0, 2, 2], // Away Win -> WON
+      [clubs[6] || clubs[0], clubs[7] || clubs[2], fmtPastDate(3), "yesterday", true, 1, 1, 1]  // Home Win tip, draw 1-1 -> LOST
     ];
 
     const allPairs = [...todayPairs, ...tomorrowPairs, ...recentFinishedPairs];
-    const now = Date.now();
-    const dayMs = 86400000;
 
     return allPairs.map((pair, idx) => {
       const home = pair[0];
@@ -456,6 +465,7 @@
       const isFinished = !!pair[4];
       const hScore = pair[5];
       const aScore = pair[6];
+      const finishedIdx = idx >= (todayPairs.length + tomorrowPairs.length) ? (idx - todayPairs.length - tomorrowPairs.length) : -1;
       const hash = Math.abs((home.name + away.name).split('').reduce((a, c) => a + c.charCodeAt(0), 0));
       const homeProb = 40 + (hash % 25);
       const awayProb = 25 + ((hash >> 2) % 20);
@@ -464,7 +474,23 @@
       let rawDate = now;
       if (pair[3] === 'tomorrow') rawDate = now + dayMs;
       else if (pair[3] === 'future') rawDate = now + 2 * dayMs;
-      else if (pair[3] === 'yesterday') rawDate = now - dayMs;
+      else if (pair[3] === 'yesterday') {
+        const daysOffset = (finishedIdx === 0 || finishedIdx === 1) ? 1 : (finishedIdx === 2) ? 2 : 3;
+        rawDate = now - daysOffset * dayMs;
+      }
+
+      let settledPick = null;
+      if (isFinished) {
+        if (finishedIdx === 0) {
+          settledPick = { market: `Home Win (${home.name})`, odds: Number(((100 / homeProb) * 0.95).toFixed(2)), confidence: Math.min(92, homeProb + 20), isWon: true };
+        } else if (finishedIdx === 1) {
+          settledPick = { market: `Home Win (${home.name})`, odds: Number(((100 / homeProb) * 0.95).toFixed(2)), confidence: Math.min(92, homeProb + 15), isWon: false };
+        } else if (finishedIdx === 2) {
+          settledPick = { market: `Away Win (${away.name})`, odds: Number(((100 / awayProb) * 0.95).toFixed(2)), confidence: Math.min(92, awayProb + 20), isWon: true };
+        } else {
+          settledPick = { market: `Home Win (${home.name})`, odds: Number(((100 / homeProb) * 0.95).toFixed(2)), confidence: Math.min(92, homeProb + 15), isWon: false };
+        }
+      }
 
       return {
         id: `fix-${leagueName.toLowerCase().replace(/[^a-z0-9]/g, '-')}-${idx}-${hash}`,
@@ -493,6 +519,7 @@
         predictions: { home: homeProb, draw: drawProb, away: awayProb },
         confidence: homeProb > 52 ? 'high' : 'medium',
         confidenceVal: Math.min(92, Math.max(65, homeProb + 20)),
+        settledPick,
         insight: isFinished 
           ? `🏁 Final Result: ${home.name} ${hScore} – ${aScore} ${away.name} (${pair[2]})`
           : `${home.name} displays a strong ${homeProb}% win expectation with high offensive conversion.`,
@@ -568,11 +595,15 @@
       } else {
         // Dynamic fallback: If countryName is specified and not England, generate local clubs on the fly
         if (countryName && countryName !== 'England' && countryName !== 'World') {
+          const yestD = new Date(Date.now() - 86400000);
+          const yestDay = yestD.getDate();
+          const yestMonth = yestD.toLocaleDateString('en-GB', { month: 'short' });
+          const yestYear = yestD.getFullYear();
           const fallbackPairs = [
             [{ name: `${countryName} FC`, flag: '⚽', logo: '⚽' }, { name: `${countryName} United`, flag: '⚽', logo: '🔵' }, "Today, 17:30", "today", false, null, null],
             [{ name: `${countryName} City`, flag: '⚽', logo: '🔴' }, { name: `${countryName} Sporting`, flag: '⚽', logo: '🟢' }, "Tomorrow, 20:00", "tomorrow", false, null, null],
             [{ name: `${countryName} Athletic`, flag: '⚽', logo: '⚪' }, { name: `${countryName} Stars`, flag: '⚽', logo: '⭐' }, "In 2 Days, 15:00", "future", false, null, null],
-            [{ name: `${countryName} United`, flag: '⚽', logo: '🔵' }, { name: `${countryName} FC`, flag: '⚽', logo: '⚽' }, "FT · Yesterday", "yesterday", true, 2, 1]
+            [{ name: `${countryName} United`, flag: '⚽', logo: '🔵' }, { name: `${countryName} FC`, flag: '⚽', logo: '⚽' }, `FT · ${yestDay} ${yestMonth} ${yestYear}`, "yesterday", true, 2, 1]
           ];
           matches = fallbackPairs.map((pair, idx) => {
             const home = pair[0];
@@ -583,6 +614,7 @@
               country: countryName,
               league: leagueName,
               leagueEmoji: '⚽',
+              rawDate: isFinished ? (Date.now() - 86400000) : Date.now(),
               date: pair[3],
               time: pair[2],
               isLive: false,
@@ -596,6 +628,7 @@
               predictions: { home: 48, draw: 26, away: 26 },
               confidence: 'medium',
               confidenceVal: 72,
+              settledPick: isFinished ? { market: `Home Win (${home.name})`, odds: 1.88, confidence: 78, isWon: true } : null,
               insight: `${home.name} displays strong home advantage in ${leagueName}.`,
               isPremium: false,
               aiAnalysis: `Tactical breakdown: ${home.name} vs ${away.name} in ${leagueName}.`,
