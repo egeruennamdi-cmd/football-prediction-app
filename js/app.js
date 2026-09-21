@@ -2943,6 +2943,12 @@ function filterMatches(filterType, btn) {
     }
   }
 
+  if (filterType === 'watchlist') {
+    if (typeof openWatchlistModal === 'function') {
+      openWatchlistModal();
+    }
+  }
+
   if (typeof updateFixturesDisplay === 'function') {
     updateFixturesDisplay();
   } else {
@@ -5551,8 +5557,12 @@ function updateFixturesDisplay() {
     const upItems = filtered.filter(m => !m.isLive && m.status !== 'LIVE' && m.statusShort !== 'FT' && m.statusShort !== 'AET' && m.time !== 'FT');
     if (upItems.length > 0) filtered = upItems;
   } else if (tabFilter === 'watchlist') {
-    const watchlist = window.appState && Array.isArray(window.appState.watchlist) ? window.appState.watchlist : [];
-    filtered = filtered.filter(m => watchlist.includes(m.id));
+    if (typeof getWatchlistMatches === 'function') {
+      filtered = getWatchlistMatches();
+    } else {
+      const watchlist = window.appState && Array.isArray(window.appState.watchlist) ? window.appState.watchlist : [];
+      filtered = filtered.filter(m => watchlist.includes(m.id));
+    }
   }
 
   // 4. Submenu Market Filtering
@@ -5710,7 +5720,10 @@ function updateFixturesDisplay() {
           <span style="font-size: 2.2rem; display: block; margin-bottom: 12px;">⭐</span>
           <h4 style="font-family: var(--font-display); font-size: 1.15rem; margin-bottom: 8px; color: #ffffff;">Your Watchlist is Empty</h4>
           <p style="font-size: 0.88rem; color: var(--text-secondary); max-width: 420px; margin: 0 auto 16px;">Click the star icon (☆) on any match card to track live odds, goals, and AI updates.</p>
-          <button class="btn btn-primary" onclick="filterMatches('all')" style="padding: 8px 18px; font-size: 0.85rem; border-radius: 8px; cursor: pointer;">Browse All Matches</button>
+          <div style="display: flex; gap: 10px; justify-content: center; flex-wrap: wrap;">
+            <button class="btn btn-primary" onclick="openWatchlistModal()" style="padding: 8px 18px; font-size: 0.85rem; border-radius: 8px; cursor: pointer;">⭐ Open Watchlist Output</button>
+            <button class="btn btn-secondary" onclick="filterMatches('all')" style="padding: 8px 18px; font-size: 0.85rem; border-radius: 8px; cursor: pointer;">Browse All Matches</button>
+          </div>
         </div>
       `;
     }
@@ -9876,7 +9889,224 @@ if (typeof document !== 'undefined' && !window._betslipAddCaptureListenerAttache
 }
 
 
-// Universal Watchlist & Prediction Pin Controller
+// --- UNIVERSAL WATCHLIST CONTROLLER & POPUP OUTPUT ENGINE ---
+
+function initWatchlistState() {
+  if (!window.appState) window.appState = {};
+  try {
+    const stored = localStorage.getItem('dp_watchlist');
+    if (stored) {
+      const parsed = JSON.parse(stored);
+      if (Array.isArray(parsed)) {
+        window.appState.watchlist = parsed;
+      }
+    }
+  } catch (e) {}
+  if (!Array.isArray(window.appState.watchlist)) window.appState.watchlist = [];
+  updateWatchlistCountUI();
+}
+
+function updateWatchlistCountUI() {
+  const count = (window.appState && Array.isArray(window.appState.watchlist)) ? window.appState.watchlist.length : 0;
+  const countEl = document.getElementById("watchlist-count");
+  if (countEl) countEl.innerText = count;
+
+  const modalCountBadge = document.getElementById("watchlist-modal-count-badge");
+  if (modalCountBadge) modalCountBadge.innerText = `${count} Match${count === 1 ? '' : 'es'} Saved`;
+
+  const clearBtn = document.getElementById("watchlist-clear-all-btn");
+  if (clearBtn) clearBtn.style.display = count > 0 ? 'inline-block' : 'none';
+
+  const matchesTitle = document.getElementById("matches-section-title");
+  if (matchesTitle && window.appState && window.appState.currentFilter === 'watchlist') {
+    matchesTitle.innerText = `My Watchlist Predictions (${count})`;
+  }
+}
+
+function getWatchlistMatches() {
+  const ids = (window.appState && Array.isArray(window.appState.watchlist)) ? window.appState.watchlist : [];
+  if (ids.length === 0) return [];
+
+  const pool = [];
+  const seen = new Set();
+  function addMatch(m) {
+    if (!m || !m.id) return;
+    const sId = String(m.id);
+    if (!seen.has(sId)) {
+      seen.add(sId);
+      pool.push(m);
+    }
+  }
+
+  if (window.currentLeagueMatches && Array.isArray(window.currentLeagueMatches)) window.currentLeagueMatches.forEach(addMatch);
+  if (window.MATCH_DATA && Array.isArray(window.MATCH_DATA)) window.MATCH_DATA.forEach(addMatch);
+  if (typeof MATCH_DATA !== 'undefined' && Array.isArray(MATCH_DATA)) MATCH_DATA.forEach(addMatch);
+  if (window.TOP_LEAGUES_FIXTURES_POOL && Array.isArray(window.TOP_LEAGUES_FIXTURES_POOL)) window.TOP_LEAGUES_FIXTURES_POOL.forEach(addMatch);
+  if (window._matchRegistry instanceof Map) window._matchRegistry.forEach(addMatch);
+
+  return ids.map(id => {
+    const strId = String(id);
+    const found = pool.find(m => String(m.id) === strId || String(m.fixtureId) === strId);
+    if (found) return found;
+    return {
+      id: id,
+      homeTeam: { name: `Tracked Match #${id}` },
+      awayTeam: { name: '' },
+      league: 'Pinned League',
+      time: 'Upcoming / Live',
+      prediction: 'Pro AI Tip',
+      confidence: 75,
+      odds: '1.90'
+    };
+  });
+}
+
+function openWatchlistModal() {
+  const modal = document.getElementById("watchlist-modal");
+  if (!modal) return;
+  initWatchlistState();
+  modal.classList.add("active");
+  modal.style.display = "flex";
+  modal.style.opacity = "1";
+  modal.style.pointerEvents = "all";
+  modal.style.visibility = "visible";
+  document.body.style.overflow = "hidden";
+  renderWatchlistModalContent();
+}
+
+function closeWatchlistModal(e, force = false) {
+  const modal = document.getElementById("watchlist-modal");
+  if (!modal) return;
+  if (force || !e || e.target === modal) {
+    modal.classList.remove("active");
+    modal.style.display = "none";
+    modal.style.opacity = "0";
+    modal.style.pointerEvents = "none";
+    modal.style.visibility = "hidden";
+    document.body.style.overflow = "";
+  }
+}
+
+function renderWatchlistModalContent() {
+  const body = document.getElementById("modal-watchlist-body");
+  if (!body) return;
+  updateWatchlistCountUI();
+
+  const matches = getWatchlistMatches();
+
+  if (matches.length === 0) {
+    let pool = (window.MATCH_DATA && Array.isArray(window.MATCH_DATA) && window.MATCH_DATA.length > 0)
+      ? window.MATCH_DATA
+      : ((typeof MATCH_DATA !== 'undefined' && Array.isArray(MATCH_DATA)) ? MATCH_DATA : []);
+    const candidates = pool.slice(0, 3);
+
+    body.innerHTML = `
+      <div style="text-align: center; padding: 30px 16px; background: rgba(15, 23, 42, 0.6); border: 1px dashed rgba(255,255,255,0.12); border-radius: 14px;">
+        <div style="font-size: 2.6rem; margin-bottom: 10px;">⭐</div>
+        <h3 style="font-family: var(--font-display); font-size: 1.15rem; font-weight: 800; color: #ffffff; margin: 0 0 6px;">
+          Your Watchlist is Ready
+        </h3>
+        <p style="font-size: 0.82rem; color: #94a3b8; max-width: 440px; margin: 0 auto 16px; line-height: 1.45;">
+          You currently have 0 pinned matches. Pin matches with the star icon (☆) on any match card to track live odds, goals, and AI predictions.
+        </p>
+
+        ${candidates.length > 0 ? `
+          <div style="margin-bottom: 18px; text-align: left; max-width: 480px; margin-left: auto; margin-right: auto;">
+            <div style="font-size: 0.72rem; font-weight: 800; color: #60a5fa; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 8px;">
+              ⚡ Quick Add Today's Featured Matches:
+            </div>
+            <div style="display: flex; flex-direction: column; gap: 8px;">
+              ${candidates.map(c => `
+                <div style="display: flex; justify-content: space-between; align-items: center; background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.08); border-radius: 8px; padding: 10px 14px;">
+                  <div>
+                    <div style="font-weight: 700; font-size: 0.84rem; color: #ffffff;">
+                      ${c.homeTeam?.name || 'Home'} vs ${c.awayTeam?.name || 'Away'}
+                    </div>
+                    <div style="font-size: 0.7rem; color: var(--text-muted); margin-top: 2px;">
+                      ${c.league || 'League'} • Tip: <strong style="color: #34d399;">${c.prediction || 'Pro Pick'}</strong>
+                    </div>
+                  </div>
+                  <button class="btn btn-secondary" onclick="toggleWatchlist('${c.id}')" style="font-size: 0.74rem; padding: 5px 12px; font-weight: 700; color: #fbbf24; border-color: rgba(251,191,36,0.4); cursor: pointer;">
+                    ★ Track Match
+                  </button>
+                </div>
+              `).join('')}
+            </div>
+          </div>
+        ` : ''}
+
+        <button class="btn btn-primary" onclick="closeWatchlistModal(); if(typeof filterMatches==='function') filterMatches('all'); const p=document.getElementById('predictions'); if(p) p.scrollIntoView({behavior:'smooth'});" style="padding: 10px 22px; font-size: 0.82rem; font-weight: 700; border-radius: 8px; cursor: pointer;">
+          Browse All Today's Predictions
+        </button>
+      </div>
+    `;
+    return;
+  }
+
+  body.innerHTML = matches.map(m => {
+    const isLive = m.isLive || m.status === 'LIVE';
+    const statusBadge = isLive
+      ? `<span style="font-size: 0.68rem; background: rgba(239,68,68,0.2); color: #f87171; border: 1px solid rgba(239,68,68,0.4); padding: 2px 8px; border-radius: 12px; font-weight: 800;">🔴 LIVE</span>`
+      : `<span style="font-size: 0.68rem; background: rgba(59,130,246,0.15); color: #93c5fd; border: 1px solid rgba(59,130,246,0.3); padding: 2px 8px; border-radius: 12px; font-weight: 700;">📅 ${m.time || 'Upcoming'}</span>`;
+
+    const homeName = m.homeTeam?.name || 'Home Team';
+    const awayName = m.awayTeam?.name || 'Away Team';
+    const tipText = m.prediction || m.topTips?.[0]?.tip || 'Pro Pick';
+    const conf = m.confidence || 75;
+    const odds = m.odds || '1.85';
+
+    return `
+      <div class="glass-card" style="background: rgba(15, 23, 42, 0.85); border: 1px solid rgba(59, 130, 246, 0.25); border-radius: 12px; padding: 14px 16px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px;">
+        <div style="display: flex; flex-direction: column; gap: 4px; flex: 1; min-width: 220px;">
+          <div style="display: flex; align-items: center; gap: 8px;">
+            ${statusBadge}
+            <span style="font-size: 0.72rem; color: #94a3b8; font-weight: 600;">${m.league || 'League'}</span>
+          </div>
+          <div style="font-size: 0.95rem; font-weight: 800; color: #ffffff; font-family: var(--font-display);">
+            ${homeName} vs ${awayName}
+          </div>
+          <div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap; margin-top: 2px;">
+            <span style="font-size: 0.72rem; background: rgba(16,185,129,0.15); color: #34d399; border: 1px solid rgba(16,185,129,0.3); padding: 2px 6px; border-radius: 4px; font-weight: 700;">
+              Tip: ${tipText}
+            </span>
+            <span style="font-size: 0.72rem; color: #94a3b8;">Confidence: <strong style="color: #38bdf8;">${conf}%</strong></span>
+            <span style="font-size: 0.72rem; color: #fbbf24;">Odds: <strong>${odds}</strong></span>
+          </div>
+        </div>
+
+        <div style="display: flex; align-items: center; gap: 8px;">
+          <button class="btn btn-secondary" onclick="closeWatchlistModal(); if(typeof openScoutModal==='function') openScoutModal('${m.id}');" style="font-size: 0.75rem; padding: 7px 12px; font-weight: 700; border-color: rgba(59,130,246,0.4); color: #60a5fa; cursor: pointer;">
+            🔍 Scout Match
+          </button>
+          <button onclick="toggleWatchlist('${m.id}')" title="Remove from Watchlist" style="background: rgba(239,68,68,0.1); border: 1px solid rgba(239,68,68,0.3); color: #f87171; border-radius: 6px; font-size: 0.85rem; padding: 6px 10px; cursor: pointer;">
+            ✕
+          </button>
+        </div>
+      </div>
+    `;
+  }).join('');
+}
+
+function clearWatchlist() {
+  if (!window.appState) window.appState = {};
+  window.appState.watchlist = [];
+  try {
+    localStorage.setItem('dp_watchlist', JSON.stringify([]));
+  } catch(e) {}
+  updateWatchlistCountUI();
+  const stars = document.querySelectorAll('.watchlist-star');
+  stars.forEach(btn => {
+    btn.classList.remove('watched');
+    btn.style.color = 'var(--text-muted)';
+    btn.innerText = '☆';
+  });
+  renderWatchlistModalContent();
+  if (window.appState && window.appState.currentFilter === 'watchlist') {
+    if (typeof updateFixturesDisplay === 'function') updateFixturesDisplay();
+  }
+  if (typeof showToast === 'function') showToast('Watchlist cleared', 'info');
+}
+
 function toggleWatchlist(matchId, event) {
   if (event) {
     if (typeof event.stopPropagation === 'function') event.stopPropagation();
@@ -9885,7 +10115,8 @@ function toggleWatchlist(matchId, event) {
   if (!window.appState) window.appState = {};
   if (!Array.isArray(window.appState.watchlist)) window.appState.watchlist = [];
 
-  const idx = window.appState.watchlist.indexOf(matchId);
+  const strId = String(matchId);
+  const idx = window.appState.watchlist.findIndex(id => String(id) === strId);
   const isAdding = (idx === -1);
   if (isAdding) {
     window.appState.watchlist.push(matchId);
@@ -9905,8 +10136,51 @@ function toggleWatchlist(matchId, event) {
   try {
     localStorage.setItem('dp_watchlist', JSON.stringify(window.appState.watchlist));
   } catch(e) {}
+
+  updateWatchlistCountUI();
+
+  // Update star buttons on page
+  const stars = document.querySelectorAll('.watchlist-star');
+  stars.forEach(btn => {
+    const onclickAttr = btn.getAttribute('onclick') || '';
+    if (onclickAttr.includes(`'${matchId}'`) || onclickAttr.includes(`"${matchId}"`)) {
+      if (isAdding) {
+        btn.classList.add('watched');
+        btn.style.color = '#f59e0b';
+        btn.innerText = '★';
+      } else {
+        btn.classList.remove('watched');
+        btn.style.color = 'var(--text-muted)';
+        btn.innerText = '☆';
+      }
+    }
+  });
+
+  const modal = document.getElementById("watchlist-modal");
+  if (modal && modal.classList.contains("active")) {
+    renderWatchlistModalContent();
+  }
+
+  if (window.appState && window.appState.currentFilter === 'watchlist') {
+    if (typeof updateFixturesDisplay === 'function') updateFixturesDisplay();
+  }
 }
+
+window.initWatchlistState = initWatchlistState;
+window.updateWatchlistCountUI = updateWatchlistCountUI;
+window.getWatchlistMatches = getWatchlistMatches;
+window.openWatchlistModal = openWatchlistModal;
+window.closeWatchlistModal = closeWatchlistModal;
+window.renderWatchlistModalContent = renderWatchlistModalContent;
+window.clearWatchlist = clearWatchlist;
 window.toggleWatchlist = toggleWatchlist;
+
+// Initialize on script load and DOM ready
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', initWatchlistState);
+} else {
+  initWatchlistState();
+}
 
 // Ensure renderTodayInsightsPreview & renderRecentSettledPredictions are accessible from app.js context
 if (typeof renderTodayInsightsPreview === 'undefined') {

@@ -7787,6 +7787,58 @@
     </div>
   </div>
 
+  <!-- --- MODAL: WATCHLIST POPUP OUTPUT --- -->
+  <div class="modal-overlay" id="watchlist-modal" onclick="closeWatchlistModal(event)">
+    <div class="modal-content" onclick="event.stopPropagation()"
+      style="max-width: 760px; width: 92%; max-height: 85vh; background: #0b1329; border: 1.5px solid rgba(59, 130, 246, 0.5); border-radius: 20px; box-shadow: 0 24px 70px rgba(0,0,0,0.9); padding: 0; display: flex; flex-direction: column; overflow: hidden;">
+      
+      <!-- Modal Header -->
+      <div style="background: linear-gradient(135deg, rgba(37, 99, 235, 0.25) 0%, rgba(29, 78, 216, 0.35) 50%, #0b1329 100%); padding: 18px 22px; display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid rgba(59, 130, 246, 0.3);">
+        <div style="display: flex; align-items: center; gap: 12px;">
+          <div style="width: 42px; height: 42px; border-radius: 50%; background: rgba(59, 130, 246, 0.2); border: 1.5px solid #3b82f6; display: flex; align-items: center; justify-content: center; font-size: 1.3rem;">
+            ⭐
+          </div>
+          <div>
+            <h3 style="font-family: var(--font-display); font-size: 1.15rem; font-weight: 900; color: #ffffff; margin: 0;">
+              My Watchlist &amp; Pinned Matches
+            </h3>
+            <span style="font-size: 0.75rem; color: #60a5fa; font-weight: 700;">
+              Live In-Play Odds • Match Tracking • AI Insights
+            </span>
+          </div>
+        </div>
+        <button class="modal-close" onclick="closeWatchlistModal(event, true);" style="font-size: 1.5rem; background: transparent; border: none; color: #94a3b8; cursor: pointer;">&times;</button>
+      </div>
+
+      <!-- Toolbar -->
+      <div style="padding: 12px 20px; border-bottom: 1px solid rgba(255,255,255,0.06); background: rgba(0,0,0,0.25); display: flex; gap: 12px; align-items: center; justify-content: space-between; flex-wrap: wrap;">
+        <span id="watchlist-modal-count-badge" style="font-size: 0.8rem; font-weight: 800; color: #93c5fd; background: rgba(37, 99, 235, 0.2); padding: 4px 12px; border-radius: 20px; border: 1px solid rgba(59, 130, 246, 0.3);">
+          0 Matches Saved
+        </span>
+        <div style="display: flex; gap: 8px;">
+          <button id="watchlist-clear-all-btn" class="btn btn-secondary" onclick="clearWatchlist()" style="display: none; font-size: 0.72rem; padding: 4px 10px; color: #f87171; border-color: rgba(239,68,68,0.3); cursor: pointer;">
+            🗑️ Clear Watchlist
+          </button>
+        </div>
+      </div>
+
+      <!-- Watchlist Body Container -->
+      <div id="modal-watchlist-body" style="padding: 18px 20px; overflow-y: auto; max-height: 52vh; display: flex; flex-direction: column; gap: 12px;">
+        <!-- Populated dynamically by JS -->
+      </div>
+
+      <!-- Modal Footer -->
+      <div style="padding: 12px 20px; background: rgba(6,11,19,0.9); border-top: 1px solid rgba(255,255,255,0.08); display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px;">
+        <span style="font-size: 0.75rem; color: var(--text-muted);">
+          ⭐ Star matches across any league to monitor live progress
+        </span>
+        <button class="btn btn-secondary" onclick="closeWatchlistModal(event, true);" style="font-size: 0.75rem; padding: 6px 14px; border-radius: var(--radius-xs); cursor: pointer;">
+          Close Window
+        </button>
+      </div>
+    </div>
+  </div>
+
   <!-- --- MODAL: 50 SCANNED BOOKMAKERS POPUP --- -->
   <div class="modal-overlay" id="scanned-bookmakers-modal" onclick="closeScannedBookmakersModal(event)">
     <div class="modal-content" onclick="event.stopPropagation()"
