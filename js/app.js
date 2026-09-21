@@ -6285,7 +6285,7 @@ function runArbitrageScanner(isUserClick = false) {
   const btn = document.querySelector("#tool-arbitrage button.btn-primary");
   if (isUserClick && btn) {
     const originalText = btn.innerHTML;
-    btn.innerHTML = `⚡ Scanning 50 Bookies...`;
+    btn.innerHTML = `⚡ Scanning Bookies...`;
     btn.style.opacity = '0.85';
     setTimeout(() => {
       btn.innerHTML = originalText;
