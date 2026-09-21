@@ -7773,6 +7773,9 @@ function openProfileModal(activeTab) {
   if (!modal) return;
 
   updateAuthUIState();
+  if (typeof updateSavedTicketsCountUI === 'function') {
+    updateSavedTicketsCountUI();
+  }
 
   modal.classList.add("active");
   modal.style.display = "flex";
@@ -7830,6 +7833,7 @@ function switchProfileTab(tab) {
   } else if (tab === 'history') {
     if (historyBtn) historyBtn.classList.add("active");
     if (historyPane) historyPane.style.display = "block";
+    if (typeof renderProfileSavedTickets === 'function') renderProfileSavedTickets();
   }
 }
 
@@ -7845,8 +7849,475 @@ window.openProfileModal = openProfileModal;
 window.closeProfileModal = closeProfileModal;
 window.switchProfileTab = switchProfileTab;
 
+// --- UNIVERSAL SAVED TICKETS CONTROLLER ---
+
+window.profileTicketFilter = 'all';
+
+const DEFAULT_STARTER_TICKETS = [
+  {
+    id: 'dp-tkt-banker-1',
+    code: 'B9JA-884920',
+    date: 'Today, 10:30',
+    totalOdds: '3.65x',
+    selectionsCount: 3,
+    status: 'pending',
+    stake: 100,
+    matches: [
+      { fixture: 'Arsenal vs Chelsea', pick: 'Over 1.5 Goals', odds: '1.28' },
+      { fixture: 'Real Madrid vs Betis', pick: 'Home Win (1)', odds: '1.45' },
+      { fixture: 'Bayern Munich vs Hoffenheim', pick: 'Home Over 1.5', odds: '1.35' }
+    ]
+  },
+  {
+    id: 'dp-tkt-multi-2',
+    code: 'SPORTY-551934',
+    date: 'Yesterday, 19:15',
+    totalOdds: '4.82x',
+    selectionsCount: 4,
+    status: 'won',
+    stake: 200,
+    matches: [
+      { fixture: 'Barcelona vs Sevilla', pick: 'Home Win (1)', odds: '1.50' },
+      { fixture: 'Inter Milan vs Torino', pick: 'Home Win (1)', odds: '1.42' },
+      { fixture: 'PSG vs Marseille', pick: 'Over 2.5 Goals', odds: '1.55' },
+      { fixture: 'Liverpool vs Everton', pick: 'Home Win (1)', odds: '1.46' }
+    ]
+  }
+];
+
+function getStoredSavedTickets() {
+  let tickets = [];
+  try {
+    const raw = localStorage.getItem('dp_saved_tickets');
+    if (raw) {
+      const parsed = JSON.parse(raw);
+      if (Array.isArray(parsed) && parsed.length > 0) {
+        tickets = parsed;
+      }
+    }
+  } catch (e) {}
+
+  if (window.appState && Array.isArray(window.appState.savedTickets) && window.appState.savedTickets.length > 0) {
+    window.appState.savedTickets.forEach(t => {
+      if (!tickets.some(st => String(st.id) === String(t.id) || (st.code && st.code === t.code))) {
+        tickets.unshift(t);
+      }
+    });
+  }
+
+  // Pre-seed with high quality starter tickets if user has zero tickets
+  if (tickets.length === 0) {
+    tickets = JSON.parse(JSON.stringify(DEFAULT_STARTER_TICKETS));
+    try {
+      localStorage.setItem('dp_saved_tickets', JSON.stringify(tickets));
+    } catch(e) {}
+  }
+
+  if (window.appState) {
+    window.appState.savedTickets = tickets;
+  }
+
+  // Normalize
+  return tickets.map((t, i) => {
+    const code = t.code || t.targetCode || t.id || `DP-${1000 + i}`;
+    const id = t.id || `tkt_${code}`;
+    const matches = Array.isArray(t.matches) ? t.matches : (Array.isArray(t.betslip) ? t.betslip : []);
+    const selectionsCount = matches.length > 0 ? matches.length : (t.selections || 3);
+    let totalOdds = t.odds || t.totalOdds || '3.50x';
+    if (typeof totalOdds === 'number') totalOdds = `${totalOdds.toFixed(2)}x`;
+    else if (!String(totalOdds).endsWith('x')) totalOdds = `${totalOdds}x`;
+    const status = t.status ? String(t.status).toLowerCase() : 'pending';
+    const stake = typeof t.stake === 'number' ? t.stake : 100;
+    return {
+      ...t,
+      id,
+      code,
+      date: t.date || 'Today',
+      matches,
+      selectionsCount,
+      totalOdds,
+      status,
+      stake
+    };
+  });
+}
+
+function updateSavedTicketsCountUI() {
+  const tickets = getStoredSavedTickets();
+  const total = tickets.length;
+  const pending = tickets.filter(t => t.status === 'pending').length;
+  const won = tickets.filter(t => t.status === 'won').length;
+  const lost = tickets.filter(t => t.status === 'lost').length;
+
+  const countBadge = document.getElementById("profile-saved-tickets-count");
+  if (countBadge) countBadge.innerText = total;
+
+  const cAll = document.getElementById("prof-tk-count-all");
+  if (cAll) cAll.innerText = total;
+
+  const cPending = document.getElementById("prof-tk-count-pending");
+  if (cPending) cPending.innerText = pending;
+
+  const cWon = document.getElementById("prof-tk-count-won");
+  if (cWon) cWon.innerText = won;
+
+  const cLost = document.getElementById("prof-tk-count-lost");
+  if (cLost) cLost.innerText = lost;
+
+  const clearBtn = document.getElementById("profile-clear-tickets-btn");
+  if (clearBtn) clearBtn.style.display = total > 0 ? 'inline-block' : 'none';
+}
+
+function filterProfileTickets(filter) {
+  window.profileTicketFilter = filter || 'all';
+  ['all', 'pending', 'won', 'lost'].forEach(f => {
+    const btn = document.getElementById(`prof-tk-filter-${f}`);
+    if (btn) {
+      if (f === window.profileTicketFilter) btn.classList.add('active');
+      else btn.classList.remove('active');
+    }
+  });
+  renderProfileSavedTickets();
+}
+
+function renderProfileSavedTickets() {
+  const container = document.getElementById("saved-tickets-container");
+  if (!container) return;
+
+  updateSavedTicketsCountUI();
+
+  const tickets = getStoredSavedTickets();
+  const filter = window.profileTicketFilter || 'all';
+  let filtered = tickets;
+  if (filter === 'pending') filtered = tickets.filter(t => t.status === 'pending');
+  else if (filter === 'won') filtered = tickets.filter(t => t.status === 'won');
+  else if (filter === 'lost') filtered = tickets.filter(t => t.status === 'lost');
+
+  if (filtered.length === 0) {
+    container.innerHTML = `
+      <div style="text-align: center; padding: 28px 16px; background: rgba(15, 23, 42, 0.6); border: 1px dashed rgba(255,255,255,0.12); border-radius: 14px;">
+        <div style="font-size: 2.2rem; margin-bottom: 8px;">🎟️</div>
+        <h4 style="font-family: var(--font-display); font-size: 1.05rem; font-weight: 800; color: #ffffff; margin: 0 0 6px;">
+          ${filter === 'all' ? 'No Saved Tickets Found' : `No ${filter.toUpperCase()} Tickets Found`}
+        </h4>
+        <p style="font-size: 0.78rem; color: #94a3b8; max-width: 380px; margin: 0 auto 14px; line-height: 1.45;">
+          ${filter === 'all' ? 'Save accumulator slips from the Bet Generator, convert booking codes, or load a starter slip below.' : `You have no tickets currently marked as ${filter}.`}
+        </p>
+        <div style="display: flex; gap: 8px; justify-content: center; flex-wrap: wrap;">
+          <button onclick="addStarterDemoTicket('banker')" class="btn btn-secondary" style="padding: 6px 12px; font-size: 0.74rem; font-weight: 700; color: #34d399; border-color: rgba(52,211,153,0.4); cursor: pointer;">
+            ⚡ Add Starter Banker (3.65x)
+          </button>
+          <button onclick="addStarterDemoTicket('weekend')" class="btn btn-secondary" style="padding: 6px 12px; font-size: 0.74rem; font-weight: 700; color: #fbbf24; border-color: rgba(251,191,36,0.4); cursor: pointer;">
+            🔥 Add Weekend Multi (4.82x)
+          </button>
+        </div>
+      </div>
+    `;
+    return;
+  }
+
+  container.innerHTML = filtered.map((t, idx) => {
+    let statusBadgeColor = '#fbbf24';
+    let statusBg = 'rgba(251, 191, 36, 0.15)';
+    let statusBorder = 'rgba(251, 191, 36, 0.35)';
+    if (t.status === 'won') {
+      statusBadgeColor = '#34d399';
+      statusBg = 'rgba(16, 185, 129, 0.15)';
+      statusBorder = 'rgba(16, 185, 129, 0.35)';
+    } else if (t.status === 'lost') {
+      statusBadgeColor = '#f87171';
+      statusBg = 'rgba(239, 68, 68, 0.15)';
+      statusBorder = 'rgba(239, 68, 68, 0.35)';
+    }
+
+    const matchesList = Array.isArray(t.matches) && t.matches.length > 0 ? t.matches : [];
+    const matchesSnippet = matchesList.length > 0 ? `
+      <div style="background: rgba(0,0,0,0.25); border-radius: 8px; padding: 8px 10px; border: 1px solid rgba(255,255,255,0.04); display: flex; flex-direction: column; gap: 6px;">
+        ${matchesList.map(m => {
+          const name = m.fixture || (m.homeTeam && m.awayTeam ? `${m.homeTeam.name || m.homeTeam} vs ${m.awayTeam.name || m.awayTeam}` : 'Match Selection');
+          const pick = m.pick || m.tip || m.prediction || 'Pro Tip';
+          const odd = m.odds || '1.80';
+          return `
+            <div style="display: flex; justify-content: space-between; align-items: center; font-size: 0.72rem;">
+              <span style="color: #cbd5e1; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 60%;">⚽ ${name}</span>
+              <div style="display: flex; gap: 6px; align-items: center;">
+                <span style="color: #38bdf8; font-weight: 700; background: rgba(56,189,248,0.1); padding: 1px 5px; border-radius: 4px;">${pick}</span>
+                <span style="color: #fbbf24; font-weight: 700;">@${odd}</span>
+              </div>
+            </div>
+          `;
+        }).join('')}
+      </div>
+    ` : '';
+
+    return `
+      <div class="glass-card" style="background: rgba(15, 23, 42, 0.85); border: 1px solid rgba(59, 130, 246, 0.22); border-radius: 12px; padding: 14px; display: flex; flex-direction: column; gap: 10px;">
+        <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px;">
+          <div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap;">
+            <span style="background: rgba(59,130,246,0.15); border: 1px solid rgba(59,130,246,0.3); color: #60a5fa; font-size: 0.68rem; font-weight: 800; padding: 2px 7px; border-radius: 5px;">
+              SLIP #${idx + 1}
+            </span>
+            <span style="font-family: monospace; font-size: 0.95rem; font-weight: 900; color: #ffffff; letter-spacing: 0.5px; background: rgba(0,0,0,0.35); padding: 3px 8px; border-radius: 6px; border: 1px solid rgba(255,255,255,0.08);">
+              ${t.code}
+            </span>
+            <button onclick="copyTicketCode('${t.code}')" class="btn btn-secondary" style="font-size: 0.7rem; padding: 3px 8px; font-weight: 700; cursor: pointer; color: #93c5fd; border-color: rgba(59,130,246,0.3);">
+              📋 Copy
+            </button>
+          </div>
+
+          <div style="display: flex; align-items: center; gap: 6px;">
+            <span style="font-size: 0.68rem; color: #94a3b8; font-weight: 600;">Outcome:</span>
+            <select onchange="updateProfileTicketStatus('${t.id}', this.value)" style="background: ${statusBg}; border: 1px solid ${statusBorder}; color: ${statusBadgeColor}; font-size: 0.72rem; font-weight: 800; padding: 3px 8px; border-radius: 6px; cursor: pointer; outline: none;">
+              <option value="pending" ${t.status === 'pending' ? 'selected' : ''}>⏳ Pending</option>
+              <option value="won" ${t.status === 'won' ? 'selected' : ''}>🟢 Won</option>
+              <option value="lost" ${t.status === 'lost' ? 'selected' : ''}>🔴 Lost</option>
+            </select>
+          </div>
+        </div>
+
+        <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px; background: rgba(255,255,255,0.02); padding: 7px 10px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.05); font-size: 0.74rem;">
+          <div><span style="color: #94a3b8;">Total Odds:</span> <b style="color: #34d399; font-size: 0.88rem; font-weight: 800;">${t.totalOdds}</b></div>
+          <div><span style="color: #94a3b8;">Selections:</span> <b style="color: #ffffff;">${t.selectionsCount} Legs</b></div>
+          <div><span style="color: #94a3b8;">Stake:</span> <b style="color: #fbbf24;">🪙 ${t.stake}</b></div>
+          <div style="color: #64748b; font-size: 0.68rem;">📅 ${t.date}</div>
+        </div>
+
+        ${matchesSnippet}
+
+        <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px; border-top: 1px solid rgba(255,255,255,0.06); padding-top: 8px;">
+          <div style="display: flex; gap: 6px; flex-wrap: wrap;">
+            <button onclick="loadTicketSelectionsToBetslip('${t.id}')" class="btn btn-secondary" style="font-size: 0.72rem; padding: 4px 10px; font-weight: 700; color: #38bdf8; border-color: rgba(56,189,248,0.3); cursor: pointer;">
+              📥 Load to Betslip
+            </button>
+            <button onclick="auditProfileTicket('${t.id}')" class="btn btn-secondary" style="font-size: 0.72rem; padding: 4px 10px; font-weight: 700; color: #a78bfa; border-color: rgba(167,139,250,0.3); cursor: pointer;">
+              🩺 Audit in Bet Doctor
+            </button>
+          </div>
+          <button onclick="deleteProfileSavedTicket('${t.id}')" title="Delete Ticket" style="background: rgba(239,68,68,0.1); border: 1px solid rgba(239,68,68,0.3); color: #f87171; border-radius: 6px; font-size: 0.72rem; padding: 4px 8px; cursor: pointer;">
+            🗑️ Delete
+          </button>
+        </div>
+      </div>
+    `;
+  }).join('');
+}
+
+function copyTicketCode(code) {
+  if (!code) return;
+  if (navigator.clipboard && navigator.clipboard.writeText) {
+    navigator.clipboard.writeText(code).then(() => {
+      if (typeof showToast === 'function') showToast(`📋 Code '${code}' copied to clipboard!`, 'success');
+      else if (typeof showAppNotification === 'function') showAppNotification(`📋 Code '${code}' copied!`);
+    }).catch(() => {
+      prompt('Copy booking code:', code);
+    });
+  } else {
+    prompt('Copy booking code:', code);
+  }
+}
+
+function updateProfileTicketStatus(ticketId, newStatus) {
+  const tickets = getStoredSavedTickets();
+  const t = tickets.find(item => String(item.id) === String(ticketId));
+  if (t) {
+    t.status = newStatus;
+    try {
+      localStorage.setItem('dp_saved_tickets', JSON.stringify(tickets));
+    } catch(e) {}
+    if (window.appState) window.appState.savedTickets = tickets;
+    updateSavedTicketsCountUI();
+    renderProfileSavedTickets();
+    if (typeof showToast === 'function') showToast(`Ticket marked as ${newStatus.toUpperCase()}`, 'info');
+    else if (typeof showAppNotification === 'function') showAppNotification(`Ticket marked as ${newStatus.toUpperCase()}`);
+    if (typeof window.refreshCustomerDashboardData === 'function') window.refreshCustomerDashboardData();
+  }
+}
+
+function deleteProfileSavedTicket(ticketId) {
+  let tickets = getStoredSavedTickets();
+  tickets = tickets.filter(item => String(item.id) !== String(ticketId));
+  try {
+    localStorage.setItem('dp_saved_tickets', JSON.stringify(tickets));
+  } catch(e) {}
+  if (window.appState) window.appState.savedTickets = tickets;
+  updateSavedTicketsCountUI();
+  renderProfileSavedTickets();
+  if (typeof showToast === 'function') showToast('Ticket removed from history', 'info');
+  else if (typeof showAppNotification === 'function') showAppNotification('Ticket removed from history');
+  if (typeof window.refreshCustomerDashboardData === 'function') window.refreshCustomerDashboardData();
+}
+
+function clearAllProfileSavedTickets() {
+  if (!confirm("Are you sure you want to clear all saved tickets?")) return;
+  try {
+    localStorage.setItem('dp_saved_tickets', JSON.stringify([]));
+  } catch(e) {}
+  if (window.appState) window.appState.savedTickets = [];
+  updateSavedTicketsCountUI();
+  renderProfileSavedTickets();
+  if (typeof showToast === 'function') showToast('Saved tickets cleared', 'info');
+  else if (typeof showAppNotification === 'function') showAppNotification('Saved tickets cleared');
+  if (typeof window.refreshCustomerDashboardData === 'function') window.refreshCustomerDashboardData();
+}
+
+function addStarterDemoTicket(type) {
+  const starter = type === 'banker' ? DEFAULT_STARTER_TICKETS[0] : DEFAULT_STARTER_TICKETS[1];
+  const newTicket = {
+    ...starter,
+    id: `dp-tkt-${Date.now()}`,
+    code: type === 'banker' ? `DP-BNK-${Math.floor(1000 + Math.random()*9000)}` : `DP-MLT-${Math.floor(1000 + Math.random()*9000)}`,
+    date: 'Just Now',
+    status: 'pending'
+  };
+  const tickets = getStoredSavedTickets();
+  tickets.unshift(newTicket);
+  try {
+    localStorage.setItem('dp_saved_tickets', JSON.stringify(tickets));
+  } catch(e) {}
+  if (window.appState) window.appState.savedTickets = tickets;
+  updateSavedTicketsCountUI();
+  renderProfileSavedTickets();
+  if (typeof showToast === 'function') showToast('⚡ Starter ticket added!', 'success');
+  else if (typeof showAppNotification === 'function') showAppNotification('⚡ Starter ticket added!');
+}
+
+function loadTicketSelectionsToBetslip(ticketId) {
+  const tickets = getStoredSavedTickets();
+  const ticket = tickets.find(item => String(item.id) === String(ticketId));
+  if (!ticket || !Array.isArray(ticket.matches) || ticket.matches.length === 0) {
+    if (typeof showToast === 'function') showToast('⚠️ No match legs found on this ticket to load.', 'warning');
+    return;
+  }
+
+  if (!window.appState) window.appState = { betslip: [] };
+  if (!Array.isArray(window.appState.betslip)) window.appState.betslip = [];
+
+  let addedCount = 0;
+  ticket.matches.forEach((m, i) => {
+    const fixtureName = m.fixture || (m.homeTeam && m.awayTeam ? `${m.homeTeam.name || m.homeTeam} vs ${m.awayTeam.name || m.awayTeam}` : `Match Leg #${i+1}`);
+    const parts = fixtureName.split(' vs ');
+    const home = parts[0] || 'Home Team';
+    const away = parts[1] || 'Away Team';
+    const matchId = m.id || m.matchId || `tkt-leg-${Date.now()}-${i}`;
+    const tip = m.pick || m.tip || '1X2 Match Winner';
+    const odds = parseFloat(m.odds) || 1.85;
+
+    const exists = window.appState.betslip.some(item => String(item.id) === String(matchId) || (item.homeTeam === home && item.awayTeam === away));
+    if (!exists) {
+      window.appState.betslip.push({
+        id: matchId,
+        matchId: matchId,
+        homeTeam: home,
+        awayTeam: away,
+        tip: tip,
+        odds: odds,
+        league: m.league || 'Featured League',
+        match: {
+          id: matchId,
+          homeTeam: { name: home },
+          awayTeam: { name: away },
+          league: m.league || 'Featured League'
+        }
+      });
+      addedCount++;
+    }
+  });
+
+  if (typeof renderBetslip === 'function') renderBetslip();
+  const drawer = document.getElementById("floating-betslip-drawer");
+  if (drawer && !drawer.classList.contains("open")) drawer.classList.add("open");
+
+  if (typeof showToast === 'function') showToast(`📥 ${addedCount} leg${addedCount === 1 ? '' : 's'} loaded into active Betslip!`, 'success');
+  else if (typeof showAppNotification === 'function') showAppNotification(`📥 Loaded into Betslip!`);
+}
+
+function auditProfileTicket(ticketId) {
+  const tickets = getStoredSavedTickets();
+  const ticket = tickets.find(item => String(item.id) === String(ticketId));
+  if (!ticket) return;
+
+  closeProfileModal(null, true);
+
+  const doctorInput = document.getElementById("bet-doctor-code-input");
+  if (doctorInput) {
+    doctorInput.value = ticket.code;
+    const doctorSection = document.getElementById("bet-doctor");
+    if (doctorSection) doctorSection.scrollIntoView({ behavior: 'smooth' });
+    if (typeof runBetDoctorAudit === 'function') {
+      setTimeout(() => { runBetDoctorAudit(); }, 400);
+    }
+  } else {
+    if (typeof showToast === 'function') showToast(`Auditing ticket ${ticket.code}...`, 'info');
+  }
+}
+
+// Inline Sidebar User Hub support
+function switchInlineUserTab(tab) {
+  const tabs = ['profile', 'alerts', 'history', 'support'];
+  tabs.forEach(t => {
+    const btn = document.getElementById(`inline-user-tab-${t}`);
+    const pane = document.getElementById(`inline-user-pane-${t}`);
+    if (btn) {
+      if (t === tab) btn.classList.add('active');
+      else btn.classList.remove('active');
+    }
+    if (pane) {
+      if (t === tab) pane.style.display = (t === 'profile' || t === 'alerts' || t === 'history' || t === 'support') ? 'flex' : 'block';
+      else pane.style.display = 'none';
+    }
+  });
+  if (tab === 'history') {
+    renderInlineSavedTickets();
+  }
+}
+
+function renderInlineSavedTickets() {
+  const container = document.getElementById("inline-saved-tickets-container");
+  if (!container) return;
+  const tickets = getStoredSavedTickets();
+  if (tickets.length === 0) {
+    container.innerHTML = `
+      <div style="text-align: center; color: var(--text-muted); padding: 12px 0;">
+        No saved tickets in history yet.
+      </div>
+    `;
+    return;
+  }
+  container.innerHTML = tickets.slice(0, 4).map(t => `
+    <div style="background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.08); border-radius: 8px; padding: 8px 10px; display: flex; justify-content: space-between; align-items: center; gap: 6px;">
+      <div>
+        <div style="font-weight: 800; font-size: 0.78rem; color: #ffffff; font-family: monospace;">${t.code}</div>
+        <div style="font-size: 0.68rem; color: #94a3b8; margin-top: 2px;">Odds: <b style="color: #34d399;">${t.totalOdds}</b> • ${t.selectionsCount} Legs</div>
+      </div>
+      <div style="display: flex; gap: 4px; align-items: center;">
+        <span style="font-size: 0.65rem; padding: 2px 5px; border-radius: 4px; font-weight: 700; ${t.status === 'won' ? 'background: rgba(16,185,129,0.2); color: #34d399;' : (t.status === 'lost' ? 'background: rgba(239,68,68,0.2); color: #f87171;' : 'background: rgba(251,191,36,0.2); color: #fbbf24;')}">
+          ${t.status.toUpperCase()}
+        </span>
+        <button onclick="copyTicketCode('${t.code}')" style="background: none; border: 1px solid rgba(255,255,255,0.15); color: #cbd5e1; border-radius: 4px; padding: 2px 6px; font-size: 0.68rem; cursor: pointer;">📋</button>
+      </div>
+    </div>
+  `).join('');
+}
+
+window.getStoredSavedTickets = getStoredSavedTickets;
+window.updateSavedTicketsCountUI = updateSavedTicketsCountUI;
+window.filterProfileTickets = filterProfileTickets;
+window.renderProfileSavedTickets = renderProfileSavedTickets;
+window.copyTicketCode = copyTicketCode;
+window.updateProfileTicketStatus = updateProfileTicketStatus;
+window.deleteProfileSavedTicket = deleteProfileSavedTicket;
+window.clearAllProfileSavedTickets = clearAllProfileSavedTickets;
+window.addStarterDemoTicket = addStarterDemoTicket;
+window.loadTicketSelectionsToBetslip = loadTicketSelectionsToBetslip;
+window.auditProfileTicket = auditProfileTicket;
+window.switchInlineUserTab = switchInlineUserTab;
+window.renderInlineSavedTickets = renderInlineSavedTickets;
+
 document.addEventListener("DOMContentLoaded", function() {
   updateAuthUIState();
+  if (typeof updateSavedTicketsCountUI === 'function') {
+    updateSavedTicketsCountUI();
+  }
 });
 
 

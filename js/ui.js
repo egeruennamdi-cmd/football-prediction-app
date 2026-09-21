@@ -7793,6 +7793,10 @@ function openProfileModal(activeTab) {
   modal.style.visibility = "visible";
   document.body.style.overflow = "hidden";
 
+  if (typeof updateSavedTicketsCountUI === 'function') {
+    updateSavedTicketsCountUI();
+  }
+
   if (typeof switchProfileTab === 'function') {
     switchProfileTab(activeTab || 'info');
   }
@@ -7841,6 +7845,7 @@ function switchProfileTab(tab) {
   } else if (tab === 'history') {
     if (historyBtn) historyBtn.classList.add("active");
     if (historyPane) historyPane.style.display = "block";
+    if (typeof renderProfileSavedTickets === 'function') renderProfileSavedTickets();
   }
 }
 
@@ -7858,6 +7863,9 @@ window.switchProfileTab = switchProfileTab;
 
 document.addEventListener("DOMContentLoaded", function() {
   updateAuthUIState();
+  if (typeof updateSavedTicketsCountUI === 'function') {
+    updateSavedTicketsCountUI();
+  }
 });
 
 

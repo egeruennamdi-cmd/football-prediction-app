@@ -7222,7 +7222,7 @@
         <button class="tab-btn" id="prof-tab-alerts" onclick="switchProfileTab('alerts')"
           style="padding: 8px 14px; font-size: 0.82rem; font-weight: 800; border-radius: 8px;">Custom Alerts</button>
         <button class="tab-btn" id="prof-tab-history" onclick="switchProfileTab('history')"
-          style="padding: 8px 14px; font-size: 0.82rem; font-weight: 800; border-radius: 8px;">Saved Tickets</button>
+          style="padding: 8px 14px; font-size: 0.82rem; font-weight: 800; border-radius: 8px;">Saved Tickets (<span id="profile-saved-tickets-count">0</span>)</button>
       </div>
 
       <!-- Info Pane -->
@@ -7313,10 +7313,48 @@
 
       <!-- Saved Tickets Pane -->
       <div id="prof-pane-history" class="modal-tab-pane"
-        style="display: none; padding: 20px; max-height: 380px; overflow-y: auto;">
+        style="display: none; padding: 20px; max-height: 420px; overflow-y: auto;">
+        
+        <!-- Controls & Filters Toolbar -->
+        <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px; margin-bottom: 14px; padding-bottom: 12px; border-bottom: 1px solid rgba(255,255,255,0.08);">
+          <div>
+            <h4 style="font-family: var(--font-display); font-size: 1rem; font-weight: 800; color: #ffffff; margin: 0 0 2px;">
+              🎟️ Saved Accumulators & Tickets
+            </h4>
+            <span style="font-size: 0.72rem; color: #94a3b8;">
+              Track outcomes, copy booking codes, or load selections directly into your betslip.
+            </span>
+          </div>
+          <div style="display: flex; gap: 8px; align-items: center;">
+            <button onclick="closeProfileModal(null, true); if(typeof scrollToBetMachine==='function'){scrollToBetMachine();}else if(typeof switchTool==='function'){switchTool('machine');}const m=document.getElementById('machine');if(m)m.scrollIntoView({behavior:'smooth'});" class="btn btn-primary" style="padding: 6px 12px; font-size: 0.74rem; font-weight: 800; border-radius: 6px; cursor: pointer;">
+              + Build New Slip
+            </button>
+            <button id="profile-clear-tickets-btn" onclick="clearAllProfileSavedTickets()" style="display: none; background: rgba(239,68,68,0.12); border: 1px solid rgba(239,68,68,0.3); color: #f87171; border-radius: 6px; font-size: 0.72rem; padding: 6px 10px; font-weight: 700; cursor: pointer;">
+              Clear All
+            </button>
+          </div>
+        </div>
+
+        <!-- Filter Pills -->
+        <div style="display: flex; gap: 6px; margin-bottom: 14px; flex-wrap: wrap;" id="profile-tickets-filter-bar">
+          <button class="dp-tab-pill active" id="prof-tk-filter-all" onclick="filterProfileTickets('all')" style="font-size: 0.72rem; padding: 4px 10px; border-radius: 6px; cursor: pointer;">
+            All (<span id="prof-tk-count-all">0</span>)
+          </button>
+          <button class="dp-tab-pill" id="prof-tk-filter-pending" onclick="filterProfileTickets('pending')" style="font-size: 0.72rem; padding: 4px 10px; border-radius: 6px; cursor: pointer;">
+            ⏳ Pending (<span id="prof-tk-count-pending">0</span>)
+          </button>
+          <button class="dp-tab-pill" id="prof-tk-filter-won" onclick="filterProfileTickets('won')" style="font-size: 0.72rem; padding: 4px 10px; border-radius: 6px; cursor: pointer; color: #34d399;">
+            🟢 Won (<span id="prof-tk-count-won">0</span>)
+          </button>
+          <button class="dp-tab-pill" id="prof-tk-filter-lost" onclick="filterProfileTickets('lost')" style="font-size: 0.72rem; padding: 4px 10px; border-radius: 6px; cursor: pointer; color: #f87171;">
+            🔴 Lost (<span id="prof-tk-count-lost">0</span>)
+          </button>
+        </div>
+
+        <!-- Dynamic Container -->
         <div id="saved-tickets-container" style="display: flex; flex-direction: column; gap: 10px;">
           <div style="text-align: center; font-size: 0.8rem; color: var(--text-muted); padding: 20px;">
-            No saved tickets in history yet. Open the DeepPredict Machine to build and save.
+            Loading saved tickets...
           </div>
         </div>
       </div>
