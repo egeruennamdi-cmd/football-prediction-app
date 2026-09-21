@@ -9913,6 +9913,12 @@ function loadDoctorSample(sampleType) {
     else if (sampleType === 'moderate') codeInput.value = "BK992-MOD";
     else codeInput.value = "1XB-SAFE92";
   }
+  const bookieSelect = document.getElementById("bet-doctor-bookie-select");
+  if (bookieSelect) {
+    if (sampleType === 'highrisk') bookieSelect.value = "sportybet";
+    else if (sampleType === 'moderate') bookieSelect.value = "betking";
+    else bookieSelect.value = "1xbet";
+  }
   runBetDoctorAudit(false);
 }
 
