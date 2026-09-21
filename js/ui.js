@@ -10111,53 +10111,159 @@ function onFilterMarketChange() {
     case '1x2':
       options = [
         { val: 'any', label: 'Any Outcome (1, X, 2)' },
-        { val: 'home', label: '1 - Home Win' },
+        { val: 'win1', label: '1 - Home Win' },
         { val: 'draw', label: 'X - Draw' },
-        { val: 'away', label: '2 - Away Win' }
+        { val: 'win2', label: '2 - Away Win' }
       ];
       break;
     case 'goals':
+    case 'overunder':
       options = [
         { val: 'any', label: 'Any Goals Line' },
-        { val: 'over15', label: 'Over 1.5 Goals' },
-        { val: 'over25', label: 'Over 2.5 Goals' },
-        { val: 'under25', label: 'Under 2.5 Goals' },
-        { val: 'over35', label: 'Over 3.5 Goals' }
+        { val: 'uo05', label: 'Under/Over 0.5 Goals' },
+        { val: 'uo15', label: 'Under/Over 1.5 Goals' },
+        { val: 'uo25', label: 'Under/Over 2.5 Goals' },
+        { val: 'uo35', label: 'Under/Over 3.5 Goals' },
+        { val: 'uo45', label: 'Under/Over 4.5 Goals' },
+        { val: 'uo55', label: 'Under/Over 5.5 Goals' },
+        { val: 'uoht05', label: 'HT Under/Over 0.5 Goals' },
+        { val: 'uoht15', label: 'HT Under/Over 1.5 Goals' },
+        { val: 'uoht25', label: 'HT Under/Over 2.5 Goals' },
+        { val: 'uo2h05', label: '2nd Half Under/Over 0.5' },
+        { val: 'uo2h15', label: '2nd Half Under/Over 1.5' },
+        { val: 'uo2h25', label: '2nd Half Under/Over 2.5' }
       ];
       break;
     case 'btts':
       options = [
-        { val: 'any', label: 'Any Outcome' },
-        { val: 'yes', label: 'BTTS: Yes (Both Teams Score)' },
-        { val: 'no', label: 'BTTS: No (Clean Sheet Likely)' }
+        { val: 'any', label: 'Any BTTS Outcome' },
+        { val: 'btts_yes', label: 'BTTS: Yes (Both Teams Score)' },
+        { val: 'btts_no', label: 'BTTS: No (Clean Sheet Likely)' },
+        { val: 'bttsht', label: 'BTTS - Half Time' },
+        { val: 'btts2h', label: 'BTTS - 2nd Half' },
+        { val: 'btts_both', label: 'BTTS Both Halves' }
       ];
       break;
     case 'double_chance':
+    case 'doublechance':
       options = [
         { val: 'any', label: 'Any Double Chance' },
-        { val: '1x', label: '1X (Home Win or Draw)' },
-        { val: 'x2', label: 'X2 (Draw or Away Win)' },
-        { val: '12', label: '12 (Home or Away Win)' }
+        { val: 'dc1x', label: '1X (Home Win or Draw)' },
+        { val: 'dc12', label: '12 (Home or Away Win)' },
+        { val: 'dcx2', label: 'X2 (Draw or Away Win)' }
+      ];
+      break;
+    case 'dnb':
+      options = [
+        { val: 'any', label: 'Any DNB Outcome' },
+        { val: 'dnb', label: 'Draw No Bet (Decisive Edge)' }
+      ];
+      break;
+    case 'combo':
+      options = [
+        { val: 'any', label: 'Any Combo Tip' },
+        { val: 'combo_1x2_uo', label: '1X2 + Over 2.5 Combo' },
+        { val: 'combo_1x2_under', label: '1X2 + Under 2.5 Combo' },
+        { val: 'combo_1x2_gg', label: '1X2 + GG Combo' },
+        { val: 'combo_dc_uo', label: 'Double Chance + Over 2.5' },
+        { val: 'combo_dc_gg', label: 'Double Chance + GG' }
+      ];
+      break;
+    case 'htft':
+      options = [
+        { val: 'any', label: 'Any HT/FT Outcome' },
+        { val: 'htft_11', label: 'HT/FT: 1/1 (Home/Home)' },
+        { val: 'htft_x1', label: 'HT/FT: X/1 (Draw/Home)' },
+        { val: 'htft_21', label: 'HT/FT: 2/1 (Away/Home)' },
+        { val: 'htft_1x', label: 'HT/FT: 1/X (Home/Draw)' },
+        { val: 'htft_xx', label: 'HT/FT: X/X (Draw/Draw)' },
+        { val: 'htft_2x', label: 'HT/FT: 2/X (Away/Draw)' },
+        { val: 'htft_12', label: 'HT/FT: 1/2 (Home/Away)' },
+        { val: 'htft_x2', label: 'HT/FT: X/2 (Draw/Away)' },
+        { val: 'htft_22', label: 'HT/FT: 2/2 (Away/Away)' },
+        { val: 'wineither', label: 'Win Either Half' },
+        { val: 'winboth', label: 'Win Both Halves' }
+      ];
+      break;
+    case 'multigoals':
+      options = [
+        { val: 'any', label: 'Any Multi-Goals Line' },
+        { val: 'mg12', label: 'Multi-Goals: 1-2 Goals' },
+        { val: 'mg13', label: 'Multi-Goals: 1-3 Goals' },
+        { val: 'mg23', label: 'Multi-Goals: 2-3 Goals' },
+        { val: 'mg24', label: 'Multi-Goals: 2-4 Goals' },
+        { val: 'mg25', label: 'Multi-Goals: 2-5 Goals' },
+        { val: 'mg35', label: 'Multi-Goals: 3-5 Goals' },
+        { val: 'mg46', label: 'Multi-Goals: 4-6 Goals' },
+        { val: 'eg0', label: 'Exact Goals: 0 Goals' },
+        { val: 'eg1', label: 'Exact Goals: 1 Goal' },
+        { val: 'eg2', label: 'Exact Goals: 2 Goals' },
+        { val: 'eg3', label: 'Exact Goals: 3 Goals' },
+        { val: 'eg4', label: 'Exact Goals: 4+ Goals' }
+      ];
+      break;
+    case 'teamspec':
+      options = [
+        { val: 'any', label: 'Any Team Specific Market' },
+        { val: 'huo05', label: 'Home Over 0.5 Goals' },
+        { val: 'huo15', label: 'Home Over 1.5 Goals' },
+        { val: 'auo05', label: 'Away Over 0.5 Goals' },
+        { val: 'auo15', label: 'Away Over 1.5 Goals' },
+        { val: 'hcs', label: 'Home Clean Sheet' },
+        { val: 'acs', label: 'Away Clean Sheet' },
+        { val: 'hw2n', label: 'Home Win to Nil' },
+        { val: 'aw2n', label: 'Away Win to Nil' },
+        { val: 'first_goal', label: 'First Team to Score' }
       ];
       break;
     case 'corners':
       options = [
         { val: 'any', label: 'Any Corners Line' },
-        { val: 'over85', label: 'Over 8.5 Corners' },
-        { val: 'over95', label: 'Over 9.5 Corners' },
-        { val: 'over105', label: 'Over 10.5 Corners' }
+        { val: 'c65', label: 'Total Corners: 6.5' },
+        { val: 'c75', label: 'Total Corners: 7.5' },
+        { val: 'c85', label: 'Total Corners: 8.5' },
+        { val: 'c95', label: 'Total Corners: 9.5' },
+        { val: 'c105', label: 'Total Corners: 10.5' },
+        { val: 'c115', label: 'Total Corners: 11.5' },
+        { val: 'c125', label: 'Total Corners: 12.5' },
+        { val: 'c45ht', label: '1st Half Corners: 4.5' },
+        { val: 'c1x2', label: 'Most Corners 1X2' }
+      ];
+      break;
+    case 'cards':
+      options = [
+        { val: 'any', label: 'Any Cards Line' },
+        { val: 'cards35', label: 'Total Cards: Over 3.5' },
+        { val: 'cards45', label: 'Total Cards: Over 4.5' },
+        { val: 'cards55', label: 'Total Cards: Over 5.5' },
+        { val: 'redcard', label: 'Red Card (Yes/No)' },
+        { val: 'penalty', label: 'Penalty Awarded' }
+      ];
+      break;
+    case 'handicap':
+      options = [
+        { val: 'any', label: 'Any Handicap Line' },
+        { val: 'eh1', label: 'European Handicap (-1)' },
+        { val: 'ah05', label: 'Asian Handicap (-0.5 / +0.5)' },
+        { val: 'ah15', label: 'Asian Handicap (-1.5 / +1.5)' }
       ];
       break;
     case 'all':
-    default:
       options = [
         { val: 'any', label: 'Any Outcome' }
+      ];
+      break;
+    default:
+      // When a specific individual market was selected from the dropdown
+      options = [
+        { val: market, label: 'Selected Line (' + market + ')' }
       ];
       break;
   }
 
   submarketSelect.innerHTML = options.map(opt => `<option value="${opt.val}">${opt.label}</option>`).join('');
 }
+window.onFilterMarketChange = onFilterMarketChange;
 
 function buildMatchCardElement(match) {
   if (!match) return null;
@@ -10480,27 +10586,101 @@ function runAdvancedFilters() {
     if (corners < minCorners) return false;
 
     // Market and Submarket Filter
-    if (market === '1x2') {
-      if (submarket === 'home' && (pHome < pAway || pHome < pDraw)) return false;
-      if (submarket === 'draw' && (pDraw < 25 && Math.abs(pHome - pAway) > 15)) return false;
-      if (submarket === 'away' && (pAway < pHome || pAway < pDraw)) return false;
-    } else if (market === 'goals') {
+    const targetSelection = (submarket && submarket !== 'any' && submarket !== 'all') ? submarket : market;
+
+    if (targetSelection === 'all') {
+      // no market filter applied
+    } else if (targetSelection === '1x2' || ['win1', 'home', 'draw', 'win2', 'away'].includes(targetSelection)) {
+      if (targetSelection === 'win1' || targetSelection === 'home') {
+        if (pHome < pAway || pHome < pDraw) return false;
+      } else if (targetSelection === 'draw') {
+        if (pDraw < 22 && Math.abs(pHome - pAway) > 15) return false;
+      } else if (targetSelection === 'win2' || targetSelection === 'away') {
+        if (pAway < pHome || pAway < pDraw) return false;
+      }
+    } else if (['goals', 'overunder', 'uo05', 'uo15', 'uo25', 'uo35', 'uo45', 'uo55', 'uoht05', 'uoht15', 'uoht25', 'uo2h05', 'uo2h15', 'uo2h25', 'over15', 'over25', 'under25', 'over35'].includes(targetSelection)) {
       const totalAvgGoals = avgScored + avgConceded;
-      if (submarket === 'over15' && totalAvgGoals < 1.8) return false;
-      if (submarket === 'over25' && totalAvgGoals < 2.5) return false;
-      if (submarket === 'under25' && totalAvgGoals >= 2.5) return false;
-      if (submarket === 'over35' && totalAvgGoals < 3.2) return false;
-    } else if (market === 'btts') {
-      if (submarket === 'yes' && (avgScored < 1.1 || avgConceded < 0.9)) return false;
-      if (submarket === 'no' && (avgScored >= 1.6 && avgConceded >= 1.5)) return false;
-    } else if (market === 'double_chance') {
-      if (submarket === '1x' && pAway > 55) return false;
-      if (submarket === 'x2' && pHome > 55) return false;
-      if (submarket === '12' && pDraw > 35) return false;
-    } else if (market === 'corners') {
-      if (submarket === 'over85' && corners < 8.5) return false;
-      if (submarket === 'over95' && corners < 9.5) return false;
-      if (submarket === 'over105' && corners < 10.5) return false;
+      if (targetSelection === 'uo05' && totalAvgGoals < 1.0) return false;
+      if ((targetSelection === 'uo15' || targetSelection === 'over15') && totalAvgGoals < 1.8) return false;
+      if ((targetSelection === 'uo25' || targetSelection === 'over25') && totalAvgGoals < 2.4) return false;
+      if (targetSelection === 'under25' && totalAvgGoals >= 2.5) return false;
+      if ((targetSelection === 'uo35' || targetSelection === 'over35') && totalAvgGoals < 3.2) return false;
+      if (targetSelection === 'uo45' && totalAvgGoals < 4.0) return false;
+      if (targetSelection === 'uo55' && totalAvgGoals < 4.8) return false;
+      if (targetSelection === 'uoht05' && avgScored < 0.6 && avgConceded < 0.6) return false;
+      if (targetSelection === 'uoht15' && totalAvgGoals < 2.0) return false;
+      if (targetSelection === 'uoht25' && totalAvgGoals < 2.8) return false;
+      if (targetSelection === 'uo2h05' && avgScored < 0.6 && avgConceded < 0.6) return false;
+      if (targetSelection === 'uo2h15' && totalAvgGoals < 2.0) return false;
+      if (targetSelection === 'uo2h25' && totalAvgGoals < 2.8) return false;
+    } else if (['btts', 'btts_yes', 'yes', 'btts_no', 'no', 'bttsht', 'btts2h', 'btts_both'].includes(targetSelection)) {
+      if ((targetSelection === 'yes' || targetSelection === 'btts_yes' || targetSelection === 'btts') && (avgScored < 1.1 || avgConceded < 0.9)) return false;
+      if ((targetSelection === 'no' || targetSelection === 'btts_no') && (avgScored >= 1.6 && avgConceded >= 1.5)) return false;
+      if (targetSelection === 'bttsht' && (avgScored < 1.3 || avgConceded < 1.1)) return false;
+      if (targetSelection === 'btts2h' && (avgScored < 1.3 || avgConceded < 1.1)) return false;
+      if (targetSelection === 'btts_both' && (avgScored < 1.5 || avgConceded < 1.3)) return false;
+    } else if (['double_chance', 'doublechance', 'dc1x', '1x', 'dc12', '12', 'dcx2', 'x2'].includes(targetSelection)) {
+      if ((targetSelection === '1x' || targetSelection === 'dc1x') && pAway > 55) return false;
+      if ((targetSelection === 'x2' || targetSelection === 'dcx2') && pHome > 55) return false;
+      if ((targetSelection === '12' || targetSelection === 'dc12') && pDraw > 35) return false;
+    } else if (['dnb', 'dnb_pick'].includes(targetSelection)) {
+      if (Math.abs(pHome - pAway) < 5) return false;
+    } else if (targetSelection === 'combo' || targetSelection.startsWith('combo_')) {
+      const tot = avgScored + avgConceded;
+      if (targetSelection === 'combo_1x2_uo' && (tot < 2.4 || (pHome < 38 && pAway < 38))) return false;
+      if (targetSelection === 'combo_1x2_under' && (tot >= 2.5 || (pHome < 38 && pAway < 38))) return false;
+      if (targetSelection === 'combo_1x2_gg' && (avgScored < 1.1 || avgConceded < 0.9 || (pHome < 38 && pAway < 38))) return false;
+      if (targetSelection === 'combo_dc_uo' && tot < 2.4) return false;
+      if (targetSelection === 'combo_dc_gg' && (avgScored < 1.1 || avgConceded < 0.9)) return false;
+    } else if (targetSelection === 'htft' || targetSelection.startsWith('htft_') || targetSelection === 'wineither' || targetSelection === 'winboth') {
+      if (targetSelection === 'htft_11' && pHome < 38) return false;
+      if (targetSelection === 'htft_22' && pAway < 32) return false;
+      if (targetSelection === 'htft_xx' && pDraw < 24) return false;
+      if (targetSelection === 'wineither' && (pHome < 35 && pAway < 30)) return false;
+      if (targetSelection === 'winboth' && (pHome < 45 && pAway < 40)) return false;
+    } else if (targetSelection === 'multigoals' || targetSelection.startsWith('mg') || targetSelection.startsWith('eg')) {
+      const tot = avgScored + avgConceded;
+      if (targetSelection === 'mg12' && (tot < 1.0 || tot > 2.8)) return false;
+      if (targetSelection === 'mg13' && (tot < 1.0 || tot > 3.6)) return false;
+      if (targetSelection === 'mg23' && (tot < 1.8 || tot > 3.6)) return false;
+      if (targetSelection === 'mg24' && (tot < 1.8 || tot > 4.5)) return false;
+      if (targetSelection === 'mg25' && (tot < 1.8 || tot > 5.4)) return false;
+      if (targetSelection === 'mg35' && (tot < 2.6 || tot > 5.4)) return false;
+      if (targetSelection === 'mg46' && tot < 3.5) return false;
+      if (targetSelection === 'eg0' && tot > 1.2) return false;
+      if (targetSelection === 'eg1' && (tot < 0.8 || tot > 1.9)) return false;
+      if (targetSelection === 'eg2' && (tot < 1.6 || tot > 2.7)) return false;
+      if (targetSelection === 'eg3' && (tot < 2.4 || tot > 3.6)) return false;
+      if (targetSelection === 'eg4' && tot < 3.4) return false;
+    } else if (targetSelection === 'teamspec' || ['huo05', 'huo15', 'auo05', 'auo15', 'hcs', 'acs', 'hw2n', 'aw2n', 'first_goal'].includes(targetSelection)) {
+      if (targetSelection === 'huo05' && avgScored < 0.8) return false;
+      if (targetSelection === 'huo15' && avgScored < 1.4) return false;
+      if (targetSelection === 'auo05' && avgConceded < 0.8) return false;
+      if (targetSelection === 'auo15' && avgConceded < 1.4) return false;
+      if (targetSelection === 'hcs' && avgConceded > 1.2) return false;
+      if (targetSelection === 'acs' && avgScored > 1.2) return false;
+      if (targetSelection === 'hw2n' && (pHome < 40 || avgConceded > 1.2)) return false;
+      if (targetSelection === 'aw2n' && (pAway < 35 || avgScored > 1.2)) return false;
+    } else if (targetSelection === 'corners' || ['c65', 'c75', 'c85', 'c95', 'c105', 'c115', 'c125', 'c45ht', 'c1x2', 'over85', 'over95', 'over105'].includes(targetSelection)) {
+      if (targetSelection === 'c65' && corners < 6.5) return false;
+      if (targetSelection === 'c75' && corners < 7.5) return false;
+      if ((targetSelection === 'c85' || targetSelection === 'over85') && corners < 8.5) return false;
+      if ((targetSelection === 'c95' || targetSelection === 'over95') && corners < 9.5) return false;
+      if ((targetSelection === 'c105' || targetSelection === 'over105') && corners < 10.5) return false;
+      if (targetSelection === 'c115' && corners < 11.5) return false;
+      if (targetSelection === 'c125' && corners < 12.5) return false;
+      if (targetSelection === 'c45ht' && corners < 8.0) return false;
+      if (targetSelection === 'c1x2' && Math.abs(pHome - pAway) < 5) return false;
+    } else if (targetSelection === 'cards' || ['cards35', 'cards45', 'cards55', 'redcard', 'penalty'].includes(targetSelection)) {
+      if (targetSelection === 'cards35' && (seed % 10 < 2)) return false;
+      if (targetSelection === 'cards45' && (seed % 10 < 4)) return false;
+      if (targetSelection === 'cards55' && (seed % 10 < 6)) return false;
+      if (targetSelection === 'redcard' && (seed % 7 !== 0)) return false;
+      if (targetSelection === 'penalty' && (seed % 5 !== 0)) return false;
+    } else if (targetSelection === 'handicap' || ['eh1', 'ah05', 'ah15'].includes(targetSelection)) {
+      if (targetSelection === 'eh1' && pHome < 50) return false;
+      if (targetSelection === 'ah05' && Math.abs(pHome - pAway) < 10) return false;
+      if (targetSelection === 'ah15' && Math.abs(pHome - pAway) < 20) return false;
     }
 
     return true;

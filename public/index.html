@@ -5153,12 +5153,149 @@
                   style="font-size: 0.75rem; font-weight: 600; color: var(--text-secondary);">Betting Market</label>
                 <select id="filt-market-select" onchange="if(typeof onFilterMarketChange==='function') onFilterMarketChange(); if(typeof runAdvancedFilters==='function') runAdvancedFilters();"
                   style="background: var(--bg-dark); border: 1px solid var(--border-color); border-radius: var(--radius-sm); padding: 8px; color: var(--text-primary); outline: none; cursor: pointer; font-size: 0.8rem;">
-                  <option value="all">All Predictions</option>
-                  <option value="1x2">1X2 Match Winner</option>
-                  <option value="goals">Over/Under Goals</option>
-                  <option value="btts">Both Teams to Score (BTTS)</option>
-                  <option value="double_chance">Double Chance</option>
-                  <option value="corners">Total Corners</option>
+                  <option value="all">⭐ All Markets / Predictions</option>
+
+                  <!-- Main Category Tabs -->
+                  <optgroup label="── Main Market Categories ──">
+                    <option value="1x2">1X2 Tips</option>
+                    <option value="overunder">Over/Under Goals</option>
+                    <option value="btts">Both Teams to Score (BTTS)</option>
+                    <option value="doublechance">Double Chance</option>
+                    <option value="dnb">Draw No Bet (DNB)</option>
+                    <option value="combo">Combos (1X2 + Goals / GG)</option>
+                    <option value="htft">HT / FT (Half Time/Full Time)</option>
+                    <option value="multigoals">Multi-Goals &amp; Ranges</option>
+                    <option value="teamspec">Team Goals &amp; Clean Sheet</option>
+                    <option value="corners">Corners Tips</option>
+                    <option value="cards">Cards &amp; Bookings</option>
+                    <option value="handicap">Asian / Euro Handicap</option>
+                  </optgroup>
+
+                  <!-- 1X2 Tips -->
+                  <optgroup label="── 1X2 Tips ──">
+                    <option value="win1">1X2: Home Win (1)</option>
+                    <option value="draw">1X2: Draw (X)</option>
+                    <option value="win2">1X2: Away Win (2)</option>
+                  </optgroup>
+
+                  <!-- Double Chance & DNB -->
+                  <optgroup label="── Double Chance &amp; DNB ──">
+                    <option value="dc1x">Double Chance: 1X</option>
+                    <option value="dc12">Double Chance: 12</option>
+                    <option value="dcx2">Double Chance: X2</option>
+                    <option value="dnb">Draw No Bet (DNB)</option>
+                  </optgroup>
+
+                  <!-- Over / Under FT Goals -->
+                  <optgroup label="── Over / Under FT Goals ──">
+                    <option value="uo05">Under/Over: 0.5</option>
+                    <option value="uo15">Under/Over: 1.5</option>
+                    <option value="uo25">Under/Over: 2.5</option>
+                    <option value="uo35">Under/Over: 3.5</option>
+                    <option value="uo45">Under/Over: 4.5</option>
+                    <option value="uo55">Under/Over: 5.5</option>
+                  </optgroup>
+
+                  <!-- Over / Under Halves Goals -->
+                  <optgroup label="── Over / Under Halves Goals ──">
+                    <option value="uoht05">Under/Over HT: 0.5</option>
+                    <option value="uoht15">Under/Over HT: 1.5</option>
+                    <option value="uoht25">Under/Over HT: 2.5</option>
+                    <option value="uo2h05">Under/Over 2nd Half: 0.5</option>
+                    <option value="uo2h15">Under/Over 2nd Half: 1.5</option>
+                    <option value="uo2h25">Under/Over 2nd Half: 2.5</option>
+                  </optgroup>
+
+                  <!-- Multi-Goals & Exact Goals -->
+                  <optgroup label="── Multi-Goals &amp; Exact Goals ──">
+                    <option value="mg12">Multi-Goals: 1-2 Goals</option>
+                    <option value="mg13">Multi-Goals: 1-3 Goals</option>
+                    <option value="mg23">Multi-Goals: 2-3 Goals</option>
+                    <option value="mg24">Multi-Goals: 2-4 Goals</option>
+                    <option value="mg25">Multi-Goals: 2-5 Goals</option>
+                    <option value="mg35">Multi-Goals: 3-5 Goals</option>
+                    <option value="mg46">Multi-Goals: 4-6 Goals</option>
+                    <option value="eg0">Exact Goals: 0 Goals</option>
+                    <option value="eg1">Exact Goals: 1 Goal</option>
+                    <option value="eg2">Exact Goals: 2 Goals</option>
+                    <option value="eg3">Exact Goals: 3 Goals</option>
+                    <option value="eg4">Exact Goals: 4+ Goals</option>
+                  </optgroup>
+
+                  <!-- Both Teams to Score (BTTS) -->
+                  <optgroup label="── Both Teams to Score (BTTS) ──">
+                    <option value="btts_yes">BTTS / GG (Both Score)</option>
+                    <option value="btts_no">BTTS No / NG</option>
+                    <option value="bttsht">BTTS - Half Time</option>
+                    <option value="btts2h">BTTS - 2nd Half</option>
+                    <option value="btts_both">BTTS Both Halves</option>
+                  </optgroup>
+
+                  <!-- Combos -->
+                  <optgroup label="── Combos (1X2 + Goals / GG) ──">
+                    <option value="combo_1x2_uo">1X2 + Over 2.5 Combo</option>
+                    <option value="combo_1x2_under">1X2 + Under 2.5 Combo</option>
+                    <option value="combo_1x2_gg">1X2 + GG Combo</option>
+                    <option value="combo_dc_uo">Double Chance + Over 2.5</option>
+                    <option value="combo_dc_gg">Double Chance + GG</option>
+                  </optgroup>
+
+                  <!-- HT / FT (Half Time / Full Time) -->
+                  <optgroup label="── HT / FT (Half Time / Full Time) ──">
+                    <option value="htft_11">HT/FT: 1/1 (Home/Home)</option>
+                    <option value="htft_x1">HT/FT: X/1 (Draw/Home)</option>
+                    <option value="htft_21">HT/FT: 2/1 (Away/Home)</option>
+                    <option value="htft_1x">HT/FT: 1/X (Home/Draw)</option>
+                    <option value="htft_xx">HT/FT: X/X (Draw/Draw)</option>
+                    <option value="htft_2x">HT/FT: 2/X (Away/Draw)</option>
+                    <option value="htft_12">HT/FT: 1/2 (Home/Away)</option>
+                    <option value="htft_x2">HT/FT: X/2 (Draw/Away)</option>
+                    <option value="htft_22">HT/FT: 2/2 (Away/Away)</option>
+                    <option value="wineither">Win Either Half</option>
+                    <option value="winboth">Win Both Halves</option>
+                  </optgroup>
+
+                  <!-- Team Goals & Clean Sheet -->
+                  <optgroup label="── Team Goals &amp; Clean Sheet ──">
+                    <option value="huo05">Home Over 0.5 Goals</option>
+                    <option value="huo15">Home Over 1.5 Goals</option>
+                    <option value="auo05">Away Over 0.5 Goals</option>
+                    <option value="auo15">Away Over 1.5 Goals</option>
+                    <option value="hcs">Home Clean Sheet</option>
+                    <option value="acs">Away Clean Sheet</option>
+                    <option value="hw2n">Home Win to Nil</option>
+                    <option value="aw2n">Away Win to Nil</option>
+                    <option value="first_goal">First Team to Score</option>
+                  </optgroup>
+
+                  <!-- Corners Tips -->
+                  <optgroup label="── Corners Tips &amp; Lines ──">
+                    <option value="c65">Total Corners: 6.5</option>
+                    <option value="c75">Total Corners: 7.5</option>
+                    <option value="c85">Total Corners: 8.5</option>
+                    <option value="c95">Total Corners: 9.5</option>
+                    <option value="c105">Total Corners: 10.5</option>
+                    <option value="c115">Total Corners: 11.5</option>
+                    <option value="c125">Total Corners: 12.5</option>
+                    <option value="c45ht">1st Half Corners: 4.5</option>
+                    <option value="c1x2">Most Corners 1X2</option>
+                  </optgroup>
+
+                  <!-- Cards & Bookings -->
+                  <optgroup label="── Cards &amp; Bookings ──">
+                    <option value="cards35">Total Cards: Over 3.5</option>
+                    <option value="cards45">Total Cards: Over 4.5</option>
+                    <option value="cards55">Total Cards: Over 5.5</option>
+                    <option value="redcard">Red Card (Yes/No)</option>
+                    <option value="penalty">Penalty Awarded</option>
+                  </optgroup>
+
+                  <!-- Asian / Euro Handicap -->
+                  <optgroup label="── Asian / Euro Handicap ──">
+                    <option value="eh1">European Handicap (-1)</option>
+                    <option value="ah05">Asian Handicap (-0.5 / +0.5)</option>
+                    <option value="ah15">Asian Handicap (-1.5 / +1.5)</option>
+                  </optgroup>
                 </select>
               </div>
 
