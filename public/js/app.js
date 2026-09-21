@@ -6234,11 +6234,11 @@ function toggleScannedBookiesList() {
   if (!pane) return;
   if (pane.style.display === "none" || !pane.style.display) {
     pane.style.display = "flex";
-    if (btn) btn.innerHTML = "📋 Hide 50 Bookmakers List ▲";
+    if (btn) btn.innerHTML = "📋 Hide Bookmakers List ▲";
     renderScannedBookmakersInline();
   } else {
     pane.style.display = "none";
-    if (btn) btn.innerHTML = "📋 View 50 Bookmakers Below ▼";
+    if (btn) btn.innerHTML = "📋 View Bookmakers Below ▼";
   }
 }
 
