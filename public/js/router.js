@@ -218,13 +218,27 @@
       document.title = config.title;
     }
 
-    // Hide Universal Date Bar on dedicated dashboard views for clean command center focus
+    // Update Universal Date Bar on dedicated dashboard views for clean command center focus
     const dateBar = document.getElementById('universal-date-bar-wrapper');
     if (dateBar) {
       if (targetViewId === 'view-my-deeppredict' || targetViewId === 'view-founder-analytics') {
         dateBar.style.display = 'none';
       } else {
         dateBar.style.display = 'flex';
+      }
+    }
+
+    // Sync Global Tool Breadcrumb
+    const breadcrumbEl = document.getElementById('global-tool-breadcrumb');
+    const breadcrumbLabel = document.getElementById('global-tool-breadcrumb-label');
+    if (breadcrumbEl && breadcrumbLabel) {
+      if (path === '/' || path === '') {
+        breadcrumbEl.style.display = 'none';
+      } else {
+        breadcrumbEl.style.display = 'flex';
+        let rawTitle = config.title || path;
+        let cleanName = rawTitle.split('—')[0].replace(/DeepPredict/gi, '').replace(/Bet/gi, '').trim();
+        breadcrumbLabel.textContent = cleanName || 'Tool View';
       }
     }
 
@@ -448,4 +462,16 @@
     navigateTo(map[routeId] || '/' + routeId);
   };
   window.handleRouteNavigation = handleRouteNavigation;
+
+  window.scrollToSection = function(sectionId) {
+    const sec = document.getElementById(sectionId);
+    if (sec) {
+      sec.scrollIntoView({ behavior: 'smooth' });
+    } else if (typeof window.navigateTo === 'function') {
+      window.navigateTo('/');
+      setTimeout(() => {
+        document.getElementById(sectionId)?.scrollIntoView({ behavior: 'smooth' });
+      }, 180);
+    }
+  };
 })();

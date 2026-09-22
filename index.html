@@ -279,65 +279,71 @@
       <!-- MAIN NAVIGATION -->
       <nav class="desktop-nav">
         <ul class="nav-menu">
+          <!-- 0. Command Center -->
+          <li>
+            <a href="/" class="nav-link" onclick="if(typeof navigateTo==='function'){navigateTo('/'); return false;}">Command Center</a>
+          </li>
+
           <!-- 1. Predictions -->
           <li>
-            <a href="#predictions" class="nav-link">Predictions</a>
+            <a href="/predictions" class="nav-link">Predictions</a>
           </li>
 
           <!-- 2. Bet Doctor -->
           <li>
-            <a href="#bet-doctor" class="nav-link">Bet Doctor</a>
+            <a href="/bet-doctor" class="nav-link">Bet Doctor</a>
           </li>
 
-          <!-- 3. Converter -->
+          <!-- 3. AI Scout -->
           <li>
-            <a href="#converter" class="nav-link">Converter</a>
+            <a href="javascript:void(0)" onclick="openGeneralScout()" class="nav-link">AI Scout</a>
           </li>
 
-          <!-- 4. Tools (Dropdown) -->
+          <!-- 4. Bet Generator -->
+          <li>
+            <a href="/generator" class="nav-link">Bet Generator</a>
+          </li>
+
+          <!-- 5. Converter -->
+          <li>
+            <a href="/bet-code-converter" class="nav-link">Converter</a>
+          </li>
+
+          <!-- 6. Explore Tools (Dropdown) -->
           <li class="dropdown-li">
             <a href="javascript:void(0)" class="nav-link dropdown-toggle" onclick="toggleDesktopDropdown(event, this)" style="display: flex; align-items: center; gap: 5px;">
-              Tools <span class="nav-arrow" style="font-size: 0.65rem; opacity: 0.75; transition: transform 0.2s ease;">▼</span>
+              Explore Tools <span class="nav-arrow" style="font-size: 0.65rem; opacity: 0.75; transition: transform 0.2s ease;">▼</span>
             </a>
             <div class="nav-dropdown" style="min-width: 240px; padding: 8px; border-radius: 12px; background: rgba(15, 23, 42, 0.98); border: 1px solid rgba(255, 255, 255, 0.12); box-shadow: 0 16px 36px rgba(0, 0, 0, 0.65); backdrop-filter: blur(16px);">
-              <a href="#generator" class="nav-dropdown-item" style="display: flex; align-items: center; gap: 10px; padding: 10px 14px; border-radius: 8px; font-weight: 700; color: #f1f5f9; text-decoration: none; border-bottom: none;">
-                <span style="font-size: 1.15rem; width: 24px; text-align: center;">🎰</span>
-                <span>Bet Generator</span>
-              </a>
-              <a href="#live-scanner" class="nav-dropdown-item" style="display: flex; align-items: center; gap: 10px; padding: 10px 14px; border-radius: 8px; font-weight: 700; color: #f1f5f9; text-decoration: none; border-bottom: none;">
+              <a href="/live-scanner" class="nav-dropdown-item" style="display: flex; align-items: center; gap: 10px; padding: 10px 14px; border-radius: 8px; font-weight: 700; color: #f1f5f9; text-decoration: none; border-bottom: none;">
                 <span style="font-size: 1.15rem; width: 24px; text-align: center;">📡</span>
                 <span>Live Scanner</span>
               </a>
-              <a href="#pre-match-scanner" class="nav-dropdown-item" style="display: flex; align-items: center; gap: 10px; padding: 10px 14px; border-radius: 8px; font-weight: 700; color: #f1f5f9; text-decoration: none; border-bottom: none;">
+              <a href="/pre-match-scanner" class="nav-dropdown-item" style="display: flex; align-items: center; gap: 10px; padding: 10px 14px; border-radius: 8px; font-weight: 700; color: #f1f5f9; text-decoration: none; border-bottom: none;">
                 <span style="font-size: 1.15rem; width: 24px; text-align: center;">⚡</span>
                 <span>Pre-Match Scanner</span>
               </a>
-              <a href="#valuebot" class="nav-dropdown-item" style="display: flex; align-items: center; gap: 10px; padding: 10px 14px; border-radius: 8px; font-weight: 700; color: #f1f5f9; text-decoration: none; border-bottom: none;">
+              <a href="/valuebot" class="nav-dropdown-item" style="display: flex; align-items: center; gap: 10px; padding: 10px 14px; border-radius: 8px; font-weight: 700; color: #f1f5f9; text-decoration: none; border-bottom: none;">
                 <span style="font-size: 1.15rem; width: 24px; text-align: center;">💰</span>
                 <span>Value Bets</span>
               </a>
-              <a href="#arbitrage" class="nav-dropdown-item" style="display: flex; align-items: center; gap: 10px; padding: 10px 14px; border-radius: 8px; font-weight: 700; color: #f1f5f9; text-decoration: none; border-bottom: none;">
+              <a href="/arbitrage" class="nav-dropdown-item" style="display: flex; align-items: center; gap: 10px; padding: 10px 14px; border-radius: 8px; font-weight: 700; color: #f1f5f9; text-decoration: none; border-bottom: none;">
                 <span style="font-size: 1.15rem; width: 24px; text-align: center;">🛡️</span>
                 <span>Arbitrage Finder</span>
               </a>
-              <a href="#analytics" class="nav-dropdown-item" style="display: flex; align-items: center; gap: 10px; padding: 10px 14px; border-radius: 8px; font-weight: 700; color: #f1f5f9; text-decoration: none; border-bottom: none;">
+              <a href="/analytics" class="nav-dropdown-item" style="display: flex; align-items: center; gap: 10px; padding: 10px 14px; border-radius: 8px; font-weight: 700; color: #f1f5f9; text-decoration: none; border-bottom: none;">
                 <span style="font-size: 1.15rem; width: 24px; text-align: center;">📊</span>
                 <span>League Analytics</span>
               </a>
             </div>
           </li>
 
-          <!-- 5. Results -->
-          <li>
-            <a href="#predictions" onclick="if(typeof triggerQuickFilter==='function'){triggerQuickFilter('yesterday', 'all');}" class="nav-link">Results</a>
-          </li>
-
-          <!-- 6. My DeepPredict Dashboard -->
+          <!-- 7. My DeepPredict Dashboard -->
           <li>
             <a href="/dashboard" class="nav-link" title="My DeepPredict Personal Dashboard">Dashboard</a>
           </li>
 
-          <!-- 7. Pricing -->
+          <!-- 8. Pricing -->
           <li>
             <a href="#vip-packages-section" class="nav-link">Pricing</a>
           </li>
@@ -438,16 +444,16 @@
           Main Navigation</span>
       </div>
 
-      <!-- 0. Item: My DeepPredict Dashboard -->
-      <a href="/dashboard" onclick="toggleMobileDrawer()" class="mobile-drawer-item"
-        style="display: flex; align-items: center; gap: 12px; padding: 12px 14px; border-radius: 12px; text-decoration: none; color: #f8fafc; background: linear-gradient(135deg, rgba(59,130,246,0.15) 0%, rgba(37,99,235,0.05) 100%); border: 1px solid rgba(59,130,246,0.3); font-weight: 700; font-size: 0.95rem; min-height: 48px; box-sizing: border-box; transition: all 0.2s ease;">
+      <!-- 0. Item: Command Center -->
+      <a href="/" onclick="toggleMobileDrawer(); if(typeof navigateTo==='function'){navigateTo('/'); return false;}" class="mobile-drawer-item"
+        style="display: flex; align-items: center; gap: 12px; padding: 12px 14px; border-radius: 12px; text-decoration: none; color: #f8fafc; background: linear-gradient(135deg, rgba(26,104,219,0.2) 0%, rgba(56,189,248,0.1) 100%); border: 1px solid rgba(59,130,246,0.4); font-weight: 800; font-size: 0.95rem; min-height: 48px; box-sizing: border-box; transition: all 0.2s ease;">
         <span
-          style="width: 32px; height: 32px; border-radius: 8px; background: rgba(59, 130, 246, 0.2); display: flex; align-items: center; justify-content: center; font-size: 1.1rem;">📊</span>
-        <span>My DeepPredict</span>
+          style="width: 32px; height: 32px; border-radius: 8px; background: rgba(59, 130, 246, 0.25); display: flex; align-items: center; justify-content: center; font-size: 1.1rem;">⚡</span>
+        <span>Command Center</span>
       </a>
 
       <!-- 1. Item: Predictions -->
-      <a href="#predictions" onclick="toggleMobileDrawer()" class="mobile-drawer-item"
+      <a href="/predictions" onclick="toggleMobileDrawer(); if(typeof navigateTo==='function'){navigateTo('/predictions'); return false;}" class="mobile-drawer-item"
         style="display: flex; align-items: center; gap: 12px; padding: 12px 14px; border-radius: 12px; text-decoration: none; color: #f8fafc; background: rgba(255, 255, 255, 0.04); border: 1px solid rgba(255, 255, 255, 0.08); font-weight: 700; font-size: 0.95rem; min-height: 48px; box-sizing: border-box; transition: all 0.2s ease;">
         <span
           style="width: 32px; height: 32px; border-radius: 8px; background: rgba(16, 185, 129, 0.15); display: flex; align-items: center; justify-content: center; font-size: 1.1rem;">⚽</span>
@@ -455,15 +461,31 @@
       </a>
 
       <!-- 2. Item: Bet Doctor -->
-      <a href="#bet-doctor" onclick="toggleMobileDrawer()" class="mobile-drawer-item"
+      <a href="/bet-doctor" onclick="toggleMobileDrawer(); if(typeof navigateTo==='function'){navigateTo('/bet-doctor'); return false;}" class="mobile-drawer-item"
         style="display: flex; align-items: center; gap: 12px; padding: 12px 14px; border-radius: 12px; text-decoration: none; color: #f8fafc; background: rgba(255, 255, 255, 0.04); border: 1px solid rgba(255, 255, 255, 0.08); font-weight: 700; font-size: 0.95rem; min-height: 48px; box-sizing: border-box; transition: all 0.2s ease;">
         <span
           style="width: 32px; height: 32px; border-radius: 8px; background: rgba(59, 130, 246, 0.15); display: flex; align-items: center; justify-content: center; font-size: 1.1rem;">🩺</span>
         <span>Bet Doctor</span>
       </a>
 
-      <!-- 3. Item: Converter -->
-      <a href="#converter" onclick="toggleMobileDrawer()" class="mobile-drawer-item"
+      <!-- 3. Item: AI Scout -->
+      <a href="javascript:void(0)" onclick="toggleMobileDrawer(); openGeneralScout();" class="mobile-drawer-item"
+        style="display: flex; align-items: center; gap: 12px; padding: 12px 14px; border-radius: 12px; text-decoration: none; color: #f8fafc; background: rgba(168, 85, 247, 0.1); border: 1px solid rgba(168, 85, 247, 0.3); font-weight: 700; font-size: 0.95rem; min-height: 48px; box-sizing: border-box; transition: all 0.2s ease;">
+        <span
+          style="width: 32px; height: 32px; border-radius: 8px; background: rgba(168, 85, 247, 0.2); display: flex; align-items: center; justify-content: center; font-size: 1.1rem;">🤖</span>
+        <span>AI Scout Command</span>
+      </a>
+
+      <!-- 4. Item: Bet Generator -->
+      <a href="/generator" onclick="toggleMobileDrawer(); if(typeof navigateTo==='function'){navigateTo('/generator'); return false;}" class="mobile-drawer-item"
+        style="display: flex; align-items: center; gap: 12px; padding: 12px 14px; border-radius: 12px; text-decoration: none; color: #f8fafc; background: rgba(255, 255, 255, 0.04); border: 1px solid rgba(255, 255, 255, 0.08); font-weight: 700; font-size: 0.95rem; min-height: 48px; box-sizing: border-box; transition: all 0.2s ease;">
+        <span
+          style="width: 32px; height: 32px; border-radius: 8px; background: rgba(59, 130, 246, 0.15); display: flex; align-items: center; justify-content: center; font-size: 1.1rem;">🎰</span>
+        <span>Bet Generator</span>
+      </a>
+
+      <!-- 5. Item: Converter -->
+      <a href="/bet-code-converter" onclick="toggleMobileDrawer(); if(typeof navigateTo==='function'){navigateTo('/bet-code-converter'); return false;}" class="mobile-drawer-item"
         style="display: flex; align-items: center; gap: 12px; padding: 12px 14px; border-radius: 12px; text-decoration: none; color: #f8fafc; background: rgba(255, 255, 255, 0.04); border: 1px solid rgba(255, 255, 255, 0.08); font-weight: 700; font-size: 0.95rem; min-height: 48px; box-sizing: border-box; transition: all 0.2s ease;">
         <span
           style="width: 32px; height: 32px; border-radius: 8px; background: rgba(245, 158, 11, 0.15); display: flex; align-items: center; justify-content: center; font-size: 1.1rem;">🎫</span>
@@ -577,6 +599,15 @@
     </div>
   </div>
 
+  <!-- --- GLOBAL TOOL VIEW BREADCRUMB --- -->
+  <div id="global-tool-breadcrumb" class="tool-view-breadcrumb container" style="display: none;">
+    <a href="/" onclick="if(typeof navigateTo==='function'){navigateTo('/'); return false;}">
+      <span>⚡ Command Center</span>
+    </a>
+    <span class="breadcrumb-sep">›</span>
+    <span id="global-tool-breadcrumb-label" class="breadcrumb-current">Tool</span>
+  </div>
+
   <!-- --- MAIN PAGE VIEW 1: PREDICTIONS & HOME --- -->
   <main id="view-predictions" class="page-view active">
 
@@ -628,352 +659,314 @@
       </div>
     </div>
 
-        <!-- --- HERO SECTION --- -->
-    <section class="hero-section container" style="margin-bottom: 24px;">
-      <!-- Language Switcher & Coins Counter Row -->
+    <!-- --- DEEPPREDICTBET COMMAND CENTER SECTION --- -->
+    <section id="command-center-section" class="command-center-section container">
+      <!-- Hidden compatibility elements for background listeners & legacy scripts -->
+      <div id="hero-compat-container" style="display: none;" aria-hidden="true">
+        <img id="hero-img" alt="" />
+      </div>
+
+      <!-- Language & Coins Row (Mobile & Desktop Accessible) -->
       <div class="mobile-lang-coins-row"
-        style="display: flex; align-items: center; justify-content: center; gap: 12px; margin: 0 auto 20px;">
-        <!-- Language Switcher Selector -->
+        style="display: flex; align-items: center; justify-content: center; gap: 12px; margin: 0 auto 16px;">
         <select id="lang-switcher-mobile" onchange="changeAppLanguage(this.value)" aria-label="Select Language"
-          style="background: rgba(15, 23, 42, 0.9); border: 1.5px solid rgba(59, 130, 246, 0.35); border-radius: 10px; padding: 6px 12px; color: #ffffff; outline: none; cursor: pointer; font-size: 0.85rem; font-weight: 700; font-family: var(--font-body); box-shadow: 0 4px 12px rgba(0,0,0,0.4);">
+          style="background: rgba(15, 23, 42, 0.9); border: 1.5px solid rgba(59, 130, 246, 0.35); border-radius: 10px; padding: 5px 12px; color: #ffffff; outline: none; cursor: pointer; font-size: 0.82rem; font-weight: 700; font-family: var(--font-body); box-shadow: 0 4px 12px rgba(0,0,0,0.4);">
           <option value="en">🇺🇸 EN</option>
           <option value="fr">🇫🇷 FR</option>
           <option value="it">🇮🇹 IT</option>
           <option value="es">🇪🇸 ES</option>
         </select>
 
-        <!-- Coins Counter Pill -->
         <div
-          style="display: flex; align-items: center; gap: 6px; background: rgba(245, 158, 11, 0.12); border: 1.5px solid rgba(245, 158, 11, 0.35); border-radius: 20px; padding: 5px 14px; font-size: 0.88rem; font-weight: 800; color: var(--accent-gold); cursor: pointer; box-shadow: 0 4px 12px rgba(245, 158, 11, 0.25);"
+          style="display: flex; align-items: center; gap: 6px; background: rgba(245, 158, 11, 0.12); border: 1.5px solid rgba(245, 158, 11, 0.35); border-radius: 20px; padding: 4px 14px; font-size: 0.84rem; font-weight: 800; color: var(--accent-gold); cursor: pointer; box-shadow: 0 4px 12px rgba(245, 158, 11, 0.25);"
           onclick="openStoreModal('shop')" title="Mines Coins Store">
           <span>🪙</span> <span id="mobile-coins-count">500</span>
         </div>
       </div>
 
-      <div class="hero-grid">
-        <!-- Column 1: Left Copy & CTAs -->
-        <div class="hero-content">
-          <div class="hero-badge">
-            <span class="badge-dot"></span>
-            <span>AI-Driven Football Intelligence</span>
+      <!-- Returning User Banner (Personalized, shown dynamically if authenticated) -->
+      <div id="command-center-welcome" class="command-center-welcome" style="display: none;"></div>
+
+      <!-- Brand Heading & Central Question -->
+      <div class="command-center-intro">
+        <div class="command-center-badge">
+          <span style="width: 6px; height: 6px; border-radius: 50%; background: #38bdf8; display: inline-block; box-shadow: 0 0 8px #38bdf8;"></span>
+          <span>AI-POWERED BETTING INTELLIGENCE</span>
+        </div>
+
+        <h1 class="command-center-brand">
+          DEEP<span class="command-center-brand-gradient">PREDICT</span>BET
+        </h1>
+
+        <h2 class="command-center-question">WHAT ARE YOU HERE TO DO?</h2>
+
+        <p class="command-center-subtext">
+          Tell AI Scout what you're looking for, or choose an action below.
+        </p>
+
+        <div class="command-center-guest-bar" id="command-center-guest-bar">
+          <a href="#today-insights-section" class="command-center-guest-link" onclick="document.getElementById('today-insights-section')?.scrollIntoView({behavior:'smooth'}); return false;">
+            Explore the platform ↓
+          </a>
+          <span class="command-center-dot">•</span>
+          <a href="javascript:void(0)" onclick="handleNavAuthClick()" class="command-center-guest-link" id="cmd-guest-auth-link">
+            Already have an account? Sign in
+          </a>
+        </div>
+      </div>
+
+      <!-- ==========================================
+           PATH A: ASK AI SCOUT (Command Interface)
+           ========================================== -->
+      <div class="command-scout-box" id="command-scout-box">
+        <div class="command-scout-top">
+          <div class="command-scout-title-wrap">
+            <div class="command-scout-icon" aria-hidden="true">🤖</div>
+            <div>
+              <h3 class="command-scout-heading">ASK AI SCOUT</h3>
+              <p class="command-scout-sub">Tell me what you want to find, analyse or build.</p>
+            </div>
           </div>
-
-          <h1 class="hero-title">
-            MAKE SMARTER BETTING DECISIONS <span class="hero-title-accent">WITH DATA &amp; AI</span>
-          </h1>
-
-          <p class="hero-subtitle">
-            Analyse your bet slip, explore data-driven football predictions, convert booking codes and discover betting opportunities — all from one intelligent platform.
-          </p>
-
-          <div class="hero-actions">
-            <a href="#bet-doctor" class="btn-hero-primary" onclick="if(typeof navigateToPage==='function'){navigateToPage('doctor');}else{window.location.hash='#bet-doctor';}">
-              <span>ANALYSE MY BET</span>
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-                <line x1="5" y1="12" x2="19" y2="12"></line>
-                <polyline points="12 5 19 12 12 19"></polyline>
-              </svg>
-            </a>
-
-            <a href="#predictions" class="btn-hero-secondary" onclick="if(typeof triggerQuickFilter==='function'){triggerQuickFilter('today', 'all');}else if(typeof navigateToPage==='function'){navigateToPage('predictions');}else{window.location.hash='#predictions';}">
-              TODAY'S PREDICTIONS
-            </a>
-          </div>
-
-          <div class="hero-value-indicators">
-            <div class="hero-value-item"><span class="value-check">✓</span> AI-Powered Analysis</div>
-            <div class="hero-value-item"><span class="value-check">✓</span> Real-Time Football Data</div>
-            <div class="hero-value-item"><span class="value-check">✓</span> Multiple Betting Tools</div>
-            <div class="hero-value-item"><span class="value-check">✓</span> Mobile Friendly</div>
-          </div>
-
-          <div class="hero-disclaimer">
-            18+ • Bet responsibly • Betting involves risk. No outcome is guaranteed.
+          <div class="command-scout-badge-ai">
+            <span style="width:6px; height:6px; border-radius:50%; background:#10b981; display:inline-block;"></span>
+            <span>Intelligent Assistant</span>
           </div>
         </div>
 
-        <!-- Column 2: Right Dashboard / Product Preview Visual -->
-        <div class="hero-preview-container">
-          <div class="hero-preview-card">
-            <!-- Header Tag & Live Status -->
-            <div class="hero-preview-header">
-              <div class="hero-preview-tag">
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#38bdf8" stroke-width="2.5">
-                  <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon>
-                </svg>
-                <span>Live AI Analytics Engine</span>
-              </div>
-              <div class="hero-preview-status">
-                <span style="width:6px; height:6px; border-radius:50%; background:#10b981; display:inline-block;"></span>
-                <span>Active Model v4.2</span>
-              </div>
-            </div>
+        <!-- Input Form -->
+        <form class="command-scout-form" onsubmit="handleCommandScoutSubmit(event); return false;">
+          <div class="command-scout-input-wrap">
+            <svg class="command-scout-search-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="11" cy="11" r="8"></circle>
+              <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+            </svg>
+            <input
+              type="text"
+              id="command-scout-input"
+              class="command-scout-input"
+              placeholder="What are you looking for today? (e.g. 'Check my bet slip' or 'Find today\\'s strongest opportunities')"
+              autocomplete="off"
+              spellcheck="false"
+              aria-label="Ask AI Scout Command"
+            />
+            <!-- Hidden alias to guarantee 100% backward-compatibility with existing scripts -->
+            <input type="hidden" id="hero-scout-input" />
+          </div>
+          <button type="submit" class="command-scout-submit-btn" aria-label="Submit Command to AI Scout">
+            <span>Ask AI Scout</span>
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+              <line x1="5" y1="12" x2="19" y2="12"></line>
+              <polyline points="12 5 19 12 12 19"></polyline>
+            </svg>
+          </button>
+        </form>
 
-            <!-- Snippet 1: Bet Doctor Slip Analysis -->
-            <div class="hero-doctor-snippet">
-              <div class="hero-doctor-meta">
-                <span style="font-weight: 800; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.5px; font-size: 0.72rem;">🩺 Bet Doctor Slip Diagnosis</span>
-                <span class="hero-health-pill">Slip Health: 88/100</span>
-              </div>
-              <div style="display: flex; justify-content: space-between; font-size: 0.76rem; color: #cbd5e1;">
-                <span>Leg 1: Chelsea vs Arsenal</span>
-                <span style="font-weight: 700; color: #34d399;">Over 2.5 Goals @ 1.82</span>
-              </div>
-              <div class="hero-doctor-prescription">
-                <strong>Prescription:</strong> Optimal edge detected. High volume simulations yield 76.4% probability with strong value cushion (+11.8%).
-              </div>
-            </div>
+        <!-- Example Commands / Suggestion Chips -->
+        <div class="command-scout-chips-label">Suggested commands:</div>
+        <div class="command-scout-chips">
+          <button type="button" class="command-scout-chip" onclick="executeCommandScoutPrompt('Find today\'s strongest opportunities')">
+            <span>⚡</span> Find today's strongest opportunities
+          </button>
+          <button type="button" class="command-scout-chip" onclick="executeCommandScoutPrompt('Analyse this match')">
+            <span>⚽</span> Analyse this match
+          </button>
+          <button type="button" class="command-scout-chip" onclick="executeCommandScoutPrompt('Check my bet slip')">
+            <span>🩺</span> Check my bet slip
+          </button>
+          <button type="button" class="command-scout-chip" onclick="executeCommandScoutPrompt('Help me build a ticket')">
+            <span>🎰</span> Help me build a ticket
+          </button>
+          <button type="button" class="command-scout-chip" onclick="executeCommandScoutPrompt('Find value bets')">
+            <span>💰</span> Find value bets
+          </button>
+          <button type="button" class="command-scout-chip" onclick="executeCommandScoutPrompt('Find matches with strong home form')">
+            <span>🏠</span> Find matches with strong home form
+          </button>
+          <button type="button" class="command-scout-chip" onclick="executeCommandScoutPrompt('Find BTTS opportunities')">
+            <span>🎯</span> Find BTTS opportunities
+          </button>
+          <button type="button" class="command-scout-chip" onclick="executeCommandScoutPrompt('Review my selections')">
+            <span>📋</span> Review my selections
+          </button>
+        </div>
 
-            <!-- Snippet 2: Match Probabilities (1X2) & Tactical Edge -->
-            <div class="hero-match-snippet">
+        <!-- Dynamic AI Scout Feedback & Guidance Output -->
+        <div id="command-scout-feedback" class="command-scout-feedback" style="display: none;"></div>
+
+        <!-- Hidden container for backward-compatibility with quickPromptScout renderer -->
+        <div id="hero-scout-results" style="display: none;"></div>
+      </div>
+
+      <!-- ==========================================
+           PATH B: CHOOSE AN ACTION
+           ========================================== -->
+      <div class="command-center-divider">
+        <span>OR CHOOSE AN ACTION</span>
+      </div>
+
+      <!-- PRIMARY ACTION CARDS (1–5) -->
+      <div class="command-cards-primary-grid">
+        <!-- CARD 1: FIND TODAY'S PREDICTIONS -->
+        <div class="command-card command-card-primary card-theme-predictions" tabindex="0" role="button" aria-label="Find Today's Predictions" onclick="if(typeof navigateTo==='function'){navigateTo('/predictions');}else{window.location.hash='#predictions';}">
+          <div>
+            <div class="command-card-header">
+              <div class="command-card-icon icon-emerald-tint">⚽</div>
               <div>
-                <div class="hero-match-teams">
-                  <span>Manchester City</span>
-                  <span style="color:#94a3b8; font-weight:400; font-size:0.75rem;">vs</span>
-                  <span>Liverpool</span>
-                </div>
-                <div class="hero-match-league">Premier League • Super Match Edge</div>
-              </div>
-
-              <!-- 1X2 Probabilities Bar -->
-              <div class="hero-prob-bar-container">
-                <div class="hero-prob-fill-home" style="width: 58%;" title="Home: 58%"></div>
-                <div class="hero-prob-fill-draw" style="width: 24%;" title="Draw: 24%"></div>
-                <div class="hero-prob-fill-away" style="width: 18%;" title="Away: 18%"></div>
-              </div>
-              <div class="hero-prob-labels">
-                <span class="home">1: 58% (1.75)</span>
-                <span class="draw">X: 24% (3.60)</span>
-                <span class="away">2: 18% (4.40)</span>
+                <span class="command-card-cat">PREDICTIONS</span>
+                <h3 class="command-card-title">Find Today's Predictions</h3>
               </div>
             </div>
+            <p class="command-card-desc">
+              Explore today's fixtures, predictions, probabilities and available betting insights.
+            </p>
+          </div>
+          <div class="command-card-cta">
+            <span>Explore Predictions</span>
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg>
+          </div>
+        </div>
 
-            <!-- Snippet 3: Confidence & Odds -->
-            <div class="hero-preview-metrics">
-              <div class="hero-metric-pill">
-                <span>Confidence:</span>
-                <span class="val" style="color: #34d399;">86% (High)</span>
-              </div>
-              <div class="hero-metric-pill">
-                <span>Risk:</span>
-                <span class="val" style="color: #38bdf8;">Low-Mod</span>
-              </div>
-              <div class="hero-metric-pill">
-                <span>Edge:</span>
-                <span class="val" style="color: #fbbf24;">+14.2%</span>
+        <!-- CARD 2: BET DOCTOR -->
+        <div class="command-card command-card-primary card-theme-doctor" tabindex="0" role="button" aria-label="Check My Bet Slip with Bet Doctor" onclick="if(typeof navigateTo==='function'){navigateTo('/bet-doctor');}else{window.location.hash='#bet-doctor';}">
+          <div>
+            <div class="command-card-header">
+              <div class="command-card-icon icon-cyan-tint">🩺</div>
+              <div>
+                <span class="command-card-cat">BET DOCTOR</span>
+                <h3 class="command-card-title">Check My Bet Slip</h3>
               </div>
             </div>
+            <p class="command-card-desc">
+              Analyse your ticket, identify risky selections and understand your ticket's overall health.
+            </p>
+          </div>
+          <div class="command-card-cta">
+            <span>Open Bet Doctor</span>
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg>
+          </div>
+        </div>
 
-            <!-- Footer: Verified Status -->
-            <div class="hero-preview-footer">
-              <span>Verified Matchday Feed</span>
-              <span>Updated Real-Time</span>
+        <!-- CARD 3: BET CODE CONVERTER -->
+        <div class="command-card command-card-primary card-theme-converter" tabindex="0" role="button" aria-label="Convert a Booking Code" onclick="if(typeof navigateTo==='function'){navigateTo('/bet-code-converter');}else{window.location.hash='#converter';}">
+          <div>
+            <div class="command-card-header">
+              <div class="command-card-icon icon-gold-tint">🎫</div>
+              <div>
+                <span class="command-card-cat">CONVERTER</span>
+                <h3 class="command-card-title">Convert a Booking Code</h3>
+              </div>
             </div>
+            <p class="command-card-desc">
+              Convert a supported booking code from one bookmaker to another across 50+ bookmakers.
+            </p>
+          </div>
+          <div class="command-card-cta">
+            <span>Convert Code</span>
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg>
+          </div>
+        </div>
+
+        <!-- CARD 4: AI SCOUT COMMAND HUB -->
+        <div class="command-card command-card-primary card-theme-scout" tabindex="0" role="button" aria-label="Open AI Scout Command Hub" onclick="if(typeof openGeneralScout==='function'){openGeneralScout();}else if(typeof navigateTo==='function'){navigateTo('/predictions');}">
+          <div>
+            <div class="command-card-header">
+              <div class="command-card-icon icon-purple-tint">🤖</div>
+              <div>
+                <span class="command-card-cat">AI SCOUT</span>
+                <h3 class="command-card-title">AI Scout Command Hub</h3>
+              </div>
+            </div>
+            <p class="command-card-desc">
+              Use AI to explore matches, analyse opportunities and navigate DeepPredictBet's intelligence tools.
+            </p>
+          </div>
+          <div class="command-card-cta">
+            <span>Open AI Scout</span>
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg>
+          </div>
+        </div>
+
+        <!-- CARD 5: BET GENERATOR -->
+        <div class="command-card command-card-primary card-theme-generator" tabindex="0" role="button" aria-label="Build a Bet with Bet Generator" onclick="if(typeof navigateTo==='function'){navigateTo('/generator');}else{window.location.hash='#generator';}">
+          <div>
+            <div class="command-card-header">
+              <div class="command-card-icon icon-blue-tint">🎰</div>
+              <div>
+                <span class="command-card-cat">BET GENERATOR</span>
+                <h3 class="command-card-title">Build a Bet</h3>
+              </div>
+            </div>
+            <p class="command-card-desc">
+              Build a ticket around your preferred sport, league, market, odds range and risk preferences.
+            </p>
+          </div>
+          <div class="command-card-cta">
+            <span>Build My Bet</span>
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg>
           </div>
         </div>
       </div>
 
-      <!-- Compatibility Container for Background Listeners -->
-      <div id="hero-compat-container" style="display: none;" aria-hidden="true">
-        <img id="hero-img" alt="" />
-      </div>
-    </section>
-
-    <!-- --- AI SCOUT COMMAND HUB SHOWCASE SECTION --- -->
-    <section id="ai-scout-showcase-section" class="ai-scout-showcase-section container">
-      <div class="ai-scout-showcase-container">
-        <!-- Header -->
-        <div class="ai-scout-showcase-header">
-          <div class="ai-scout-showcase-badge">
-            <span>🤖 AI Tactical Command Engine</span>
-          </div>
-          <h2 class="ai-scout-showcase-headline">AI SCOUT COMMAND HUB</h2>
-          <p class="ai-scout-showcase-subhead">
-            Generate custom multi-leg football accumulators, analyze tactical angles, or evaluate match dynamics instantly.
-          </p>
-        </div>
-
-        <!-- Command Card -->
-        <div class="ai-scout-showcase-card">
-          <!-- Card Header: Title & Quick Prompt Pills -->
-          <div class="scout-card-header">
-            <div class="scout-card-title">
-              <span>🤖</span> AI SCOUT COMMAND HUB
-            </div>
-            <div class="scout-quick-pills">
-              <button type="button" class="scout-pill-btn pill-emerald" onclick="quickPromptScout('Generate 40 selections', true)" title="Generate 40 AI Football Selections">
-                <span>✨</span> 40 Selections
-              </button>
-              <button type="button" class="scout-pill-btn pill-blue" onclick="quickPromptScout('Generate 30 selections', true)" title="Generate 30 AI Football Selections">
-                <span>✨</span> 30 Selections
-              </button>
-              <button type="button" class="scout-pill-btn pill-amber" onclick="quickPromptScout('Generate 20 selections', true)" title="Generate 20 AI Football Selections">
-                <span>✨</span> 20 Selections
-              </button>
-              <button type="button" class="scout-pill-btn pill-purple" onclick="quickPromptScout('What is the best tactical angle?', true)" title="Ask Match Tactics &amp; Angles">
-                <span>🎯</span> Tactical Angle
-              </button>
-            </div>
-          </div>
-
-          <!-- Command Input Row -->
-          <div class="scout-command-row">
-            <div class="scout-input-wrapper">
-              <svg class="scout-input-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-                <circle cx="11" cy="11" r="8"></circle>
-                <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
-              </svg>
-              <input
-                type="text"
-                id="hero-scout-input"
-                class="scout-command-input"
-                placeholder="Type prompt (e.g. 'Generate 40 selections' or ask match tactics)..."
-                onkeypress="if(event.key==='Enter') triggerHeroScoutPrompt()"
-                aria-label="Command AI Scout Prompt"
-                autocomplete="off"
-                spellcheck="false"
-              />
-            </div>
-            <button
-              type="button"
-              class="btn-ask-scout"
-              onclick="triggerHeroScoutPrompt()"
-              aria-label="Ask Scout"
-            >
-              <span>Ask Scout</span>
-              <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-                <line x1="22" y1="2" x2="11" y2="13"></line>
-                <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
-              </svg>
-            </button>
-          </div>
-
-          <!-- Value Prop / Micro Copy -->
-          <div class="scout-value-prop">
-            Instant AI Selections <span>•</span> Poisson &amp; Elo Simulations <span>•</span> 1-Click Betslip Sync
-          </div>
-
-          <!-- Inline Dynamic Feedback & Generated Selections Output -->
-          <div id="hero-scout-results" class="hero-scout-results" style="display: none;"></div>
-        </div>
-      </div>
-    </section>
-
-    
-    <!-- --- WHAT DO YOU WANT TO DO? INTENT HUB SECTION --- -->
-    <section id="intent-hub-section" class="intent-hub-section container">
-      <div class="intent-hub-header">
-        <div class="intent-hub-badge">
-          <span>⚡ Quick Start</span>
-        </div>
-        <h2 class="intent-hub-title">WHAT DO YOU WANT TO DO?</h2>
-      </div>
-
-      <div class="intent-cards-grid">
-        <!-- CARD 1: PREDICT -->
-        <div class="intent-card intent-card-predict" id="intent-card-predict">
+      <!-- SECONDARY & EXPLORATION ACTION CARDS (6–8) -->
+      <div class="command-cards-secondary-grid">
+        <!-- CARD 6: FIND VALUE BETS -->
+        <div class="command-card card-theme-value" tabindex="0" role="button" aria-label="Find Value Bets" onclick="if(typeof navigateTo==='function'){navigateTo('/valuebot');}else{window.location.hash='#valuebot';}">
           <div>
-            <div class="intent-card-header">
-              <div class="intent-card-icon icon-emerald">
-                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                  <circle cx="12" cy="12" r="10"></circle>
-                  <path d="m4.93 4.93 4.24 4.24"></path>
-                  <path d="m14.83 9.17 4.24-4.24"></path>
-                  <path d="m14.83 14.83 4.24 4.24"></path>
-                  <path d="m9.17 14.83-4.24 4.24"></path>
-                  <circle cx="12" cy="12" r="4"></circle>
-                </svg>
+            <div class="command-card-header">
+              <div class="command-card-icon icon-amber-tint">💰</div>
+              <div>
+                <span class="command-card-cat">VALUE INTELLIGENCE</span>
+                <h3 class="command-card-title">Find Value Bets</h3>
               </div>
-              <h3 class="intent-card-title">PREDICT</h3>
             </div>
-            <p class="intent-card-desc">
-              Explore today's data-driven football predictions.
+            <p class="command-card-desc">
+              Explore selections where model estimates and available market odds may indicate potential value.
             </p>
           </div>
-          <a href="#predictions" class="btn-intent-cta btn-intent-predict" onclick="if(typeof triggerQuickFilter==='function'){triggerQuickFilter('today', 'all');}else if(typeof navigateTo==='function'){navigateTo('/predictions');}else{window.location.hash='#predictions';}">
-            <span>VIEW PREDICTIONS</span>
-            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-              <line x1="5" y1="12" x2="19" y2="12"></line>
-              <polyline points="12 5 19 12 12 19"></polyline>
-            </svg>
-          </a>
+          <div class="command-card-cta">
+            <span>Find Value</span>
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg>
+          </div>
         </div>
 
-        <!-- CARD 2: ANALYSE -->
-        <div class="intent-card intent-card-analyse" id="intent-card-analyse">
+        <!-- CARD 7: SCAN THE MARKET -->
+        <div class="command-card card-theme-scanner" tabindex="0" role="button" aria-label="Scan the Market" onclick="if(typeof navigateTo==='function'){navigateTo('/live-scanner');}else{window.location.hash='#live-scanner';}">
           <div>
-            <div class="intent-card-header">
-              <div class="intent-card-icon icon-cyan">
-                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                  <path d="M4.8 2.3A.3.3 0 1 0 5 2H4a2 2 0 0 0-2 2v5a6 6 0 0 0 6 6v0a6 6 0 0 0 6-6V4a2 2 0 0 0-2-2h-1a.2.2 0 1 0 .3.3"></path>
-                  <path d="M8 15v1a6 6 0 0 0 6 6v0a6 6 0 0 0 6-6v-4"></path>
-                  <circle cx="20" cy="10" r="2"></circle>
-                </svg>
+            <div class="command-card-header">
+              <div class="command-card-icon icon-red-tint">📡</div>
+              <div>
+                <span class="command-card-cat">MARKET SCANNER</span>
+                <h3 class="command-card-title">Scan the Market</h3>
               </div>
-              <h3 class="intent-card-title">ANALYSE</h3>
             </div>
-            <p class="intent-card-desc">
-              Let Bet Doctor analyse your selections and highlight potential risks.
+            <p class="command-card-desc">
+              Explore available live, pre-match, arbitrage and other market intelligence tools.
             </p>
           </div>
-          <a href="#bet-doctor" class="btn-intent-cta btn-intent-analyse" onclick="if(typeof triggerToolRoute==='function'){triggerToolRoute('doctor');}else if(typeof navigateTo==='function'){navigateTo('/bet-doctor');}else{window.location.hash='#bet-doctor';}">
-            <span>ANALYSE MY BET</span>
-            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-              <line x1="5" y1="12" x2="19" y2="12"></line>
-              <polyline points="12 5 19 12 12 19"></polyline>
-            </svg>
-          </a>
+          <div class="command-card-cta">
+            <span>Open Market Scanner</span>
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg>
+          </div>
         </div>
 
-        <!-- CARD 3: CONVERT -->
-        <div class="intent-card intent-card-convert" id="intent-card-convert">
+        <!-- CARD 8: EXPLORE DEEPPREDICTBET -->
+        <div class="command-card card-theme-explore" tabindex="0" role="button" aria-label="Explore DeepPredictBet Platform" onclick="document.getElementById('today-insights-section')?.scrollIntoView({behavior:'smooth'});">
           <div>
-            <div class="intent-card-header">
-              <div class="intent-card-icon icon-gold">
-                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                  <rect width="20" height="12" x="2" y="6" rx="2"></rect>
-                  <path d="m10 12 4-2v4z"></path>
-                  <path d="M6 10h.01M6 14h.01"></path>
-                </svg>
+            <div class="command-card-header">
+              <div class="command-card-icon icon-slate-tint">🧭</div>
+              <div>
+                <span class="command-card-cat">EXPLORATION</span>
+                <h3 class="command-card-title">Explore the Platform</h3>
               </div>
-              <h3 class="intent-card-title">CONVERT</h3>
             </div>
-            <p class="intent-card-desc">
-              Convert supported booking codes from one bookmaker format to another.
+            <p class="command-card-desc">
+              Discover everything DeepPredictBet can do — from daily insights and audits to verified performance.
             </p>
           </div>
-          <a href="#converter" class="btn-intent-cta btn-intent-convert" onclick="if(typeof triggerToolRoute==='function'){triggerToolRoute('converter');}else if(typeof navigateTo==='function'){navigateTo('/bet-code-converter');}else{window.location.hash='#converter';}">
-            <span>CONVERT CODE</span>
-            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-              <line x1="5" y1="12" x2="19" y2="12"></line>
-              <polyline points="12 5 19 12 12 19"></polyline>
-            </svg>
-          </a>
-        </div>
-
-        <!-- CARD 4: DISCOVER -->
-        <div class="intent-card intent-card-discover" id="intent-card-discover">
-          <div>
-            <div class="intent-card-header">
-              <div class="intent-card-icon icon-purple">
-                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                  <circle cx="12" cy="12" r="10"></circle>
-                  <polygon points="16.24 7.76 14.12 14.12 7.76 16.24 9.88 9.88 16.24 7.76"></polygon>
-                </svg>
-              </div>
-              <h3 class="intent-card-title">DISCOVER</h3>
-            </div>
-            <p class="intent-card-desc">
-              Explore value opportunities, scanners and advanced betting intelligence.
-            </p>
+          <div class="command-card-cta">
+            <span>Explore Platform</span>
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg>
           </div>
-          <a href="#generator" class="btn-intent-cta btn-intent-discover" onclick="if(typeof triggerToolRoute==='function'){triggerToolRoute('machine');}else if(typeof navigateTo==='function'){navigateTo('/generator');}else{window.location.hash='#generator';}">
-            <span>EXPLORE TOOLS</span>
-            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-              <line x1="5" y1="12" x2="19" y2="12"></line>
-              <polyline points="12 5 19 12 12 19"></polyline>
-            </svg>
-          </a>
         </div>
       </div>
     </section>
@@ -1478,19 +1471,19 @@
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="6 9 12 15 18 9"></polyline></svg>
             </div>
 
-            <!-- STEP 3: BUILD OR CONVERT -->
+            <!-- STEP 3: DECIDE & ACT -->
             <div class="journey-card-wrap">
               <div class="journey-card" id="journey-step-3">
                 <div class="journey-card-top">
-                  <span class="journey-step-tag tag-step-3">STEP 3</span>
-                  <div class="journey-icon-wrap" aria-hidden="true">🔄</div>
+                  <span class="journey-step-tag tag-step-3">STEP 3 &amp; 4</span>
+                  <div class="journey-icon-wrap" aria-hidden="true">⚡</div>
                 </div>
-                <h3 class="journey-step-title">BUILD OR CONVERT</h3>
+                <h3 class="journey-step-title">DECIDE &amp; ACT</h3>
                 <p class="journey-step-desc">
-                  Generate a ticket or convert an existing supported booking code.
+                  Build custom tickets with Bet Generator or convert codes across bookmakers.
                 </p>
-                <a href="#converter-showcase-section" class="journey-step-link" onclick="document.getElementById('converter-showcase-section')?.scrollIntoView({behavior:'smooth',block:'center'});">
-                  <span>Convert or Build</span>
+                <a href="/generator" class="journey-step-link" onclick="if(typeof navigateTo==='function'){navigateTo('/generator'); return false;}">
+                  <span>Build or Convert</span>
                   <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg>
                 </a>
               </div>

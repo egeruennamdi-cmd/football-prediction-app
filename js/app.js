@@ -2776,10 +2776,317 @@ window.syncDynamicSeasonData = syncDynamicSeasonData;
 
 
 
+// ==========================================================================
+// DEEPPREDICTBET COMMAND CENTER & AI-FIRST USER JOURNEY ENGINE
+// ==========================================================================
+
+function escapeHtml(str) {
+  if (!str) return '';
+  return String(str)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#039;');
+}
+
+function initCommandCenter() {
+  const welcomeEl = document.getElementById("command-center-welcome");
+  const cmdGuestAuthLink = document.getElementById("cmd-guest-auth-link");
+  const scoutInput = document.getElementById("command-scout-input");
+
+  // 1. Check Authenticated / Returning User Session
+  const isLoggedIn = localStorage.getItem("userLoggedIn") === "true";
+  const username = localStorage.getItem("currentUsername") || "Punter";
+  const userVip = localStorage.getItem("deeppredictbet_vip");
+  let isVip = false;
+  let vipPlanName = "Free Plan";
+  try {
+    if (userVip) {
+      const parsed = JSON.parse(userVip);
+      if (parsed && (parsed.active || parsed.status === 'active' || parsed.package)) {
+        isVip = true;
+        vipPlanName = parsed.package || parsed.plan || "VIP Member";
+      }
+    }
+  } catch (e) {}
+
+  if (isLoggedIn && welcomeEl) {
+    welcomeEl.style.display = "block";
+
+    // Gather existing local history data without inventing
+    let savedTicketsCount = 0;
+    try {
+      const tickets = JSON.parse(localStorage.getItem("dp_saved_tickets") || "[]");
+      if (Array.isArray(tickets)) savedTicketsCount = tickets.length;
+    } catch (e) {}
+
+    let doctorAuditsCount = 0;
+    try {
+      const audits = JSON.parse(localStorage.getItem("dp_doctor_history") || "[]");
+      if (Array.isArray(audits)) doctorAuditsCount = audits.length;
+    } catch (e) {}
+
+    let watchlistCount = 0;
+    try {
+      const wl = JSON.parse(localStorage.getItem("dp_watchlist") || "[]");
+      if (Array.isArray(wl)) watchlistCount = wl.length;
+    } catch (e) {}
+
+    welcomeEl.innerHTML = `
+      <div class="command-center-welcome-header">
+        <div>
+          <div class="command-center-welcome-title">
+            <span>👋</span> Welcome back, <span style="color:#60a5fa;">${escapeHtml(username)}</span>!
+          </div>
+          <div class="command-center-welcome-sub">Continue where you left off or choose your next intelligence objective.</div>
+        </div>
+        <div style="display:flex; align-items:center; gap:8px;">
+          <span style="font-size:0.75rem; font-weight:800; padding:4px 10px; border-radius:9999px; background:${isVip ? 'rgba(245,158,11,0.2)' : 'rgba(59,130,246,0.15)'}; color:${isVip ? '#fbbf24' : '#60a5fa'}; border:1px solid ${isVip ? '#f59e0b' : '#3b82f6'};">
+            ${isVip ? '👑 ' + vipPlanName.toUpperCase() : '⚡ FREE ACCOUNT'}
+          </span>
+          <button type="button" class="btn btn-secondary" onclick="if(typeof navigateTo==='function'){navigateTo('/dashboard');}else{window.location.href='/dashboard';}" style="font-size:0.75rem; padding:5px 12px; border-radius:8px; cursor:pointer;">
+            My Dashboard →
+          </button>
+        </div>
+      </div>
+      <div class="command-center-welcome-grid">
+        <a href="/dashboard" onclick="if(typeof navigateTo==='function'){navigateTo('/dashboard');} return false;" class="command-center-welcome-item">
+          <span class="command-center-welcome-item-label">🎫 Saved Slips</span>
+          <span class="command-center-welcome-item-val">${savedTicketsCount} active ticket${savedTicketsCount === 1 ? '' : 's'}</span>
+        </a>
+        <a href="/bet-doctor" onclick="if(typeof navigateTo==='function'){navigateTo('/bet-doctor');} return false;" class="command-center-welcome-item">
+          <span class="command-center-welcome-item-label">🩺 Bet Doctor</span>
+          <span class="command-center-welcome-item-val">${doctorAuditsCount > 0 ? doctorAuditsCount + ' audited slips' : 'Audit new ticket'}</span>
+        </a>
+        <a href="/predictions" onclick="if(typeof triggerWatchlistFilter==='function'){triggerWatchlistFilter();}else if(typeof navigateTo==='function'){navigateTo('/predictions');} return false;" class="command-center-welcome-item">
+          <span class="command-center-welcome-item-label">⚽ Watchlist</span>
+          <span class="command-center-welcome-item-val">${watchlistCount} monitored fixture${watchlistCount === 1 ? '' : 's'}</span>
+        </a>
+        <a href="/generator" onclick="if(typeof navigateTo==='function'){navigateTo('/generator');} return false;" class="command-center-welcome-item">
+          <span class="command-center-welcome-item-label">🎰 Bet Generator</span>
+          <span class="command-center-welcome-item-val">Build customized slip</span>
+        </a>
+      </div>
+    `;
+
+    if (cmdGuestAuthLink) {
+      cmdGuestAuthLink.innerHTML = `Signed in as <b style="color:#ffffff;">${escapeHtml(username)}</b> • <a href="javascript:void(0)" onclick="if(typeof navigateTo==='function'){navigateTo('/dashboard');}" style="color:#38bdf8; text-decoration:underline;">Account Dashboard</a>`;
+    }
+  }
+
+  // 2. Setup Keyboard Accessibility for all command cards
+  const cards = document.querySelectorAll(".command-card");
+  cards.forEach(card => {
+    card.addEventListener("keydown", function(e) {
+      if (e.key === "Enter" || e.key === " ") {
+        e.preventDefault();
+        card.click();
+      }
+    });
+  });
+
+  // 3. Keep hero-scout-input synced if present
+  if (scoutInput) {
+    scoutInput.addEventListener("input", function() {
+      const heroHidden = document.getElementById("hero-scout-input");
+      if (heroHidden) heroHidden.value = scoutInput.value;
+    });
+  }
+}
+
+function handleCommandScoutSubmit(event) {
+  if (event && event.preventDefault) event.preventDefault();
+  const input = document.getElementById("command-scout-input");
+  const text = input ? input.value.trim() : "";
+  if (!text) {
+    executeCommandScoutPrompt("Find today's strongest opportunities");
+    return;
+  }
+  executeCommandScoutPrompt(text);
+}
+
+function executeCommandScoutPrompt(promptText) {
+  if (!promptText) return;
+  const input = document.getElementById("command-scout-input");
+  if (input) input.value = promptText;
+  const heroInput = document.getElementById("hero-scout-input");
+  if (heroInput) heroInput.value = promptText;
+
+  const feedbackBox = document.getElementById("command-scout-feedback");
+  if (!feedbackBox) return;
+
+  const lower = promptText.toLowerCase();
+
+  // Intent 1: Check bet slip / Bet Doctor / Audit / Risk
+  if (/(check|doctor|audit|risk|slip|ticket|health|safe|lost|analy[sz]e.*(bet|slip|ticket))/i.test(lower)) {
+    feedbackBox.style.display = "block";
+    feedbackBox.innerHTML = `
+      <div class="command-scout-feedback-header">
+        <span class="command-scout-feedback-ai-tag">🩺 Intent Recognized • Bet Doctor Diagnostic</span>
+        <button type="button" onclick="document.getElementById('command-scout-feedback').style.display='none'" style="background:none; border:none; color:#94a3b8; font-size:1rem; cursor:pointer;">✕</button>
+      </div>
+      <p class="command-scout-feedback-text">
+        I can help with that. Let's run your ticket through <b>Bet Doctor</b> to diagnose overall slip health, identify high-risk selections, and discover value replacements.
+      </p>
+      <div class="command-scout-feedback-actions">
+        <button type="button" class="btn btn-primary" onclick="if(typeof navigateTo==='function'){navigateTo('/bet-doctor');}else{window.location.hash='#bet-doctor';}" style="font-size:0.82rem; padding:8px 16px; border-radius:8px; cursor:pointer;">Open Bet Doctor →</button>
+        <button type="button" class="btn btn-secondary" onclick="openGeneralScout()" style="font-size:0.82rem; padding:8px 16px; border-radius:8px; cursor:pointer;">Ask AI Scout Details</button>
+      </div>
+    `;
+    setTimeout(() => {
+      if (typeof window.navigateTo === 'function') window.navigateTo('/bet-doctor');
+    }, 900);
+    return;
+  }
+
+  // Intent 2: Convert booking code / bookmaker
+  if (/(convert|booking code|bookie|sportybet|bet9ja|1xbet|betking|msport|betano|code)/i.test(lower)) {
+    feedbackBox.style.display = "block";
+    feedbackBox.innerHTML = `
+      <div class="command-scout-feedback-header">
+        <span class="command-scout-feedback-ai-tag">🎫 Intent Recognized • Booking Code Converter</span>
+        <button type="button" onclick="document.getElementById('command-scout-feedback').style.display='none'" style="background:none; border:none; color:#94a3b8; font-size:1rem; cursor:pointer;">✕</button>
+      </div>
+      <p class="command-scout-feedback-text">
+        Converting booking codes across 50+ supported global bookmakers. Opening the <b>Bet Code Converter</b> to map your odds and legs instantly.
+      </p>
+      <div class="command-scout-feedback-actions">
+        <button type="button" class="btn btn-primary" onclick="if(typeof navigateTo==='function'){navigateTo('/bet-code-converter');}else{window.location.hash='#converter';}" style="font-size:0.82rem; padding:8px 16px; border-radius:8px; cursor:pointer;">Open Converter →</button>
+      </div>
+    `;
+    setTimeout(() => {
+      if (typeof window.navigateTo === 'function') window.navigateTo('/bet-code-converter');
+    }, 900);
+    return;
+  }
+
+  // Intent 3: Build a bet / Generator / Accumulator / Multibet
+  if (/(build|generate|create|machine|acca|accumulator|multibet|odds range|target odds)/i.test(lower)) {
+    feedbackBox.style.display = "block";
+    feedbackBox.innerHTML = `
+      <div class="command-scout-feedback-header">
+        <span class="command-scout-feedback-ai-tag">🎰 Intent Recognized • Bet Generator</span>
+        <button type="button" onclick="document.getElementById('command-scout-feedback').style.display='none'" style="background:none; border:none; color:#94a3b8; font-size:1rem; cursor:pointer;">✕</button>
+      </div>
+      <p class="command-scout-feedback-text">
+        Let's build a ticket tailored to your sport, league, market, odds range, and risk criteria with the <b>Bet Generator</b>.
+      </p>
+      <div class="command-scout-feedback-actions">
+        <button type="button" class="btn btn-primary" onclick="if(typeof navigateTo==='function'){navigateTo('/generator');}else{window.location.hash='#generator';}" style="font-size:0.82rem; padding:8px 16px; border-radius:8px; cursor:pointer;">Build My Bet →</button>
+      </div>
+    `;
+    setTimeout(() => {
+      if (typeof window.navigateTo === 'function') window.navigateTo('/generator');
+    }, 900);
+    return;
+  }
+
+  // Intent 4: Value Bets / +EV / Model Edge
+  if (/(value|positive ev|\+ev|edge|discrepanc|mispriced)/i.test(lower)) {
+    feedbackBox.style.display = "block";
+    feedbackBox.innerHTML = `
+      <div class="command-scout-feedback-header">
+        <span class="command-scout-feedback-ai-tag">💰 Intent Recognized • Value Bet Intelligence</span>
+        <button type="button" onclick="document.getElementById('command-scout-feedback').style.display='none'" style="background:none; border:none; color:#94a3b8; font-size:1rem; cursor:pointer;">✕</button>
+      </div>
+      <p class="command-scout-feedback-text">
+        Scanning positive expected value (+EV) opportunities where algorithmic probabilities exceed bookmaker implied odds. Opening <b>Value Bet Finder</b>.
+      </p>
+      <div class="command-scout-feedback-actions">
+        <button type="button" class="btn btn-primary" onclick="if(typeof navigateTo==='function'){navigateTo('/valuebot');}else{window.location.hash='#valuebot';}" style="font-size:0.82rem; padding:8px 16px; border-radius:8px; cursor:pointer;">Explore Value Bets →</button>
+      </div>
+    `;
+    setTimeout(() => {
+      if (typeof window.navigateTo === 'function') window.navigateTo('/valuebot');
+    }, 900);
+    return;
+  }
+
+  // Intent 5: Scanner / Live In-play / Arbitrage
+  if (/(scan|live|in-?play|arbitrage|surebet|market scanner|odds drop|movement)/i.test(lower)) {
+    feedbackBox.style.display = "block";
+    feedbackBox.innerHTML = `
+      <div class="command-scout-feedback-header">
+        <span class="command-scout-feedback-ai-tag">📡 Intent Recognized • Market Scanning Suite</span>
+        <button type="button" onclick="document.getElementById('command-scout-feedback').style.display='none'" style="background:none; border:none; color:#94a3b8; font-size:1rem; cursor:pointer;">✕</button>
+      </div>
+      <p class="command-scout-feedback-text">
+        Opening real-time market intelligence to monitor live match momentum, sudden odds drops, and cross-bookmaker arbitrage spreads.
+      </p>
+      <div class="command-scout-feedback-actions">
+        <button type="button" class="btn btn-primary" onclick="if(typeof navigateTo==='function'){navigateTo('/live-scanner');}else{window.location.hash='#live-scanner';}" style="font-size:0.82rem; padding:8px 16px; border-radius:8px; cursor:pointer;">Live Scanner →</button>
+        <button type="button" class="btn btn-secondary" onclick="if(typeof navigateTo==='function'){navigateTo('/arbitrage');}else{window.location.hash='#arbitrage';}" style="font-size:0.82rem; padding:8px 16px; border-radius:8px; cursor:pointer;">Arbitrage Finder →</button>
+      </div>
+    `;
+    setTimeout(() => {
+      if (typeof window.navigateTo === 'function') window.navigateTo('/live-scanner');
+    }, 900);
+    return;
+  }
+
+  // Intent 6: Today's Predictions / Form / BTTS / Over Under
+  if (/(prediction|today|fixture|match|game|home form|btts|over 2\.5|under|banker|double chance)/i.test(lower)) {
+    feedbackBox.style.display = "block";
+    feedbackBox.innerHTML = `
+      <div class="command-scout-feedback-header">
+        <span class="command-scout-feedback-ai-tag">⚽ Intent Recognized • Today's Match Predictions</span>
+        <button type="button" onclick="document.getElementById('command-scout-feedback').style.display='none'" style="background:none; border:none; color:#94a3b8; font-size:1rem; cursor:pointer;">✕</button>
+      </div>
+      <p class="command-scout-feedback-text">
+        Curating today's AI match predictions and statistical probability evaluations across major leagues.
+      </p>
+      <div class="command-scout-feedback-actions">
+        <button type="button" class="btn btn-primary" onclick="if(typeof navigateTo==='function'){navigateTo('/predictions');}else{window.location.hash='#predictions';}" style="font-size:0.82rem; padding:8px 16px; border-radius:8px; cursor:pointer;">View Predictions Grid →</button>
+        <button type="button" class="btn btn-secondary" onclick="openGeneralScout()" style="font-size:0.82rem; padding:8px 16px; border-radius:8px; cursor:pointer;">Ask Scout Details</button>
+      </div>
+    `;
+    // Also trigger quickPromptScout if available to render instant curated picks
+    if (typeof quickPromptScout === 'function') {
+      quickPromptScout(promptText, false);
+    }
+    return;
+  }
+
+  // Intent 7: Default Tactical & Conversational AI Scout Briefing
+  feedbackBox.style.display = "block";
+  feedbackBox.innerHTML = `
+    <div class="command-scout-feedback-header">
+      <span class="command-scout-feedback-ai-tag">🤖 AI Tactical Scout Command</span>
+      <button type="button" onclick="document.getElementById('command-scout-feedback').style.display='none'" style="background:none; border:none; color:#94a3b8; font-size:1rem; cursor:pointer;">✕</button>
+    </div>
+    <p class="command-scout-feedback-text">
+      Consulting DeepPredict Master Scout briefing engine for tactical evaluations on: <i>"${escapeHtml(promptText)}"</i>...
+    </p>
+    <div class="command-scout-feedback-actions">
+      <button type="button" class="btn btn-primary" onclick="openGeneralScout(); if(typeof sendScoutMessage==='function'){sendScoutMessage('${escapeHtml(promptText)}');}" style="font-size:0.82rem; padding:8px 16px; border-radius:8px; cursor:pointer;">Open Full Scout Briefing →</button>
+    </div>
+  `;
+
+  // Auto-launch scout modal and pass the query
+  setTimeout(() => {
+    if (typeof openGeneralScout === 'function') {
+      openGeneralScout();
+      setTimeout(() => {
+        if (typeof sendScoutMessage === 'function') {
+          sendScoutMessage(promptText);
+        }
+      }, 300);
+    }
+  }, 400);
+}
+
+window.initCommandCenter = initCommandCenter;
+window.handleCommandScoutSubmit = handleCommandScoutSubmit;
+window.executeCommandScoutPrompt = executeCommandScoutPrompt;
+
 function initAppEngine() {
   // Initialize state
   window.appState.watchlist = window.appState.watchlist || [];
   window.appState.activeScoutMatchId = null;
+
+  // Initialize Command Center
+  if (typeof initCommandCenter === 'function') initCommandCenter();
 
   // Render initially all matches
   if (typeof renderMatchCards === 'function') renderMatchCards(MATCH_DATA);
@@ -2815,6 +3122,9 @@ runOnReady(() => {
   // Initialize state
   window.appState.watchlist = [];
   window.appState.activeScoutMatchId = null;
+
+  // Initialize Command Center
+  if (typeof window.initCommandCenter === 'function') window.initCommandCenter();
 
   // Render initially all matches
   if (typeof window.renderMatchCards === 'function') window.renderMatchCards(window.MATCH_DATA || []);
