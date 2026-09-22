@@ -5887,8 +5887,8 @@ function runBetDoctorAudit(showScanAnim = true) {
               ✅ Ticket Fully Optimized
             </span>
           `}
-          <button onclick="convertAuditedTicket('${codeVal}', '${bookieVal}')" class="btn btn-secondary" style="font-weight: 700; font-size: 0.78rem; padding: 10px 16px; border: 1px solid var(--brand-royal-blue); cursor: pointer;">
-            📲 Convert to 50 Bookies
+          <button id="doctor-convert-bookies-btn" onclick="convertAuditedTicket('${codeVal}', '${bookieVal}')" class="btn btn-secondary" style="font-weight: 700; font-size: 0.78rem; padding: 10px 16px; border: 1px solid var(--brand-royal-blue); cursor: pointer;">
+            📲 Convert to Bookies
           </button>
         </div>
       </div>
@@ -6001,26 +6001,38 @@ function convertAuditedTicket(code, bookie) {
   const srcInput = document.getElementById("paddi-src-code");
   if (srcInput) srcInput.value = code;
   if (typeof showToast === 'function') {
-    showToast(`📲 Loading Code ${code} into 50-Bookmaker Converter...`, "info");
+    showToast(`Loading Code ${code} into Converter...`, "info");
   }
+}
+
+function enforceConvertButtonLabel() {
+  try {
+    const btns = document.querySelectorAll("button[onclick*='convertAuditedTicket'], #doctor-convert-bookies-btn");
+    btns.forEach(b => {
+      b.innerText = "📲 Convert to Bookies";
+    });
+  } catch (e) {}
 }
 
 window.loadDoctorSample = loadDoctorSample;
 window.runBetDoctorAudit = runBetDoctorAudit;
 window.applyDoctorPrescription = applyDoctorPrescription;
 window.convertAuditedTicket = convertAuditedTicket;
+window.enforceConvertButtonLabel = enforceConvertButtonLabel;
 
 // Run initial audit display immediately and on DOM ready
 if (document.readyState === 'complete' || document.readyState === 'interactive') {
-  setTimeout(() => { runBetDoctorAudit(false); }, 100);
+  setTimeout(() => { runBetDoctorAudit(false); enforceConvertButtonLabel(); }, 100);
 } else {
   document.addEventListener("DOMContentLoaded", () => {
     setTimeout(() => {
       runBetDoctorAudit(false);
+      enforceConvertButtonLabel();
       if (typeof runArbitrageScanner === 'function') runArbitrageScanner();
     }, 100);
   });
 }
+window.addEventListener('load', () => { setTimeout(enforceConvertButtonLabel, 200); });
 
 // --- ARBITRAGE & SUREBET PROFIT FINDER ENGINE ---
 // --- ARBITRAGE & SUREBET PROFIT FINDER ENGINE ---

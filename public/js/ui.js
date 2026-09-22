@@ -9989,8 +9989,8 @@ function runBetDoctorAudit(showScanAnim = true) {
               ✅ Ticket Fully Optimized
             </span>
           `}
-          <button onclick="convertAuditedTicket('${codeVal}', '${bookieVal}')" class="btn btn-secondary" style="font-weight: 700; font-size: 0.78rem; padding: 10px 16px; border: 1px solid var(--brand-royal-blue); cursor: pointer;">
-            📲 Convert to 50 Bookies
+          <button id="doctor-convert-bookies-btn" onclick="convertAuditedTicket('${codeVal}', '${bookieVal}')" class="btn btn-secondary" style="font-weight: 700; font-size: 0.78rem; padding: 10px 16px; border: 1px solid var(--brand-royal-blue); cursor: pointer;">
+            📲 Convert to Bookies
           </button>
         </div>
       </div>
@@ -10103,7 +10103,7 @@ function convertAuditedTicket(code, bookie) {
   const srcInput = document.getElementById("paddi-src-code");
   if (srcInput) srcInput.value = code;
   if (typeof showToast === 'function') {
-    showToast(`📲 Loading Code ${code} into 50-Bookmaker Converter...`, "info");
+    showToast(`Loading Code ${code} into Converter...`, "info");
   }
 }
 
