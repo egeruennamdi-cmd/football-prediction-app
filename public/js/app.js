@@ -3025,26 +3025,69 @@ function executeCommandScoutPrompt(promptText) {
     return;
   }
 
+  // Specific Match Analysis Query (e.g. "Analyse Arsenal vs Chelsea" or "Chelsea")
+  const allFixtures = (typeof MATCH_DATA !== 'undefined' && Array.isArray(MATCH_DATA)) ? MATCH_DATA :
+                      ((window.MATCH_DATA && Array.isArray(window.MATCH_DATA)) ? window.MATCH_DATA :
+                      (window.currentLeagueMatches || []));
+
+  let matchedFixture = null;
+  if (allFixtures.length > 0 && /(vs|against|analy[sz]e|match|prediction)/i.test(lower)) {
+    for (const m of allFixtures) {
+      const home = (m.homeTeam || m.home || '').toLowerCase();
+      const away = (m.awayTeam || m.away || '').toLowerCase();
+      if ((home && home.length > 3 && lower.includes(home)) || (away && away.length > 3 && lower.includes(away))) {
+        matchedFixture = m;
+        break;
+      }
+    }
+  }
+
+  if (matchedFixture) {
+    feedbackBox.style.display = "block";
+    feedbackBox.innerHTML = `
+      <div class="command-scout-feedback-header">
+        <span class="command-scout-feedback-ai-tag">⚽ Intent Recognized • Match Analysis</span>
+        <button type="button" onclick="document.getElementById('command-scout-feedback').style.display='none'" style="background:none; border:none; color:#94a3b8; font-size:1rem; cursor:pointer;">✕</button>
+      </div>
+      <p class="command-scout-feedback-text">
+        Identified fixture: <b>${escapeHtml(matchedFixture.homeTeam || matchedFixture.home)} vs ${escapeHtml(matchedFixture.awayTeam || matchedFixture.away)}</b>. Opening DeepPredict AI Scout Match Analysis.
+      </p>
+      <div class="command-scout-feedback-actions">
+        <button type="button" class="btn btn-primary" onclick="openScoutModal(${JSON.stringify(matchedFixture.id)})" style="font-size:0.82rem; padding:8px 16px; border-radius:8px; cursor:pointer;">Launch Analysis →</button>
+      </div>
+    `;
+    setTimeout(() => {
+      if (typeof openScoutModal === 'function') {
+        openScoutModal(matchedFixture.id);
+      }
+    }, 700);
+    return;
+  }
+
   // Intent 6: Today's Predictions / Form / BTTS / Over Under
   if (/(prediction|today|fixture|match|game|home form|btts|over 2\.5|under|banker|double chance)/i.test(lower)) {
     feedbackBox.style.display = "block";
     feedbackBox.innerHTML = `
       <div class="command-scout-feedback-header">
-        <span class="command-scout-feedback-ai-tag">⚽ Intent Recognized • Today's Match Predictions</span>
+        <span class="command-scout-feedback-ai-tag">🔮 Intent Recognized • Today's Match Predictions</span>
         <button type="button" onclick="document.getElementById('command-scout-feedback').style.display='none'" style="background:none; border:none; color:#94a3b8; font-size:1rem; cursor:pointer;">✕</button>
       </div>
       <p class="command-scout-feedback-text">
-        Curating today's AI match predictions and statistical probability evaluations across major leagues.
+        Exploring today's data-driven football predictions and probability insights.
       </p>
       <div class="command-scout-feedback-actions">
-        <button type="button" class="btn btn-primary" onclick="if(typeof navigateTo==='function'){navigateTo('/predictions');}else{window.location.hash='#predictions';}" style="font-size:0.82rem; padding:8px 16px; border-radius:8px; cursor:pointer;">View Predictions Grid →</button>
+        <button type="button" class="btn btn-primary" onclick="if(typeof navigateTo==='function'){navigateTo('/predictions');}else{window.location.hash='#predictions';}" style="font-size:0.82rem; padding:8px 16px; border-radius:8px; cursor:pointer;">View Predictions →</button>
         <button type="button" class="btn btn-secondary" onclick="openGeneralScout()" style="font-size:0.82rem; padding:8px 16px; border-radius:8px; cursor:pointer;">Ask Scout Details</button>
       </div>
     `;
-    // Also trigger quickPromptScout if available to render instant curated picks
-    if (typeof quickPromptScout === 'function') {
-      quickPromptScout(promptText, false);
-    }
+    setTimeout(() => {
+      if (typeof window.navigateTo === 'function') {
+        window.navigateTo('/predictions');
+      } else {
+        const pred = document.getElementById('today-insights-section') || document.getElementById('predictions');
+        if (pred) pred.scrollIntoView({ behavior: 'smooth' });
+      }
+    }, 800);
     return;
   }
 

@@ -245,6 +245,16 @@
     // Update navigation active states across navbar, mobile drawer, and bottom nav
     updateNavActiveStates(path, config.navKey);
 
+    // Smooth scroll down to predictions if navigating to /predictions
+    if (path === '/predictions') {
+      setTimeout(() => {
+        const predSec = document.getElementById('today-insights-section') || document.getElementById('predictions');
+        if (predSec) {
+          predSec.scrollIntoView({ behavior: 'smooth' });
+        }
+      }, 100);
+    }
+
     // Check VIP feature protection
     if (config.tool && ['arbitrage', 'valuebot', 'backtester', 'doctor'].includes(config.tool)) {
       if (typeof checkFeatureVipAccess === 'function') {

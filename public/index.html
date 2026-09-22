@@ -701,7 +701,7 @@
         <h2 class="command-center-question">WHAT ARE YOU HERE TO DO?</h2>
 
         <p class="command-center-subtext">
-          Tell AI Scout what you're looking for, or choose an action below.
+          Tell me what you're looking for and I'll take you to the right DeepPredictBet tool, or choose an action below.
         </p>
 
         <div class="command-center-guest-bar" id="command-center-guest-bar">
@@ -724,7 +724,7 @@
             <div class="command-scout-icon" aria-hidden="true">🤖</div>
             <div>
               <h3 class="command-scout-heading">ASK AI SCOUT</h3>
-              <p class="command-scout-sub">Tell me what you want to find, analyse or build.</p>
+              <p class="command-scout-sub">Tell me what you're looking for and I'll take you to the right DeepPredictBet tool.</p>
             </div>
           </div>
           <div class="command-scout-badge-ai">
@@ -744,7 +744,7 @@
               type="text"
               id="command-scout-input"
               class="command-scout-input"
-              placeholder="What are you looking for today? (e.g. 'Check my bet slip' or 'Find today\\'s strongest opportunities')"
+              placeholder="What are you trying to do today?"
               autocomplete="off"
               spellcheck="false"
               aria-label="Ask AI Scout Command"
@@ -753,7 +753,7 @@
             <input type="hidden" id="hero-scout-input" />
           </div>
           <button type="submit" class="command-scout-submit-btn" aria-label="Submit Command to AI Scout">
-            <span>Ask AI Scout</span>
+            <span>ASK AI SCOUT</span>
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
               <line x1="5" y1="12" x2="19" y2="12"></line>
               <polyline points="12 5 19 12 12 19"></polyline>
@@ -761,32 +761,25 @@
           </button>
         </form>
 
-        <!-- Example Commands / Suggestion Chips -->
-        <div class="command-scout-chips-label">Suggested commands:</div>
+        <!-- Suggested Chips -->
         <div class="command-scout-chips">
-          <button type="button" class="command-scout-chip" onclick="executeCommandScoutPrompt('Find today\'s strongest opportunities')">
-            <span>⚡</span> Find today's strongest opportunities
+          <button type="button" class="command-scout-chip" onclick="executeCommandScoutPrompt('Check my bet')">
+            <span>🩺</span> Check my bet
           </button>
-          <button type="button" class="command-scout-chip" onclick="executeCommandScoutPrompt('Analyse this match')">
-            <span>⚽</span> Analyse this match
+          <button type="button" class="command-scout-chip" onclick="executeCommandScoutPrompt('Build a ticket')">
+            <span>🎯</span> Build a ticket
           </button>
-          <button type="button" class="command-scout-chip" onclick="executeCommandScoutPrompt('Check my bet slip')">
-            <span>🩺</span> Check my bet slip
+          <button type="button" class="command-scout-chip" onclick="executeCommandScoutPrompt('Find value')">
+            <span>💎</span> Find value
           </button>
-          <button type="button" class="command-scout-chip" onclick="executeCommandScoutPrompt('Help me build a ticket')">
-            <span>🎰</span> Help me build a ticket
+          <button type="button" class="command-scout-chip" onclick="executeCommandScoutPrompt('Analyse today\'s matches')">
+            <span>🔮</span> Analyse today's matches
           </button>
-          <button type="button" class="command-scout-chip" onclick="executeCommandScoutPrompt('Find value bets')">
-            <span>💰</span> Find value bets
+          <button type="button" class="command-scout-chip" onclick="executeCommandScoutPrompt('Convert code')">
+            <span>🔄</span> Convert code
           </button>
-          <button type="button" class="command-scout-chip" onclick="executeCommandScoutPrompt('Find matches with strong home form')">
-            <span>🏠</span> Find matches with strong home form
-          </button>
-          <button type="button" class="command-scout-chip" onclick="executeCommandScoutPrompt('Find BTTS opportunities')">
-            <span>🎯</span> Find BTTS opportunities
-          </button>
-          <button type="button" class="command-scout-chip" onclick="executeCommandScoutPrompt('Review my selections')">
-            <span>📋</span> Review my selections
+          <button type="button" class="command-scout-chip" onclick="executeCommandScoutPrompt('Scan live')">
+            <span>📡</span> Scan live
           </button>
         </div>
 
@@ -804,60 +797,80 @@
         <span>OR CHOOSE AN ACTION</span>
       </div>
 
-      <!-- PRIMARY ACTION CARDS (1–5) -->
-      <div class="command-cards-primary-grid">
-        <!-- CARD 1: FIND TODAY'S PREDICTIONS -->
-        <div class="command-card command-card-primary card-theme-predictions" tabindex="0" role="button" aria-label="Find Today's Predictions" onclick="if(typeof navigateTo==='function'){navigateTo('/predictions');}else{window.location.hash='#predictions';}">
+      <!-- EXACT 6 ACTION CARDS GRID (3x2 on desktop, compact on mobile) -->
+      <div class="command-action-cards-grid">
+        <!-- CARD 1: TODAY'S PREDICTIONS -->
+        <div class="command-card card-theme-predictions" tabindex="0" role="button" aria-label="Explore Today's Predictions" onclick="if(typeof navigateTo==='function'){navigateTo('/predictions');}else{window.location.hash='#predictions';}">
           <div>
             <div class="command-card-header">
-              <div class="command-card-icon icon-emerald-tint">⚽</div>
+              <div class="command-card-icon icon-emerald-tint">🔮</div>
               <div>
                 <span class="command-card-cat">PREDICTIONS</span>
-                <h3 class="command-card-title">Find Today's Predictions</h3>
+                <h3 class="command-card-title">TODAY'S PREDICTIONS</h3>
               </div>
             </div>
             <p class="command-card-desc">
-              Explore today's fixtures, predictions, probabilities and available betting insights.
+              Explore today's data-driven football predictions.
             </p>
           </div>
           <div class="command-card-cta">
-            <span>Explore Predictions</span>
+            <span>View Predictions</span>
             <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg>
           </div>
         </div>
 
         <!-- CARD 2: BET DOCTOR -->
-        <div class="command-card command-card-primary card-theme-doctor" tabindex="0" role="button" aria-label="Check My Bet Slip with Bet Doctor" onclick="if(typeof navigateTo==='function'){navigateTo('/bet-doctor');}else{window.location.hash='#bet-doctor';}">
+        <div class="command-card card-theme-doctor" tabindex="0" role="button" aria-label="Analyse Selections with Bet Doctor" onclick="if(typeof navigateTo==='function'){navigateTo('/bet-doctor');}else{window.location.hash='#bet-doctor';}">
           <div>
             <div class="command-card-header">
               <div class="command-card-icon icon-cyan-tint">🩺</div>
               <div>
                 <span class="command-card-cat">BET DOCTOR</span>
-                <h3 class="command-card-title">Check My Bet Slip</h3>
+                <h3 class="command-card-title">BET DOCTOR</h3>
               </div>
             </div>
             <p class="command-card-desc">
-              Analyse your ticket, identify risky selections and understand your ticket's overall health.
+              Analyse your selections and identify potential risks, weaknesses and areas to review.
             </p>
           </div>
           <div class="command-card-cta">
-            <span>Open Bet Doctor</span>
+            <span>Analyse My Bet</span>
             <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg>
           </div>
         </div>
 
-        <!-- CARD 3: BET CODE CONVERTER -->
-        <div class="command-card command-card-primary card-theme-converter" tabindex="0" role="button" aria-label="Convert a Booking Code" onclick="if(typeof navigateTo==='function'){navigateTo('/bet-code-converter');}else{window.location.hash='#converter';}">
+        <!-- CARD 3: BET GENERATOR -->
+        <div class="command-card card-theme-generator" tabindex="0" role="button" aria-label="Build a Ticket with Bet Generator" onclick="if(typeof navigateTo==='function'){navigateTo('/generator');}else{window.location.hash='#generator';}">
           <div>
             <div class="command-card-header">
-              <div class="command-card-icon icon-gold-tint">🎫</div>
+              <div class="command-card-icon icon-blue-tint">🎯</div>
               <div>
-                <span class="command-card-cat">CONVERTER</span>
-                <h3 class="command-card-title">Convert a Booking Code</h3>
+                <span class="command-card-cat">BET GENERATOR</span>
+                <h3 class="command-card-title">BET GENERATOR</h3>
               </div>
             </div>
             <p class="command-card-desc">
-              Convert a supported booking code from one bookmaker to another across 50+ bookmakers.
+              Build a football ticket based on your preferred selections, odds and criteria.
+            </p>
+          </div>
+          <div class="command-card-cta">
+            <span>Build A Bet</span>
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg>
+          </div>
+        </div>
+
+        <!-- CARD 4: BOOKING CODE CONVERTER -->
+        <div class="command-card card-theme-converter" tabindex="0" role="button" aria-label="Convert Booking Code" onclick="if(typeof navigateTo==='function'){navigateTo('/bet-code-converter');}else{window.location.hash='#converter';}">
+          <div>
+            <div class="command-card-header">
+              <div class="command-card-icon icon-gold-tint">🔄</div>
+              <div>
+                <span class="command-card-cat">CONVERTER</span>
+                <h3 class="command-card-title">BOOKING CODE CONVERTER</h3>
+              </div>
+            </div>
+            <p class="command-card-desc">
+              Convert supported booking codes between bookmakers.
             </p>
           </div>
           <div class="command-card-cta">
@@ -866,61 +879,18 @@
           </div>
         </div>
 
-        <!-- CARD 4: AI SCOUT COMMAND HUB -->
-        <div class="command-card command-card-primary card-theme-scout" tabindex="0" role="button" aria-label="Open AI Scout Command Hub" onclick="if(typeof openGeneralScout==='function'){openGeneralScout();}else if(typeof navigateTo==='function'){navigateTo('/predictions');}">
+        <!-- CARD 5: VALUE BETS -->
+        <div class="command-card card-theme-value" tabindex="0" role="button" aria-label="Explore Value Bets" onclick="if(typeof navigateTo==='function'){navigateTo('/valuebot');}else{window.location.hash='#valuebot';}">
           <div>
             <div class="command-card-header">
-              <div class="command-card-icon icon-purple-tint">🤖</div>
-              <div>
-                <span class="command-card-cat">AI SCOUT</span>
-                <h3 class="command-card-title">AI Scout Command Hub</h3>
-              </div>
-            </div>
-            <p class="command-card-desc">
-              Use AI to explore matches, analyse opportunities and navigate DeepPredictBet's intelligence tools.
-            </p>
-          </div>
-          <div class="command-card-cta">
-            <span>Open AI Scout</span>
-            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg>
-          </div>
-        </div>
-
-        <!-- CARD 5: BET GENERATOR -->
-        <div class="command-card command-card-primary card-theme-generator" tabindex="0" role="button" aria-label="Build a Bet with Bet Generator" onclick="if(typeof navigateTo==='function'){navigateTo('/generator');}else{window.location.hash='#generator';}">
-          <div>
-            <div class="command-card-header">
-              <div class="command-card-icon icon-blue-tint">🎰</div>
-              <div>
-                <span class="command-card-cat">BET GENERATOR</span>
-                <h3 class="command-card-title">Build a Bet</h3>
-              </div>
-            </div>
-            <p class="command-card-desc">
-              Build a ticket around your preferred sport, league, market, odds range and risk preferences.
-            </p>
-          </div>
-          <div class="command-card-cta">
-            <span>Build My Bet</span>
-            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg>
-          </div>
-        </div>
-      </div>
-
-      <!-- SECONDARY & EXPLORATION ACTION CARDS (6–8) -->
-      <div class="command-cards-secondary-grid">
-        <!-- CARD 6: FIND VALUE BETS -->
-        <div class="command-card card-theme-value" tabindex="0" role="button" aria-label="Find Value Bets" onclick="if(typeof navigateTo==='function'){navigateTo('/valuebot');}else{window.location.hash='#valuebot';}">
-          <div>
-            <div class="command-card-header">
-              <div class="command-card-icon icon-amber-tint">💰</div>
+              <div class="command-card-icon icon-amber-tint">💎</div>
               <div>
                 <span class="command-card-cat">VALUE INTELLIGENCE</span>
-                <h3 class="command-card-title">Find Value Bets</h3>
+                <h3 class="command-card-title">VALUE BETS</h3>
               </div>
             </div>
             <p class="command-card-desc">
-              Explore selections where model estimates and available market odds may indicate potential value.
+              Explore potential value opportunities identified from available football data.
             </p>
           </div>
           <div class="command-card-cta">
@@ -929,45 +899,33 @@
           </div>
         </div>
 
-        <!-- CARD 7: SCAN THE MARKET -->
-        <div class="command-card card-theme-scanner" tabindex="0" role="button" aria-label="Scan the Market" onclick="if(typeof navigateTo==='function'){navigateTo('/live-scanner');}else{window.location.hash='#live-scanner';}">
+        <!-- CARD 6: LIVE SCANNER -->
+        <div class="command-card card-theme-scanner" tabindex="0" role="button" aria-label="Scan Live Matches" onclick="if(typeof navigateTo==='function'){navigateTo('/live-scanner');}else{window.location.hash='#live-scanner';}">
           <div>
             <div class="command-card-header">
               <div class="command-card-icon icon-red-tint">📡</div>
               <div>
-                <span class="command-card-cat">MARKET SCANNER</span>
-                <h3 class="command-card-title">Scan the Market</h3>
+                <span class="command-card-cat">LIVE SCANNER</span>
+                <h3 class="command-card-title">LIVE SCANNER</h3>
               </div>
             </div>
             <p class="command-card-desc">
-              Explore available live, pre-match, arbitrage and other market intelligence tools.
+              Scan live matches and explore available live betting intelligence.
             </p>
           </div>
           <div class="command-card-cta">
-            <span>Open Market Scanner</span>
+            <span>Scan Live</span>
             <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg>
           </div>
         </div>
+      </div>
 
-        <!-- CARD 8: EXPLORE DEEPPREDICTBET -->
-        <div class="command-card card-theme-explore" tabindex="0" role="button" aria-label="Explore DeepPredictBet Platform" onclick="document.getElementById('today-insights-section')?.scrollIntoView({behavior:'smooth'});">
-          <div>
-            <div class="command-card-header">
-              <div class="command-card-icon icon-slate-tint">🧭</div>
-              <div>
-                <span class="command-card-cat">EXPLORATION</span>
-                <h3 class="command-card-title">Explore the Platform</h3>
-              </div>
-            </div>
-            <p class="command-card-desc">
-              Discover everything DeepPredictBet can do — from daily insights and audits to verified performance.
-            </p>
-          </div>
-          <div class="command-card-cta">
-            <span>Explore Platform</span>
-            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg>
-          </div>
-        </div>
+      <!-- DIRECT TERTIARY EXPLORE OPTION BELOW THE 6 CARDS -->
+      <div class="command-explore-wrap">
+        <a href="#today-insights-section" onclick="document.getElementById('today-insights-section')?.scrollIntoView({behavior:'smooth'}); return false;" class="btn-explore-all-tools">
+          <span>Explore All Tools</span>
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg>
+        </a>
       </div>
     </section>
 
