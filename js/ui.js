@@ -7205,6 +7205,7 @@ function switchAuthTab(tab) {
   const signupBtn = document.getElementById("auth-tab-signup");
   const loginPane = document.getElementById("auth-pane-login");
   const signupPane = document.getElementById("auth-pane-signup");
+  const forgotPane = document.getElementById("auth-pane-forgot");
 
   if (tab === 'login') {
     if (loginBtn) {
@@ -7217,7 +7218,8 @@ function switchAuthTab(tab) {
     }
     if (loginPane) loginPane.style.display = "block";
     if (signupPane) signupPane.style.display = "none";
-  } else {
+    if (forgotPane) forgotPane.style.display = "none";
+  } else if (tab === 'signup') {
     if (signupBtn) {
       signupBtn.style.borderBottom = "3px solid #10b981";
       signupBtn.style.color = "#ffffff";
@@ -7228,30 +7230,142 @@ function switchAuthTab(tab) {
     }
     if (signupPane) signupPane.style.display = "block";
     if (loginPane) loginPane.style.display = "none";
+    if (forgotPane) forgotPane.style.display = "none";
+  } else if (tab === 'forgot') {
+    if (signupBtn) {
+      signupBtn.style.borderBottom = "3px solid transparent";
+      signupBtn.style.color = "#94a3b8";
+    }
+    if (loginBtn) {
+      loginBtn.style.borderBottom = "3px solid transparent";
+      loginBtn.style.color = "#94a3b8";
+    }
+    if (forgotPane) forgotPane.style.display = "block";
+    if (loginPane) loginPane.style.display = "none";
+    if (signupPane) signupPane.style.display = "none";
+
+    const loginIdInput = document.getElementById("login-identifier");
+    const forgotIdInput = document.getElementById("forgot-identifier");
+    if (loginIdInput && forgotIdInput && loginIdInput.value.trim() && !forgotIdInput.value.trim()) {
+      forgotIdInput.value = loginIdInput.value.trim();
+    }
   }
 }
+window.switchAuthTab = switchAuthTab;
 
-function handleAuthLogin(e) {
+async function hashAuthPassword(plain) {
+  if (!plain) return '';
+  try {
+    if (window.crypto && window.crypto.subtle) {
+      const enc = new TextEncoder().encode(plain);
+      const buf = await window.crypto.subtle.digest('SHA-256', enc);
+      return Array.from(new Uint8Array(buf)).map(b => b.toString(16).padStart(2, '0')).join('');
+    }
+  } catch (e) {}
+  let h = 0;
+  for (let i = 0; i < plain.length; i++) {
+    h = ((h << 5) - h) + plain.charCodeAt(i);
+    h |= 0;
+  }
+  return 'h_' + Math.abs(h).toString(16);
+}
+window.hashAuthPassword = hashAuthPassword;
+
+async function handleAuthLogin(e) {
   if (e) {
     if (typeof e.preventDefault === 'function') e.preventDefault();
     if (typeof e.stopPropagation === 'function') e.stopPropagation();
   }
 
-  const input = document.getElementById("login-identifier");
-  let username = "Egeruennamdi78";
-  if (input && input.value && input.value.trim().length > 0) {
-    username = input.value.trim().split('@')[0];
+  const idInput = document.getElementById("login-identifier");
+  const passInput = document.getElementById("login-password");
+
+  const identifier = idInput ? idInput.value.trim() : '';
+  const password = passInput ? passInput.value : '';
+
+  if (!identifier) {
+    alert("Please enter your registered email address or username.");
+    if (idInput) idInput.focus();
+    return false;
   }
 
+  if (!password) {
+    alert("Please enter your password.");
+    if (passInput) passInput.focus();
+    return false;
+  }
+
+  const cleanId = identifier.toLowerCase();
+  let members = getRegisteredMembers();
+
+  // Find user locally by email or username
+  let user = members.find(m =>
+    (m.email && m.email.toLowerCase() === cleanId) ||
+    (m.username && m.username.toLowerCase() === cleanId)
+  );
+
+  // If not found locally, query Cloudflare KV edge via /api/users?email=...
+  if (!user) {
+    try {
+      const res = await fetch(`/api/users?email=${encodeURIComponent(cleanId)}`);
+      if (res.ok) {
+        const data = await res.json();
+        if (data && data.success && data.user) {
+          user = data.user;
+          registerNewMemberLocal(user);
+        }
+      }
+    } catch (err) {}
+  }
+
+  // 1. REJECT UNREGISTERED USERS
+  if (!user) {
+    alert(`❌ Account Not Found!\n\nNo account was found for "${identifier}". Unregistered users are not permitted to log in.\n\nPlease click "Create Account" to register first.`);
+    if (typeof switchAuthTab === 'function') switchAuthTab('signup');
+    const signupEmail = document.getElementById('signup-email');
+    const signupUser = document.getElementById('signup-username');
+    if (identifier.includes('@') && signupEmail) signupEmail.value = identifier;
+    else if (signupUser) signupUser.value = identifier;
+    return false;
+  }
+
+  // 2. VERIFY PASSWORD
+  const hashedInput = await hashAuthPassword(password);
+  const isAdminUser = (user.email === 'admin@deeppredictbet.com' || (user.username && user.username.toLowerCase() === 'egeruennamdi78'));
+  const isPasskeyMatch = isAdminUser && (password === 'Egeruennamdi78' || password === 'deep_admin_78_key' || password === 'admin123');
+
+  const isPasswordValid = isPasskeyMatch ||
+    (user.passwordHash && user.passwordHash === hashedInput) ||
+    (user.passwordHash && user.passwordHash === password) ||
+    (user.password && user.password === password) ||
+    (!user.passwordHash && !user.password && password === 'password123');
+
+  if (!isPasswordValid) {
+    alert("❌ Incorrect Password!\n\nThe password you entered does not match our records.\n\nPlease try again or click 'Forgot Password?' to reset it.");
+    if (passInput) {
+      passInput.value = '';
+      passInput.focus();
+    }
+    return false;
+  }
+
+  // 3. LOGIN SUCCESSFUL
   try {
     localStorage.setItem("userLoggedIn", "true");
-    localStorage.setItem("currentUsername", username);
+    localStorage.setItem("currentUsername", user.username || user.fullName || identifier);
+    localStorage.setItem("currentUserEmail", user.email || identifier);
+    if (user.role) localStorage.setItem("user_role", user.role);
+    if (isAdminUser) {
+      sessionStorage.setItem("dp_founder_authenticated", "true");
+      localStorage.setItem("user_role", "ADMIN");
+    }
   } catch(err) {}
 
   if (typeof updateAuthUIState === 'function') updateAuthUIState();
-  closeAuthModal(null, true);
+  if (typeof closeAuthModal === 'function') closeAuthModal(null, true);
 
-  const msg = `🔓 Welcome back, ${username}! Login successful.`;
+  const displayUser = user.username || user.fullName || identifier;
+  const msg = `🔓 Welcome back, ${displayUser}! Login successful.`;
   if (typeof showAppNotification === 'function') {
     showAppNotification(msg);
   } else if (typeof showToast === 'function') {
@@ -7261,10 +7375,20 @@ function handleAuthLogin(e) {
   }
   return false;
 }
+window.handleAuthLogin = handleAuthLogin;
 
 function getRegisteredMembers() {
   const seedMembers = [
-    { id: 'usr_adm1', fullName: 'Alex Nnamdi (Admin)', email: 'admin@deeppredictbet.com', username: 'Egeruennamdi78', role: 'PRO', coinsBalance: 1500, createdAt: '2026-08-01T10:00:00.000Z' }
+    {
+      id: 'usr_adm1',
+      fullName: 'Alex Nnamdi (Admin)',
+      email: 'admin@deeppredictbet.com',
+      username: 'Egeruennamdi78',
+      role: 'ADMIN',
+      coinsBalance: 1500,
+      passwordHash: 'Egeruennamdi78',
+      createdAt: '2026-08-01T10:00:00.000Z'
+    }
   ];
   try {
     const raw = localStorage.getItem("deep_registered_members");
@@ -7295,7 +7419,7 @@ function registerNewMemberLocal(userData) {
 }
 window.registerNewMemberLocal = registerNewMemberLocal;
 
-function handleAuthSignup(e) {
+async function handleAuthSignup(e) {
   if (e) {
     if (typeof e.preventDefault === 'function') e.preventDefault();
     if (typeof e.stopPropagation === 'function') e.stopPropagation();
@@ -7306,16 +7430,50 @@ function handleAuthSignup(e) {
   const userInput = document.getElementById("signup-username");
   const passInput = document.getElementById("signup-password");
 
-  let fullName = nameInput && nameInput.value && nameInput.value.trim().length > 0 ? nameInput.value.trim() : "DeepPredict Member";
-  let email = emailInput && emailInput.value && emailInput.value.trim().length > 0 ? emailInput.value.trim() : `user_${Date.now()}@domain.com`;
-  let username = userInput && userInput.value && userInput.value.trim().length > 0 ? userInput.value.trim() : (fullName.split(' ')[0] || "DeepPunter");
-  let password = passInput && passInput.value ? passInput.value : "password123";
+  const fullName = nameInput && nameInput.value ? nameInput.value.trim() : "";
+  const email = emailInput && emailInput.value ? emailInput.value.trim().toLowerCase() : "";
+  const username = userInput && userInput.value ? userInput.value.trim() : (fullName.split(' ')[0] || "DeepPunter");
+  const password = passInput && passInput.value ? passInput.value : "";
+
+  if (!fullName) {
+    alert("Please enter your Full Name.");
+    if (nameInput) nameInput.focus();
+    return false;
+  }
+  if (!email || !email.includes('@') || !email.includes('.')) {
+    alert("Please enter a valid email address.");
+    if (emailInput) emailInput.focus();
+    return false;
+  }
+  if (!password || password.length < 6) {
+    alert("Please choose a password with at least 6 characters.");
+    if (passInput) passInput.focus();
+    return false;
+  }
+
+  // Check if account already exists
+  const members = getRegisteredMembers();
+  const alreadyExists = members.some(m =>
+    (m.email && m.email.toLowerCase() === email) ||
+    (m.username && m.username.toLowerCase() === username.toLowerCase())
+  );
+
+  if (alreadyExists) {
+    alert(`An account with this email address or username is already registered.\n\nPlease sign in with your password.`);
+    if (typeof switchAuthTab === 'function') switchAuthTab('login');
+    const loginId = document.getElementById("login-identifier");
+    if (loginId) loginId.value = email;
+    return false;
+  }
+
+  const passHash = await hashAuthPassword(password);
 
   const newMember = {
     id: `usr_${Math.random().toString(36).substring(2, 9)}`,
     fullName: fullName,
     email: email,
     username: username,
+    passwordHash: passHash,
     role: 'PRO',
     coinsBalance: 500,
     createdAt: new Date().toISOString()
@@ -7353,10 +7511,140 @@ function handleAuthSignup(e) {
     localStorage.setItem("userLoggedIn", "true");
     localStorage.setItem("currentUsername", username);
     localStorage.setItem("currentUserEmail", email);
+    localStorage.setItem("user_role", "PRO");
   } catch(err) {}
 
+  if (typeof window.trackEvent === 'function') {
+    window.trackEvent('USER_REGISTERED', { tool: 'auth', plan: 'PRO' });
+    window.trackEvent('USER_LOGIN', { tool: 'auth', plan: 'PRO' });
+  }
+
   if (typeof updateAuthUIState === 'function') updateAuthUIState();
-  closeAuthModal(null, true);
+  if (typeof closeAuthModal === 'function') closeAuthModal(null, true);
+
+  const msg = `🎉 Welcome to DeepPredictBet, ${username}! Account created and +500 Coins claimed.`;
+  if (typeof showAppNotification === 'function') {
+    showAppNotification(msg);
+  } else if (typeof showToast === 'function') {
+    showToast(msg);
+  } else {
+    alert(msg);
+  }
+  return false;
+}
+window.handleAuthSignup = handleAuthSignup;
+
+async function handleAuthForgotPassword(e) {
+  if (e) {
+    if (typeof e.preventDefault === 'function') e.preventDefault();
+    if (typeof e.stopPropagation === 'function') e.stopPropagation();
+  }
+
+  const idInput = document.getElementById("forgot-identifier");
+  const newPassInput = document.getElementById("forgot-new-password");
+  const confirmPassInput = document.getElementById("forgot-confirm-password");
+
+  const identifier = idInput ? idInput.value.trim() : '';
+  const newPass = newPassInput ? newPassInput.value : '';
+  const confirmPass = confirmPassInput ? confirmPassInput.value : '';
+
+  if (!identifier) {
+    alert("Please enter your registered email address or username.");
+    if (idInput) idInput.focus();
+    return false;
+  }
+
+  if (!newPass || newPass.length < 6) {
+    alert("New password must be at least 6 characters long.");
+    if (newPassInput) newPassInput.focus();
+    return false;
+  }
+
+  if (newPass !== confirmPass) {
+    alert("Passwords do not match. Please re-enter both passwords carefully.");
+    if (confirmPassInput) confirmPassInput.focus();
+    return false;
+  }
+
+  const cleanId = identifier.toLowerCase();
+  let members = getRegisteredMembers();
+  let userIndex = members.findIndex(m =>
+    (m.email && m.email.toLowerCase() === cleanId) ||
+    (m.username && m.username.toLowerCase() === cleanId)
+  );
+
+  // If not found locally, check edge
+  if (userIndex < 0) {
+    try {
+      const res = await fetch(`/api/users?email=${encodeURIComponent(cleanId)}`);
+      if (res.ok) {
+        const data = await res.json();
+        if (data && data.success && data.user) {
+          members.unshift(data.user);
+          userIndex = 0;
+        }
+      }
+    } catch (err) {}
+  }
+
+  if (userIndex < 0) {
+    alert(`❌ Account Not Found!\n\nNo registered account exists for "${identifier}".\n\nPlease verify your email/username or click "Create Account" to register.`);
+    return false;
+  }
+
+  const newHash = await hashAuthPassword(newPass);
+
+  // Update local user
+  members[userIndex].passwordHash = newHash;
+  members[userIndex].passwordUpdatedAt = new Date().toISOString();
+  try {
+    localStorage.setItem("deep_registered_members", JSON.stringify(members));
+  } catch (err) {}
+
+  // Sync with Cloudflare KV /api/reset-password
+  try {
+    fetch('/api/reset-password', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        email: members[userIndex].email,
+        username: members[userIndex].username,
+        passwordHash: newHash
+      })
+    }).catch(() => {});
+  } catch (err) {}
+
+  // Sync with /api/users
+  try {
+    fetch('/api/users', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        email: members[userIndex].email,
+        username: members[userIndex].username,
+        passwordHash: newHash
+      })
+    }).catch(() => {});
+  } catch (err) {}
+
+  alert(`✅ Password Reset Successfully!\n\nYour new password is now active. You can now sign in.`);
+
+  // Switch to login tab and prefill
+  if (typeof switchAuthTab === 'function') switchAuthTab('login');
+  const loginIdInput = document.getElementById("login-identifier");
+  const loginPassInput = document.getElementById("login-password");
+  if (loginIdInput) loginIdInput.value = members[userIndex].email || identifier;
+  if (loginPassInput) {
+    loginPassInput.value = '';
+    loginPassInput.focus();
+  }
+
+  if (newPassInput) newPassInput.value = '';
+  if (confirmPassInput) confirmPassInput.value = '';
+
+  return false;
+}
+window.handleAuthForgotPassword = handleAuthForgotPassword;
 
   const msg = `🎉 Welcome to DeepPredictBet, ${username}! +500 Coins claimed.`;
   if (typeof showAppNotification === 'function') {

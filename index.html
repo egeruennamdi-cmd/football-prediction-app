@@ -7400,7 +7400,7 @@
             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
               <label style="font-size: 0.8rem; font-weight: 700; color: #cbd5e1;">Password</label>
               <a href="#"
-                onclick="if (typeof showAppNotification === 'function') showAppNotification('🔑 Password reset link sent to your email.'); else alert('Password reset link sent to your email.'); return false;"
+                onclick="switchAuthTab('forgot'); return false;"
                 style="font-size: 0.74rem; color: #3b82f6; text-decoration: none; font-weight: 700;">Forgot
                 Password?</a>
             </div>
@@ -7456,6 +7456,54 @@
             style="width: 100%; background: linear-gradient(135deg, #10b981 0%, #059669 100%); color: #ffffff; font-weight: 900; font-size: 0.95rem; padding: 12px; border: none; border-radius: 10px; cursor: pointer; box-shadow: 0 4px 14px rgba(16, 185, 129, 0.4); margin-top: 6px;">
             Create Free Account & Claim 500 Coins
           </button>
+        </form>
+      </div>
+
+      <!-- Forgot / Reset Password Pane -->
+      <div id="auth-pane-forgot" style="padding: 22px; display: none;">
+        <div style="background: rgba(59, 130, 246, 0.1); border: 1px solid rgba(59, 130, 246, 0.25); border-radius: 10px; padding: 12px 14px; margin-bottom: 18px;">
+          <h4 style="color: #60a5fa; font-size: 0.88rem; font-weight: 800; margin: 0 0 4px;">🔑 Reset Your Password</h4>
+          <p style="color: #94a3b8; font-size: 0.76rem; margin: 0; line-height: 1.4;">
+            Enter your registered email address or username and set a new password to regain access to your account.
+          </p>
+        </div>
+
+        <form onsubmit="handleAuthForgotPassword(event); return false;" style="display: flex; flex-direction: column; gap: 14px;">
+          <div>
+            <label style="display: block; font-size: 0.8rem; font-weight: 700; color: #cbd5e1; margin-bottom: 6px;">
+              Registered Email or Username
+            </label>
+            <input type="text" id="forgot-identifier" required placeholder="e.g. alex@domain.com or DeepPunter"
+              style="width: 100%; background: #1e293b; border: 1px solid #334155; border-radius: 10px; padding: 12px 14px; color: #ffffff; font-size: 0.9rem; outline: none; box-sizing: border-box;">
+          </div>
+
+          <div>
+            <label style="display: block; font-size: 0.8rem; font-weight: 700; color: #cbd5e1; margin-bottom: 6px;">
+              New Password (min 6 characters)
+            </label>
+            <input type="password" id="forgot-new-password" required placeholder="••••••••"
+              style="width: 100%; background: #1e293b; border: 1px solid #334155; border-radius: 10px; padding: 12px 14px; color: #ffffff; font-size: 0.9rem; outline: none; box-sizing: border-box;">
+          </div>
+
+          <div>
+            <label style="display: block; font-size: 0.8rem; font-weight: 700; color: #cbd5e1; margin-bottom: 6px;">
+              Confirm New Password
+            </label>
+            <input type="password" id="forgot-confirm-password" required placeholder="••••••••"
+              style="width: 100%; background: #1e293b; border: 1px solid #334155; border-radius: 10px; padding: 12px 14px; color: #ffffff; font-size: 0.9rem; outline: none; box-sizing: border-box;">
+          </div>
+
+          <button type="submit"
+            style="width: 100%; background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%); color: #ffffff; font-weight: 900; font-size: 0.95rem; padding: 14px; border: none; border-radius: 10px; cursor: pointer; box-shadow: 0 4px 14px rgba(59, 130, 246, 0.4); margin-top: 4px;">
+            Update & Reset Password
+          </button>
+
+          <div style="text-align: center; margin-top: 6px;">
+            <button type="button" onclick="switchAuthTab('login')"
+              style="background: none; border: none; color: #94a3b8; font-size: 0.8rem; font-weight: 700; cursor: pointer; text-decoration: underline;">
+              &larr; Remember your password? Back to Login
+            </button>
+          </div>
         </form>
       </div>
 

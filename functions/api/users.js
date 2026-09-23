@@ -17,6 +17,7 @@ const SEED_ADMIN = [
     username: 'Egeruennamdi78',
     role: 'PRO',
     coinsBalance: 1500,
+    passwordHash: 'Egeruennamdi78',
     createdAt: '2026-08-01T10:00:00.000Z'
   }
 ];
@@ -218,6 +219,9 @@ export async function onRequestPost(context) {
         if (body.coinsLedger !== undefined) registeredUser.coinsLedger = body.coinsLedger;
       }
 
+      // Password updates
+      if (body.passwordHash) registeredUser.passwordHash = body.passwordHash;
+
       // Safe user-editable fields
       if (body.savedTickets !== undefined) registeredUser.savedTickets = body.savedTickets;
       if (body.watchlist !== undefined) registeredUser.watchlist = body.watchlist;
@@ -232,6 +236,7 @@ export async function onRequestPost(context) {
         fullName: cleanName,
         email: cleanEmail,
         username: cleanUser || cleanName.split(' ')[0] || 'Punter',
+        passwordHash: body.passwordHash || '',
         role: isAdmin ? (body.role || 'USER') : 'USER',
         coinsBalance: isAdmin && body.coinsBalance !== undefined ? body.coinsBalance : 500,
         savedTickets: body.savedTickets || [],
