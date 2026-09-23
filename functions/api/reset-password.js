@@ -11,6 +11,19 @@ const CF_ACCOUNT_ID = '2e500cb9c6dde4a2a8f47853fe5efe7c';
 const CF_KV_NAMESPACE_ID = 'c24f3ae03abd42788257bec2f7d3c065';
 const FALLBACK_CF_API_TOKEN = 'cfoat_M5XWA9h4W490gp-jkOQPlyJj-Yhxbvf9FhHVlGFpWvE.Eq4GTdNoGZ6XPS-XwBawDnD5ThF_olt2iwFbRgdtDRo';
 
+const SEED_ADMIN = [
+  {
+    id: 'usr_adm1',
+    fullName: 'Alex Nnamdi (Admin)',
+    email: 'admin@deeppredictbet.com',
+    username: 'Egeruennamdi78',
+    role: 'PRO',
+    coinsBalance: 1500,
+    passwordHash: 'Egeruennamdi78',
+    createdAt: '2026-08-01T10:00:00.000Z'
+  }
+];
+
 function corsHeaders() {
   return {
     'Content-Type': 'application/json',
@@ -29,6 +42,7 @@ async function getMembers(context) {
         const parsed = JSON.parse(stored);
         if (Array.isArray(parsed) && parsed.length > 0) return parsed;
       }
+      return [...SEED_ADMIN];
     } catch (e) {}
   }
 
@@ -50,7 +64,7 @@ async function getMembers(context) {
     }
   } catch (e) {}
 
-  return [];
+  return [...SEED_ADMIN];
 }
 
 async function saveMembers(context, members) {
