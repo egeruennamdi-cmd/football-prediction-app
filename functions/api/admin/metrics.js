@@ -31,7 +31,10 @@ export async function onRequestGet(context) {
     const period = (url.searchParams.get('period') || '30d').toLowerCase();
     
     // STRICT SERVER-SIDE AUTHORIZATION CHECK
-    const isAuthorized = authHeader.includes('deep_admin_78_key') || 
+    const adminSecret = (context.env && context.env.ADMIN_SECRET_KEY) || 'deep_admin_78_key';
+    const isAuthorized = authHeader.includes(adminSecret) || 
+                         authHeader.includes('deep_admin_78_key') || 
+                         adminKey === adminSecret || 
                          adminKey === 'deep_admin_78_key' || 
                          authHeader.includes('admin@deeppredictbet.com') ||
                          authHeader.includes('Egeruennamdi78');
@@ -48,19 +51,33 @@ export async function onRequestGet(context) {
 
     let members = [];
     
-    // 1. Fetch live roster from Cloudflare KV
-    try {
-      const kvRes = await fetch(CF_KV_URL, {
-        headers: {
-          'Authorization': `Bearer ${CF_API_TOKEN}`,
-          'Accept': 'application/json'
+    // 1. Fetch live roster from native Cloudflare KV binding (0ms edge latency)
+    if (context.env && context.env.USERS_KV) {
+      try {
+        const stored = await context.env.USERS_KV.get('members_list');
+        if (stored) {
+          const parsed = JSON.parse(stored);
+          if (Array.isArray(parsed) && parsed.length > 0) members = parsed;
         }
-      });
-      if (kvRes.ok) {
-        const json = await kvRes.json();
-        if (Array.isArray(json) && json.length > 0) members = json;
-      }
-    } catch (e) {}
+      } catch (e) {}
+    }
+
+    // 2. Fallback to Cloudflare KV REST fetch
+    if (members.length === 0) {
+      try {
+        const token = (context.env && context.env.CF_API_TOKEN) || CF_API_TOKEN;
+        const kvRes = await fetch(CF_KV_URL, {
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Accept': 'application/json'
+          }
+        });
+        if (kvRes.ok) {
+          const json = await kvRes.json();
+          if (Array.isArray(json) && json.length > 0) members = json;
+        }
+      } catch (e) {}
+    }
 
     // Fallback binding
     let telemetry = null;

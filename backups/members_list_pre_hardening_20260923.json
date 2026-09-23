@@ -1,0 +1,15 @@
+{
+  "timestamp": "2026-09-23T08:33:40.211Z",
+  "source": "c24f3ae03abd42788257bec2f7d3c065",
+  "data": [
+    {
+      "id": "usr_adm1",
+      "fullName": "Alex Nnamdi (Admin)",
+      "email": "admin@deeppredictbet.com",
+      "username": "Egeruennamdi78",
+      "role": "PRO",
+      "coinsBalance": 1500,
+      "createdAt": "2026-08-01T10:00:00.000Z"
+    }
+  ]
+}

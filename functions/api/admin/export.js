@@ -34,7 +34,10 @@ export async function onRequestGet(context) {
     const period = (url.searchParams.get('period') || '30d').toLowerCase();
     
     // SERVER-SIDE AUTHORIZATION CHECK
-    const isAuthorized = authHeader.includes('deep_admin_78_key') || 
+    const adminSecret = (context.env && context.env.ADMIN_SECRET_KEY) || 'deep_admin_78_key';
+    const isAuthorized = authHeader.includes(adminSecret) || 
+                         authHeader.includes('deep_admin_78_key') || 
+                         adminKey === adminSecret || 
                          adminKey === 'deep_admin_78_key' || 
                          authHeader.includes('admin@deeppredictbet.com') ||
                          authHeader.includes('Egeruennamdi78');

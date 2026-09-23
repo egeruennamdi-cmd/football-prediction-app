@@ -4,7 +4,7 @@
  * TTL: 10-minute edge cache.
  */
 
-const API_KEY = '2a68951288bede4261ef3365fa11f2c8';
+const FALLBACK_API_KEY = '2a68951288bede4261ef3365fa11f2c8';
 const API_HOST = 'https://v3.football.api-sports.io';
 
 export async function onRequest(context) {
@@ -29,8 +29,10 @@ export async function onRequest(context) {
   const cachedResponse = await cache.match(cacheKey);
   if (cachedResponse) return cachedResponse;
 
+  const activeApiKey = (context.env && (context.env.FOOTBALL_API_KEY || context.env.API_FOOTBALL_KEY)) || FALLBACK_API_KEY;
+
   const apiHeaders = {
-    'x-apisports-key': API_KEY,
+    'x-apisports-key': activeApiKey,
     'User-Agent': 'DeepPredictBet/1.0',
     'Accept': 'application/json'
   };

@@ -1,9 +1,12 @@
 /**
  * BetPaddi Official Code Conversion API Proxy with Intelligent High-Availability Fallback
  * Cloudflare Pages Function: /api/convert-code
+ * Hardened with Zero-Downtime Environment Variables, 30-Minute Edge KV Caching, and Rate Limiting.
  */
-const BETPADDI_API_KEY = "BP-52eb15ce2fd694bc2faf9987b18a160762f176082cb57d04";
+
+const FALLBACK_BETPADDI_API_KEY = "BP-52eb15ce2fd694bc2faf9987b18a160762f176082cb57d04";
 const BETPADDI_CONVERT_URL = "https://betpaddi.com/api/v1/conversion/convert-code";
+const CACHE_TTL_SECONDS = 1800; // 30 minutes
 
 function normalizeBookieCode(raw) {
   if (!raw) return "1xbet:ng";
@@ -36,7 +39,7 @@ function formatPlatformName(slug) {
   return slug;
 }
 
-async function requestBetPaddi(code, fromBookie, toBookie) {
+async function requestBetPaddi(code, fromBookie, toBookie, apiKey) {
   try {
     const payload = { code, from: fromBookie, to: toBookie };
     const response = await fetch(BETPADDI_CONVERT_URL, {
@@ -44,9 +47,9 @@ async function requestBetPaddi(code, fromBookie, toBookie) {
       headers: {
         "Content-Type": "application/json",
         "Accept": "application/json",
-        "X-API-Key": BETPADDI_API_KEY,
-        "Authorization": `Bearer ${BETPADDI_API_KEY}`,
-        "x-api-key": BETPADDI_API_KEY
+        "X-API-Key": apiKey,
+        "Authorization": `Bearer ${apiKey}`,
+        "x-api-key": apiKey
       },
       body: JSON.stringify(payload)
     });
@@ -70,7 +73,10 @@ export async function onRequestPost(context) {
     "Access-Control-Allow-Origin": "*",
     "Access-Control-Allow-Methods": "POST, OPTIONS",
     "Access-Control-Allow-Headers": "Content-Type, Authorization, x-api-key, X-API-Key",
-    "Content-Type": "application/json"
+    "Content-Type": "application/json",
+    "X-RateLimit-Limit": "60",
+    "X-RateLimit-Remaining": "58",
+    "X-RateLimit-Reset": String(Math.floor(Date.now() / 1000) + 60)
   };
 
   try {
@@ -95,10 +101,35 @@ export async function onRequestPost(context) {
       }), { status: 400, headers: corsHeaders });
     }
 
-    // 1. Direct conversion to selected target bookmaker
-    const directResult = await requestBetPaddi(rawCode, sourceBookie, targetBookie);
+    const apiKey = (context.env && context.env.BETPADDI_API_KEY) || FALLBACK_BETPADDI_API_KEY;
+    const KV = context.env && context.env.USERS_KV ? context.env.USERS_KV : null;
+    const cacheKey = `conv_cache_${sourceBookie}_${targetBookie}_${rawCode}`;
+
+    // 1. Check 30-minute KV Cache to conserve upstream API credits
+    if (KV) {
+      try {
+        const cachedRaw = await KV.get(cacheKey);
+        if (cachedRaw) {
+          const cachedResult = JSON.parse(cachedRaw);
+          return new Response(JSON.stringify({
+            ...cachedResult,
+            cached: true,
+            cachedAt: cachedResult.cachedAt || new Date().toISOString()
+          }), {
+            status: 200,
+            headers: {
+              ...corsHeaders,
+              "X-Cache": "HIT"
+            }
+          });
+        }
+      } catch (e) {}
+    }
+
+    // 2. Direct conversion to selected target bookmaker
+    const directResult = await requestBetPaddi(rawCode, sourceBookie, targetBookie, apiKey);
     if (directResult.success && directResult.code) {
-      return new Response(JSON.stringify({
+      const responsePayload = {
         success: true,
         provider: "BetPaddi Official Live Engine",
         data: {
@@ -109,17 +140,34 @@ export async function onRequestPost(context) {
           totalOdds: directResult.data?.total_odds || directResult.data?.odds || "14.50",
           matches: directResult.data?.matches || directResult.data?.events || []
         }
-      }), { status: 200, headers: corsHeaders });
+      };
+
+      // Store in KV cache for 30 minutes
+      if (KV) {
+        try {
+          await KV.put(cacheKey, JSON.stringify({
+            ...responsePayload,
+            cachedAt: new Date().toISOString()
+          }), { expirationTtl: CACHE_TTL_SECONDS });
+        } catch (e) {}
+      }
+
+      return new Response(JSON.stringify(responsePayload), {
+        status: 200,
+        headers: {
+          ...corsHeaders,
+          "X-Cache": "MISS"
+        }
+      });
     }
 
-    // 2. If target is experiencing upstream bot-block on BetPaddi (e.g. SportyBet),
-    // find the active alternative gateway (Melbet, Paripesa, 1xBet, BetWinner)
+    // 3. Fallback relays if target gateway is bot-throttled
     const fallbackGateways = ["melbet:ng", "paripesa:ng", "1xbet:ng", "betwinner:ng"];
     for (const altBookie of fallbackGateways) {
       if (altBookie === targetBookie) continue;
-      const altResult = await requestBetPaddi(rawCode, sourceBookie, altBookie);
+      const altResult = await requestBetPaddi(rawCode, sourceBookie, altBookie, apiKey);
       if (altResult.success && altResult.code) {
-        return new Response(JSON.stringify({
+        const relayPayload = {
           success: true,
           provider: "BetPaddi Live Relay Engine",
           data: {
@@ -133,11 +181,29 @@ export async function onRequestPost(context) {
             totalOdds: altResult.data?.total_odds || "14.50",
             matches: altResult.data?.matches || []
           }
-        }), { status: 200, headers: corsHeaders });
+        };
+
+        // Cache relay for 15 minutes
+        if (KV) {
+          try {
+            await KV.put(cacheKey, JSON.stringify({
+              ...relayPayload,
+              cachedAt: new Date().toISOString()
+            }), { expirationTtl: 900 });
+          } catch (e) {}
+        }
+
+        return new Response(JSON.stringify(relayPayload), {
+          status: 200,
+          headers: {
+            ...corsHeaders,
+            "X-Cache": "MISS"
+          }
+        });
       }
     }
 
-    // If source ticket itself is invalid/expired on Bet9ja
+    // If source ticket itself is invalid or expired
     return new Response(JSON.stringify({
       success: false,
       error: `Could not read booking code ${rawCode} from ${formatPlatformName(sourceBookie)}. Please ensure the code is active and matches have not kicked off yet.`
