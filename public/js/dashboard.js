@@ -1604,17 +1604,14 @@
   let currentAdminPeriod = '30d';
 
   function isFounderAuthenticated() {
+    const sessionAuth = sessionStorage.getItem("dp_founder_authenticated") === "true";
+    const loggedIn = localStorage.getItem("userLoggedIn") === "true";
     const username = (localStorage.getItem("currentUsername") || '').trim();
     const email = (localStorage.getItem("currentUserEmail") || '').trim().toLowerCase();
     const role = (localStorage.getItem("user_role") || '').toUpperCase();
-    const sessionAuth = sessionStorage.getItem("dp_founder_authenticated") === "true";
 
-    return (
-      sessionAuth ||
-      username === 'Egeruennamdi78' ||
-      email === 'admin@deeppredictbet.com' ||
-      role === 'ADMIN'
-    );
+    // Must be logged in AND have explicitly authenticated the founder passkey session OR have active ADMIN role
+    return sessionAuth && loggedIn && (role === 'ADMIN' || username === 'Egeruennamdi78' || email === 'admin@deeppredictbet.com');
   }
 
   window.authenticateFounder = function (e) {
@@ -1647,9 +1644,34 @@
 
   window.founderSignOut = function () {
     sessionStorage.removeItem("dp_founder_authenticated");
+    localStorage.removeItem("dp_founder_authenticated");
     localStorage.removeItem("user_role");
-    showToast('Administrator signed out.', 'info');
-    renderFounderDashboard();
+    localStorage.removeItem("userLoggedIn");
+    localStorage.removeItem("currentUsername");
+    localStorage.removeItem("currentUserEmail");
+
+    if (typeof logoutUser === 'function') {
+      logoutUser();
+    } else {
+      try {
+        if (typeof updateAuthUIState === 'function') updateAuthUIState();
+      } catch (e) {}
+    }
+
+    showToast('🔒 Administrator signed out.', 'info');
+
+    const container = document.getElementById('view-founder-analytics');
+    if (container) {
+      renderFounderAuthGate(container);
+    }
+
+    if (typeof navigateToPage === 'function') {
+      navigateToPage('predictions');
+    } else if (typeof navigateTo === 'function') {
+      navigateTo('/');
+    } else {
+      window.location.hash = '#predictions';
+    }
   };
 
   window.switchAdminPeriod = function (period) {

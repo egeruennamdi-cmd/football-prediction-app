@@ -8074,8 +8074,12 @@ function logoutUser(e) {
   if (e && e.preventDefault) e.preventDefault();
 
   try {
+    sessionStorage.removeItem("dp_founder_authenticated");
     localStorage.removeItem("userLoggedIn");
     localStorage.removeItem("currentUsername");
+    localStorage.removeItem("currentUserEmail");
+    localStorage.removeItem("user_role");
+    localStorage.removeItem("dp_founder_authenticated");
     localStorage.clear();
   } catch (err) {}
 
