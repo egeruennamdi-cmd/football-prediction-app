@@ -7729,18 +7729,119 @@ async function handleAuthForgotPassword(e) {
   }
 
   const idInput = document.getElementById("forgot-identifier");
-  const newPassInput = document.getElementById("forgot-new-password");
-  const confirmPassInput = document.getElementById("forgot-confirm-password");
-
+  const submitBtn = document.getElementById("forgot-submit-btn");
   const identifier = idInput ? idInput.value.trim() : '';
-  const newPass = newPassInput ? newPassInput.value : '';
-  const confirmPass = confirmPassInput ? confirmPassInput.value : '';
 
   if (!identifier) {
     alert("Please enter your registered email address or username.");
     if (idInput) idInput.focus();
     return false;
   }
+
+  if (submitBtn) {
+    submitBtn.disabled = true;
+    submitBtn.innerHTML = '<span>Sending Link...</span> <span>⏳</span>';
+  }
+
+  try {
+    const res = await fetch('/api/reset-password', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        action: 'request_link',
+        email: identifier,
+        username: identifier
+      })
+    });
+
+    const data = await res.json();
+
+    if (!data.success) {
+      alert(`❌ ${data.error || "Unable to send reset link. Please check your credentials or register."}`);
+      if (submitBtn) {
+        submitBtn.disabled = false;
+        submitBtn.innerHTML = '<span>Send Password Reset Link</span> <span>✉️</span>';
+      }
+      return false;
+    }
+
+    // Success: Show sent confirmation panel
+    const formContainer = document.getElementById("auth-forgot-form-container");
+    const confirmContainer = document.getElementById("auth-forgot-sent-confirmation");
+    const emailDisplay = document.getElementById("forgot-sent-email-display");
+    const directLink = document.getElementById("forgot-direct-reset-link");
+
+    if (formContainer) formContainer.style.display = "none";
+    if (confirmContainer) confirmContainer.style.display = "block";
+    if (emailDisplay) emailDisplay.textContent = data.email || identifier;
+
+    if (directLink && data.resetLink) {
+      directLink.href = data.resetLink;
+      directLink.style.display = "inline-block";
+      directLink.onclick = function (ev) {
+        ev.preventDefault();
+        const urlObj = new URL(data.resetLink);
+        const token = urlObj.searchParams.get("token") || "";
+        const email = urlObj.searchParams.get("email") || data.email || identifier;
+        activateResetPasswordView(token, email);
+      };
+    }
+
+    const toastMsg = `📬 Password reset link sent to ${data.email || identifier}!`;
+    if (typeof showAppNotification === 'function') {
+      showAppNotification(toastMsg);
+    } else if (typeof showToast === 'function') {
+      showToast(toastMsg);
+    }
+
+  } catch (err) {
+    alert(`❌ Request failed: ${err.message || 'Network error'}. Please try again.`);
+  } finally {
+    if (submitBtn) {
+      submitBtn.disabled = false;
+      submitBtn.innerHTML = '<span>Send Password Reset Link</span> <span>✉️</span>';
+    }
+  }
+
+  return false;
+}
+window.handleAuthForgotPassword = handleAuthForgotPassword;
+
+function activateResetPasswordView(token, email) {
+  if (typeof openAuthModal === 'function') openAuthModal('reset-confirm');
+  if (typeof switchAuthTab === 'function') switchAuthTab('reset-confirm');
+
+  const tokenInput = document.getElementById("reset-token-input");
+  const emailInput = document.getElementById("reset-email-input");
+  const emailDisplay = document.getElementById("reset-confirm-email-display");
+  const newPassInput = document.getElementById("reset-new-password");
+
+  if (tokenInput) tokenInput.value = token;
+  if (emailInput) emailInput.value = email;
+  if (emailDisplay) emailDisplay.textContent = email;
+  if (newPassInput) {
+    newPassInput.value = '';
+    setTimeout(() => newPassInput.focus(), 300);
+  }
+}
+window.activateResetPasswordView = activateResetPasswordView;
+
+async function handleAuthConfirmPasswordReset(e) {
+  if (e) {
+    if (typeof e.preventDefault === 'function') e.preventDefault();
+    if (typeof e.stopPropagation === 'function') e.stopPropagation();
+  }
+
+  const tokenInput = document.getElementById("reset-token-input");
+  const emailInput = document.getElementById("reset-email-input");
+  const newPassInput = document.getElementById("reset-new-password");
+  const confirmPassInput = document.getElementById("reset-confirm-password");
+  const submitBtn = document.getElementById("reset-confirm-submit-btn");
+
+  const token = tokenInput ? tokenInput.value.trim() : '';
+  const email = emailInput ? emailInput.value.trim() : '';
+  const newPass = newPassInput ? newPassInput.value : '';
+  const confirmPass = confirmPassInput ? confirmPassInput.value : '';
 
   if (!newPass || newPass.length < 6) {
     alert("New password must be at least 6 characters long.");
@@ -7754,85 +7855,104 @@ async function handleAuthForgotPassword(e) {
     return false;
   }
 
-  const cleanId = identifier.toLowerCase();
-  let members = getRegisteredMembers();
-  let userIndex = members.findIndex(m =>
-    (m.email && m.email.toLowerCase() === cleanId) ||
-    (m.username && m.username.toLowerCase() === cleanId)
-  );
+  if (submitBtn) {
+    submitBtn.disabled = true;
+    submitBtn.textContent = "Updating Password...";
+  }
 
-  // If not found locally, check edge
-  if (userIndex < 0) {
-    try {
-      const res = await fetch(`/api/users?email=${encodeURIComponent(cleanId)}`);
-      if (res.ok) {
-        const data = await res.json();
-        if (data && data.success && data.user) {
-          members.unshift(data.user);
-          userIndex = 0;
-        }
+  try {
+    const passHash = await hashAuthPassword(newPass);
+
+    const res = await fetch('/api/reset-password', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        action: 'confirm_reset',
+        email: email,
+        token: token,
+        passwordHash: passHash
+      })
+    });
+
+    const data = await res.json();
+
+    if (!data.success) {
+      alert(`❌ ${data.error || "Failed to reset password. The link may have expired."}`);
+      if (submitBtn) {
+        submitBtn.disabled = false;
+        submitBtn.textContent = "Save New Password & Sign In";
       }
+      return false;
+    }
+
+    // Update local user in storage
+    const members = getRegisteredMembers();
+    const existingIndex = members.findIndex(m => (m.email || '').toLowerCase() === email.toLowerCase());
+    if (existingIndex >= 0) {
+      members[existingIndex].passwordHash = passHash;
+      try {
+        localStorage.setItem("deep_registered_members", JSON.stringify(members));
+      } catch (err) {}
+    }
+
+    // Auto sign in user
+    try {
+      localStorage.setItem("userLoggedIn", "true");
+      localStorage.setItem("currentUsername", data.username || email.split('@')[0]);
+      localStorage.setItem("currentUserEmail", email);
+      if (data.role) localStorage.setItem("user_role", data.role);
     } catch (err) {}
+
+    // Clean URL query parameters so reset token is removed from browser bar
+    if (window.history && window.history.replaceState) {
+      window.history.replaceState({}, document.title, window.location.pathname);
+    }
+
+    if (typeof updateAuthUIState === 'function') updateAuthUIState();
+    if (typeof closeAuthModal === 'function') closeAuthModal(null, true);
+
+    const welcomeMsg = `🎉 Password reset successfully! Welcome back, ${data.username || email.split('@')[0]}!`;
+    if (typeof showAppNotification === 'function') {
+      showAppNotification(welcomeMsg);
+    } else if (typeof showToast === 'function') {
+      showToast(welcomeMsg);
+    } else {
+      alert(welcomeMsg);
+    }
+
+  } catch (err) {
+    alert(`❌ Error: ${err.message || 'Failed to update password'}`);
+  } finally {
+    if (submitBtn) {
+      submitBtn.disabled = false;
+      submitBtn.textContent = "Save New Password & Sign In";
+    }
   }
-
-  if (userIndex < 0) {
-    alert(`❌ Account Not Found!\n\nNo registered account exists for "${identifier}".\n\nPlease verify your email/username or click "Create Account" to register.`);
-    return false;
-  }
-
-  const newHash = await hashAuthPassword(newPass);
-
-  // Update local user
-  members[userIndex].passwordHash = newHash;
-  members[userIndex].passwordUpdatedAt = new Date().toISOString();
-  try {
-    localStorage.setItem("deep_registered_members", JSON.stringify(members));
-  } catch (err) {}
-
-  // Sync with Cloudflare KV /api/reset-password
-  try {
-    fetch('/api/reset-password', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        email: members[userIndex].email,
-        username: members[userIndex].username,
-        passwordHash: newHash
-      })
-    }).catch(() => {});
-  } catch (err) {}
-
-  // Sync with /api/users
-  try {
-    fetch('/api/users', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        email: members[userIndex].email,
-        username: members[userIndex].username,
-        passwordHash: newHash
-      })
-    }).catch(() => {});
-  } catch (err) {}
-
-  alert(`✅ Password Reset Successfully!\n\nYour new password is now active. You can now sign in.`);
-
-  // Switch to login tab and prefill
-  if (typeof switchAuthTab === 'function') switchAuthTab('login');
-  const loginIdInput = document.getElementById("login-identifier");
-  const loginPassInput = document.getElementById("login-password");
-  if (loginIdInput) loginIdInput.value = members[userIndex].email || identifier;
-  if (loginPassInput) {
-    loginPassInput.value = '';
-    loginPassInput.focus();
-  }
-
-  if (newPassInput) newPassInput.value = '';
-  if (confirmPassInput) confirmPassInput.value = '';
 
   return false;
 }
-window.handleAuthForgotPassword = handleAuthForgotPassword;
+window.handleAuthConfirmPasswordReset = handleAuthConfirmPasswordReset;
+
+function checkPasswordResetUrlParams() {
+  try {
+    const urlParams = new URLSearchParams(window.location.search);
+    const action = urlParams.get('action');
+    const token = urlParams.get('token');
+    const email = urlParams.get('email');
+
+    if (action === 'reset-password' && token) {
+      setTimeout(() => {
+        activateResetPasswordView(token, email || '');
+      }, 300);
+    }
+  } catch (e) {}
+}
+window.checkPasswordResetUrlParams = checkPasswordResetUrlParams;
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', checkPasswordResetUrlParams);
+} else {
+  checkPasswordResetUrlParams();
+}
 
 async function openAdminUsersModal() {
   const existing = document.getElementById("admin-users-modal");
@@ -8102,6 +8222,7 @@ function switchAuthTab(tab) {
   const loginPane = document.getElementById("auth-pane-login");
   const signupPane = document.getElementById("auth-pane-signup");
   const forgotPane = document.getElementById("auth-pane-forgot");
+  const resetConfirmPane = document.getElementById("auth-pane-reset-confirm");
 
   if (tab === 'login') {
     if (loginBtn) {
@@ -8115,6 +8236,7 @@ function switchAuthTab(tab) {
     if (loginPane) loginPane.style.display = "block";
     if (signupPane) signupPane.style.display = "none";
     if (forgotPane) forgotPane.style.display = "none";
+    if (resetConfirmPane) resetConfirmPane.style.display = "none";
   } else if (tab === 'signup') {
     if (signupBtn) {
       signupBtn.style.borderBottom = "3px solid #10b981";
@@ -8127,6 +8249,7 @@ function switchAuthTab(tab) {
     if (signupPane) signupPane.style.display = "block";
     if (loginPane) loginPane.style.display = "none";
     if (forgotPane) forgotPane.style.display = "none";
+    if (resetConfirmPane) resetConfirmPane.style.display = "none";
   } else if (tab === 'forgot') {
     if (signupBtn) {
       signupBtn.style.borderBottom = "3px solid transparent";
@@ -8139,12 +8262,31 @@ function switchAuthTab(tab) {
     if (forgotPane) forgotPane.style.display = "block";
     if (loginPane) loginPane.style.display = "none";
     if (signupPane) signupPane.style.display = "none";
+    if (resetConfirmPane) resetConfirmPane.style.display = "none";
+
+    const formContainer = document.getElementById("auth-forgot-form-container");
+    const confirmContainer = document.getElementById("auth-forgot-sent-confirmation");
+    if (formContainer) formContainer.style.display = "block";
+    if (confirmContainer) confirmContainer.style.display = "none";
 
     const loginIdInput = document.getElementById("login-identifier");
     const forgotIdInput = document.getElementById("forgot-identifier");
     if (loginIdInput && forgotIdInput && loginIdInput.value.trim() && !forgotIdInput.value.trim()) {
       forgotIdInput.value = loginIdInput.value.trim();
     }
+  } else if (tab === 'reset-confirm') {
+    if (signupBtn) {
+      signupBtn.style.borderBottom = "3px solid transparent";
+      signupBtn.style.color = "#94a3b8";
+    }
+    if (loginBtn) {
+      loginBtn.style.borderBottom = "3px solid transparent";
+      loginBtn.style.color = "#94a3b8";
+    }
+    if (resetConfirmPane) resetConfirmPane.style.display = "block";
+    if (forgotPane) forgotPane.style.display = "none";
+    if (loginPane) loginPane.style.display = "none";
+    if (signupPane) signupPane.style.display = "none";
   }
 }
 window.switchAuthTab = switchAuthTab;

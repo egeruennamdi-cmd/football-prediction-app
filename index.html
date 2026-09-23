@@ -7459,29 +7459,88 @@
         </form>
       </div>
 
-      <!-- Forgot / Reset Password Pane -->
+      <!-- Forgot Password: Send Reset Link Pane -->
       <div id="auth-pane-forgot" style="padding: 22px; display: none;">
-        <div style="background: rgba(59, 130, 246, 0.1); border: 1px solid rgba(59, 130, 246, 0.25); border-radius: 10px; padding: 12px 14px; margin-bottom: 18px;">
-          <h4 style="color: #60a5fa; font-size: 0.88rem; font-weight: 800; margin: 0 0 4px;">🔑 Reset Your Password</h4>
-          <p style="color: #94a3b8; font-size: 0.76rem; margin: 0; line-height: 1.4;">
-            Enter your registered email address or username and set a new password to regain access to your account.
+        <div id="auth-forgot-form-container">
+          <div style="background: rgba(59, 130, 246, 0.1); border: 1px solid rgba(59, 130, 246, 0.25); border-radius: 10px; padding: 14px 16px; margin-bottom: 18px;">
+            <h4 style="color: #60a5fa; font-size: 0.9rem; font-weight: 800; margin: 0 0 6px; display: flex; align-items: center; gap: 6px;">
+              <span>🔑</span> Reset Your Password
+            </h4>
+            <p style="color: #94a3b8; font-size: 0.78rem; margin: 0; line-height: 1.45;">
+              Enter your registered email address or username. We will generate and send a secure password reset link to your email.
+            </p>
+          </div>
+
+          <form onsubmit="handleAuthForgotPassword(event); return false;" style="display: flex; flex-direction: column; gap: 14px;">
+            <div>
+              <label style="display: block; font-size: 0.8rem; font-weight: 700; color: #cbd5e1; margin-bottom: 6px;">
+                Registered Email or Username
+              </label>
+              <input type="text" id="forgot-identifier" required placeholder="e.g. alex@domain.com or DeepPunter"
+                style="width: 100%; background: #1e293b; border: 1px solid #334155; border-radius: 10px; padding: 12px 14px; color: #ffffff; font-size: 0.9rem; outline: none; box-sizing: border-box;">
+            </div>
+
+            <button type="submit" id="forgot-submit-btn"
+              style="width: 100%; background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%); color: #ffffff; font-weight: 900; font-size: 0.95rem; padding: 14px; border: none; border-radius: 10px; cursor: pointer; box-shadow: 0 4px 14px rgba(37, 99, 235, 0.4); margin-top: 4px; display: flex; align-items: center; justify-content: center; gap: 8px;">
+              <span>Send Password Reset Link</span> <span>✉️</span>
+            </button>
+
+            <div style="text-align: center; margin-top: 6px;">
+              <button type="button" onclick="switchAuthTab('login')"
+                style="background: none; border: none; color: #94a3b8; font-size: 0.8rem; font-weight: 700; cursor: pointer; text-decoration: underline;">
+                &larr; Remember your password? Back to Login
+              </button>
+            </div>
+          </form>
+        </div>
+
+        <!-- Sent Confirmation View -->
+        <div id="auth-forgot-sent-confirmation" style="display: none; text-align: center; padding: 10px 4px;">
+          <div style="width: 64px; height: 64px; border-radius: 50%; background: rgba(59, 130, 246, 0.15); border: 2px solid #3b82f6; display: flex; align-items: center; justify-content: center; font-size: 2rem; margin: 0 auto 16px;">
+            📬
+          </div>
+          <h3 style="color: #ffffff; font-size: 1.15rem; font-weight: 900; margin: 0 0 8px;">Check Your Email</h3>
+          <p style="color: #94a3b8; font-size: 0.84rem; line-height: 1.5; margin: 0 0 18px;">
+            We've sent a secure password reset link to: <br>
+            <strong id="forgot-sent-email-display" style="color: #60a5fa; font-size: 0.92rem;"></strong>
+          </p>
+          <div style="background: rgba(15, 23, 42, 0.7); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 10px; padding: 12px; margin-bottom: 20px; font-size: 0.76rem; color: #94a3b8; line-height: 1.45; text-align: left;">
+            ℹ️ <strong>Next Steps:</strong> Check your inbox (or spam folder) and click the link within <strong>60 minutes</strong> to choose a new password.
+          </div>
+
+          <a id="forgot-direct-reset-link" href="#" style="display: none; background: rgba(59, 130, 246, 0.15); border: 1px solid #3b82f6; color: #93c5fd; padding: 10px 16px; border-radius: 8px; font-size: 0.82rem; font-weight: 700; text-decoration: none; margin-bottom: 16px; text-align: center;">
+            🔗 Open Reset Link Directly &rarr;
+          </a>
+
+          <div>
+            <button type="button" onclick="switchAuthTab('login')"
+              style="background: none; border: none; color: #94a3b8; font-size: 0.82rem; font-weight: 700; cursor: pointer; text-decoration: underline;">
+              &larr; Return to Sign In
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Reset Password Confirmation Pane (Activated when clicking reset link in email) -->
+      <div id="auth-pane-reset-confirm" style="padding: 22px; display: none;">
+        <div style="background: rgba(16, 185, 129, 0.1); border: 1px solid rgba(16, 185, 129, 0.25); border-radius: 10px; padding: 14px 16px; margin-bottom: 18px;">
+          <h4 style="color: #34d399; font-size: 0.9rem; font-weight: 800; margin: 0 0 4px; display: flex; align-items: center; gap: 6px;">
+            <span>🔒</span> Set New Password
+          </h4>
+          <p style="color: #94a3b8; font-size: 0.78rem; margin: 0; line-height: 1.45;">
+            Resetting password for: <strong id="reset-confirm-email-display" style="color: #ffffff;"></strong>
           </p>
         </div>
 
-        <form onsubmit="handleAuthForgotPassword(event); return false;" style="display: flex; flex-direction: column; gap: 14px;">
-          <div>
-            <label style="display: block; font-size: 0.8rem; font-weight: 700; color: #cbd5e1; margin-bottom: 6px;">
-              Registered Email or Username
-            </label>
-            <input type="text" id="forgot-identifier" required placeholder="e.g. alex@domain.com or DeepPunter"
-              style="width: 100%; background: #1e293b; border: 1px solid #334155; border-radius: 10px; padding: 12px 14px; color: #ffffff; font-size: 0.9rem; outline: none; box-sizing: border-box;">
-          </div>
+        <form onsubmit="handleAuthConfirmPasswordReset(event); return false;" style="display: flex; flex-direction: column; gap: 14px;">
+          <input type="hidden" id="reset-token-input" value="">
+          <input type="hidden" id="reset-email-input" value="">
 
           <div>
             <label style="display: block; font-size: 0.8rem; font-weight: 700; color: #cbd5e1; margin-bottom: 6px;">
               New Password (min 6 characters)
             </label>
-            <input type="password" id="forgot-new-password" required placeholder="••••••••"
+            <input type="password" id="reset-new-password" required placeholder="••••••••"
               style="width: 100%; background: #1e293b; border: 1px solid #334155; border-radius: 10px; padding: 12px 14px; color: #ffffff; font-size: 0.9rem; outline: none; box-sizing: border-box;">
           </div>
 
@@ -7489,21 +7548,14 @@
             <label style="display: block; font-size: 0.8rem; font-weight: 700; color: #cbd5e1; margin-bottom: 6px;">
               Confirm New Password
             </label>
-            <input type="password" id="forgot-confirm-password" required placeholder="••••••••"
+            <input type="password" id="reset-confirm-password" required placeholder="••••••••"
               style="width: 100%; background: #1e293b; border: 1px solid #334155; border-radius: 10px; padding: 12px 14px; color: #ffffff; font-size: 0.9rem; outline: none; box-sizing: border-box;">
           </div>
 
-          <button type="submit"
-            style="width: 100%; background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%); color: #ffffff; font-weight: 900; font-size: 0.95rem; padding: 14px; border: none; border-radius: 10px; cursor: pointer; box-shadow: 0 4px 14px rgba(59, 130, 246, 0.4); margin-top: 4px;">
-            Update & Reset Password
+          <button type="submit" id="reset-confirm-submit-btn"
+            style="width: 100%; background: linear-gradient(135deg, #10b981 0%, #059669 100%); color: #ffffff; font-weight: 900; font-size: 0.95rem; padding: 14px; border: none; border-radius: 10px; cursor: pointer; box-shadow: 0 4px 14px rgba(16, 185, 129, 0.4); margin-top: 4px;">
+            Save New Password & Sign In
           </button>
-
-          <div style="text-align: center; margin-top: 6px;">
-            <button type="button" onclick="switchAuthTab('login')"
-              style="background: none; border: none; color: #94a3b8; font-size: 0.8rem; font-weight: 700; cursor: pointer; text-decoration: underline;">
-              &larr; Remember your password? Back to Login
-            </button>
-          </div>
         </form>
       </div>
 
