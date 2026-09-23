@@ -96,54 +96,132 @@ async function saveMembers(context, members) {
 }
 
 async function sendResetEmail(toEmail, recipientName, resetUrl, context) {
-  // 1. If Resend API Key is set in Cloudflare Pages Environment
-  if (context.env && context.env.RESEND_API_KEY) {
+  const env = (context && context.env) || {};
+  const fromName = 'DeepPredictBet Security';
+  const defaultFrom = 'support@deeppredictbet.com';
+
+  // 1. Resend (https://resend.com) - Premier Cloudflare Workers Email Partner
+  if (env.RESEND_API_KEY) {
     try {
-      await fetch('https://api.resend.com/emails', {
+      const fromEmail = env.RESEND_FROM || env.EMAIL_FROM || 'onboarding@resend.dev';
+      const res = await fetch('https://api.resend.com/emails', {
         method: 'POST',
         headers: {
-          'Authorization': `Bearer ${context.env.RESEND_API_KEY}`,
+          'Authorization': `Bearer ${env.RESEND_API_KEY}`,
           'Content-Type': 'application/json'
         },
         body: JSON.stringify({
-          from: 'DeepPredictBet Security <auth@deeppredictbet.com>',
+          from: `${fromName} <${fromEmail}>`,
           to: [toEmail],
           subject: '🔐 DeepPredictBet — Password Reset Link',
           html: generateEmailHtml(recipientName, resetUrl)
         })
       });
-      return true;
+      if (res.ok) {
+        return { success: true, provider: 'resend' };
+      }
+      const err = await res.text();
+      console.warn('Resend send failed:', err);
+    } catch (e) {
+      console.warn('Resend exception:', e.message);
+    }
+  }
+
+  // 2. Brevo / Sendinblue (https://brevo.com) - 300 free emails/day
+  if (env.BREVO_API_KEY) {
+    try {
+      const fromEmail = env.BREVO_FROM || env.EMAIL_FROM || defaultFrom;
+      const res = await fetch('https://api.brevo.com/v3/smtp/email', {
+        method: 'POST',
+        headers: {
+          'api-key': env.BREVO_API_KEY,
+          'Content-Type': 'application/json',
+          'Accept': 'application/json'
+        },
+        body: JSON.stringify({
+          sender: { name: fromName, email: fromEmail },
+          to: [{ email: toEmail, name: recipientName }],
+          subject: '🔐 DeepPredictBet — Password Reset Link',
+          htmlContent: generateEmailHtml(recipientName, resetUrl)
+        })
+      });
+      if (res.ok) {
+        return { success: true, provider: 'brevo' };
+      }
+      const err = await res.text();
+      console.warn('Brevo send failed:', err);
+    } catch (e) {
+      console.warn('Brevo exception:', e.message);
+    }
+  }
+
+  // 3. SendGrid (https://sendgrid.com)
+  if (env.SENDGRID_API_KEY) {
+    try {
+      const fromEmail = env.SENDGRID_FROM || env.EMAIL_FROM || defaultFrom;
+      const res = await fetch('https://api.sendgrid.com/v3/mail/send', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${env.SENDGRID_API_KEY}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          personalizations: [{ to: [{ email: toEmail, name: recipientName }] }],
+          from: { email: fromEmail, name: fromName },
+          subject: '🔐 DeepPredictBet — Password Reset Link',
+          content: [{ type: 'text/html', value: generateEmailHtml(recipientName, resetUrl) }]
+        })
+      });
+      if (res.ok || res.status === 202) {
+        return { success: true, provider: 'sendgrid' };
+      }
     } catch (e) {}
   }
 
-  // 2. Cloudflare native MailChannels integration (Free on Cloudflare Workers/Pages)
-  try {
-    const mailchannelsRes = await fetch('https://api.mailchannels.net/tx/v1/send', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        personalizations: [
-          {
-            to: [{ email: toEmail, name: recipientName }]
-          }
-        ],
-        from: {
-          email: 'support@deeppredictbet.com',
-          name: 'DeepPredictBet Security'
+  // 4. Postmark (https://postmarkapp.com)
+  if (env.POSTMARK_SERVER_TOKEN) {
+    try {
+      const fromEmail = env.POSTMARK_FROM || env.EMAIL_FROM || defaultFrom;
+      const res = await fetch('https://api.postmarkapp.com/email', {
+        method: 'POST',
+        headers: {
+          'X-Postmark-Server-Token': env.POSTMARK_SERVER_TOKEN,
+          'Content-Type': 'application/json'
         },
-        subject: '🔐 DeepPredictBet — Reset Your Password',
-        content: [
-          {
-            type: 'text/html',
-            value: generateEmailHtml(recipientName, resetUrl)
-          }
-        ]
-      })
-    });
-    if (mailchannelsRes.ok) return true;
-  } catch (e) {}
+        body: JSON.stringify({
+          From: `${fromName} <${fromEmail}>`,
+          To: toEmail,
+          Subject: '🔐 DeepPredictBet — Password Reset Link',
+          HtmlBody: generateEmailHtml(recipientName, resetUrl)
+        })
+      });
+      if (res.ok) {
+        return { success: true, provider: 'postmark' };
+      }
+    } catch (e) {}
+  }
 
-  return false;
+  // 5. Custom Webhook Relay (e.g. self-hosted Node/Nodemailer endpoint)
+  if (env.EMAIL_WEBHOOK_URL) {
+    try {
+      const res = await fetch(env.EMAIL_WEBHOOK_URL, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          to: toEmail,
+          name: recipientName,
+          subject: '🔐 DeepPredictBet — Password Reset Link',
+          html: generateEmailHtml(recipientName, resetUrl),
+          resetUrl: resetUrl
+        })
+      });
+      if (res.ok) {
+        return { success: true, provider: 'webhook' };
+      }
+    } catch (e) {}
+  }
+
+  return { success: false, reason: 'NO_CONFIGURED_EMAIL_GATEWAY' };
 }
 
 function generateEmailHtml(name, resetUrl) {
@@ -264,14 +342,19 @@ export async function onRequestPost(context) {
       const origin = new URL(context.request.url).origin;
       const resetLink = `${origin}/?action=reset-password&token=${resetToken}&email=${encodeURIComponent(targetEmail)}`;
 
-      // Dispatch email in background
-      context.waitUntil(sendResetEmail(targetEmail, targetName, resetLink, context));
+      // Attempt email dispatch
+      const emailResult = await sendResetEmail(targetEmail, targetName, resetLink, context);
+      const emailSent = Boolean(emailResult && emailResult.success);
 
       return new Response(JSON.stringify({
         success: true,
-        message: `Password reset link sent to ${targetEmail}. Please check your inbox.`,
+        emailSent: emailSent,
+        provider: emailResult?.provider || null,
+        message: emailSent
+          ? `Password reset link has been dispatched to ${targetEmail}. Please check your inbox or spam folder.`
+          : `Password reset link created for ${targetEmail}. Use the direct reset button below.`,
         email: targetEmail,
-        resetLink: resetLink, // Provided so the frontend can also offer direct click fallback
+        resetLink: resetLink,
         expiresInMinutes: 60
       }), {
         status: 200,

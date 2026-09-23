@@ -7603,25 +7603,63 @@ async function handleAuthForgotPassword(e) {
     const formContainer = document.getElementById("auth-forgot-form-container");
     const confirmContainer = document.getElementById("auth-forgot-sent-confirmation");
     const emailDisplay = document.getElementById("forgot-sent-email-display");
+    const directBtn = document.getElementById("forgot-direct-reset-btn");
+    const copyBtn = document.getElementById("forgot-copy-link-btn");
     const directLink = document.getElementById("forgot-direct-reset-link");
+    const sentTitle = document.getElementById("forgot-sent-title");
+    const deliveryNotice = document.getElementById("forgot-delivery-notice");
 
     if (formContainer) formContainer.style.display = "none";
     if (confirmContainer) confirmContainer.style.display = "block";
     if (emailDisplay) emailDisplay.textContent = data.email || identifier;
 
-    if (directLink && data.resetLink) {
-      directLink.href = data.resetLink;
-      directLink.style.display = "inline-block";
-      directLink.onclick = function (ev) {
-        ev.preventDefault();
-        const urlObj = new URL(data.resetLink);
-        const token = urlObj.searchParams.get("token") || "";
-        const email = urlObj.searchParams.get("email") || data.email || identifier;
-        activateResetPasswordView(token, email);
-      };
+    if (data.emailSent) {
+      if (sentTitle) sentTitle.textContent = "Link Dispatched & Ready";
+      if (deliveryNotice) {
+        deliveryNotice.innerHTML = `📬 <strong>Email Dispatched:</strong> A reset link has been dispatched to <strong>${data.email || identifier}</strong>. Check your inbox or spam folder, or click <strong>Reset Password Now</strong> to proceed directly.`;
+      }
+    } else {
+      if (sentTitle) sentTitle.textContent = "Password Reset Link Ready";
+      if (deliveryNotice) {
+        deliveryNotice.innerHTML = `ℹ️ <strong>Instant Reset Available:</strong> Your secure 60-minute password reset link is ready. Click the green <strong>Reset Password Now</strong> button above to choose a new password immediately.`;
+      }
     }
 
-    const toastMsg = `📬 Password reset link sent to ${data.email || identifier}!`;
+    if (data.resetLink) {
+      const urlObj = new URL(data.resetLink);
+      const token = urlObj.searchParams.get("token") || "";
+      const email = urlObj.searchParams.get("email") || data.email || identifier;
+
+      if (directBtn) {
+        directBtn.onclick = function (ev) {
+          ev.preventDefault();
+          activateResetPasswordView(token, email);
+        };
+      }
+
+      if (directLink) {
+        directLink.href = data.resetLink;
+      }
+
+      if (copyBtn) {
+        copyBtn.onclick = function (ev) {
+          ev.preventDefault();
+          if (navigator.clipboard && navigator.clipboard.writeText) {
+            navigator.clipboard.writeText(data.resetLink).then(() => {
+              alert("📋 Reset link copied to clipboard!\n\n" + data.resetLink);
+            }).catch(() => {
+              prompt("Copy your reset link:", data.resetLink);
+            });
+          } else {
+            prompt("Copy your reset link:", data.resetLink);
+          }
+        };
+      }
+    }
+
+    const toastMsg = data.emailSent
+      ? `📬 Password reset link sent to ${data.email || identifier}!`
+      : `🔐 Reset link ready for ${data.email || identifier}!`;
     if (typeof showAppNotification === 'function') {
       showAppNotification(toastMsg);
     } else if (typeof showToast === 'function') {

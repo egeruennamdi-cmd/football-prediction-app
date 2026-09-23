@@ -7496,21 +7496,37 @@
 
         <!-- Sent Confirmation View -->
         <div id="auth-forgot-sent-confirmation" style="display: none; text-align: center; padding: 10px 4px;">
-          <div style="width: 64px; height: 64px; border-radius: 50%; background: rgba(59, 130, 246, 0.15); border: 2px solid #3b82f6; display: flex; align-items: center; justify-content: center; font-size: 2rem; margin: 0 auto 16px;">
+          <div id="forgot-sent-icon" style="width: 64px; height: 64px; border-radius: 50%; background: rgba(59, 130, 246, 0.15); border: 2px solid #3b82f6; display: flex; align-items: center; justify-content: center; font-size: 2rem; margin: 0 auto 16px;">
             📬
           </div>
-          <h3 style="color: #ffffff; font-size: 1.15rem; font-weight: 900; margin: 0 0 8px;">Check Your Email</h3>
-          <p style="color: #94a3b8; font-size: 0.84rem; line-height: 1.5; margin: 0 0 18px;">
-            We've sent a secure password reset link to: <br>
+          <h3 id="forgot-sent-title" style="color: #ffffff; font-size: 1.15rem; font-weight: 900; margin: 0 0 8px;">Check Your Email</h3>
+          <p id="forgot-sent-subtitle" style="color: #94a3b8; font-size: 0.84rem; line-height: 1.5; margin: 0 0 16px;">
+            Password reset link generated for: <br>
             <strong id="forgot-sent-email-display" style="color: #60a5fa; font-size: 0.92rem;"></strong>
           </p>
-          <div style="background: rgba(15, 23, 42, 0.7); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 10px; padding: 12px; margin-bottom: 20px; font-size: 0.76rem; color: #94a3b8; line-height: 1.45; text-align: left;">
-            ℹ️ <strong>Next Steps:</strong> Check your inbox (or spam folder) and click the link within <strong>60 minutes</strong> to choose a new password.
+
+          <!-- Direct Immediate Action Button -->
+          <div style="margin: 16px 0;">
+            <button type="button" id="forgot-direct-reset-btn"
+              style="width: 100%; background: linear-gradient(135deg, #10b981 0%, #059669 100%); color: #ffffff; font-weight: 900; font-size: 0.95rem; padding: 14px; border: none; border-radius: 10px; cursor: pointer; box-shadow: 0 4px 14px rgba(16, 185, 129, 0.4); display: flex; align-items: center; justify-content: center; gap: 8px;">
+              <span>🚀 Reset Password Now (Instant)</span>
+            </button>
           </div>
 
-          <a id="forgot-direct-reset-link" href="#" style="display: none; background: rgba(59, 130, 246, 0.15); border: 1px solid #3b82f6; color: #93c5fd; padding: 10px 16px; border-radius: 8px; font-size: 0.82rem; font-weight: 700; text-decoration: none; margin-bottom: 16px; text-align: center;">
-            🔗 Open Reset Link Directly &rarr;
-          </a>
+          <div style="display: flex; gap: 8px; justify-content: center; margin-bottom: 16px;">
+            <button type="button" id="forgot-copy-link-btn"
+              style="flex: 1; background: #1e293b; border: 1px solid #334155; color: #cbd5e1; padding: 10px 14px; border-radius: 8px; font-size: 0.8rem; font-weight: 700; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 6px;">
+              <span>📋 Copy Reset Link</span>
+            </button>
+            <a id="forgot-direct-reset-link" href="#" target="_blank"
+              style="flex: 1; background: rgba(59, 130, 246, 0.15); border: 1px solid #3b82f6; color: #93c5fd; padding: 10px 14px; border-radius: 8px; font-size: 0.8rem; font-weight: 700; text-decoration: none; display: flex; align-items: center; justify-content: center; gap: 6px;">
+              <span>🔗 Open in New Tab</span>
+            </a>
+          </div>
+
+          <div id="forgot-delivery-notice" style="background: rgba(15, 23, 42, 0.7); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 10px; padding: 12px; margin-bottom: 20px; font-size: 0.76rem; color: #94a3b8; line-height: 1.45; text-align: left;">
+            ℹ️ <strong>Status:</strong> Reset link is valid for <strong>60 minutes</strong>. You can reset your password immediately using the green button above, or check your email inbox if an email service is active.
+          </div>
 
           <div>
             <button type="button" onclick="switchAuthTab('login')"
