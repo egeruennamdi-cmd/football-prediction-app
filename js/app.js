@@ -7782,7 +7782,11 @@ async function handleAuthForgotPassword(e) {
     if (data.emailSent) {
       if (sentTitle) sentTitle.textContent = "Link Dispatched & Ready";
       if (deliveryNotice) {
-        deliveryNotice.innerHTML = `📬 <strong>Email Dispatched:</strong> A reset link has been dispatched to <strong>${data.email || identifier}</strong>. Check your inbox or spam folder, or click <strong>Reset Password Now</strong> to proceed directly.`;
+        if (data.forwardedToOwner && data.ownerEmail) {
+          deliveryNotice.innerHTML = `📬 <strong>Email Dispatched:</strong> A reset link for <strong>${data.email || identifier}</strong> has been sent to your registered Gmail (<strong>${data.ownerEmail}</strong>). Check your inbox or spam folder, or click <strong>Reset Password Now</strong> to proceed directly.`;
+        } else {
+          deliveryNotice.innerHTML = `📬 <strong>Email Dispatched:</strong> A reset link has been dispatched to <strong>${data.email || identifier}</strong>. Check your inbox or spam folder, or click <strong>Reset Password Now</strong> to proceed directly.`;
+        }
       }
     } else {
       if (sentTitle) sentTitle.textContent = "Password Reset Link Ready";
