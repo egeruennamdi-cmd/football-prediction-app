@@ -246,6 +246,18 @@ export async function onRequestPost(context) {
       user.resetTokenExpires = resetTokenExpires;
       members[existingIndex] = user;
 
+      // 1. Direct KV key with 3600-second TTL for instant edge lookup
+      if (context.env && context.env.USERS_KV) {
+        try {
+          await context.env.USERS_KV.put(`reset_token:${resetToken}`, JSON.stringify({
+            email: targetEmail,
+            username: user.username || '',
+            expires: resetTokenExpires
+          }), { expirationTtl: 3600 });
+        } catch (e) {}
+      }
+
+      // 2. Persist to members_list
       await saveMembers(context, members);
 
       // Construct live reset link
@@ -295,7 +307,33 @@ export async function onRequestPost(context) {
         });
       }
 
+      // Check direct KV token storage first
+      let kvTokenData = null;
+      if (context.env && context.env.USERS_KV) {
+        try {
+          const raw = await context.env.USERS_KV.get(`reset_token:${token}`);
+          if (raw) kvTokenData = JSON.parse(raw);
+        } catch (e) {}
+      }
+
+      // If token expired in KV
+      if (kvTokenData && kvTokenData.expires && Date.now() > kvTokenData.expires) {
+        if (context.env && context.env.USERS_KV) {
+          try { await context.env.USERS_KV.delete(`reset_token:${token}`); } catch (e) {}
+        }
+        return new Response(JSON.stringify({
+          success: false,
+          error: 'This password reset link has expired (valid for 60 minutes). Please request a new link.'
+        }), {
+          status: 410,
+          headers: corsHeaders()
+        });
+      }
+
+      const matchEmail = (kvTokenData && kvTokenData.email) ? kvTokenData.email.toLowerCase() : cleanEmail;
+
       const existingIndex = members.findIndex(m =>
+        (matchEmail && (m.email || '').toLowerCase() === matchEmail) ||
         (cleanEmail && (m.email || '').toLowerCase() === cleanEmail) ||
         (cleanUser && (m.username || '').toLowerCase() === cleanUser)
       );
@@ -312,8 +350,11 @@ export async function onRequestPost(context) {
 
       const user = members[existingIndex];
 
-      // Validate token match
-      if (!user.resetToken || user.resetToken !== token) {
+      // Validate token match either via direct KV record or user.resetToken
+      const isValidToken = (kvTokenData && kvTokenData.email.toLowerCase() === (user.email || '').toLowerCase()) ||
+                           (user.resetToken && user.resetToken === token);
+
+      if (!isValidToken) {
         return new Response(JSON.stringify({
           success: false,
           error: 'This password reset link is invalid or has already been used. Please request a new link.'
@@ -323,7 +364,7 @@ export async function onRequestPost(context) {
         });
       }
 
-      // Validate token expiration
+      // Validate token expiration on user record if KV didn't catch it
       if (user.resetTokenExpires && Date.now() > user.resetTokenExpires) {
         return new Response(JSON.stringify({
           success: false,
@@ -343,11 +384,19 @@ export async function onRequestPost(context) {
       members[existingIndex] = user;
       await saveMembers(context, members);
 
+      // Clean up KV reset token entry
+      if (context.env && context.env.USERS_KV) {
+        try {
+          await context.env.USERS_KV.delete(`reset_token:${token}`);
+        } catch (e) {}
+      }
+
       return new Response(JSON.stringify({
         success: true,
         message: 'Password reset successfully! You can now log in with your new password.',
         username: user.username || user.fullName,
-        email: user.email
+        email: user.email,
+        role: user.role || 'USER'
       }), {
         status: 200,
         headers: corsHeaders()
