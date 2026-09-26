@@ -11,7 +11,7 @@ const DEFAULT_VIP_FEATURES = {
     category: 'Betting Suite',
     icon: '🛡️',
     isVip: true,
-    description: '100% risk-free arbitrage opportunities scanned across 50 global bookmakers.'
+    description: 'Cross-market arbitrage discrepancy scanner across 50 global bookmakers with execution analytics.'
   },
   valuebot: {
     id: 'valuebot',

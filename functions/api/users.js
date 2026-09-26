@@ -15,7 +15,17 @@ const SEED_ADMIN = [
     fullName: 'Alex Nnamdi (Admin)',
     email: 'admin@deeppredictbet.com',
     username: 'Egeruennamdi78',
-    role: 'PRO',
+    role: 'ADMIN',
+    coinsBalance: 1500,
+    passwordHash: 'Egeruennamdi78',
+    createdAt: '2026-08-01T10:00:00.000Z'
+  },
+  {
+    id: 'usr_adm2',
+    fullName: 'Alex Nnamdi (Owner)',
+    email: 'egeruennamdi@gmail.com',
+    username: 'egeruennamdi',
+    role: 'ADMIN',
     coinsBalance: 1500,
     passwordHash: 'Egeruennamdi78',
     createdAt: '2026-08-01T10:00:00.000Z'
@@ -108,10 +118,10 @@ async function saveMembers(context, members) {
       },
       body: JSON.stringify(members)
     });
-    if (kvRes.ok) saved = true;
-  } catch (e) {}
-
-  return saved;
+    return kvRes.ok;
+  } catch (e) {
+    return false;
+  }
 }
 
 export async function onRequestOptions() {
@@ -172,10 +182,24 @@ export async function onRequestGet(context) {
       headers: corsHeaders()
     });
   } catch (err) {
+    const isAdmin = checkIsAdmin(context);
+    const safeSeed = SEED_ADMIN.map(m => {
+      const copy = { ...m };
+      if (!isAdmin) {
+        delete copy.passwordHash;
+        if (copy.email) {
+          const parts = copy.email.split('@');
+          if (parts.length === 2) {
+            copy.email = parts[0].substring(0, 2) + '***@' + parts[1];
+          }
+        }
+      }
+      return copy;
+    });
     return new Response(JSON.stringify({
       success: true,
-      totalUsers: 1,
-      users: SEED_ADMIN
+      totalUsers: safeSeed.length,
+      users: safeSeed
     }), {
       status: 200,
       headers: corsHeaders()
@@ -219,8 +243,10 @@ export async function onRequestPost(context) {
         if (body.coinsLedger !== undefined) registeredUser.coinsLedger = body.coinsLedger;
       }
 
-      // Password updates
-      if (body.passwordHash) registeredUser.passwordHash = body.passwordHash;
+      // Password updates: only allow admin or if user currently has no passwordHash set
+      if (body.passwordHash && (isAdmin || !registeredUser.passwordHash)) {
+        registeredUser.passwordHash = body.passwordHash;
+      }
 
       // Safe user-editable fields
       if (body.savedTickets !== undefined) registeredUser.savedTickets = body.savedTickets;
@@ -253,10 +279,13 @@ export async function onRequestPost(context) {
     // Persist to Cloudflare KV
     await saveMembers(context, members);
 
+    const safeUser = { ...registeredUser };
+    delete safeUser.passwordHash;
+
     return new Response(JSON.stringify({
       success: true,
       message: 'Account registered and synced to global cloud database!',
-      user: registeredUser,
+      user: safeUser,
       totalUsers: members.length
     }), {
       status: 200,

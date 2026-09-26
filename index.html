@@ -80,7 +80,7 @@
   <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png?v=20261026_opt2">
   <link rel="manifest" href="/site.webmanifest?v=20261026_opt2">
   <meta name="theme-color" content="#080b11">
-  <link rel="stylesheet" href="/css/main.css?v=20261026_desktop_nohamburger_v10">
+  <link rel="stylesheet" href="/css/main.css?v=20260925_mobile_footer_v1">
 
   <!-- Senior Engineering Guard: Desktop vs Mobile/Tablet/iPad Navigation Gating -->
   <style id="dp-hamburger-desktop-gate">
@@ -241,15 +241,36 @@
       var li = btn.closest('.dropdown-li');
       if (li) {
         var isOpen = li.classList.contains('open');
-        document.querySelectorAll('.dropdown-li.open').forEach(function(el) { el.classList.remove('open'); });
-        if (!isOpen) li.classList.add('open');
+        document.querySelectorAll('.dropdown-li.open').forEach(function(el) { 
+          el.classList.remove('open'); 
+          var t = el.querySelector('.dropdown-toggle');
+          if (t) t.setAttribute('aria-expanded', 'false');
+        });
+        if (!isOpen) {
+          li.classList.add('open');
+          btn.setAttribute('aria-expanded', 'true');
+        }
       }
     }
     window.toggleDesktopDropdown = toggleDesktopDropdown;
 
     document.addEventListener('click', function(e) {
       if (!e.target.closest('.dropdown-li')) {
-        document.querySelectorAll('.dropdown-li.open').forEach(function(el) { el.classList.remove('open'); });
+        document.querySelectorAll('.dropdown-li.open').forEach(function(el) { 
+          el.classList.remove('open'); 
+          var t = el.querySelector('.dropdown-toggle');
+          if (t) t.setAttribute('aria-expanded', 'false');
+        });
+      }
+    });
+
+    document.addEventListener('keydown', function(e) {
+      if (e.key === 'Escape') {
+        document.querySelectorAll('.dropdown-li.open').forEach(function(el) { 
+          el.classList.remove('open'); 
+          var t = el.querySelector('.dropdown-toggle');
+          if (t) t.setAttribute('aria-expanded', 'false');
+        });
       }
     });
   </script>
@@ -279,73 +300,158 @@
       <!-- MAIN NAVIGATION -->
       <nav class="desktop-nav">
         <ul class="nav-menu">
-          <!-- 0. Command Center -->
+          <!-- 1. Command Center -->
           <li>
             <a href="/" class="nav-link" onclick="if(typeof navigateTo==='function'){navigateTo('/'); return false;}">Command Center</a>
           </li>
 
-          <!-- 1. Predictions -->
+          <!-- 2. Predictions -->
           <li>
             <a href="/predictions" class="nav-link">Predictions</a>
           </li>
 
-          <!-- 2. Bet Doctor -->
+          <!-- 3. Matches -->
+          <li>
+            <a href="/matches" class="nav-link">Matches</a>
+          </li>
+
+          <!-- 4. AI Scout -->
+          <li>
+            <a href="/ai-scout" class="nav-link">AI Scout</a>
+          </li>
+
+          <!-- 5. Bet Doctor -->
           <li>
             <a href="/bet-doctor" class="nav-link">Bet Doctor</a>
           </li>
 
-          <!-- 3. AI Scout -->
-          <li>
-            <a href="javascript:void(0)" onclick="openGeneralScout()" class="nav-link">AI Scout</a>
-          </li>
-
-          <!-- 4. Bet Generator -->
-          <li>
-            <a href="/generator" class="nav-link">Bet Generator</a>
-          </li>
-
-          <!-- 5. Converter -->
-          <li>
-            <a href="/bet-code-converter" class="nav-link">Converter</a>
-          </li>
-
-          <!-- 6. Explore Tools (Dropdown) -->
-          <li class="dropdown-li">
-            <a href="javascript:void(0)" class="nav-link dropdown-toggle" onclick="toggleDesktopDropdown(event, this)" style="display: flex; align-items: center; gap: 5px;">
-              Explore Tools <span class="nav-arrow" style="font-size: 0.65rem; opacity: 0.75; transition: transform 0.2s ease;">▼</span>
+          <!-- 6. Tools (Professional Mega Dropdown) -->
+          <li class="dropdown-li mega-dropdown-li" id="nav-tools-dropdown-li">
+            <a href="javascript:void(0)" class="nav-link dropdown-toggle" id="nav-tools-dropdown-toggle" onclick="toggleDesktopDropdown(event, this)" aria-haspopup="true" aria-expanded="false" style="display: inline-flex; align-items: center; gap: 5px; cursor: pointer;">
+              Tools <span class="nav-arrow" style="font-size: 0.65rem; opacity: 0.75; transition: transform 0.2s ease;">▼</span>
             </a>
-            <div class="nav-dropdown" style="min-width: 240px; padding: 8px; border-radius: 12px; background: rgba(15, 23, 42, 0.98); border: 1px solid rgba(255, 255, 255, 0.12); box-shadow: 0 16px 36px rgba(0, 0, 0, 0.65); backdrop-filter: blur(16px);">
-              <a href="/live-scanner" class="nav-dropdown-item" style="display: flex; align-items: center; gap: 10px; padding: 10px 14px; border-radius: 8px; font-weight: 700; color: #f1f5f9; text-decoration: none; border-bottom: none;">
-                <span style="font-size: 1.15rem; width: 24px; text-align: center;">📡</span>
-                <span>Live Scanner</span>
-              </a>
-              <a href="/pre-match-scanner" class="nav-dropdown-item" style="display: flex; align-items: center; gap: 10px; padding: 10px 14px; border-radius: 8px; font-weight: 700; color: #f1f5f9; text-decoration: none; border-bottom: none;">
-                <span style="font-size: 1.15rem; width: 24px; text-align: center;">⚡</span>
-                <span>Pre-Match Scanner</span>
-              </a>
-              <a href="/valuebot" class="nav-dropdown-item" style="display: flex; align-items: center; gap: 10px; padding: 10px 14px; border-radius: 8px; font-weight: 700; color: #f1f5f9; text-decoration: none; border-bottom: none;">
-                <span style="font-size: 1.15rem; width: 24px; text-align: center;">💰</span>
-                <span>Value Bets</span>
-              </a>
-              <a href="/arbitrage" class="nav-dropdown-item" style="display: flex; align-items: center; gap: 10px; padding: 10px 14px; border-radius: 8px; font-weight: 700; color: #f1f5f9; text-decoration: none; border-bottom: none;">
-                <span style="font-size: 1.15rem; width: 24px; text-align: center;">🛡️</span>
-                <span>Arbitrage Finder</span>
-              </a>
-              <a href="/analytics" class="nav-dropdown-item" style="display: flex; align-items: center; gap: 10px; padding: 10px 14px; border-radius: 8px; font-weight: 700; color: #f1f5f9; text-decoration: none; border-bottom: none;">
-                <span style="font-size: 1.15rem; width: 24px; text-align: center;">📊</span>
-                <span>League Analytics</span>
-              </a>
+            <div class="mega-dropdown-menu" id="nav-tools-mega-dropdown" role="region" aria-label="Tools Navigation Suite">
+              <div class="mega-menu-grid">
+                <!-- Group 1: Betting Intelligence -->
+                <div class="mega-menu-col">
+                  <div class="mega-menu-heading">⚡ BETTING INTELLIGENCE</div>
+                  <a href="/bet-doctor" class="mega-menu-item nav-dropdown-item">
+                    <span class="mega-menu-icon" style="background: rgba(59, 130, 246, 0.15); color: #60a5fa;">🩺</span>
+                    <div class="mega-menu-text">
+                      <span class="mega-menu-title">Bet Doctor</span>
+                      <span class="mega-menu-desc">Accumulator risk audit &amp; trap detection</span>
+                    </div>
+                  </a>
+                  <a href="/generator" class="mega-menu-item nav-dropdown-item">
+                    <span class="mega-menu-icon" style="background: rgba(16, 185, 129, 0.15); color: #34d399;">🎰</span>
+                    <div class="mega-menu-text">
+                      <span class="mega-menu-title">Bet Generator</span>
+                      <span class="mega-menu-desc">Smart ticket creation &amp; target odds</span>
+                    </div>
+                  </a>
+                  <a href="/converter" class="mega-menu-item nav-dropdown-item">
+                    <span class="mega-menu-icon" style="background: rgba(245, 158, 11, 0.15); color: #fbbf24;">🎫</span>
+                    <div class="mega-menu-text">
+                      <span class="mega-menu-title">Booking Code Converter</span>
+                      <span class="mega-menu-desc">Convert slips across bookmakers</span>
+                    </div>
+                  </a>
+                </div>
+
+                <!-- Group 2: Market Intelligence -->
+                <div class="mega-menu-col">
+                  <div class="mega-menu-heading">📡 MARKET INTELLIGENCE</div>
+                  <a href="/live-scanner" class="mega-menu-item nav-dropdown-item">
+                    <span class="mega-menu-icon" style="background: rgba(239, 68, 68, 0.15); color: #f87171;">📡</span>
+                    <div class="mega-menu-text">
+                      <span class="mega-menu-title">Live Scanner</span>
+                      <span class="mega-menu-desc">Real-time in-play value edge detector</span>
+                    </div>
+                  </a>
+                  <a href="/pre-match-scanner" class="mega-menu-item nav-dropdown-item">
+                    <span class="mega-menu-icon" style="background: rgba(56, 189, 248, 0.15); color: #38bdf8;">⚡</span>
+                    <div class="mega-menu-text">
+                      <span class="mega-menu-title">Pre-Match Scanner</span>
+                      <span class="mega-menu-desc">Early market odds shifts &amp; volume</span>
+                    </div>
+                  </a>
+                  <a href="/value-bets" class="mega-menu-item nav-dropdown-item">
+                    <span class="mega-menu-icon" style="background: rgba(168, 85, 247, 0.15); color: #c084fc;">💎</span>
+                    <div class="mega-menu-text">
+                      <span class="mega-menu-title">Value Bets Bot</span>
+                      <span class="mega-menu-desc">Algorithmic positive EV+ picks</span>
+                    </div>
+                  </a>
+                  <a href="/arbitrage" class="mega-menu-item nav-dropdown-item">
+                    <span class="mega-menu-icon" style="background: rgba(34, 197, 94, 0.15); color: #4ade80;">🛡️</span>
+                    <div class="mega-menu-text">
+                      <span class="mega-menu-title">Arbitrage Finder</span>
+                      <span class="mega-menu-desc">Cross-bookmaker arbitrage scanner</span>
+                    </div>
+                  </a>
+                </div>
+
+                <!-- Group 3: Analytics & Hubs -->
+                <div class="mega-menu-col">
+                  <div class="mega-menu-heading">📊 ANALYTICS &amp; DISCOVERY</div>
+                  <a href="/analytics" class="mega-menu-item nav-dropdown-item">
+                    <span class="mega-menu-icon" style="background: rgba(99, 102, 241, 0.15); color: #818cf8;">📊</span>
+                    <div class="mega-menu-text">
+                      <span class="mega-menu-title">League Analytics</span>
+                      <span class="mega-menu-desc">Deep statistical league breakdowns</span>
+                    </div>
+                  </a>
+                  <a href="/backtesting" class="mega-menu-item nav-dropdown-item">
+                    <span class="mega-menu-icon" style="background: rgba(234, 179, 8, 0.15); color: #facc15;">📈</span>
+                    <div class="mega-menu-text">
+                      <span class="mega-menu-title">Strategy Backtester</span>
+                      <span class="mega-menu-desc">Simulate betting systems on history</span>
+                    </div>
+                  </a>
+                  <a href="/results" class="mega-menu-item nav-dropdown-item">
+                    <span class="mega-menu-icon" style="background: rgba(244, 63, 94, 0.15); color: #fb7185;">📅</span>
+                    <div class="mega-menu-text">
+                      <span class="mega-menu-title">Results &amp; Ledger</span>
+                      <span class="mega-menu-desc">Transparent daily settlement tracking</span>
+                    </div>
+                  </a>
+                  <a href="/watchlist" class="mega-menu-item nav-dropdown-item">
+                    <span class="mega-menu-icon" style="background: rgba(251, 191, 36, 0.15); color: #fde047;">⭐</span>
+                    <div class="mega-menu-text">
+                      <span class="mega-menu-title">Saved Watchlist</span>
+                      <span class="mega-menu-desc">Monitored games, leagues &amp; alerts</span>
+                    </div>
+                  </a>
+                </div>
+              </div>
+
+              <!-- Mega Menu Footer / Quick Links -->
+              <div class="mega-menu-footer">
+                <a href="/#secondary-tools-showcase" class="mega-menu-all-tools-link" onclick="if(typeof navigateTo==='function'){navigateTo('/'); return false;}">
+                  <span>Explore All 16+ Sports Intelligence Tools</span> <span>→</span>
+                </a>
+                <div class="mega-menu-quick-links">
+                  <a href="/leagues">Leagues Hub</a>
+                  <span>•</span>
+                  <a href="/teams">Teams Hub</a>
+                  <span>•</span>
+                  <a href="/help">Help &amp; FAQs</a>
+                </div>
+              </div>
             </div>
           </li>
 
-          <!-- 7. My DeepPredict Dashboard -->
+          <!-- Subtle Divider -->
+          <li class="nav-divider" aria-hidden="true"></li>
+
+          <!-- 7. Pricing -->
           <li>
-            <a href="/dashboard" class="nav-link" title="My DeepPredict Personal Dashboard">Dashboard</a>
+            <a href="/pricing" class="nav-link">Pricing</a>
           </li>
 
-          <!-- 8. Pricing -->
+          <!-- 8. My DeepPredict -->
           <li>
-            <a href="#vip-packages-section" class="nav-link">Pricing</a>
+            <a href="/dashboard" class="nav-link" title="My DeepPredict Personal Dashboard">My DeepPredict</a>
           </li>
         </ul>
       </nav>
@@ -437,14 +543,14 @@
     <div
       style="padding: 16px 16px 60px; display: flex; flex-direction: column; gap: 8px; flex-grow: 1; background: #0f172a;">
 
-      <!-- Section Label -->
+      <!-- Section Label: Main Navigation -->
       <div style="display: flex; align-items: center; justify-content: space-between; margin: 4px 0 4px;">
         <span
           style="font-size: 0.7rem; font-weight: 900; color: #38bdf8; text-transform: uppercase; letter-spacing: 0.8px; background: rgba(56, 189, 248, 0.08); border-left: 3px solid #38bdf8; padding: 4px 8px; border-radius: 0 6px 6px 0;">⚡
-          Main Navigation</span>
+          Main Intelligence</span>
       </div>
 
-      <!-- 0. Item: Command Center -->
+      <!-- 1. Item: Command Center -->
       <a href="/" onclick="toggleMobileDrawer(); if(typeof navigateTo==='function'){navigateTo('/'); return false;}" class="mobile-drawer-item"
         style="display: flex; align-items: center; gap: 12px; padding: 12px 14px; border-radius: 12px; text-decoration: none; color: #f8fafc; background: linear-gradient(135deg, rgba(26,104,219,0.2) 0%, rgba(56,189,248,0.1) 100%); border: 1px solid rgba(59,130,246,0.4); font-weight: 800; font-size: 0.95rem; min-height: 48px; box-sizing: border-box; transition: all 0.2s ease;">
         <span
@@ -452,7 +558,7 @@
         <span>Command Center</span>
       </a>
 
-      <!-- 1. Item: Predictions -->
+      <!-- 2. Item: Predictions -->
       <a href="/predictions" onclick="toggleMobileDrawer(); if(typeof navigateTo==='function'){navigateTo('/predictions'); return false;}" class="mobile-drawer-item"
         style="display: flex; align-items: center; gap: 12px; padding: 12px 14px; border-radius: 12px; text-decoration: none; color: #f8fafc; background: rgba(255, 255, 255, 0.04); border: 1px solid rgba(255, 255, 255, 0.08); font-weight: 700; font-size: 0.95rem; min-height: 48px; box-sizing: border-box; transition: all 0.2s ease;">
         <span
@@ -460,7 +566,23 @@
         <span>Predictions</span>
       </a>
 
-      <!-- 2. Item: Bet Doctor -->
+      <!-- 3. Item: Matches -->
+      <a href="/matches" onclick="toggleMobileDrawer(); if(typeof navigateTo==='function'){navigateTo('/matches'); return false;}" class="mobile-drawer-item"
+        style="display: flex; align-items: center; gap: 12px; padding: 12px 14px; border-radius: 12px; text-decoration: none; color: #f8fafc; background: rgba(255, 255, 255, 0.04); border: 1px solid rgba(255, 255, 255, 0.08); font-weight: 700; font-size: 0.95rem; min-height: 48px; box-sizing: border-box; transition: all 0.2s ease;">
+        <span
+          style="width: 32px; height: 32px; border-radius: 8px; background: rgba(56, 189, 248, 0.15); display: flex; align-items: center; justify-content: center; font-size: 1.1rem;">📅</span>
+        <span>Matches</span>
+      </a>
+
+      <!-- 4. Item: AI Scout -->
+      <a href="/ai-scout" onclick="toggleMobileDrawer(); if(typeof navigateTo==='function'){navigateTo('/ai-scout'); return false;}" class="mobile-drawer-item"
+        style="display: flex; align-items: center; gap: 12px; padding: 12px 14px; border-radius: 12px; text-decoration: none; color: #f8fafc; background: rgba(168, 85, 247, 0.1); border: 1px solid rgba(168, 85, 247, 0.3); font-weight: 700; font-size: 0.95rem; min-height: 48px; box-sizing: border-box; transition: all 0.2s ease;">
+        <span
+          style="width: 32px; height: 32px; border-radius: 8px; background: rgba(168, 85, 247, 0.2); display: flex; align-items: center; justify-content: center; font-size: 1.1rem;">🤖</span>
+        <span>AI Scout</span>
+      </a>
+
+      <!-- 5. Item: Bet Doctor -->
       <a href="/bet-doctor" onclick="toggleMobileDrawer(); if(typeof navigateTo==='function'){navigateTo('/bet-doctor'); return false;}" class="mobile-drawer-item"
         style="display: flex; align-items: center; gap: 12px; padding: 12px 14px; border-radius: 12px; text-decoration: none; color: #f8fafc; background: rgba(255, 255, 255, 0.04); border: 1px solid rgba(255, 255, 255, 0.08); font-weight: 700; font-size: 0.95rem; min-height: 48px; box-sizing: border-box; transition: all 0.2s ease;">
         <span
@@ -468,98 +590,119 @@
         <span>Bet Doctor</span>
       </a>
 
-      <!-- 3. Item: AI Scout -->
-      <a href="javascript:void(0)" onclick="toggleMobileDrawer(); openGeneralScout();" class="mobile-drawer-item"
-        style="display: flex; align-items: center; gap: 12px; padding: 12px 14px; border-radius: 12px; text-decoration: none; color: #f8fafc; background: rgba(168, 85, 247, 0.1); border: 1px solid rgba(168, 85, 247, 0.3); font-weight: 700; font-size: 0.95rem; min-height: 48px; box-sizing: border-box; transition: all 0.2s ease;">
+      <!-- Section Label: Tools Suite -->
+      <div style="display: flex; align-items: center; justify-content: space-between; margin: 8px 0 2px;">
         <span
-          style="width: 32px; height: 32px; border-radius: 8px; background: rgba(168, 85, 247, 0.2); display: flex; align-items: center; justify-content: center; font-size: 1.1rem;">🤖</span>
-        <span>AI Scout Command</span>
-      </a>
+          style="font-size: 0.7rem; font-weight: 900; color: #a855f7; text-transform: uppercase; letter-spacing: 0.8px; background: rgba(168, 85, 247, 0.08); border-left: 3px solid #a855f7; padding: 4px 8px; border-radius: 0 6px 6px 0;">🛠️
+          Tools &amp; Features</span>
+      </div>
 
-      <!-- 4. Item: Bet Generator -->
-      <a href="/generator" onclick="toggleMobileDrawer(); if(typeof navigateTo==='function'){navigateTo('/generator'); return false;}" class="mobile-drawer-item"
-        style="display: flex; align-items: center; gap: 12px; padding: 12px 14px; border-radius: 12px; text-decoration: none; color: #f8fafc; background: rgba(255, 255, 255, 0.04); border: 1px solid rgba(255, 255, 255, 0.08); font-weight: 700; font-size: 0.95rem; min-height: 48px; box-sizing: border-box; transition: all 0.2s ease;">
-        <span
-          style="width: 32px; height: 32px; border-radius: 8px; background: rgba(59, 130, 246, 0.15); display: flex; align-items: center; justify-content: center; font-size: 1.1rem;">🎰</span>
-        <span>Bet Generator</span>
-      </a>
-
-      <!-- 5. Item: Converter -->
-      <a href="/bet-code-converter" onclick="toggleMobileDrawer(); if(typeof navigateTo==='function'){navigateTo('/bet-code-converter'); return false;}" class="mobile-drawer-item"
-        style="display: flex; align-items: center; gap: 12px; padding: 12px 14px; border-radius: 12px; text-decoration: none; color: #f8fafc; background: rgba(255, 255, 255, 0.04); border: 1px solid rgba(255, 255, 255, 0.08); font-weight: 700; font-size: 0.95rem; min-height: 48px; box-sizing: border-box; transition: all 0.2s ease;">
-        <span
-          style="width: 32px; height: 32px; border-radius: 8px; background: rgba(245, 158, 11, 0.15); display: flex; align-items: center; justify-content: center; font-size: 1.1rem;">🎫</span>
-        <span>Converter</span>
-      </a>
-
-      <!-- 4. TOOLS ACCORDION -->
+      <!-- 6. TOOLS ACCORDION -->
       <div
         style="display: flex; flex-direction: column; background: rgba(255, 255, 255, 0.04); border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 12px; overflow: hidden;">
         <div onclick="toggleMobileAccordion('mobile-acc-tools')"
           style="display: flex; align-items: center; justify-content: space-between; padding: 12px 14px; cursor: pointer; color: #f8fafc; font-weight: 700; font-size: 0.95rem; min-height: 48px; box-sizing: border-box;">
           <span style="display: flex; align-items: center; gap: 12px;">
             <span
-              style="width: 32px; height: 32px; border-radius: 8px; background: rgba(168, 85, 247, 0.15); display: flex; align-items: center; justify-content: center; font-size: 1.1rem;">🛠️</span>
-            <span>Tools</span>
+              style="width: 32px; height: 32px; border-radius: 8px; background: rgba(168, 85, 247, 0.15); display: flex; align-items: center; justify-content: center; font-size: 1.1rem;">🧰</span>
+            <span>All Intelligence Tools (16+)</span>
           </span>
           <span id="mobile-acc-tools-icon"
             style="font-size: 0.75rem; color: #94a3b8; transition: transform 0.2s;">▼</span>
         </div>
         <div id="mobile-acc-tools"
           style="display: none; flex-direction: column; border-top: 1px solid rgba(255, 255, 255, 0.06); background: rgba(0, 0, 0, 0.25); padding: 8px 10px 10px; gap: 6px;">
-          <a href="#generator" onclick="toggleMobileDrawer()"
-            style="color: #e2e8f0; font-size: 0.88rem; text-decoration: none; font-weight: 700; padding: 10px 12px; border-radius: 8px; background: rgba(255, 255, 255, 0.03); display: flex; align-items: center; gap: 10px; min-height: 44px; box-sizing: border-box;">
+          
+          <div style="font-size: 0.68rem; font-weight: 800; color: #60a5fa; text-transform: uppercase; letter-spacing: 0.6px; padding: 4px 6px 2px;">Betting Intelligence</div>
+          <a href="/bet-doctor" onclick="toggleMobileDrawer(); if(typeof navigateTo==='function'){navigateTo('/bet-doctor'); return false;}"
+            style="color: #e2e8f0; font-size: 0.88rem; text-decoration: none; font-weight: 700; padding: 9px 12px; border-radius: 8px; background: rgba(255, 255, 255, 0.03); display: flex; align-items: center; gap: 10px; min-height: 42px; box-sizing: border-box;">
+            <span>🩺</span> <span>Bet Doctor</span>
+          </a>
+          <a href="/generator" onclick="toggleMobileDrawer(); if(typeof navigateTo==='function'){navigateTo('/generator'); return false;}"
+            style="color: #e2e8f0; font-size: 0.88rem; text-decoration: none; font-weight: 700; padding: 9px 12px; border-radius: 8px; background: rgba(255, 255, 255, 0.03); display: flex; align-items: center; gap: 10px; min-height: 42px; box-sizing: border-box;">
             <span>🎰</span> <span>Bet Generator</span>
           </a>
-          <a href="#live-scanner" onclick="toggleMobileDrawer()"
-            style="color: #e2e8f0; font-size: 0.88rem; text-decoration: none; font-weight: 700; padding: 10px 12px; border-radius: 8px; background: rgba(255, 255, 255, 0.03); display: flex; align-items: center; gap: 10px; min-height: 44px; box-sizing: border-box;">
+          <a href="/converter" onclick="toggleMobileDrawer(); if(typeof navigateTo==='function'){navigateTo('/converter'); return false;}"
+            style="color: #e2e8f0; font-size: 0.88rem; text-decoration: none; font-weight: 700; padding: 9px 12px; border-radius: 8px; background: rgba(255, 255, 255, 0.03); display: flex; align-items: center; gap: 10px; min-height: 42px; box-sizing: border-box;">
+            <span>🎫</span> <span>Booking Code Converter</span>
+          </a>
+
+          <div style="font-size: 0.68rem; font-weight: 800; color: #f87171; text-transform: uppercase; letter-spacing: 0.6px; padding: 8px 6px 2px;">Market Intelligence</div>
+          <a href="/live-scanner" onclick="toggleMobileDrawer(); if(typeof navigateTo==='function'){navigateTo('/live-scanner'); return false;}"
+            style="color: #e2e8f0; font-size: 0.88rem; text-decoration: none; font-weight: 700; padding: 9px 12px; border-radius: 8px; background: rgba(255, 255, 255, 0.03); display: flex; align-items: center; gap: 10px; min-height: 42px; box-sizing: border-box;">
             <span>📡</span> <span>Live Scanner</span>
           </a>
-          <a href="#pre-match-scanner" onclick="toggleMobileDrawer()"
-            style="color: #e2e8f0; font-size: 0.88rem; text-decoration: none; font-weight: 700; padding: 10px 12px; border-radius: 8px; background: rgba(255, 255, 255, 0.03); display: flex; align-items: center; gap: 10px; min-height: 44px; box-sizing: border-box;">
+          <a href="/pre-match-scanner" onclick="toggleMobileDrawer(); if(typeof navigateTo==='function'){navigateTo('/pre-match-scanner'); return false;}"
+            style="color: #e2e8f0; font-size: 0.88rem; text-decoration: none; font-weight: 700; padding: 9px 12px; border-radius: 8px; background: rgba(255, 255, 255, 0.03); display: flex; align-items: center; gap: 10px; min-height: 42px; box-sizing: border-box;">
             <span>⚡</span> <span>Pre-Match Scanner</span>
           </a>
-          <a href="#valuebot" onclick="toggleMobileDrawer()"
-            style="color: #e2e8f0; font-size: 0.88rem; text-decoration: none; font-weight: 700; padding: 10px 12px; border-radius: 8px; background: rgba(255, 255, 255, 0.03); display: flex; align-items: center; gap: 10px; min-height: 44px; box-sizing: border-box;">
-            <span>💰</span> <span>Value Bets</span>
+          <a href="/value-bets" onclick="toggleMobileDrawer(); if(typeof navigateTo==='function'){navigateTo('/value-bets'); return false;}"
+            style="color: #e2e8f0; font-size: 0.88rem; text-decoration: none; font-weight: 700; padding: 9px 12px; border-radius: 8px; background: rgba(255, 255, 255, 0.03); display: flex; align-items: center; gap: 10px; min-height: 42px; box-sizing: border-box;">
+            <span>💎</span> <span>Value Bets Bot</span>
           </a>
-          <a href="#arbitrage" onclick="toggleMobileDrawer()"
-            style="color: #e2e8f0; font-size: 0.88rem; text-decoration: none; font-weight: 700; padding: 10px 12px; border-radius: 8px; background: rgba(255, 255, 255, 0.03); display: flex; align-items: center; gap: 10px; min-height: 44px; box-sizing: border-box;">
+          <a href="/arbitrage" onclick="toggleMobileDrawer(); if(typeof navigateTo==='function'){navigateTo('/arbitrage'); return false;}"
+            style="color: #e2e8f0; font-size: 0.88rem; text-decoration: none; font-weight: 700; padding: 9px 12px; border-radius: 8px; background: rgba(255, 255, 255, 0.03); display: flex; align-items: center; gap: 10px; min-height: 42px; box-sizing: border-box;">
             <span>🛡️</span> <span>Arbitrage Finder</span>
           </a>
-          <a href="#analytics" onclick="toggleMobileDrawer()"
-            style="color: #e2e8f0; font-size: 0.88rem; text-decoration: none; font-weight: 700; padding: 10px 12px; border-radius: 8px; background: rgba(255, 255, 255, 0.03); display: flex; align-items: center; gap: 10px; min-height: 44px; box-sizing: border-box;">
+
+          <div style="font-size: 0.68rem; font-weight: 800; color: #a855f7; text-transform: uppercase; letter-spacing: 0.6px; padding: 8px 6px 2px;">Analytics &amp; Discovery</div>
+          <a href="/analytics" onclick="toggleMobileDrawer(); if(typeof navigateTo==='function'){navigateTo('/analytics'); return false;}"
+            style="color: #e2e8f0; font-size: 0.88rem; text-decoration: none; font-weight: 700; padding: 9px 12px; border-radius: 8px; background: rgba(255, 255, 255, 0.03); display: flex; align-items: center; gap: 10px; min-height: 42px; box-sizing: border-box;">
             <span>📊</span> <span>League Analytics</span>
+          </a>
+          <a href="/backtesting" onclick="toggleMobileDrawer(); if(typeof navigateTo==='function'){navigateTo('/backtesting'); return false;}"
+            style="color: #e2e8f0; font-size: 0.88rem; text-decoration: none; font-weight: 700; padding: 9px 12px; border-radius: 8px; background: rgba(255, 255, 255, 0.03); display: flex; align-items: center; gap: 10px; min-height: 42px; box-sizing: border-box;">
+            <span>📈</span> <span>Strategy Backtester</span>
+          </a>
+          <a href="/results" onclick="toggleMobileDrawer(); if(typeof navigateTo==='function'){navigateTo('/results'); return false;}"
+            style="color: #e2e8f0; font-size: 0.88rem; text-decoration: none; font-weight: 700; padding: 9px 12px; border-radius: 8px; background: rgba(255, 255, 255, 0.03); display: flex; align-items: center; gap: 10px; min-height: 42px; box-sizing: border-box;">
+            <span>📅</span> <span>Results &amp; Ledger</span>
+          </a>
+          <a href="/watchlist" onclick="toggleMobileDrawer(); if(typeof navigateTo==='function'){navigateTo('/watchlist'); return false;}"
+            style="color: #e2e8f0; font-size: 0.88rem; text-decoration: none; font-weight: 700; padding: 9px 12px; border-radius: 8px; background: rgba(255, 255, 255, 0.03); display: flex; align-items: center; gap: 10px; min-height: 42px; box-sizing: border-box;">
+            <span>⭐</span> <span>Saved Watchlist</span>
+          </a>
+          <a href="/leagues" onclick="toggleMobileDrawer(); if(typeof navigateTo==='function'){navigateTo('/leagues'); return false;}"
+            style="color: #e2e8f0; font-size: 0.88rem; text-decoration: none; font-weight: 700; padding: 9px 12px; border-radius: 8px; background: rgba(255, 255, 255, 0.03); display: flex; align-items: center; gap: 10px; min-height: 42px; box-sizing: border-box;">
+            <span>🏆</span> <span>Leagues Hub</span>
+          </a>
+          <a href="/teams" onclick="toggleMobileDrawer(); if(typeof navigateTo==='function'){navigateTo('/teams'); return false;}"
+            style="color: #e2e8f0; font-size: 0.88rem; text-decoration: none; font-weight: 700; padding: 9px 12px; border-radius: 8px; background: rgba(255, 255, 255, 0.03); display: flex; align-items: center; gap: 10px; min-height: 42px; box-sizing: border-box;">
+            <span>👥</span> <span>Teams Hub</span>
           </a>
         </div>
       </div>
 
-      <!-- 5. Item: Results -->
-      <a href="#predictions" onclick="if(typeof triggerQuickFilter==='function'){triggerQuickFilter('yesterday', 'all');} toggleMobileDrawer();" class="mobile-drawer-item"
-        style="display: flex; align-items: center; gap: 12px; padding: 12px 14px; border-radius: 12px; text-decoration: none; color: #f8fafc; background: rgba(255, 255, 255, 0.04); border: 1px solid rgba(255, 255, 255, 0.08); font-weight: 700; font-size: 0.95rem; min-height: 48px; box-sizing: border-box; transition: all 0.2s ease;">
+      <!-- Section Label: Account & Platform -->
+      <div style="display: flex; align-items: center; justify-content: space-between; margin: 8px 0 2px;">
         <span
-          style="width: 32px; height: 32px; border-radius: 8px; background: rgba(239, 68, 68, 0.15); display: flex; align-items: center; justify-content: center; font-size: 1.1rem;">📅</span>
-        <span>Results</span>
-      </a>
+          style="font-size: 0.7rem; font-weight: 900; color: #eab308; text-transform: uppercase; letter-spacing: 0.8px; background: rgba(234, 179, 8, 0.08); border-left: 3px solid #eab308; padding: 4px 8px; border-radius: 0 6px 6px 0;">👑
+          Account &amp; Platform</span>
+      </div>
 
-      <!-- 6. Item: Pricing -->
-      <a href="#vip-packages-section" onclick="toggleMobileDrawer()" class="mobile-drawer-item"
+      <!-- 7. Item: Pricing -->
+      <a href="/pricing" onclick="toggleMobileDrawer(); if(typeof navigateTo==='function'){navigateTo('/pricing'); return false;}" class="mobile-drawer-item"
         style="display: flex; align-items: center; gap: 12px; padding: 12px 14px; border-radius: 12px; text-decoration: none; color: #f8fafc; background: rgba(255, 255, 255, 0.04); border: 1px solid rgba(255, 255, 255, 0.08); font-weight: 700; font-size: 0.95rem; min-height: 48px; box-sizing: border-box; transition: all 0.2s ease;">
         <span
           style="width: 32px; height: 32px; border-radius: 8px; background: rgba(234, 179, 8, 0.15); display: flex; align-items: center; justify-content: center; font-size: 1.1rem;">👑</span>
-        <span>Pricing</span>
+        <span>Pricing &amp; VIP</span>
       </a>
 
-      <!-- Divider -->
-      <div style="height: 1px; background: rgba(255, 255, 255, 0.08); margin: 8px 0;"></div>
-
-      <!-- Account / Login Item in Drawer -->
-      <div id="mobile-drawer-auth-item" onclick="handleNavAuthClick(); toggleMobileDrawer();" class="mobile-drawer-item"
-        style="display: flex; align-items: center; gap: 12px; padding: 12px 14px; border-radius: 12px; cursor: pointer; color: #f8fafc; background: rgba(255, 255, 255, 0.04); border: 1px solid rgba(255, 255, 255, 0.08); font-weight: 700; font-size: 0.95rem; min-height: 48px; box-sizing: border-box; transition: all 0.2s ease;">
+      <!-- 8. Item: My DeepPredict / Account -->
+      <a href="/dashboard" id="mobile-drawer-auth-item" onclick="toggleMobileDrawer(); if(typeof navigateTo==='function'){navigateTo('/dashboard'); return false;}" class="mobile-drawer-item"
+        style="display: flex; align-items: center; gap: 12px; padding: 12px 14px; border-radius: 12px; text-decoration: none; color: #f8fafc; background: rgba(255, 255, 255, 0.04); border: 1px solid rgba(255, 255, 255, 0.08); font-weight: 700; font-size: 0.95rem; min-height: 48px; box-sizing: border-box; transition: all 0.2s ease;">
         <span
           style="width: 32px; height: 32px; border-radius: 8px; background: rgba(59, 130, 246, 0.15); display: flex; align-items: center; justify-content: center; font-size: 1.1rem;">👤</span>
-        <span id="mobile-drawer-auth-text">Login</span>
-      </div>
+        <span id="mobile-drawer-auth-text">My DeepPredict</span>
+      </a>
+
+      <!-- 9. Item: Help -->
+      <a href="/help" onclick="toggleMobileDrawer(); if(typeof navigateTo==='function'){navigateTo('/help'); return false;}" class="mobile-drawer-item"
+        style="display: flex; align-items: center; gap: 12px; padding: 12px 14px; border-radius: 12px; text-decoration: none; color: #f8fafc; background: rgba(255, 255, 255, 0.04); border: 1px solid rgba(255, 255, 255, 0.08); font-weight: 700; font-size: 0.95rem; min-height: 48px; box-sizing: border-box; transition: all 0.2s ease;">
+        <span
+          style="width: 32px; height: 32px; border-radius: 8px; background: rgba(148, 163, 184, 0.15); display: flex; align-items: center; justify-content: center; font-size: 1.1rem;">❓</span>
+        <span>Help &amp; FAQs</span>
+      </a>
 
       <!-- Primary CTA: GET STARTED Button -->
       <button type="button" id="mobile-drawer-cta-btn" onclick="openAuthModal('signup'); toggleMobileDrawer();"
@@ -608,8 +751,8 @@
     <span id="global-tool-breadcrumb-label" class="breadcrumb-current">Tool</span>
   </div>
 
-  <!-- --- MAIN PAGE VIEW 1: PREDICTIONS & HOME --- -->
-  <main id="view-predictions" class="page-view active">
+  <!-- --- MAIN PAGE VIEW: COMMAND CENTER (HOME) --- -->
+  <main id="view-command-center" class="page-view active">
 
     <!-- --- LIVE HOT TRENDS TICKER STREAMER --- -->
     <div id="trends-ticker-wrapper" class="container" style="margin-top: 14px; margin-bottom: 16px;">
@@ -977,7 +1120,7 @@
               <span class="insight-conf-label">Confidence:</span>
               <span class="insight-conf-value">88%</span>
             </div>
-            <button type="button" class="btn-insight-analysis" onclick="openScoutModal('match-1')" aria-label="View Analysis for Manchester City vs Arsenal">
+            <button type="button" class="btn-insight-analysis" onclick="if(typeof navigateTo==='function'){navigateTo('/match/man-city-vs-arsenal');}else{openScoutModal('match-1');}" aria-label="View Analysis for Manchester City vs Arsenal">
               <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
               <span>Analysis</span>
             </button>
@@ -1020,7 +1163,7 @@
               <span class="insight-conf-label">Confidence:</span>
               <span class="insight-conf-value">72%</span>
             </div>
-            <button type="button" class="btn-insight-analysis" onclick="openScoutModal('match-2')" aria-label="View Analysis for Barcelona vs Real Madrid">
+            <button type="button" class="btn-insight-analysis" onclick="if(typeof navigateTo==='function'){navigateTo('/match/barca-vs-madrid');}else{openScoutModal('match-2');}" aria-label="View Analysis for Barcelona vs Real Madrid">
               <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
               <span>Analysis</span>
             </button>
@@ -1063,7 +1206,7 @@
               <span class="insight-conf-label">Confidence:</span>
               <span class="insight-conf-value">82%</span>
             </div>
-            <button type="button" class="btn-insight-analysis" onclick="openScoutModal('match-3')" aria-label="View Analysis for Liverpool vs Chelsea">
+            <button type="button" class="btn-insight-analysis" onclick="if(typeof navigateTo==='function'){navigateTo('/match/liverpool-vs-chelsea');}else{openScoutModal('match-3');}" aria-label="View Analysis for Liverpool vs Chelsea">
               <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
               <span>Analysis</span>
             </button>
@@ -1106,7 +1249,7 @@
               <span class="insight-conf-label">Confidence:</span>
               <span class="insight-conf-value">90%</span>
             </div>
-            <button type="button" class="btn-insight-analysis" onclick="openScoutModal('match-4')" aria-label="View Analysis for Bayern Munich vs Dortmund">
+            <button type="button" class="btn-insight-analysis" onclick="if(typeof navigateTo==='function'){navigateTo('/match/bayern-vs-dortmund');}else{openScoutModal('match-4');}" aria-label="View Analysis for Bayern Munich vs Dortmund">
               <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
               <span>Analysis</span>
             </button>
@@ -1116,7 +1259,7 @@
 
       <!-- CTA: VIEW ALL TODAY'S PREDICTIONS -->
       <div class="today-insights-cta-wrap">
-        <a href="#predictions" class="btn-view-all-predictions" onclick="if(typeof triggerQuickFilter==='function'){triggerQuickFilter('today', 'all');}else if(typeof navigateTo==='function'){navigateTo('/predictions');}else{window.location.hash='#predictions';}">
+        <a href="/predictions" class="btn-view-all-predictions" onclick="if(typeof navigateTo==='function'){navigateTo('/predictions'); return false;}">
           <span>VIEW ALL TODAY'S PREDICTIONS</span>
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
             <line x1="5" y1="12" x2="19" y2="12"></line>
@@ -1129,7 +1272,156 @@
 
     
     <!-- --- BET DOCTOR SHOWCASE SECTION --- -->
-    <section id="bet-doctor-showcase-section" class="bet-doctor-showcase-section container">
+    
+    <!-- --- SECTION 5: YOUR BETTING WORKFLOW --- -->
+    <section id="user-journey-section" class="user-journey-section container" style="margin-bottom: 36px;">
+      <div class="journey-container">
+        <!-- Section Header -->
+        <div class="journey-header">
+          <div class="journey-badge">
+            <span>🗺️ The Intelligent Workflow</span>
+          </div>
+          <h2 class="journey-headline">FROM RESEARCH TO BET SLIP — IN ONE PLATFORM</h2>
+          <p class="journey-subhead">
+            A seamless five-step betting intelligence cycle designed to transform complex football data into informed wagering decisions.
+          </p>
+        </div>
+
+        <!-- 5-Step Process Flow -->
+        <div class="journey-flow-wrapper">
+          <div class="journey-track" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(210px, 1fr)); gap: 14px;">
+            <!-- STEP 1: DISCOVER -->
+            <div class="journey-card-wrap">
+              <div class="journey-card" id="journey-step-1" style="height: 100%;">
+                <div class="journey-card-top">
+                  <span class="journey-step-tag tag-step-1">STEP 1</span>
+                  <div class="journey-icon-wrap" aria-hidden="true">🔭</div>
+                </div>
+                <h3 class="journey-step-title">DISCOVER</h3>
+                <p class="journey-step-desc">
+                  Explore daily mathematical match predictions and high-probability bankers worldwide.
+                </p>
+                <a href="/predictions" class="journey-step-link" onclick="if(typeof navigateTo==='function'){navigateTo('/predictions'); return false;}">
+                  <span>Explore Predictions</span>
+                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg>
+                </a>
+              </div>
+            </div>
+
+            <!-- STEP 2: ANALYSE -->
+            <div class="journey-card-wrap">
+              <div class="journey-card" id="journey-step-2" style="height: 100%;">
+                <div class="journey-card-top">
+                  <span class="journey-step-tag tag-step-2">STEP 2</span>
+                  <div class="journey-icon-wrap" aria-hidden="true">🩺</div>
+                </div>
+                <h3 class="journey-step-title">ANALYSE</h3>
+                <p class="journey-step-desc">
+                  Audit slip selections in Bet Doctor to detect correlation traps and high-risk variance.
+                </p>
+                <a href="/bet-doctor" class="journey-step-link" onclick="if(typeof navigateTo==='function'){navigateTo('/bet-doctor'); return false;}">
+                  <span>Analyse Ticket</span>
+                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg>
+                </a>
+              </div>
+            </div>
+
+            <!-- STEP 3: BUILD -->
+            <div class="journey-card-wrap">
+              <div class="journey-card" id="journey-step-3" style="height: 100%;">
+                <div class="journey-card-top">
+                  <span class="journey-step-tag tag-step-3">STEP 3</span>
+                  <div class="journey-icon-wrap" aria-hidden="true">🎰</div>
+                </div>
+                <h3 class="journey-step-title">BUILD</h3>
+                <p class="journey-step-desc">
+                  Generate customized accumulator slips matched to your target odds and risk criteria.
+                </p>
+                <a href="/generator" class="journey-step-link" onclick="if(typeof navigateTo==='function'){navigateTo('/generator'); return false;}">
+                  <span>Build A Bet</span>
+                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg>
+                </a>
+              </div>
+            </div>
+
+            <!-- STEP 4: CONVERT -->
+            <div class="journey-card-wrap">
+              <div class="journey-card" id="journey-step-4" style="height: 100%;">
+                <div class="journey-card-top">
+                  <span class="journey-step-tag tag-step-4" style="background: rgba(245, 158, 11, 0.15); color: #f59e0b; border-color: rgba(245, 158, 11, 0.3);">STEP 4</span>
+                  <div class="journey-icon-wrap" aria-hidden="true">🔄</div>
+                </div>
+                <h3 class="journey-step-title">CONVERT</h3>
+                <p class="journey-step-desc">
+                  Transfer booking codes across 90+ global and regional bookmakers in seconds.
+                </p>
+                <a href="/converter" class="journey-step-link" onclick="if(typeof navigateTo==='function'){navigateTo('/converter'); return false;}">
+                  <span>Convert Code</span>
+                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg>
+                </a>
+              </div>
+            </div>
+
+            <!-- STEP 5: TRACK -->
+            <div class="journey-card-wrap">
+              <div class="journey-card" id="journey-step-5" style="height: 100%;">
+                <div class="journey-card-top">
+                  <span class="journey-step-tag" style="background: rgba(16, 185, 129, 0.15); color: #10b981; border-color: rgba(16, 185, 129, 0.3);">STEP 5</span>
+                  <div class="journey-icon-wrap" aria-hidden="true">⭐</div>
+                </div>
+                <h3 class="journey-step-title">TRACK</h3>
+                <p class="journey-step-desc">
+                  Save matches to your Watchlist and monitor transparent win/loss outcomes over time.
+                </p>
+                <a href="/watchlist" class="journey-step-link" onclick="if(typeof navigateTo==='function'){navigateTo('/watchlist'); return false;}">
+                  <span>View Watchlist</span>
+                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg>
+                </a>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- --- SECTION 6: AI SCOUT PREVIEW --- -->
+    <section id="ai-scout-preview-section" class="ai-scout-preview-section container" style="margin-bottom: 36px;">
+      <div class="glass-card" style="padding: 32px 28px; border-radius: var(--radius-lg); background: linear-gradient(135deg, rgba(168, 85, 247, 0.08) 0%, rgba(15, 23, 42, 0.9) 100%); border: 1px solid rgba(168, 85, 247, 0.3); box-shadow: 0 12px 36px rgba(0, 0, 0, 0.45);">
+        <div style="display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 24px;">
+          <div style="max-width: 660px;">
+            <div style="display: inline-flex; align-items: center; gap: 6px; background: rgba(168, 85, 247, 0.15); border: 1px solid rgba(168, 85, 247, 0.35); padding: 4px 12px; border-radius: 9999px; font-size: 0.75rem; font-weight: 800; color: #c084fc; text-transform: uppercase; margin-bottom: 12px;">
+              <span>🤖</span> Conversational Football Intelligence
+            </div>
+            <h2 style="font-family: var(--font-display); font-size: clamp(1.4rem, 2.5vw, 1.8rem); font-weight: 900; color: #ffffff; margin: 0 0 10px 0; line-height: 1.25;">
+              AI SCOUT — YOUR BETTING RESEARCH ADVISOR
+            </h2>
+            <p style="font-size: 0.92rem; color: #cbd5e1; line-height: 1.6; margin: 0 0 18px 0;">
+              Ask tactical questions, evaluate accumulator risk, or query statistical edges in natural language. AI Scout parses match models and connects you directly to the right DeepPredict tools.
+            </p>
+            
+            <div style="display: flex; flex-wrap: wrap; gap: 8px;">
+              <button type="button" class="command-scout-chip" onclick="if(typeof navigateTo==='function'){navigateTo('/ai-scout');}" style="background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255, 255, 255, 0.12); color: #e2e8f0; padding: 7px 14px; border-radius: 8px; font-size: 0.8rem; font-weight: 600; cursor: pointer;">
+                💬 "Highest probability BTTS matches today?"
+              </button>
+              <button type="button" class="command-scout-chip" onclick="if(typeof navigateTo==='function'){navigateTo('/ai-scout');}" style="background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255, 255, 255, 0.12); color: #e2e8f0; padding: 7px 14px; border-radius: 8px; font-size: 0.8rem; font-weight: 600; cursor: pointer;">
+                💬 "Analyze Arsenal vs Man City tactics"
+              </button>
+              <button type="button" class="command-scout-chip" onclick="if(typeof navigateTo==='function'){navigateTo('/ai-scout');}" style="background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255, 255, 255, 0.12); color: #e2e8f0; padding: 7px 14px; border-radius: 8px; font-size: 0.8rem; font-weight: 600; cursor: pointer;">
+                💬 "Find positive EV draws in Serie A"
+              </button>
+            </div>
+          </div>
+
+          <div style="align-self: center;">
+            <a href="/ai-scout" class="btn btn-primary" onclick="if(typeof navigateTo==='function'){navigateTo('/ai-scout'); return false;}" style="display: inline-flex; align-items: center; gap: 8px; padding: 13px 26px; font-size: 0.92rem; font-weight: 800; background: linear-gradient(135deg, #a855f7 0%, #7c3aed 100%); border: 1px solid rgba(255, 255, 255, 0.2); box-shadow: 0 4px 18px rgba(168, 85, 247, 0.4); text-decoration: none; border-radius: var(--radius-md); color: #ffffff; white-space: nowrap;">
+              <span>OPEN AI SCOUT</span>
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg>
+            </a>
+          </div>
+        </div>
+      </div>
+    </section>
+<section id="bet-doctor-showcase-section" class="bet-doctor-showcase-section container">
       <div class="bet-doctor-showcase-container">
         <!-- Left Column: Narrative & Actions -->
         <div class="doctor-narrative-col">
@@ -1251,235 +1543,11 @@
     </section>
 
 
-    
-    <!-- --- BET CODE CONVERTER SHOWCASE SECTION --- -->
-    <section id="converter-showcase-section" class="converter-showcase-section container">
-      <div class="converter-showcase-container">
-        <!-- Header -->
-        <div class="converter-showcase-header">
-          <div class="converter-showcase-badge">
-            <span>⚡ Instant Code Converter</span>
-          </div>
-          <h2 class="converter-showcase-headline">ONE BOOKING CODE. ANOTHER BOOKMAKER.</h2>
-          <p class="converter-showcase-subhead">
-            Convert supported booking codes between bookmakers without rebuilding your ticket manually.
-          </p>
-        </div>
 
-        <!-- Converter Form Card -->
-        <div class="converter-showcase-card">
-          <!-- Top Row: From & To Selects with Swap -->
-          <div class="converter-card-grid">
-            <div class="converter-form-group">
-              <label class="converter-form-label" for="showcase-betcode-from">FROM BOOKMAKER</label>
-              <div class="converter-select-wrap">
-                <select id="showcase-betcode-from" class="converter-select" aria-label="From Bookmaker">
-                  <option value="" disabled selected>[Select Bookmaker]</option>
-                  <option value="sportybet:ng">SportyBet</option>
-                  <option value="bet9ja">Bet9ja</option>
-                  <option value="1xbet:ng">1xBet</option>
-                  <option value="betking:ng">BetKing</option>
-                  <option value="betano:ng">Betano</option>
-                  <option value="msport:ng">MSport</option>
-                  <option value="_22bet_ng">22Bet</option>
-                  <option value="betwinner:ng">BetWinner</option>
-                  <option value="melbet:ng">Melbet</option>
-                  <option value="paripesa:ng">Paripesa</option>
-                  <option value="betway:ng">Betway</option>
-                  <option value="betpawa:ng">BetPawa</option>
-                </select>
-              </div>
-            </div>
-
-            <button type="button" class="converter-swap-btn" onclick="swapShowcaseBookmakers()" aria-label="Swap bookmakers" title="Swap bookmakers">
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-                <polyline points="17 1 21 5 17 9"></polyline>
-                <path d="M3 5h18"></path>
-                <polyline points="7 23 3 19 7 15"></polyline>
-                <path d="M21 19H3"></path>
-              </svg>
-            </button>
-
-            <div class="converter-form-group">
-              <label class="converter-form-label" for="showcase-betcode-to">TO BOOKMAKER</label>
-              <div class="converter-select-wrap">
-                <select id="showcase-betcode-to" class="converter-select" aria-label="To Bookmaker">
-                  <option value="" disabled selected>[Select Bookmaker]</option>
-                  <option value="sportybet:ng">SportyBet</option>
-                  <option value="bet9ja">Bet9ja</option>
-                  <option value="1xbet:ng">1xBet</option>
-                  <option value="betking:ng">BetKing</option>
-                  <option value="betano:ng">Betano</option>
-                  <option value="msport:ng">MSport</option>
-                  <option value="_22bet_ng">22Bet</option>
-                  <option value="betwinner:ng">BetWinner</option>
-                  <option value="melbet:ng">Melbet</option>
-                  <option value="paripesa:ng">Paripesa</option>
-                  <option value="betway:ng">Betway</option>
-                  <option value="betpawa:ng">BetPawa</option>
-                </select>
-              </div>
-            </div>
-          </div>
-
-          <!-- Bottom Row: Booking Code Input & CTA Button -->
-          <div class="converter-action-grid">
-            <div class="converter-form-group">
-              <label class="converter-form-label" for="showcase-betcode-input">BOOKING CODE</label>
-              <input
-                type="text"
-                id="showcase-betcode-input"
-                class="converter-input"
-                placeholder="[Enter booking code]"
-                autocomplete="off"
-                autocorrect="off"
-                autocapitalize="characters"
-                spellcheck="false"
-              />
-            </div>
-
-            <button
-              type="button"
-              class="btn-convert-showcase"
-              id="btn-convert-showcase-cta"
-              onclick="executeShowcaseBetCodeConversion()"
-            >
-              <span>CONVERT BOOKING CODE</span>
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-                <line x1="5" y1="12" x2="19" y2="12"></line>
-                <polyline points="12 5 19 12 12 19"></polyline>
-              </svg>
-            </button>
-          </div>
-
-          <!-- Underneath Value Prop -->
-          <div class="converter-value-prop">
-            Fast <span>•</span> Simple <span>•</span> Multiple Supported Bookmakers
-          </div>
-        </div>
-      </div>
-    </section>
 
 
     
     <!-- --- DEEPPREDICTBET USER JOURNEY SECTION --- -->
-    <section id="user-journey-section" class="user-journey-section container">
-      <div class="journey-container">
-        <!-- Section Header -->
-        <div class="journey-header">
-          <div class="journey-badge">
-            <span>🗺️ The Intelligent Workflow</span>
-          </div>
-          <h2 class="journey-headline">FROM RESEARCH TO BET SLIP — IN ONE PLATFORM</h2>
-          <p class="journey-subhead">
-            A seamless four-step betting intelligence cycle designed to transform complex football data into informed wagering decisions.
-          </p>
-        </div>
-
-        <!-- 4-Step Process Flow -->
-        <div class="journey-flow-wrapper">
-          <div class="journey-track">
-            <!-- STEP 1: DISCOVER -->
-            <div class="journey-card-wrap">
-              <div class="journey-card" id="journey-step-1">
-                <div class="journey-card-top">
-                  <span class="journey-step-tag tag-step-1">STEP 1</span>
-                  <div class="journey-icon-wrap" aria-hidden="true">🔭</div>
-                </div>
-                <h3 class="journey-step-title">DISCOVER</h3>
-                <p class="journey-step-desc">
-                  Explore predictions and betting opportunities.
-                </p>
-                <a href="#predictions" class="journey-step-link" onclick="if(typeof triggerQuickFilter==='function'){triggerQuickFilter('today', 'all');}else if(typeof navigateTo==='function'){navigateTo('/predictions');}else{window.location.hash='#predictions';}">
-                  <span>Explore Predictions</span>
-                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg>
-                </a>
-              </div>
-              <div class="journey-connector-horizontal" aria-hidden="true">
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="9 18 15 12 9 6"></polyline></svg>
-              </div>
-            </div>
-
-            <div class="journey-connector-vertical" aria-hidden="true">
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="6 9 12 15 18 9"></polyline></svg>
-            </div>
-
-            <!-- STEP 2: ANALYSE -->
-            <div class="journey-card-wrap">
-              <div class="journey-card" id="journey-step-2">
-                <div class="journey-card-top">
-                  <span class="journey-step-tag tag-step-2">STEP 2</span>
-                  <div class="journey-icon-wrap" aria-hidden="true">🩺</div>
-                </div>
-                <h3 class="journey-step-title">ANALYSE</h3>
-                <p class="journey-step-desc">
-                  Use data and Bet Doctor to examine selections and potential risks.
-                </p>
-                <a href="#bet-doctor" class="journey-step-link" onclick="if(typeof triggerToolRoute==='function'){triggerToolRoute('doctor');}else if(typeof navigateTo==='function'){navigateTo('/bet-doctor');}else{window.location.hash='#bet-doctor';}">
-                  <span>Analyse Ticket</span>
-                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg>
-                </a>
-              </div>
-              <div class="journey-connector-horizontal" aria-hidden="true">
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="9 18 15 12 9 6"></polyline></svg>
-              </div>
-            </div>
-
-            <div class="journey-connector-vertical" aria-hidden="true">
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="6 9 12 15 18 9"></polyline></svg>
-            </div>
-
-            <!-- STEP 3: DECIDE & ACT -->
-            <div class="journey-card-wrap">
-              <div class="journey-card" id="journey-step-3">
-                <div class="journey-card-top">
-                  <span class="journey-step-tag tag-step-3">STEP 3 &amp; 4</span>
-                  <div class="journey-icon-wrap" aria-hidden="true">⚡</div>
-                </div>
-                <h3 class="journey-step-title">DECIDE &amp; ACT</h3>
-                <p class="journey-step-desc">
-                  Build custom tickets with Bet Generator or convert codes across bookmakers.
-                </p>
-                <a href="/generator" class="journey-step-link" onclick="if(typeof navigateTo==='function'){navigateTo('/generator'); return false;}">
-                  <span>Build or Convert</span>
-                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg>
-                </a>
-              </div>
-              <div class="journey-connector-horizontal" aria-hidden="true">
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="9 18 15 12 9 6"></polyline></svg>
-              </div>
-            </div>
-
-            <div class="journey-connector-vertical" aria-hidden="true">
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="6 9 12 15 18 9"></polyline></svg>
-            </div>
-
-            <!-- STEP 4: TRACK -->
-            <div class="journey-card-wrap">
-              <div class="journey-card" id="journey-step-4">
-                <div class="journey-card-top">
-                  <span class="journey-step-tag tag-step-4">STEP 4</span>
-                  <div class="journey-icon-wrap" aria-hidden="true">⭐</div>
-                </div>
-                <h3 class="journey-step-title">TRACK</h3>
-                <p class="journey-step-desc">
-                  Save selections and review results over time where supported by the existing application.
-                </p>
-                <div class="journey-step-meta">
-                  <span>✓ Watchlist &amp; Results Supported</span> • <span style="color:#f59e0b;">Portfolio P&amp;L in development</span>
-                </div>
-                <a href="#predictions" class="journey-step-link" style="margin-top: 10px;" onclick="if(typeof triggerWatchlistFilter==='function'){triggerWatchlistFilter();}else{window.location.hash='#predictions';}">
-                  <span>View Saved Watchlist</span>
-                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg>
-                </a>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-    </section>
-
-    <!-- --- PERFORMANCE YOU CAN VERIFY (TRANSPARENT RESULTS) --- -->
     <section id="performance-showcase-section" class="performance-showcase-section container">
       <div class="performance-container">
         <!-- Header -->
@@ -1506,7 +1574,7 @@
           <div class="perf-kpi-card">
             <span class="perf-kpi-label">Total Predictions</span>
             <span class="perf-kpi-val" id="perf-kpi-total">8</span>
-            <span class="perf-kpi-sub">Audited Settled Fixtures</span>
+            <span class="perf-kpi-sub">All-Time Benchmark Sample</span>
           </div>
           <div class="perf-kpi-card">
             <span class="perf-kpi-label">Won</span>
@@ -1552,7 +1620,7 @@
               <h3 class="settled-picks-title">Recent Settled Predictions</h3>
               <span class="settled-transparency-pill">Audited Match Ledger • Wins &amp; Losses</span>
             </div>
-            <span class="settled-picks-meta" id="settled-picks-sample-info">Showing 6 audited outcomes (3 Won, 3 Lost • 7-Day Roll)</span>
+            <span class="settled-picks-meta" id="settled-picks-sample-info">Recent 7-Day Rolling Ledger (Sample of 6 Settled Fixtures: 3 Won, 3 Lost)</span>
           </div>
           <div class="settled-picks-grid" id="settled-picks-grid">
             <!-- Settled Card 1: WON -->
@@ -1691,7 +1759,7 @@
 
         <!-- Footer CTA & Mandatory Regulatory Disclaimer -->
         <div class="performance-footer">
-          <button class="btn btn-primary performance-cta-btn" onclick="openFullResultsHistory()">
+          <button class="btn btn-primary performance-cta-btn" onclick="if(typeof navigateTo==='function'){navigateTo('/results');}else{openFullResultsHistory();}">
             <span>VIEW FULL RESULTS HISTORY</span>
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg>
           </button>
@@ -1703,125 +1771,277 @@
     </section>
 
     <!-- --- SECONDARY TOOLS SHOWCASE (MORE THAN PREDICTIONS) --- -->
-    <section id="secondary-tools-showcase" class="secondary-tools-section container">
+    
+    <!-- --- SECTION 9: EXPLORE THE PLATFORM (16 TOOLS DIRECTORY) --- -->
+    <section id="secondary-tools-showcase" class="secondary-tools-section container" style="margin-bottom: 36px;">
       <div class="secondary-tools-container">
         <!-- Header -->
         <div class="secondary-tools-header">
           <div class="secondary-tools-badge">
-            <span>🛠️ Complete Betting Suite</span>
+            <span>🛠️ Complete Intelligence Ecosystem</span>
           </div>
-          <h2 class="secondary-tools-headline">MORE THAN PREDICTIONS</h2>
+          <h2 class="secondary-tools-headline">EXPLORE THE PLATFORM</h2>
           <p class="secondary-tools-subhead">
-            A complete toolkit for bettors who want deeper information before making decisions.
+            Dedicated applications designed for precision match research, ticket diagnosis, and automated value edge detection.
           </p>
         </div>
 
-        <!-- 6 Tools Grid -->
-        <div class="secondary-tools-grid">
-          <!-- Card 1: Bet Generator -->
-          <div class="sec-tool-card">
+        <!-- 16 Tools Grid -->
+        <div class="secondary-tools-grid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 16px;">
+
+          <div class="sec-tool-card" style="cursor: pointer;" onclick="if(typeof navigateTo==='function'){navigateTo('/predictions');}else{window.location.hash='/predictions';}">
             <div class="sec-tool-card-top">
               <div class="sec-tool-icon-wrap" style="color: #38bdf8;">
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m12 3-1.912 5.813a2 2 0 0 1-1.275 1.275L3 12l5.813 1.912a2 2 0 0 1 1.275 1.275L12 21l1.912-5.813a2 2 0 0 1 1.275-1.275L21 12l-5.813-1.912a2 2 0 0 1-1.275-1.275L12 3Z"/></svg>
+                <span>⚽</span>
               </div>
-              <span class="sec-tool-badge">Automated</span>
+              <span class="sec-tool-badge">Daily Probabilities</span>
+            </div>
+            <h3 class="sec-tool-title">Predictions Hub</h3>
+            <p class="sec-tool-desc">
+              Explore 1X2, Over/Under, BTTS, and curated algorithmic tips.
+            </p>
+            <button type="button" class="btn-sec-tool-cta" onclick="event.stopPropagation(); if(typeof navigateTo==='function'){navigateTo('/predictions');}else{window.location.hash='/predictions';}">
+              <span>OPEN</span>
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"></polyline></svg>
+            </button>
+          </div>
+          <div class="sec-tool-card" style="cursor: pointer;" onclick="if(typeof navigateTo==='function'){navigateTo('/matches');}else{window.location.hash='/matches';}">
+            <div class="sec-tool-card-top">
+              <div class="sec-tool-icon-wrap" style="color: #38bdf8;">
+                <span>📅</span>
+              </div>
+              <span class="sec-tool-badge">Fixtures Hub</span>
+            </div>
+            <h3 class="sec-tool-title">Matches & Calendar</h3>
+            <p class="sec-tool-desc">
+              Complete calendar with live scores, match discovery, and schedule filters.
+            </p>
+            <button type="button" class="btn-sec-tool-cta" onclick="event.stopPropagation(); if(typeof navigateTo==='function'){navigateTo('/matches');}else{window.location.hash='/matches';}">
+              <span>OPEN</span>
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"></polyline></svg>
+            </button>
+          </div>
+          <div class="sec-tool-card" style="cursor: pointer;" onclick="if(typeof navigateTo==='function'){navigateTo('/ai-scout');}else{window.location.hash='/ai-scout';}">
+            <div class="sec-tool-card-top">
+              <div class="sec-tool-icon-wrap" style="color: #38bdf8;">
+                <span>🤖</span>
+              </div>
+              <span class="sec-tool-badge">Conversational</span>
+            </div>
+            <h3 class="sec-tool-title">AI Scout Advisor</h3>
+            <p class="sec-tool-desc">
+              Ask tactical questions and get instant AI-guided match evaluations.
+            </p>
+            <button type="button" class="btn-sec-tool-cta" onclick="event.stopPropagation(); if(typeof navigateTo==='function'){navigateTo('/ai-scout');}else{window.location.hash='/ai-scout';}">
+              <span>OPEN</span>
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"></polyline></svg>
+            </button>
+          </div>
+          <div class="sec-tool-card" style="cursor: pointer;" onclick="if(typeof navigateTo==='function'){navigateTo('/bet-doctor');}else{window.location.hash='/bet-doctor';}">
+            <div class="sec-tool-card-top">
+              <div class="sec-tool-icon-wrap" style="color: #38bdf8;">
+                <span>🩺</span>
+              </div>
+              <span class="sec-tool-badge">Ticket Audit</span>
+            </div>
+            <h3 class="sec-tool-title">AI Bet Doctor</h3>
+            <p class="sec-tool-desc">
+              Diagnose accumulator slips, catch hidden traps, and audit ticket health.
+            </p>
+            <button type="button" class="btn-sec-tool-cta" onclick="event.stopPropagation(); if(typeof navigateTo==='function'){navigateTo('/bet-doctor');}else{window.location.hash='/bet-doctor';}">
+              <span>OPEN</span>
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"></polyline></svg>
+            </button>
+          </div>
+          <div class="sec-tool-card" style="cursor: pointer;" onclick="if(typeof navigateTo==='function'){navigateTo('/generator');}else{window.location.hash='/generator';}">
+            <div class="sec-tool-card-top">
+              <div class="sec-tool-icon-wrap" style="color: #38bdf8;">
+                <span>🎰</span>
+              </div>
+              <span class="sec-tool-badge">Ticket Builder</span>
             </div>
             <h3 class="sec-tool-title">Bet Generator</h3>
             <p class="sec-tool-desc">
-              Generate customized accumulator slips matched to your target odds, markets, and risk tolerance.
+              Generate custom accumulator slips matched to your target odds and risk.
             </p>
-            <button class="btn-sec-tool-cta" onclick="handleToolOpen('generator', event)">
-              <span>OPEN TOOL</span>
+            <button type="button" class="btn-sec-tool-cta" onclick="event.stopPropagation(); if(typeof navigateTo==='function'){navigateTo('/generator');}else{window.location.hash='/generator';}">
+              <span>OPEN</span>
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"></polyline></svg>
             </button>
           </div>
-
-          <!-- Card 2: Live Scanner -->
-          <div class="sec-tool-card">
+          <div class="sec-tool-card" style="cursor: pointer;" onclick="if(typeof navigateTo==='function'){navigateTo('/converter');}else{window.location.hash='/converter';}">
             <div class="sec-tool-card-top">
-              <div class="sec-tool-icon-wrap live-pulse" style="color: #ef4444;">
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>
+              <div class="sec-tool-icon-wrap" style="color: #38bdf8;">
+                <span>🔄</span>
               </div>
-              <span class="sec-tool-badge badge-live">Live In-Play</span>
+              <span class="sec-tool-badge">90+ Bookies</span>
+            </div>
+            <h3 class="sec-tool-title">Code Converter</h3>
+            <p class="sec-tool-desc">
+              Transfer booking codes seamlessly across global and regional sportsbooks.
+            </p>
+            <button type="button" class="btn-sec-tool-cta" onclick="event.stopPropagation(); if(typeof navigateTo==='function'){navigateTo('/converter');}else{window.location.hash='/converter';}">
+              <span>OPEN</span>
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"></polyline></svg>
+            </button>
+          </div>
+          <div class="sec-tool-card" style="cursor: pointer;" onclick="if(typeof navigateTo==='function'){navigateTo('/live-scanner');}else{window.location.hash='/live-scanner';}">
+            <div class="sec-tool-card-top">
+              <div class="sec-tool-icon-wrap" style="color: #38bdf8;">
+                <span>📡</span>
+              </div>
+              <span class="sec-tool-badge">In-Play Real-time</span>
             </div>
             <h3 class="sec-tool-title">Live Scanner</h3>
             <p class="sec-tool-desc">
-              Track in-play matches in real time with automated momentum, pressure, and goal probability alerts.
+              Track in-play momentum, sudden odds drops, and live goal pressure.
             </p>
-            <button class="btn-sec-tool-cta" onclick="handleToolOpen('live-scanner', event)">
-              <span>OPEN TOOL</span>
+            <button type="button" class="btn-sec-tool-cta" onclick="event.stopPropagation(); if(typeof navigateTo==='function'){navigateTo('/live-scanner');}else{window.location.hash='/live-scanner';}">
+              <span>OPEN</span>
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"></polyline></svg>
             </button>
           </div>
-
-          <!-- Card 3: Pre-Match Scanner -->
-          <div class="sec-tool-card">
+          <div class="sec-tool-card" style="cursor: pointer;" onclick="if(typeof navigateTo==='function'){navigateTo('/pre-match-scanner');}else{window.location.hash='/pre-match-scanner';}">
             <div class="sec-tool-card-top">
-              <div class="sec-tool-icon-wrap" style="color: #a855f7;">
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+              <div class="sec-tool-icon-wrap" style="color: #38bdf8;">
+                <span>⚡</span>
               </div>
               <span class="sec-tool-badge">Pre-Match</span>
             </div>
             <h3 class="sec-tool-title">Pre-Match Scanner</h3>
             <p class="sec-tool-desc">
-              Scan upcoming fixtures worldwide for statistical anomalies, historical edges, and early market line moves.
+              Scan upcoming fixtures for historical edges, line shifts, and anomalies.
             </p>
-            <button class="btn-sec-tool-cta" onclick="handleToolOpen('pre-match-scanner', event)">
-              <span>OPEN TOOL</span>
+            <button type="button" class="btn-sec-tool-cta" onclick="event.stopPropagation(); if(typeof navigateTo==='function'){navigateTo('/pre-match-scanner');}else{window.location.hash='/pre-match-scanner';}">
+              <span>OPEN</span>
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"></polyline></svg>
             </button>
           </div>
-
-          <!-- Card 4: Value Bet Finder -->
-          <div class="sec-tool-card">
+          <div class="sec-tool-card" style="cursor: pointer;" onclick="if(typeof navigateTo==='function'){navigateTo('/value-bets');}else{window.location.hash='/value-bets';}">
             <div class="sec-tool-card-top">
-              <div class="sec-tool-icon-wrap" style="color: #10b981;">
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+              <div class="sec-tool-icon-wrap" style="color: #38bdf8;">
+                <span>💎</span>
               </div>
-              <span class="sec-tool-badge badge-value">Expected Value</span>
+              <span class="sec-tool-badge">+EV Opportunities</span>
             </div>
             <h3 class="sec-tool-title">Value Bet Finder</h3>
             <p class="sec-tool-desc">
-              Identify mispriced bookmaker odds where statistical model probability exceeds implied market expectations.
+              Find mispriced bookmaker odds where model probabilities exceed implied lines.
             </p>
-            <button class="btn-sec-tool-cta" onclick="handleToolOpen('valuebot', event)">
-              <span>OPEN TOOL</span>
+            <button type="button" class="btn-sec-tool-cta" onclick="event.stopPropagation(); if(typeof navigateTo==='function'){navigateTo('/value-bets');}else{window.location.hash='/value-bets';}">
+              <span>OPEN</span>
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"></polyline></svg>
             </button>
           </div>
-
-          <!-- Card 5: Arbitrage Finder -->
-          <div class="sec-tool-card">
+          <div class="sec-tool-card" style="cursor: pointer;" onclick="if(typeof navigateTo==='function'){navigateTo('/arbitrage');}else{window.location.hash='/arbitrage';}">
             <div class="sec-tool-card-top">
-              <div class="sec-tool-icon-wrap" style="color: #f59e0b;">
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m16 3 4 4-4 4"/><path d="M20 7H4"/><path d="m8 21-4-4 4-4"/><path d="M4 17h16"/></svg>
+              <div class="sec-tool-icon-wrap" style="color: #38bdf8;">
+                <span>🛡️</span>
               </div>
-              <span class="sec-tool-badge">SureBet</span>
+              <span class="sec-tool-badge">Cross-Bookmaker</span>
             </div>
             <h3 class="sec-tool-title">Arbitrage Finder</h3>
             <p class="sec-tool-desc">
-              Discover mathematically risk-free surebet opportunities across competing bookmaker odds discrepancies.
+              Identify potential cross-bookmaker surebet profit opportunities.
             </p>
-            <button class="btn-sec-tool-cta" onclick="handleToolOpen('arbitrage', event)">
-              <span>OPEN TOOL</span>
+            <button type="button" class="btn-sec-tool-cta" onclick="event.stopPropagation(); if(typeof navigateTo==='function'){navigateTo('/arbitrage');}else{window.location.hash='/arbitrage';}">
+              <span>OPEN</span>
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"></polyline></svg>
             </button>
           </div>
-
-          <!-- Card 6: League Analytics -->
-          <div class="sec-tool-card">
+          <div class="sec-tool-card" style="cursor: pointer;" onclick="if(typeof navigateTo==='function'){navigateTo('/analytics');}else{window.location.hash='/analytics';}">
             <div class="sec-tool-card-top">
-              <div class="sec-tool-icon-wrap" style="color: #06b6d4;">
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
+              <div class="sec-tool-icon-wrap" style="color: #38bdf8;">
+                <span>📊</span>
               </div>
-              <span class="sec-tool-badge">Analytics</span>
+              <span class="sec-tool-badge">Data & xG</span>
             </div>
             <h3 class="sec-tool-title">League Analytics</h3>
             <p class="sec-tool-desc">
-              Deep dive into comprehensive league tables, home and away splits, goal distributions, and form trends.
+              Standings, home/away splits, goal distribution tables, and form charts.
             </p>
-            <button class="btn-sec-tool-cta" onclick="handleToolOpen('analytics', event)">
-              <span>OPEN TOOL</span>
+            <button type="button" class="btn-sec-tool-cta" onclick="event.stopPropagation(); if(typeof navigateTo==='function'){navigateTo('/analytics');}else{window.location.hash='/analytics';}">
+              <span>OPEN</span>
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"></polyline></svg>
+            </button>
+          </div>
+          <div class="sec-tool-card" style="cursor: pointer;" onclick="if(typeof navigateTo==='function'){navigateTo('/backtesting');}else{window.location.hash='/backtesting';}">
+            <div class="sec-tool-card-top">
+              <div class="sec-tool-icon-wrap" style="color: #38bdf8;">
+                <span>📈</span>
+              </div>
+              <span class="sec-tool-badge">Historical Test</span>
+            </div>
+            <h3 class="sec-tool-title">Strategy Backtester</h3>
+            <p class="sec-tool-desc">
+              Simulate staking strategies against historical datasets to evaluate yield.
+            </p>
+            <button type="button" class="btn-sec-tool-cta" onclick="event.stopPropagation(); if(typeof navigateTo==='function'){navigateTo('/backtesting');}else{window.location.hash='/backtesting';}">
+              <span>OPEN</span>
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"></polyline></svg>
+            </button>
+          </div>
+          <div class="sec-tool-card" style="cursor: pointer;" onclick="if(typeof navigateTo==='function'){navigateTo('/leagues');}else{window.location.hash='/leagues';}">
+            <div class="sec-tool-card-top">
+              <div class="sec-tool-icon-wrap" style="color: #38bdf8;">
+                <span>🏆</span>
+              </div>
+              <span class="sec-tool-badge">Global Competitions</span>
+            </div>
+            <h3 class="sec-tool-title">Leagues Directory</h3>
+            <p class="sec-tool-desc">
+              Comprehensive directory of premier and regional football leagues worldwide.
+            </p>
+            <button type="button" class="btn-sec-tool-cta" onclick="event.stopPropagation(); if(typeof navigateTo==='function'){navigateTo('/leagues');}else{window.location.hash='/leagues';}">
+              <span>OPEN</span>
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"></polyline></svg>
+            </button>
+          </div>
+          <div class="sec-tool-card" style="cursor: pointer;" onclick="if(typeof navigateTo==='function'){navigateTo('/teams');}else{window.location.hash='/teams';}">
+            <div class="sec-tool-card-top">
+              <div class="sec-tool-icon-wrap" style="color: #38bdf8;">
+                <span>👥</span>
+              </div>
+              <span class="sec-tool-badge">Club Profiles</span>
+            </div>
+            <h3 class="sec-tool-title">Clubs & Teams</h3>
+            <p class="sec-tool-desc">
+              Inspect club form trajectories, attack/defense ratings, and upcoming schedules.
+            </p>
+            <button type="button" class="btn-sec-tool-cta" onclick="event.stopPropagation(); if(typeof navigateTo==='function'){navigateTo('/teams');}else{window.location.hash='/teams';}">
+              <span>OPEN</span>
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"></polyline></svg>
+            </button>
+          </div>
+          <div class="sec-tool-card" style="cursor: pointer;" onclick="if(typeof navigateTo==='function'){navigateTo('/results');}else{window.location.hash='/results';}">
+            <div class="sec-tool-card-top">
+              <div class="sec-tool-icon-wrap" style="color: #38bdf8;">
+                <span>📋</span>
+              </div>
+              <span class="sec-tool-badge">Audited Ledger</span>
+            </div>
+            <h3 class="sec-tool-title">Verified Results</h3>
+            <p class="sec-tool-desc">
+              Transparent historical record of verified wins and losses with filterable timelines.
+            </p>
+            <button type="button" class="btn-sec-tool-cta" onclick="event.stopPropagation(); if(typeof navigateTo==='function'){navigateTo('/results');}else{window.location.hash='/results';}">
+              <span>OPEN</span>
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"></polyline></svg>
+            </button>
+          </div>
+          <div class="sec-tool-card" style="cursor: pointer;" onclick="if(typeof navigateTo==='function'){navigateTo('/watchlist');}else{window.location.hash='/watchlist';}">
+            <div class="sec-tool-card-top">
+              <div class="sec-tool-icon-wrap" style="color: #38bdf8;">
+                <span>⭐</span>
+              </div>
+              <span class="sec-tool-badge">Personal Tracker</span>
+            </div>
+            <h3 class="sec-tool-title">Saved Watchlist</h3>
+            <p class="sec-tool-desc">
+              Monitor your shortlisted fixtures and get fast access to deep intelligence.
+            </p>
+            <button type="button" class="btn-sec-tool-cta" onclick="event.stopPropagation(); if(typeof navigateTo==='function'){navigateTo('/watchlist');}else{window.location.hash='/watchlist';}">
+              <span>OPEN</span>
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"></polyline></svg>
             </button>
           </div>
@@ -1829,8 +2049,29 @@
       </div>
     </section>
 
-    <!-- --- HOMEPAGE BENEFITS SECTION (BETTING INTELLIGENCE IN ONE PLACE) --- -->
-    <section id="homepage-benefits-section" class="benefits-section container">
+    <!-- --- SECTION 10: PRICING & VIP MEMBERSHIP TEASER --- -->
+    <section id="homepage-pricing-teaser-section" class="pricing-teaser-section container" style="margin-bottom: 36px;">
+      <div class="glass-card" style="padding: 28px; border-radius: var(--radius-lg); background: linear-gradient(135deg, rgba(234, 179, 8, 0.07) 0%, rgba(15, 23, 42, 0.9) 100%); border: 1px solid rgba(234, 179, 8, 0.3); display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 20px; box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);">
+        <div style="max-width: 680px;">
+          <div style="display: inline-flex; align-items: center; gap: 6px; background: rgba(234, 179, 8, 0.15); border: 1px solid rgba(234, 179, 8, 0.35); padding: 4px 12px; border-radius: 9999px; font-size: 0.75rem; font-weight: 800; color: #facc15; text-transform: uppercase; margin-bottom: 10px;">
+            <span>👑</span> Transparent Membership
+          </div>
+          <h2 style="font-family: var(--font-display); font-size: clamp(1.3rem, 2.2vw, 1.65rem); font-weight: 900; color: #ffffff; margin: 0 0 8px 0;">
+            START FREE. UNLOCK THE EDGE WITH PRO / VIP.
+          </h2>
+          <p style="font-size: 0.88rem; color: #cbd5e1; margin: 0; line-height: 1.55;">
+            Enjoy 100% free daily predictions, basic ticket audits, and code conversion. Upgrade to Pro for high-conviction Banker picks (85%+ tier), real-time Value Bet & Arbitrage scanners, and priority Telegram alerts.
+          </p>
+        </div>
+        <div style="flex-shrink: 0;">
+          <a href="/pricing" class="btn btn-primary" onclick="if(typeof navigateTo==='function'){navigateTo('/pricing'); return false;}" style="background: linear-gradient(135deg, #eab308 0%, #ca8a04 100%); color: #0f172a; font-weight: 900; border: none; padding: 13px 26px; border-radius: var(--radius-md); text-decoration: none; display: inline-flex; align-items: center; gap: 8px; font-size: 0.9rem; box-shadow: 0 4px 16px rgba(234, 179, 8, 0.35); white-space: nowrap;">
+            <span>VIEW PLANS &amp; PRICING</span>
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg>
+          </a>
+        </div>
+      </div>
+    </section>
+<section id="homepage-benefits-section" class="benefits-section container">
       <div class="benefits-container">
         <!-- Header -->
         <div class="benefits-header">
@@ -1914,6 +2155,232 @@
       </div>
     </section>
 
+
+    <!-- --- SECTION A: HOMEPAGE SOCIAL PROOF (BUILT FOR SMARTER BETTING RESEARCH) --- -->
+    <section id="homepage-social-proof-section" class="social-proof-section container" aria-label="Smarter Betting Research Insights">
+      <div class="social-proof-container">
+        <!-- Header -->
+        <div class="social-proof-header">
+          <div class="social-proof-badge">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg>
+            User Experience
+          </div>
+          <h2 class="social-proof-headline">BUILT FOR SMARTER BETTING RESEARCH</h2>
+          <p class="social-proof-subhead">Evaluated by bettors on research efficiency, analytical clarity, and daily workflow convenience.</p>
+        </div>
+
+        <!-- 4 Core User Experience Evaluation Pillars -->
+        <div class="social-proof-grid">
+          <!-- Pillar 1: Ease of Use -->
+          <div class="experience-pillar-card">
+            <div class="pillar-top-row">
+              <div class="pillar-icon-wrap" style="color: #38bdf8; background: rgba(56, 189, 248, 0.1); border-color: rgba(56, 189, 248, 0.25);">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2L2 7l10 5 10-5-10-5z"></path><path d="M2 17l10 5 10-5"></path><path d="M2 12l10 5 10-5"></path></svg>
+              </div>
+              <span class="pillar-tag">Ease of Use</span>
+            </div>
+            <h3 class="pillar-title">All Your Betting Tools in One Seamless Flow</h3>
+            <p class="pillar-desc">Eliminate browser tab chaos. Switch fluidly between predictive match models, Bet Doctor slip audits, slip generation, and bookmaker conversion without manual copying or external tools.</p>
+            <ul class="pillar-highlights-list">
+              <li class="pillar-highlight-item"><span class="bullet">✓</span> Unified dashboard across mobile and desktop</li>
+              <li class="pillar-highlight-item"><span class="bullet">✓</span> Instant navigation between prediction and execution</li>
+              <li class="pillar-highlight-item"><span class="bullet">✓</span> Clean, distraction-free analytical interface</li>
+            </ul>
+          </div>
+
+          <!-- Pillar 2: Bet Doctor Diagnostic Value -->
+          <div class="experience-pillar-card">
+            <div class="pillar-top-row">
+              <div class="pillar-icon-wrap" style="color: #10b981; background: rgba(16, 185, 129, 0.1); border-color: rgba(16, 185, 129, 0.25);">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 12h-4l-3 9L9 3l-3 9H2"></path></svg>
+              </div>
+              <span class="pillar-tag" style="color: #10b981; background: rgba(16, 185, 129, 0.08);">Ticket Audit</span>
+            </div>
+            <h3 class="pillar-title">Objective Risk Breakdown Before Bet Placement</h3>
+            <p class="pillar-desc">Identify accumulator traps and over-leveraged legs before risking money. Bet Doctor calculates a comprehensive health score and flags hidden mathematical vulnerabilities.</p>
+            <ul class="pillar-highlights-list">
+              <li class="pillar-highlight-item"><span class="bullet">✓</span> 0–100 slip health score diagnosis</li>
+              <li class="pillar-highlight-item"><span class="bullet">✓</span> Lower, Moderate &amp; Higher leg risk classification</li>
+              <li class="pillar-highlight-item"><span class="bullet">✓</span> Intelligent leg swap recommendations</li>
+            </ul>
+          </div>
+
+          <!-- Pillar 3: Converter Convenience -->
+          <div class="experience-pillar-card">
+            <div class="pillar-top-row">
+              <div class="pillar-icon-wrap" style="color: #f59e0b; background: rgba(245, 158, 11, 0.1); border-color: rgba(245, 158, 11, 0.25);">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="16 3 21 3 21 8"></polyline><line x1="4" y1="20" x2="21" y2="3"></line><polyline points="21 16 21 21 16 21"></polyline><line x1="15" y1="15" x2="21" y2="21"></line><line x1="4" y1="4" x2="9" y2="9"></line></svg>
+              </div>
+              <span class="pillar-tag" style="color: #f59e0b; background: rgba(245, 158, 11, 0.08);">Converter</span>
+            </div>
+            <h3 class="pillar-title">Instant Booking Code Conversion Across 90+ Sportsbooks</h3>
+            <p class="pillar-desc">Never re-enter a 15-leg accumulator by hand again. Paste any booking code from SportyBet, Bet9ja, 1xBet, or Betway and instantly transform it for your chosen platform.</p>
+            <ul class="pillar-highlights-list">
+              <li class="pillar-highlight-item"><span class="bullet">✓</span> Cross-bookmaker market re-mapping</li>
+              <li class="pillar-highlight-item"><span class="bullet">✓</span> Support for 90+ African and global sportsbooks</li>
+              <li class="pillar-highlight-item"><span class="bullet">✓</span> One-tap copy for rapid slip placement</li>
+            </ul>
+          </div>
+
+          <!-- Pillar 4: Time Saved & Deep Analysis -->
+          <div class="experience-pillar-card">
+            <div class="pillar-top-row">
+              <div class="pillar-icon-wrap" style="color: #a855f7; background: rgba(168, 85, 247, 0.1); border-color: rgba(168, 85, 247, 0.25);">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
+              </div>
+              <span class="pillar-tag" style="color: #a855f7; background: rgba(168, 85, 247, 0.08);">Time Saved</span>
+            </div>
+            <h3 class="pillar-title">Hours of Match Research Condensed in Seconds</h3>
+            <p class="pillar-desc">Stop manually digging through dozens of external statistics sites. Access Poisson distribution probabilities, expected goals (xG), form guides, and positive value indicators in seconds.</p>
+            <ul class="pillar-highlights-list">
+              <li class="pillar-highlight-item"><span class="bullet">✓</span> Algorithmic probability distributions (1X2, Over/Under)</li>
+              <li class="pillar-highlight-item"><span class="bullet">✓</span> Value Bet Finder for positive EV (+EV) detection</li>
+              <li class="pillar-highlight-item"><span class="bullet">✓</span> Real-time scoreboards and form trajectory data</li>
+            </ul>
+          </div>
+        </div>
+
+        <!-- Community Feedback Callout -->
+        <div class="community-feedback-callout">
+          <div class="feedback-callout-text">
+            <div class="feedback-callout-icon">💬</div>
+            <div>
+              <h4 class="feedback-callout-title">Authentic Bettor Feedback</h4>
+              <p class="feedback-callout-desc">DeepPredictBet only publishes authentic, verified member feedback. Have you used our platform for your football research? Share your experience with the community.</p>
+            </div>
+          </div>
+          <button type="button" class="btn-feedback-cta" onclick="openSupportModal('feedback')">
+            <span>Share Your Experience</span>
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg>
+          </button>
+        </div>
+      </div>
+    </section>
+
+    <!-- --- SECTION 1: FINAL CTA --- -->
+    <section id="homepage-final-cta-section" class="final-cta-section container" aria-label="Ready to Make More Informed Betting Decisions">
+      <div class="final-cta-card">
+        <div class="final-cta-badge">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon></svg>
+          <span>TAKE ACTION TODAY</span>
+        </div>
+        <h2 class="final-cta-title">READY TO MAKE MORE INFORMED BETTING DECISIONS?</h2>
+        <p class="final-cta-sub">
+          Explore predictions, analyse your ticket and use DeepPredict's betting intelligence tools from one platform.
+        </p>
+        <div class="final-cta-actions">
+          <a href="#bet-doctor" class="btn-final-cta-primary" id="btn-final-cta-analyse" onclick="if(typeof triggerToolRoute==='function'){triggerToolRoute('doctor');}else if(typeof navigateTo==='function'){navigateTo('/bet-doctor');}else{window.location.hash='#bet-doctor';}">
+            <span>🩺</span>
+            <span>ANALYSE MY BET</span>
+          </a>
+          <a href="#predictions" class="btn-final-cta-secondary" id="btn-final-cta-explore" onclick="if(typeof navigateToPage==='function'){navigateToPage('predictions');} document.getElementById('predictions')?.scrollIntoView({behavior:'smooth'}); window.location.hash='#predictions';">
+            <span>⚽</span>
+            <span>EXPLORE PREDICTIONS</span>
+          </a>
+        </div>
+      </div>
+    </section>
+
+    <!-- --- SECTION 2: RESPONSIBLE GAMBLING --- -->
+    <section id="homepage-responsible-gambling" class="responsible-gambling-section container" aria-label="Responsible Gambling Information">
+      <div class="responsible-gambling-card">
+        <!-- Header -->
+        <div class="rg-header">
+          <div class="rg-badge-18" aria-label="18 plus only">18+</div>
+          <div class="rg-title-wrap">
+            <h2 class="rg-headline">BET RESPONSIBLY</h2>
+            <p class="rg-subhead">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path></svg>
+              <span>18+ only. Player Protection &amp; Risk Awareness</span>
+            </p>
+          </div>
+        </div>
+
+        <!-- Mandatory Warning Banner -->
+        <div class="rg-core-warning">
+          <p><strong>DeepPredictBet provides betting information, analytics and decision-support tools. Betting involves financial risk, and no prediction or analysis can guarantee an outcome.</strong></p>
+          <p><strong>Never bet more than you can afford to lose.</strong> Sports betting should be treated strictly as entertainment with predetermined budget boundaries, never as an investment or guaranteed source of income.</p>
+        </div>
+
+        <!-- 4 Principles Grid -->
+        <div class="rg-principles-grid">
+          <div class="rg-principle-card">
+            <div class="rg-principle-title">
+              <span>🛡️</span>
+              <span>Set Strict Limits</span>
+            </div>
+            <p class="rg-principle-desc">Decide on a strict leisure bankroll before betting. Never use funds earmarked for essential bills, family obligations, or rent.</p>
+          </div>
+
+          <div class="rg-principle-card">
+            <div class="rg-principle-title">
+              <span>🚫</span>
+              <span>Never Chase Losses</span>
+            </div>
+            <p class="rg-principle-desc">Variance is a natural factor in football. Increasing stakes to recoup earlier missed tickets leads to high-risk traps and deeper losses.</p>
+          </div>
+
+          <div class="rg-principle-card">
+            <div class="rg-principle-title">
+              <span>⏸️</span>
+              <span>Take Time-Outs</span>
+            </div>
+            <p class="rg-principle-desc">If betting causes emotional stress, frustration, or impacts your daily routine, pause immediately and take a prolonged cooling-off break.</p>
+          </div>
+
+          <div class="rg-principle-card">
+            <div class="rg-principle-title">
+              <span>🔞</span>
+              <span>18+ Age Verification</span>
+            </div>
+            <p class="rg-principle-desc">Access to DeepPredictBet and regulated sportsbooks is strictly restricted to individuals aged 18 years and above (or legal adult age).</p>
+          </div>
+        </div>
+
+        <!-- Legitimate Helplines & Resources -->
+        <div class="rg-resources-wrap">
+          <div class="rg-resources-title">Legitimate Responsible Gambling &amp; Confidential Support Resources</div>
+          <div class="rg-resources-grid">
+            <a href="https://www.begambleaware.org/" target="_blank" rel="noopener noreferrer" class="rg-resource-pill" title="BeGambleAware Free Confidential Advice">
+              <span>🌐 BeGambleAware.org</span>
+              <span class="rg-helpline-tag">0808 8020 133</span>
+            </a>
+            <a href="https://www.gamcare.org.uk/" target="_blank" rel="noopener noreferrer" class="rg-resource-pill" title="GamCare Support & National Gambling Helpline">
+              <span>🇬🇧 GamCare UK</span>
+              <span class="rg-helpline-tag">24/7 Helpline</span>
+            </a>
+            <a href="https://www.gamblingtherapy.org/" target="_blank" rel="noopener noreferrer" class="rg-resource-pill" title="Gambling Therapy Multilingual Support Worldwide">
+              <span>🌍 Gambling Therapy Global</span>
+              <span class="rg-helpline-tag">Multilingual</span>
+            </a>
+            <a href="https://www.ncpgambling.org/" target="_blank" rel="noopener noreferrer" class="rg-resource-pill" title="National Council on Problem Gambling">
+              <span>🇺🇸 NCPG (US &amp; Int)</span>
+              <span class="rg-helpline-tag">1-800-522-4700</span>
+            </a>
+            <div class="rg-resource-pill" style="cursor: default;" title="NLRC Africa Responsible Gaming">
+              <span>🇳🇬 NLRC Africa</span>
+              <span class="rg-helpline-tag" style="background: rgba(59, 130, 246, 0.2); color: #60a5fa;">Regulatory Info</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <!-- --- PAGE VIEW: DEDICATED PREDICTIONS HUB --- -->
+  <main id="view-predictions-hub" class="page-view container" style="display: none; padding-top: 24px;">
+    <!-- Page Header & Breadcrumbs -->
+    <div style="margin-bottom: 24px; border-bottom: 1px solid rgba(59, 130, 246, 0.25); padding-bottom: 16px;">
+      <div style="font-size: 0.75rem; color: #38bdf8; font-weight: 800; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 4px;">
+        <a href="/" onclick="navigateTo('/'); return false;" style="color: #38bdf8; text-decoration: none;">Home</a> › Predictions Hub
+      </div>
+      <h1 class="view-panel-title" style="font-family: var(--font-display); font-size: 1.9rem; font-weight: 900; background: linear-gradient(135deg, #ffffff 0%, #38bdf8 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; margin: 0;">
+        ⚽ Football Predictions Hub
+      </h1>
+      <p style="font-size: 0.85rem; color: var(--text-secondary); margin-top: 4px;">
+        Algorithmic match probabilities, daily curated banker tips, and comprehensive market filters.
+      </p>
+    </div>
 
     <!-- --- DAILY BETS & TRENDS SECTION --- -->
     <section id="daily-bets-section" class="container" style="margin-bottom: 36px;">
@@ -2028,7 +2495,7 @@
       </div>
     </section>
 
-    <!-- --- DASHBOARD SECTION --- -->
+        <!-- --- DASHBOARD SECTION --- -->
     <section id="predictions" class="dashboard-section container">
 
       <!-- Matches & Search Horizontal Filter Navigation Bar -->
@@ -2655,6 +3122,47 @@
       </div>
     </section>
 
+      </main>
+
+  <!-- Legacy Backward-Compatibility Anchor -->
+  <div id="view-predictions" style="display: none;" aria-hidden="true"></div>
+
+  <!-- --- PAGE VIEW: DEDICATED MATCHES DISCOVERY & CALENDAR --- -->
+  <main id="view-matches" class="page-view container" style="display: none; padding-top: 24px;"></main>
+
+  <!-- --- PAGE VIEW: DEDICATED MATCH INTELLIGENCE FLAGSHIP --- -->
+  <main id="view-match-detail" class="page-view container" style="display: none; padding-top: 24px;"></main>
+
+  <!-- --- PAGE VIEW: DEDICATED LEAGUES DIRECTORY & ANALYTICS --- -->
+  <main id="view-leagues" class="page-view container" style="display: none; padding-top: 24px;"></main>
+
+  <!-- --- PAGE VIEW: DEDICATED TEAMS & CLUBS DIRECTORY --- -->
+  <main id="view-teams" class="page-view container" style="display: none; padding-top: 24px;"></main>
+
+  <!-- --- PAGE VIEW: DEDICATED AI SCOUT WORKSPACE --- -->
+  <main id="view-ai-scout" class="page-view container" style="display: none; padding-top: 24px;"></main>
+
+  <!-- --- PAGE VIEW: DEDICATED RESULTS & AUDIT LEDGER --- -->
+  <main id="view-results" class="page-view container" style="display: none; padding-top: 24px;"></main>
+
+  <!-- --- PAGE VIEW: DEDICATED SAVED WATCHLIST & ALERTS --- -->
+  <main id="view-watchlist" class="page-view container" style="display: none; padding-top: 24px;"></main>
+
+  <!-- --- PAGE VIEW: DEDICATED PRICING & VIP MEMBERSHIP --- -->
+  <main id="view-pricing" class="page-view container" style="display: none; padding-top: 24px;">
+    <!-- Page Header & Breadcrumbs -->
+    <div style="margin-bottom: 24px; border-bottom: 1px solid rgba(234, 179, 8, 0.25); padding-bottom: 16px;">
+      <div style="font-size: 0.75rem; color: #eab308; font-weight: 800; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 4px;">
+        <a href="/" onclick="navigateTo('/'); return false;" style="color: #eab308; text-decoration: none;">Home</a> › Pricing &amp; VIP
+      </div>
+      <h1 class="view-panel-title" style="font-family: var(--font-display); font-size: 1.9rem; font-weight: 900; background: linear-gradient(135deg, #ffffff 0%, #eab308 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; margin: 0;">
+        👑 VIP Membership &amp; Plans
+      </h1>
+      <p style="font-size: 0.85rem; color: var(--text-secondary); margin-top: 4px;">
+        Transparent pricing for individual and professional bettors. Cancel anytime.
+      </p>
+    </div>
+
     <!-- --- HOMEPAGE PRICING & CONVERSION COMPARISON SECTION (FREE vs PRO/VIP) --- -->
     <section id="premium" class="pricing-comparison-section container" aria-label="Plans and Pricing Comparison">
       <div id="vip-packages-section" style="position: relative; top: -80px; visibility: hidden;"></div>
@@ -2802,106 +3310,24 @@
           </div>
         </div>
       </div>
-    <!-- --- SECTION A: HOMEPAGE SOCIAL PROOF (BUILT FOR SMARTER BETTING RESEARCH) --- -->
-    <section id="homepage-social-proof-section" class="social-proof-section container" aria-label="Smarter Betting Research Insights">
-      <div class="social-proof-container">
-        <!-- Header -->
-        <div class="social-proof-header">
-          <div class="social-proof-badge">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg>
-            User Experience
-          </div>
-          <h2 class="social-proof-headline">BUILT FOR SMARTER BETTING RESEARCH</h2>
-          <p class="social-proof-subhead">Evaluated by bettors on research efficiency, analytical clarity, and daily workflow convenience.</p>
-        </div>
-
-        <!-- 4 Core User Experience Evaluation Pillars -->
-        <div class="social-proof-grid">
-          <!-- Pillar 1: Ease of Use -->
-          <div class="experience-pillar-card">
-            <div class="pillar-top-row">
-              <div class="pillar-icon-wrap" style="color: #38bdf8; background: rgba(56, 189, 248, 0.1); border-color: rgba(56, 189, 248, 0.25);">
-                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2L2 7l10 5 10-5-10-5z"></path><path d="M2 17l10 5 10-5"></path><path d="M2 12l10 5 10-5"></path></svg>
-              </div>
-              <span class="pillar-tag">Ease of Use</span>
-            </div>
-            <h3 class="pillar-title">All Your Betting Tools in One Seamless Flow</h3>
-            <p class="pillar-desc">Eliminate browser tab chaos. Switch fluidly between predictive match models, Bet Doctor slip audits, slip generation, and bookmaker conversion without manual copying or external tools.</p>
-            <ul class="pillar-highlights-list">
-              <li class="pillar-highlight-item"><span class="bullet">✓</span> Unified dashboard across mobile and desktop</li>
-              <li class="pillar-highlight-item"><span class="bullet">✓</span> Instant navigation between prediction and execution</li>
-              <li class="pillar-highlight-item"><span class="bullet">✓</span> Clean, distraction-free analytical interface</li>
-            </ul>
-          </div>
-
-          <!-- Pillar 2: Bet Doctor Diagnostic Value -->
-          <div class="experience-pillar-card">
-            <div class="pillar-top-row">
-              <div class="pillar-icon-wrap" style="color: #10b981; background: rgba(16, 185, 129, 0.1); border-color: rgba(16, 185, 129, 0.25);">
-                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 12h-4l-3 9L9 3l-3 9H2"></path></svg>
-              </div>
-              <span class="pillar-tag" style="color: #10b981; background: rgba(16, 185, 129, 0.08);">Ticket Audit</span>
-            </div>
-            <h3 class="pillar-title">Objective Risk Breakdown Before Bet Placement</h3>
-            <p class="pillar-desc">Identify accumulator traps and over-leveraged legs before risking money. Bet Doctor calculates a comprehensive health score and flags hidden mathematical vulnerabilities.</p>
-            <ul class="pillar-highlights-list">
-              <li class="pillar-highlight-item"><span class="bullet">✓</span> 0–100 slip health score diagnosis</li>
-              <li class="pillar-highlight-item"><span class="bullet">✓</span> Lower, Moderate &amp; Higher leg risk classification</li>
-              <li class="pillar-highlight-item"><span class="bullet">✓</span> Intelligent leg swap recommendations</li>
-            </ul>
-          </div>
-
-          <!-- Pillar 3: Converter Convenience -->
-          <div class="experience-pillar-card">
-            <div class="pillar-top-row">
-              <div class="pillar-icon-wrap" style="color: #f59e0b; background: rgba(245, 158, 11, 0.1); border-color: rgba(245, 158, 11, 0.25);">
-                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="16 3 21 3 21 8"></polyline><line x1="4" y1="20" x2="21" y2="3"></line><polyline points="21 16 21 21 16 21"></polyline><line x1="15" y1="15" x2="21" y2="21"></line><line x1="4" y1="4" x2="9" y2="9"></line></svg>
-              </div>
-              <span class="pillar-tag" style="color: #f59e0b; background: rgba(245, 158, 11, 0.08);">Converter</span>
-            </div>
-            <h3 class="pillar-title">Instant Booking Code Conversion Across 90+ Sportsbooks</h3>
-            <p class="pillar-desc">Never re-enter a 15-leg accumulator by hand again. Paste any booking code from SportyBet, Bet9ja, 1xBet, or Betway and instantly transform it for your chosen platform.</p>
-            <ul class="pillar-highlights-list">
-              <li class="pillar-highlight-item"><span class="bullet">✓</span> Cross-bookmaker market re-mapping</li>
-              <li class="pillar-highlight-item"><span class="bullet">✓</span> Support for 90+ African and global sportsbooks</li>
-              <li class="pillar-highlight-item"><span class="bullet">✓</span> One-tap copy for rapid slip placement</li>
-            </ul>
-          </div>
-
-          <!-- Pillar 4: Time Saved & Deep Analysis -->
-          <div class="experience-pillar-card">
-            <div class="pillar-top-row">
-              <div class="pillar-icon-wrap" style="color: #a855f7; background: rgba(168, 85, 247, 0.1); border-color: rgba(168, 85, 247, 0.25);">
-                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
-              </div>
-              <span class="pillar-tag" style="color: #a855f7; background: rgba(168, 85, 247, 0.08);">Time Saved</span>
-            </div>
-            <h3 class="pillar-title">Hours of Match Research Condensed in Seconds</h3>
-            <p class="pillar-desc">Stop manually digging through dozens of external statistics sites. Access Poisson distribution probabilities, expected goals (xG), form guides, and positive value indicators in seconds.</p>
-            <ul class="pillar-highlights-list">
-              <li class="pillar-highlight-item"><span class="bullet">✓</span> Algorithmic probability distributions (1X2, Over/Under)</li>
-              <li class="pillar-highlight-item"><span class="bullet">✓</span> Value Bet Finder for positive EV (+EV) detection</li>
-              <li class="pillar-highlight-item"><span class="bullet">✓</span> Real-time scoreboards and form trajectory data</li>
-            </ul>
-          </div>
-        </div>
-
-        <!-- Community Feedback Callout -->
-        <div class="community-feedback-callout">
-          <div class="feedback-callout-text">
-            <div class="feedback-callout-icon">💬</div>
-            <div>
-              <h4 class="feedback-callout-title">Authentic Bettor Feedback</h4>
-              <p class="feedback-callout-desc">DeepPredictBet only publishes authentic, verified member feedback. Have you used our platform for your football research? Share your experience with the community.</p>
-            </div>
-          </div>
-          <button type="button" class="btn-feedback-cta" onclick="openSupportModal('feedback')">
-            <span>Share Your Experience</span>
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg>
-          </button>
-        </div>
-      </div>
+    
     </section>
+  </main>
+
+  <!-- --- PAGE VIEW: DEDICATED HELP & FAQS --- -->
+  <main id="view-help" class="page-view container" style="display: none; padding-top: 24px;">
+    <!-- Page Header & Breadcrumbs -->
+    <div style="margin-bottom: 24px; border-bottom: 1px solid rgba(148, 163, 184, 0.25); padding-bottom: 16px;">
+      <div style="font-size: 0.75rem; color: #94a3b8; font-weight: 800; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 4px;">
+        <a href="/" onclick="navigateTo('/'); return false;" style="color: #94a3b8; text-decoration: none;">Home</a> › Help &amp; FAQs
+      </div>
+      <h1 class="view-panel-title" style="font-family: var(--font-display); font-size: 1.9rem; font-weight: 900; background: linear-gradient(135deg, #ffffff 0%, #94a3b8 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; margin: 0;">
+        ❓ Help, FAQs &amp; Support
+      </h1>
+      <p style="font-size: 0.85rem; color: var(--text-secondary); margin-top: 4px;">
+        Frequently asked questions, platform guides, and customer support.
+      </p>
+    </div>
 
     <!-- --- SECTION B: FREQUENTLY ASKED QUESTIONS (ACCORDION) --- -->
     <section id="homepage-faq-section" class="faq-section container" aria-label="Frequently Asked Questions">
@@ -3011,117 +3437,9 @@
       </div>
     </section>
 
-    <!-- --- SECTION 1: FINAL CTA --- -->
-    <section id="homepage-final-cta-section" class="final-cta-section container" aria-label="Ready to Make More Informed Betting Decisions">
-      <div class="final-cta-card">
-        <div class="final-cta-badge">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon></svg>
-          <span>TAKE ACTION TODAY</span>
-        </div>
-        <h2 class="final-cta-title">READY TO MAKE MORE INFORMED BETTING DECISIONS?</h2>
-        <p class="final-cta-sub">
-          Explore predictions, analyse your ticket and use DeepPredict's betting intelligence tools from one platform.
-        </p>
-        <div class="final-cta-actions">
-          <a href="#bet-doctor" class="btn-final-cta-primary" id="btn-final-cta-analyse" onclick="if(typeof triggerToolRoute==='function'){triggerToolRoute('doctor');}else if(typeof navigateTo==='function'){navigateTo('/bet-doctor');}else{window.location.hash='#bet-doctor';}">
-            <span>🩺</span>
-            <span>ANALYSE MY BET</span>
-          </a>
-          <a href="#predictions" class="btn-final-cta-secondary" id="btn-final-cta-explore" onclick="if(typeof navigateToPage==='function'){navigateToPage('predictions');} document.getElementById('predictions')?.scrollIntoView({behavior:'smooth'}); window.location.hash='#predictions';">
-            <span>⚽</span>
-            <span>EXPLORE PREDICTIONS</span>
-          </a>
-        </div>
-      </div>
-    </section>
+      </main>
 
-    <!-- --- SECTION 2: RESPONSIBLE GAMBLING --- -->
-    <section id="homepage-responsible-gambling" class="responsible-gambling-section container" aria-label="Responsible Gambling Information">
-      <div class="responsible-gambling-card">
-        <!-- Header -->
-        <div class="rg-header">
-          <div class="rg-badge-18" aria-label="18 plus only">18+</div>
-          <div class="rg-title-wrap">
-            <h2 class="rg-headline">BET RESPONSIBLY</h2>
-            <p class="rg-subhead">
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path></svg>
-              <span>18+ only. Player Protection &amp; Risk Awareness</span>
-            </p>
-          </div>
-        </div>
-
-        <!-- Mandatory Warning Banner -->
-        <div class="rg-core-warning">
-          <p><strong>DeepPredictBet provides betting information, analytics and decision-support tools. Betting involves financial risk, and no prediction or analysis can guarantee an outcome.</strong></p>
-          <p><strong>Never bet more than you can afford to lose.</strong> Sports betting should be treated strictly as entertainment with predetermined budget boundaries, never as an investment or guaranteed source of income.</p>
-        </div>
-
-        <!-- 4 Principles Grid -->
-        <div class="rg-principles-grid">
-          <div class="rg-principle-card">
-            <div class="rg-principle-title">
-              <span>🛡️</span>
-              <span>Set Strict Limits</span>
-            </div>
-            <p class="rg-principle-desc">Decide on a strict leisure bankroll before betting. Never use funds earmarked for essential bills, family obligations, or rent.</p>
-          </div>
-
-          <div class="rg-principle-card">
-            <div class="rg-principle-title">
-              <span>🚫</span>
-              <span>Never Chase Losses</span>
-            </div>
-            <p class="rg-principle-desc">Variance is a natural factor in football. Increasing stakes to recoup earlier missed tickets leads to high-risk traps and deeper losses.</p>
-          </div>
-
-          <div class="rg-principle-card">
-            <div class="rg-principle-title">
-              <span>⏸️</span>
-              <span>Take Time-Outs</span>
-            </div>
-            <p class="rg-principle-desc">If betting causes emotional stress, frustration, or impacts your daily routine, pause immediately and take a prolonged cooling-off break.</p>
-          </div>
-
-          <div class="rg-principle-card">
-            <div class="rg-principle-title">
-              <span>🔞</span>
-              <span>18+ Age Verification</span>
-            </div>
-            <p class="rg-principle-desc">Access to DeepPredictBet and regulated sportsbooks is strictly restricted to individuals aged 18 years and above (or legal adult age).</p>
-          </div>
-        </div>
-
-        <!-- Legitimate Helplines & Resources -->
-        <div class="rg-resources-wrap">
-          <div class="rg-resources-title">Legitimate Responsible Gambling &amp; Confidential Support Resources</div>
-          <div class="rg-resources-grid">
-            <a href="https://www.begambleaware.org/" target="_blank" rel="noopener noreferrer" class="rg-resource-pill" title="BeGambleAware Free Confidential Advice">
-              <span>🌐 BeGambleAware.org</span>
-              <span class="rg-helpline-tag">0808 8020 133</span>
-            </a>
-            <a href="https://www.gamcare.org.uk/" target="_blank" rel="noopener noreferrer" class="rg-resource-pill" title="GamCare Support & National Gambling Helpline">
-              <span>🇬🇧 GamCare UK</span>
-              <span class="rg-helpline-tag">24/7 Helpline</span>
-            </a>
-            <a href="https://www.gamblingtherapy.org/" target="_blank" rel="noopener noreferrer" class="rg-resource-pill" title="Gambling Therapy Multilingual Support Worldwide">
-              <span>🌍 Gambling Therapy Global</span>
-              <span class="rg-helpline-tag">Multilingual</span>
-            </a>
-            <a href="https://www.ncpgambling.org/" target="_blank" rel="noopener noreferrer" class="rg-resource-pill" title="National Council on Problem Gambling">
-              <span>🇺🇸 NCPG (US &amp; Int)</span>
-              <span class="rg-helpline-tag">1-800-522-4700</span>
-            </a>
-            <div class="rg-resource-pill" style="cursor: default;" title="NLRC Africa Responsible Gaming">
-              <span>🇳🇬 NLRC Africa</span>
-              <span class="rg-helpline-tag" style="background: rgba(59, 130, 246, 0.2); color: #60a5fa;">Regulatory Info</span>
-            </div>
-          </div>
-        </div>
-      </div>
-    </section>
-  </main>
-
-  <!-- --- PAGE VIEW 2: DEDICATED BET CODE CONVERTER PAGE --- -->
+<!-- --- PAGE VIEW 2: DEDICATED BET CODE CONVERTER PAGE --- -->
   <main id="view-converter" class="page-view container" style="display: none; padding-top: 30px;">
     <!-- Page Breadcrumb Header -->
     <div style="margin-bottom: 24px; border-bottom: 1px solid rgba(16, 185, 129, 0.3); padding-bottom: 16px;">
@@ -4735,12 +5053,12 @@
                 🛡️ Arbitrage & SureBet Profit Finder
               </h3>
               <p style="font-size: 0.8rem; color: var(--text-secondary); margin: 0;">
-                Scan global odds across bookmakers to detect risk-free SureBet opportunities with guaranteed ROI.
+                Scan global odds across bookmakers to detect mathematical SureBet opportunities with theoretical ROI.
               </p>
             </div>
             <span
               style="background: rgba(16, 185, 129, 0.15); border: 1px solid rgba(16, 185, 129, 0.4); color: #10b981; font-size: 0.75rem; font-weight: 800; padding: 6px 14px; border-radius: 20px; text-transform: uppercase;">
-              🛡️ 100% Risk-Free Math
+              🛡️ Theoretical Mathematical Edge
             </span>
           </div>
 
@@ -4835,10 +5153,10 @@
                   </div>
                   <div style="text-align: right;">
                     <div style="background: linear-gradient(135deg, rgba(16,185,129,0.2) 0%, rgba(5,150,105,0.2) 100%); border: 1px solid #10b981; color: #34d399; font-weight: 900; font-size: 0.9rem; padding: 6px 14px; border-radius: 20px; font-family: var(--font-display); display: inline-flex; align-items: center; gap: 6px;">
-                      🛡️ +12.4% NET PROFIT
+                      🛡️ +12.4% THEORETICAL NET RETURN
                     </div>
                     <div style="font-size: 0.75rem; color: #10b981; font-weight: 700; margin-top: 4px;">
-                      Guaranteed Net Profit: <b>+$12.42</b> (Zero Risk)
+                      Theoretical Net Return: <b>+$12.42</b> (Matched Execution)
                     </div>
                   </div>
                 </div>
@@ -4890,10 +5208,10 @@
                   </div>
                   <div style="text-align: right;">
                     <div style="background: linear-gradient(135deg, rgba(16,185,129,0.2) 0%, rgba(5,150,105,0.2) 100%); border: 1px solid #10b981; color: #34d399; font-weight: 900; font-size: 0.9rem; padding: 6px 14px; border-radius: 20px; font-family: var(--font-display); display: inline-flex; align-items: center; gap: 6px;">
-                      🛡️ +11.5% NET PROFIT
+                      🛡️ +11.5% THEORETICAL NET RETURN
                     </div>
                     <div style="font-size: 0.75rem; color: #10b981; font-weight: 700; margin-top: 4px;">
-                      Guaranteed Net Profit: <b>+$11.48</b> (Zero Risk)
+                      Theoretical Net Return: <b>+$11.48</b> (Matched Execution)
                     </div>
                   </div>
                 </div>
@@ -4928,10 +5246,15 @@
                       📲 Bet $50.67 on Bet9ja
                     </a>
                   </div>
-                </div>
+              </div>
+
+              <!-- Execution Risk Notice -->
+              <div style="font-size: 0.73rem; color: var(--text-muted); background: rgba(255, 255, 255, 0.03); border: 1px solid rgba(16, 185, 129, 0.2); border-left: 3px solid #10b981; padding: 10px 14px; border-radius: var(--radius-xs); line-height: 1.5; margin-top: 8px;">
+                ℹ️ <b>Execution &amp; Market Disclosure:</b> Arbitrage margins represent mathematical pricing discrepancies across independent bookmakers at the moment of scanning. Net returns are theoretical and contingent upon timely execution across both books, account stake allowances, and avoidance of odds slippage or bookmaker market suspension.
               </div>
             </div>
           </div>
+        </div>
         </div>
 
         <!-- TOOL 4: STRATEGY BACKTESTER -->
@@ -6018,11 +6341,7 @@
         
         <!-- Header -->
         <div class="vip-paywall-header" style="padding: 32px 24px 16px;">
-          <h2 class="vip-paywall-title" style="font-size: 2.1rem;">Bet smarter. Win more.</h2>
-          <div class="vip-social-proof">
-            <span class="vip-stars">★★★★★</span>
-            <span>4.8 · 20,000 App Store Reviews</span>
-          </div>
+          <h2 class="vip-paywall-title" style="font-size: 2.1rem; margin-bottom: 0;">Bet smarter. Win more.</h2>
         </div>
 
         <!-- Winning Slips Proof Showcase Carousel -->
@@ -6145,8 +6464,7 @@
             </svg>
             Join VIP Telegram Group
           </button>
-          <span style="font-size: 0.75rem; text-align: center; color: var(--text-muted); display: block;">Over 45,000+
-            Active Members</span>
+          <span style="font-size: 0.75rem; text-align: center; color: var(--text-muted); display: block;">Official VIP Community &amp; Live Drops</span>
         </div>
       </div>
     </section>
@@ -6164,7 +6482,9 @@
 
   <!-- --- FOOTER --- -->
   <footer class="deeppredictbet-footer">
-    <!-- Footer Top Row -->
+    <!-- DESKTOP VIEW (Preserved 100% intact for >= 768px viewports) -->
+    <div class="footer-desktop-view">
+      <!-- Footer Top Row -->
     <div class="container footer-top-row" style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 16px;">
       <!-- Left side: DeepPredictBet Logo -->
       <div class="footer-logo-wrap" style="display: flex; align-items: center;">
@@ -6384,10 +6704,279 @@
     </div>
 
     <!-- Copyright & Legal Compliance Strip -->
-    <div class="container footer-copyright-container">
-      <p style="margin: 0 0 6px 0;">&copy; 2026 <strong>DeepPredictBet</strong>. All rights reserved. Mathematical football intelligence and predictive sports analytics.</p>
-      <p style="margin: 0; font-size: 0.74rem; color: #64748b; line-height: 1.5;">Disclaimer: DeepPredictBet is not a bookmaker and does not accept or place bets. All statistical models, probability estimations, and ticket risk assessments are strictly for analytical research and entertainment purposes. 18+ only. Never bet more than you can afford to lose.</p>
     </div>
+    <!-- /DESKTOP VIEW -->
+
+    <!-- MOBILE VIEW (Strictly visible on mobile < 768px, clean, compact, vertical hierarchy) -->
+    <div class="footer-mobile-view container">
+      <!-- 1. Brand Section -->
+      <div class="mf-brand-section">
+        <a href="#predictions" class="mf-logo-link" onclick="if(typeof navigateToPage==='function'){navigateToPage('predictions');}else if(typeof handleRouteNavigation==='function'){handleRouteNavigation();}else{window.location.hash='#predictions';}" title="DeepPredictBet Home">
+          <img src="/assets/logo-3d.png?v=20261028_brand_logo_v3" alt="DeepPredictBet" class="mf-logo-img">
+        </a>
+        <p class="mf-brand-tagline">AI-Powered Sports Betting Intelligence</p>
+        <p class="mf-brand-desc">Algorithmic match probabilities, deep bet ticket audits, and predictive football analytics.</p>
+      </div>
+
+      <!-- 2. Quick Access Shortcuts (>= 44px tap targets) -->
+      <nav class="mf-quick-access" aria-label="Quick Access">
+        <div class="mf-section-label">QUICK ACCESS</div>
+        <div class="mf-quick-grid">
+          <a href="/" class="mf-quick-pill" onclick="if(typeof navigateTo==='function'){navigateTo('/'); return false;}">
+            <span class="mf-quick-icon">⚡</span>
+            <span class="mf-quick-text">Command Center</span>
+          </a>
+          <a href="/predictions" class="mf-quick-pill" onclick="if(typeof navigateTo==='function'){navigateTo('/predictions'); return false;}">
+            <span class="mf-quick-icon">⚽</span>
+            <span class="mf-quick-text">Predictions</span>
+          </a>
+          <a href="/matches" class="mf-quick-pill" onclick="if(typeof navigateTo==='function'){navigateTo('/matches'); return false;}">
+            <span class="mf-quick-icon">🏟️</span>
+            <span class="mf-quick-text">Matches</span>
+          </a>
+          <a href="/ai-scout" class="mf-quick-pill" onclick="if(typeof navigateTo==='function'){navigateTo('/ai-scout'); return false;}">
+            <span class="mf-quick-icon">🤖</span>
+            <span class="mf-quick-text">AI Scout</span>
+          </a>
+          <a href="/bet-doctor" class="mf-quick-pill" onclick="if(typeof navigateTo==='function'){navigateTo('/bet-doctor'); return false;}">
+            <span class="mf-quick-icon">🩺</span>
+            <span class="mf-quick-text">Bet Doctor</span>
+          </a>
+          <a href="#predictions" class="mf-quick-pill" onclick="if(typeof selectDeepPredictBetDate==='function'){selectDeepPredictBetDate('yesterday');}else if(typeof triggerQuickFilter==='function'){triggerQuickFilter('yesterday', 'all');} document.getElementById('predictions')?.scrollIntoView({behavior:'smooth'}); window.location.hash='#predictions';">
+            <span class="mf-quick-icon">📊</span>
+            <span class="mf-quick-text">Past Results</span>
+          </a>
+        </div>
+      </nav>
+
+      <!-- 3. Collapsible Accordions (Closed by default, accessible, smooth animation) -->
+      <div class="mf-accordions-group">
+        <!-- Accordion 1: TOOLS -->
+        <div class="mf-accordion-item" id="mf-acc-tools">
+          <button type="button" class="mf-accordion-header" id="mf-btn-tools" aria-expanded="false" aria-controls="mf-panel-tools" onclick="toggleMobileFooterAccordion('mf-acc-tools')">
+            <span class="mf-accordion-title">TOOLS</span>
+            <span class="mf-accordion-icon" aria-hidden="true">+</span>
+          </button>
+          <div class="mf-accordion-panel" id="mf-panel-tools" role="region" aria-labelledby="mf-btn-tools">
+            <ul class="mf-accordion-list">
+              <li>
+                <a href="/generator" class="mf-accordion-link" onclick="if(typeof triggerToolRoute==='function'){triggerToolRoute('machine');}else if(typeof navigateTo==='function'){navigateTo('/generator');}else{window.location.hash='#generator';}">
+                  <span>Accumulator Generator</span>
+                </a>
+              </li>
+              <li>
+                <a href="/bet-code-converter" class="mf-accordion-link" onclick="if(typeof triggerToolRoute==='function'){triggerToolRoute('converter');}else if(typeof navigateTo==='function'){navigateTo('/bet-code-converter');}else{window.location.hash='#betcode-converter';}">
+                  <span>Bet Code Converter</span>
+                </a>
+              </li>
+              <li>
+                <a href="/pre-match-scanner" class="mf-accordion-link" onclick="if(typeof triggerScannerModeRoute==='function'){triggerScannerModeRoute('prematch');}else if(typeof triggerToolRoute==='function'){triggerToolRoute('scanner', 'prematch');}else if(typeof navigateTo==='function'){navigateTo('/pre-match-scanner');}else{window.location.hash='#pre-match-scanner';}">
+                  <span>Pre-Match Scanner</span>
+                </a>
+              </li>
+              <li>
+                <a href="/live-scanner" class="mf-accordion-link" onclick="if(typeof triggerScannerModeRoute==='function'){triggerScannerModeRoute('live');}else if(typeof triggerToolRoute==='function'){triggerToolRoute('scanner', 'live');}else if(typeof navigateTo==='function'){navigateTo('/live-scanner');}else{window.location.hash='#live-scanner';}">
+                  <span>Live Scanner</span>
+                </a>
+              </li>
+              <li>
+                <a href="/valuebot" class="mf-accordion-link" onclick="if(typeof triggerToolRoute==='function'){triggerToolRoute('valuebot');}else if(typeof navigateTo==='function'){navigateTo('/valuebot');}else{window.location.hash='#valuebot';}">
+                  <span>Value Bets</span>
+                </a>
+              </li>
+              <li>
+                <a href="/arbitrage" class="mf-accordion-link" onclick="if(typeof triggerToolRoute==='function'){triggerToolRoute('arbitrage');}else if(typeof navigateTo==='function'){navigateTo('/arbitrage');}else{window.location.hash='#arbitrage';}">
+                  <span>Arbitrage Finder</span>
+                </a>
+              </li>
+              <li>
+                <a href="/analytics" class="mf-accordion-link" onclick="if(typeof triggerToolRoute==='function'){triggerToolRoute('analytics');}else if(typeof navigateTo==='function'){navigateTo('/analytics');}else{window.location.hash='#analytics';}">
+                  <span>Performance &amp; Analytics</span>
+                </a>
+              </li>
+            </ul>
+          </div>
+        </div>
+
+        <!-- Accordion 2: ACCOUNT -->
+        <div class="mf-accordion-item" id="mf-acc-account">
+          <button type="button" class="mf-accordion-header" id="mf-btn-account" aria-expanded="false" aria-controls="mf-panel-account" onclick="toggleMobileFooterAccordion('mf-acc-account')">
+            <span class="mf-accordion-title">ACCOUNT</span>
+            <span class="mf-accordion-icon" aria-hidden="true">+</span>
+          </button>
+          <div class="mf-accordion-panel" id="mf-panel-account" role="region" aria-labelledby="mf-btn-account">
+            <ul class="mf-accordion-list">
+              <li>
+                <a href="#" class="mf-accordion-link" onclick="event.preventDefault(); openAuthModal('login');">
+                  <span>Sign In</span>
+                </a>
+              </li>
+              <li>
+                <a href="#" class="mf-accordion-link" onclick="event.preventDefault(); openAuthModal('signup');">
+                  <span>Create Free Account</span>
+                </a>
+              </li>
+              <li>
+                <a href="#" class="mf-accordion-link" onclick="event.preventDefault(); openVipSubscriptionModal('annual');">
+                  <span>👑 VIP Club Membership</span>
+                </a>
+              </li>
+              <li>
+                <a href="#" class="mf-accordion-link" onclick="event.preventDefault(); if(localStorage.getItem('userLoggedIn')==='true'){openProfileModal('info');}else{openAuthModal('login');}">
+                  <span>My DeepPredict Dashboard</span>
+                </a>
+              </li>
+              <li>
+                <a href="/pricing" class="mf-accordion-link" onclick="if(typeof navigateTo==='function'){navigateTo('/pricing'); return false;}">
+                  <span>Pricing &amp; Plans</span>
+                </a>
+              </li>
+            </ul>
+          </div>
+        </div>
+
+        <!-- Accordion 3: COMPANY -->
+        <div class="mf-accordion-item" id="mf-acc-company">
+          <button type="button" class="mf-accordion-header" id="mf-btn-company" aria-expanded="false" aria-controls="mf-panel-company" onclick="toggleMobileFooterAccordion('mf-acc-company')">
+            <span class="mf-accordion-title">COMPANY</span>
+            <span class="mf-accordion-icon" aria-hidden="true">+</span>
+          </button>
+          <div class="mf-accordion-panel" id="mf-panel-company" role="region" aria-labelledby="mf-btn-company">
+            <ul class="mf-accordion-list">
+              <li>
+                <a href="#homepage-benefits-section" class="mf-accordion-link" onclick="document.getElementById('homepage-benefits-section')?.scrollIntoView({behavior:'smooth'}); window.location.hash='#homepage-benefits-section';">
+                  <span>About DeepPredictBet</span>
+                </a>
+              </li>
+              <li>
+                <a href="#homepage-faq-section" class="mf-accordion-link" onclick="document.getElementById('homepage-faq-section')?.scrollIntoView({behavior:'smooth'}); window.location.hash='#homepage-faq-section';">
+                  <span>Frequently Asked Questions</span>
+                </a>
+              </li>
+              <li>
+                <a href="#" class="mf-accordion-link" onclick="event.preventDefault(); openSupportModal('ticket');">
+                  <span>Contact Support Team</span>
+                </a>
+              </li>
+              <li>
+                <a href="/help" class="mf-accordion-link" onclick="if(typeof navigateTo==='function'){navigateTo('/help'); return false;}">
+                  <span>Help Center &amp; Guides</span>
+                </a>
+              </li>
+            </ul>
+          </div>
+        </div>
+
+        <!-- Accordion 4: LEGAL & RESPONSIBLE GAMBLING -->
+        <div class="mf-accordion-item" id="mf-acc-legal">
+          <button type="button" class="mf-accordion-header" id="mf-btn-legal" aria-expanded="false" aria-controls="mf-panel-legal" onclick="toggleMobileFooterAccordion('mf-acc-legal')">
+            <span class="mf-accordion-title">LEGAL &amp; RESPONSIBLE GAMBLING</span>
+            <span class="mf-accordion-icon" aria-hidden="true">+</span>
+          </button>
+          <div class="mf-accordion-panel" id="mf-panel-legal" role="region" aria-labelledby="mf-btn-legal">
+            <ul class="mf-accordion-list">
+              <li>
+                <a href="#" class="mf-accordion-link" onclick="event.preventDefault(); openSupportModal('terms');">
+                  <span>Terms of Service</span>
+                </a>
+              </li>
+              <li>
+                <a href="#" class="mf-accordion-link" onclick="event.preventDefault(); openSupportModal('privacy');">
+                  <span>Privacy Policy</span>
+                </a>
+              </li>
+              <li>
+                <a href="#homepage-responsible-gambling" class="mf-accordion-link" onclick="document.getElementById('homepage-responsible-gambling')?.scrollIntoView({behavior:'smooth'}); window.location.hash='#homepage-responsible-gambling';">
+                  <span>Responsible Gambling Policy</span>
+                </a>
+              </li>
+              <li>
+                <a href="#" class="mf-accordion-link" onclick="event.preventDefault(); openSupportModal('terms');">
+                  <span>Analytical Disclaimer</span>
+                </a>
+              </li>
+            </ul>
+          </div>
+        </div>
+      </div>
+
+      <!-- 4. Responsible Gambling Understated Card -->
+      <div class="mf-responsible-gambling">
+        <div class="mf-rg-badge-row">
+          <span class="mf-rg-badge-18">18+</span>
+          <span class="mf-rg-sep">•</span>
+          <span class="mf-rg-title">BET RESPONSIBLY</span>
+        </div>
+        <p class="mf-rg-text">
+          Betting involves financial risk. No prediction guarantees an outcome. Play within your limits.
+        </p>
+        <div class="mf-rg-links">
+          <a href="https://www.begambleaware.org" target="_blank" rel="noopener noreferrer" class="mf-rg-partner">BeGambleAware.org</a>
+          <span class="mf-rg-sep">•</span>
+          <a href="https://www.gamstop.co.uk" target="_blank" rel="noopener noreferrer" class="mf-rg-partner">GamStop</a>
+        </div>
+      </div>
+
+      <!-- 5. Social Channels (Existing verified platforms only) -->
+      <div class="mf-social-row" aria-label="Community Channels">
+        <a href="#" onclick="event.preventDefault(); showToast('🌐 Join our Official Facebook Community!')" class="mf-social-btn" aria-label="Facebook">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+            <path d="M12 2.04c-5.5 0-10 4.49-10 10.02 0 4.97 3.64 9.1 8.44 9.85v-6.96h-2.54v-2.89h2.54V9.85c0-2.51 1.49-3.89 3.77-3.89 1.09 0 2.23.19 2.23.19v2.46h-1.26c-1.24 0-1.63.77-1.63 1.56v1.88h2.78l-.45 2.89h-2.33v6.96c4.8-.75 8.44-4.88 8.44-9.85 0-5.53-4.5-10.02-10-10.02z"/>
+          </svg>
+        </a>
+        <a href="#" onclick="event.preventDefault(); showToast('📷 Follow us on Instagram for daily AI tips!')" class="mf-social-btn" aria-label="Instagram">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <rect x="2" y="2" width="20" height="20" rx="5" ry="5"></rect>
+            <path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"></path>
+            <line x1="17.5" y1="6.5" x2="17.51" y2="6.5"></line>
+          </svg>
+        </a>
+        <a href="#" onclick="event.preventDefault(); showToast('✈️ Join our Telegram VIP Predictions Channel!')" class="mf-social-btn" aria-label="Telegram">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+            <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm4.64 6.8c-.15 1.58-.8 5.42-1.13 7.19-.14.75-.42 1-.68 1.03-.58.05-1.02-.38-1.58-.75-.88-.58-1.38-.94-2.23-1.5-1-.65-.35-1 .22-1.59.15-.15 2.71-2.48 2.76-2.69.01-.03.01-.14-.07-.2-.08-.06-.19-.04-.27-.02-.12.02-1.96 1.25-5.54 3.69-.52.36-1 .53-1.42.52-.47-.01-1.37-.26-2.03-.48-.82-.27-1.47-.42-1.42-.88.03-.24.35-.49.97-.74 3.79-1.65 6.32-2.74 7.57-3.27 3.61-1.53 4.36-1.8 4.85-1.8.11 0 .35.02.5.15.13.12.17.3.18.46z"/>
+          </svg>
+        </a>
+        <a href="#" onclick="event.preventDefault(); showToast('💬 Join our Discord Betting Community Server!')" class="mf-social-btn" aria-label="Discord">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+            <path d="M19.27 4.73a21.49 21.49 0 0 0-5.07-1.57.1.1 0 0 0-.1.05c-.22.4-.47.9-.64 1.3a19.86 19.86 0 0 0-5.93 0c-.17-.4-.42-.9-.65-1.3a.1.1 0 0 0-.1-.05 21.49 21.49 0 0 0-5.07 1.57.1.1 0 0 0-.05.04C.97 9.22-.19 13.58.03 17.9a.1.1 0 0 0 .04.07 21.6 21.6 0 0 0 6.5 3.3a.1.1 0 0 0 .11-.04c.5-.69.94-1.44 1.32-2.23a.1.1 0 0 0-.06-.15 14.15 14.15 0 0 1-2.04-1 .1.1 0 0 1-.01-.17c.14-.1.28-.21.41-.32a.1.1 0 0 1 .11-.02c4.2 1.93 8.76 1.93 12.9 0a.1.1 0 0 1 .11.02c.13.11.27.22.41.32a.1.1 0 0 1-.01.17 14.1 14.1 0 0 1-2.04 1 .1.1 0 0 0-.06.15c.38.79.82 1.54 1.32 2.23a.1.1 0 0 0 .11.04 21.6 21.6 0 0 0 6.5-3.3a.1.1 0 0 0 .04-.07c.27-4.9-.88-9.22-3.13-13.13a.1.1 0 0 0-.05-.04zM8.52 14.85c-1.24 0-2.26-1.15-2.26-2.55s1-2.55 2.26-2.55c1.27 0 2.28 1.16 2.26 2.55 0 1.4-1 2.55-2.26 2.55zm6.96 0c-1.24 0-2.26-1.15-2.26-2.55s1-2.55 2.26-2.55c1.27 0 2.28 1.16 2.26 2.55 0 1.4-1 2.55-2.26 2.55z"/>
+          </svg>
+        </a>
+      </div>
+
+      <!-- 6. Compact Store Badges -->
+      <div class="mf-stores-row">
+        <a href="#" onclick="event.preventDefault(); showToast('📱 DeepPredict Mobile App for iOS is coming soon!')" class="mf-store-btn">
+          <svg viewBox="0 0 24 24" fill="currentColor" width="18" height="18">
+            <path d="M18.71,19.5C17.88,20.74 17,21.95 15.66,21.97C14.32,22 13.89,21.18 12.37,21.18C10.84,21.18 10.37,21.95 9.1,22C7.79,22.05 6.8,20.68 5.96,19.47C4.25,17 2.94,12.45 4.7,9.39C5.57,7.87 7.13,6.91 8.82,6.88C10.1,6.86 11.32,7.75 12.11,7.75C12.89,7.75 14.37,6.68 15.92,6.84C16.57,6.87 18.39,7.1 19.56,8.82C19.47,8.88 17.39,10.1 17.41,12.63C17.44,15.65 20.06,16.66 20.1,16.67C20.08,16.74 19.67,18.11 18.71,19.5M15.97,4.17C16.63,3.37 17.07,2.28 16.95,1C16,1.04 14.9,1.6 14.24,2.38C13.68,3.04 13.19,4.14 13.34,5.39C14.39,5.47 15.4,4.88 15.97,4.17Z"/>
+          </svg>
+          <div class="mf-store-text-col">
+            <span class="mf-store-sub">Download on</span>
+            <span class="mf-store-main">App Store</span>
+          </div>
+        </a>
+        <a href="#" onclick="event.preventDefault(); showToast('📱 DeepPredict Mobile App for Android is coming soon!')" class="mf-store-btn">
+          <svg viewBox="0 0 24 24" width="18" height="18" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M3 2.3c-.2.2-.3.6-.3 1.1V20.6c0 .5.1.9.3 1.1L3.1 22l9.9-9.9L3 2.2L3 2.3z" fill="#3BCCFF"/>
+            <path d="M16.1 15.2l-3.1-3.1L3.1 22c.4.4 1.1.5 1.8.1l11.2-6.9z" fill="#00E676"/>
+            <path d="M19.7 13.2l-3.6-2L13 12.1l3.1 3.1l3.6-2c.9-.5.9-1.9 0-2.4z" fill="#FFD600"/>
+            <path d="M16.1 6.8L4.9 1.9C4.2 1.5 3.5 1.6 3.1 2l9.9 9.9l3.1-5.1z" fill="#FF3D00"/>
+          </svg>
+          <div class="mf-store-text-col">
+            <span class="mf-store-sub">GET IT ON</span>
+            <span class="mf-store-main">Google Play</span>
+          </div>
+        </a>
+      </div>
+
+      <!-- 7. Copyright & Disclaimer -->
+      <div class="mf-bottom-meta">
+        <p class="mf-copyright">&copy; 2026 <strong>DeepPredictBet</strong>. All rights reserved.</p>
+        <p class="mf-disclaimer">
+          Disclaimer: DeepPredictBet is not a bookmaker and does not accept or place bets. Statistical predictions and risk audit algorithms are for informational and research purposes only. 18+ only.
+        </p>
+      </div>
+    </div>
+    <!-- /MOBILE VIEW -->
   </footer>
 
   <!-- --- AI SCOUT CHAT ASSISTANT MODAL --- -->
@@ -6628,11 +7217,7 @@
 
         <!-- Header -->
         <div class="vip-paywall-header">
-          <h2 class="vip-paywall-title">Bet smarter. Win more.</h2>
-          <div class="vip-social-proof">
-            <span class="vip-stars">★★★★★</span>
-            <span>4.8 · 20,000 App Store Reviews</span>
-          </div>
+          <h2 class="vip-paywall-title" style="margin-bottom: 0;">Bet smarter. Win more.</h2>
         </div>
 
         <!-- Feature Unlock Callout Banner -->
@@ -6726,13 +7311,7 @@
           <span>🛡️ 100% Satisfaction</span>
         </div>
 
-        <!-- Manage VIP Features Trigger inside the VIP Paywall Modal -->
-        <div style="text-align: center; padding: 4px 16px 16px;">
-          <button type="button" onclick="closeVipSubscriptionModal(null, true); openVipFeatureManager();"
-            style="background: rgba(168, 85, 247, 0.1); border: 1px dashed rgba(168, 85, 247, 0.4); color: #c084fc; border-radius: 20px; padding: 6px 14px; font-size: 0.78rem; font-weight: 700; cursor: pointer; display: inline-flex; align-items: center; gap: 6px; transition: all 0.2s;">
-            <span>⚙️</span> Manage VIP-Protected Features
-          </button>
-        </div>
+
       </div>
 
       <!-- PANE 2: SECURE PAYMENT CHECKOUT SCREEN -->
@@ -7415,7 +7994,7 @@
               device</label>
           </div>
 
-          <button type="button" onclick="handleAuthLogin(event)"
+          <button type="button" id="login-submit-btn" onclick="handleAuthLogin(event)"
             style="width: 100%; background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%); color: #ffffff; font-weight: 900; font-size: 0.95rem; padding: 14px; border: none; border-radius: 10px; cursor: pointer; box-shadow: 0 4px 14px rgba(37, 99, 235, 0.4); margin-top: 4px; touch-action: manipulation; -webkit-tap-highlight-color: transparent;">
             Sign In to DeepPredictBet
           </button>
@@ -7871,7 +8450,7 @@
         <div style="border: 1px solid rgba(255,255,255,0.08); border-radius: 12px; overflow: hidden;">
           <div
             style="background: #1e293b; padding: 12px 16px; font-weight: 800; font-size: 0.84rem; color: #ffffff; display: flex; justify-content: space-between; align-items: center;">
-            <span>📋 Normalized Ticket Selections (100% Accuracy)</span>
+            <span>📋 Normalized Ticket Selections (Standardized Market Mapping)</span>
             <span style="color: #fbbf24; font-size: 0.9rem;" id="res-total-odds">Total Odds: @7.58</span>
           </div>
           <div id="res-selections-list"
@@ -7882,8 +8461,7 @@
 
         <!-- Architecture Badge -->
         <div style="margin-top: 18px; text-align: center; font-size: 0.72rem; color: #94a3b8; line-height: 1.4;">
-          🔒 Powered by <b>DeepPredictBet Universal Normalizer Engine</b> ($0 Licensing Fee • 50+ Bookmakers Supported •
-          200M Scaling Ready)
+          🔒 Powered by <b>DeepPredictBet Universal Normalizer Engine</b> (50+ Bookmakers Supported • Real-time Market Mapping)
         </div>
       </div>
     </div>
@@ -8137,41 +8715,42 @@
     </div>
   </div>
 
-  <!-- --- MOBILE APP BOTTOM NAVIGATION BAR (MATCHING REFERENCE SCREENSHOT) --- -->
+  <!-- --- MOBILE APP BOTTOM NAVIGATION BAR --- -->
   <nav id="mobile-app-bottom-nav" class="mobile-bottom-nav">
-    <a href="/" class="bottom-nav-item" onclick="if(typeof scrollToSection==='function') scrollToSection('predictions');">
+    <a href="/" class="bottom-nav-item active" onclick="if(typeof navigateTo==='function'){navigateTo('/'); return false;}">
+      <span class="bottom-nav-icon">⚡</span>
+      <span class="bottom-nav-label">Home</span>
+    </a>
+    <a href="/predictions" class="bottom-nav-item" onclick="if(typeof navigateTo==='function'){navigateTo('/predictions'); return false;}">
       <span class="bottom-nav-icon">⚽</span>
-      <span class="bottom-nav-label">Leagues</span>
+      <span class="bottom-nav-label">Predictions</span>
     </a>
-    <a href="javascript:void(0)" class="bottom-nav-item active" onclick="openVipSubscriptionModal()">
+    <a href="/ai-scout" class="bottom-nav-item" onclick="if(typeof navigateTo==='function'){navigateTo('/ai-scout'); return false;}">
       <div class="bottom-nav-vip-badge">
-        <span class="bottom-nav-icon">🔥</span>
+        <span class="bottom-nav-icon">🤖</span>
       </div>
-      <span class="bottom-nav-label" style="color: #15803d; font-weight: 800;">VIP Tips</span>
+      <span class="bottom-nav-label" style="color: #38bdf8; font-weight: 800;">AI Scout</span>
     </a>
-    <a href="/generator" class="bottom-nav-item" onclick="if(typeof switchTool==='function') switchTool('machine');">
-      <span class="bottom-nav-icon">👥</span>
-      <span class="bottom-nav-label">Teams</span>
+    <a href="/bet-doctor" class="bottom-nav-item" onclick="if(typeof navigateTo==='function'){navigateTo('/bet-doctor'); return false;}">
+      <span class="bottom-nav-icon">🩺</span>
+      <span class="bottom-nav-label">Bet Doctor</span>
     </a>
-    <a href="/live-scanner" class="bottom-nav-item">
-      <span class="bottom-nav-icon">📺</span>
-      <span class="bottom-nav-label">Live</span>
-    </a>
-    <a href="javascript:void(0)" class="bottom-nav-item" onclick="if(typeof openProfileModal==='function') openProfileModal('history');">
-      <span class="bottom-nav-icon">⭐</span>
-      <span class="bottom-nav-label">Favorites</span>
+    <a href="javascript:void(0)" class="bottom-nav-item" onclick="toggleMobileDrawer()">
+      <span class="bottom-nav-icon">🛠️</span>
+      <span class="bottom-nav-label">Tools</span>
     </a>
   </nav>
 
   <!-- --- LOAD SCRIPTS (Parallel Non-Blocking Architecture) --- -->
-  <script defer src="/js/data.js?v=20260921_convert_to_bookies_v9"></script>
-  <script defer src="/js/analytics.js?v=20260921_convert_to_bookies_v9"></script>
-  <script defer src="/js/vipManager.js?v=20260921_convert_to_bookies_v9"></script>
-  <script defer src="/js/ui.js?v=20260921_convert_to_bookies_v9"></script>
-  <script defer src="/js/router.js?v=20260921_convert_to_bookies_v9"></script>
-  <script defer src="/js/dashboard.js?v=20260921_convert_to_bookies_v9"></script>
-  <script defer src="/js/app.js?v=20260921_convert_to_bookies_v9"></script>
-  <script defer src="/js/liveFixtures.js?v=20260921_convert_to_bookies_v9"></script>
+  <script defer src="/js/data.js?v=20260924_multipage_v3"></script>
+  <script defer src="/js/analytics.js?v=20260924_multipage_v3"></script>
+  <script defer src="/js/vipManager.js?v=20260924_multipage_v3"></script>
+  <script defer src="/js/ui.js?v=20260925_mobile_footer_v1"></script>
+  <script defer src="/js/pages.js?v=20260924_multipage_v3"></script>
+  <script defer src="/js/router.js?v=20260924_multipage_v3"></script>
+  <script defer src="/js/dashboard.js?v=20260924_multipage_v3"></script>
+  <script defer src="/js/app.js?v=20260924_multipage_v3"></script>
+  <script defer src="/js/liveFixtures.js?v=20260924_multipage_v3"></script>
   <script>
     // Clean global helper bindings
     window.addEventListener('DOMContentLoaded', () => {

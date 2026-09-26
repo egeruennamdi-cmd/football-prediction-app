@@ -1,27 +1,93 @@
 /**
  * DeepPredictBet HTML5 History API Router
- * Clean client-side SPA routing for /generator, /bet-doctor, /bet-code-converter, /arbitrage, /live-scanner, /pre-match-scanner, etc.
- * Features:
- * - HTML5 pushState & popstate navigation
- * - Legacy hash-to-clean-path automatic upgrade/redirect
- * - In-page subsection anchor preservation (#telegram-vip-section, #league-stats-section, etc.)
- * - Dynamic view activation & tool tab syncing
- * - Navigation link active state syncing
- * - Zero 404 SPA fallback handling
+ * Multi-Page Football Intelligence Platform Architecture
+ * Clean client-side SPA routing for all dedicated workspaces:
+ * - / (Command Center)
+ * - /predictions, /predictions/today, /predictions/tomorrow, /predictions/yesterday
+ * - /matches, /matches/live
+ * - /match/:matchId (Parameterised Match Intelligence Flagship)
+ * - /leagues, /league/:leagueId
+ * - /teams, /team/:teamId
+ * - /ai-scout
+ * - /bet-doctor
+ * - /generator, /bet-generator
+ * - /converter, /bet-code-converter
+ * - /live-scanner, /pre-match-scanner
+ * - /value-bets, /valuebot
+ * - /arbitrage
+ * - /league-analytics, /analytics
+ * - /backtesting, /backtester
+ * - /top-tips
+ * - /smart-filters
+ * - /results
+ * - /watchlist
+ * - /pricing, /vip
+ * - /help, /faq
+ * - /dashboard, /my-deeppredict
+ * - /admin, /founder-analytics
  */
 
 (function () {
   // 1. Clean Route Configurations
   const ROUTE_CONFIGS = {
     '/': {
-      viewId: 'view-predictions',
-      title: 'DeepPredictBet — AI Football Predictions & Analytics',
-      navKey: 'predictions'
+      viewId: 'view-command-center',
+      title: 'DeepPredictBet — AI Football Intelligence & Command Center',
+      navKey: 'home'
+    },
+    '/home': {
+      redirect: '/'
     },
     '/predictions': {
-      viewId: 'view-predictions',
-      title: 'DeepPredictBet — Live Predictions & AI Analysis',
+      viewId: 'view-predictions-hub',
+      title: 'Football Predictions Hub — DeepPredictBet',
       navKey: 'predictions'
+    },
+    '/predictions/today': {
+      viewId: 'view-predictions-hub',
+      dateFilter: 'today',
+      title: "Today's Football Predictions — DeepPredictBet",
+      navKey: 'predictions'
+    },
+    '/predictions/tomorrow': {
+      viewId: 'view-predictions-hub',
+      dateFilter: 'tomorrow',
+      title: "Tomorrow's Football Predictions — DeepPredictBet",
+      navKey: 'predictions'
+    },
+    '/predictions/yesterday': {
+      viewId: 'view-predictions-hub',
+      dateFilter: 'yesterday',
+      title: "Yesterday's Settled Predictions — DeepPredictBet",
+      navKey: 'predictions'
+    },
+    '/matches': {
+      viewId: 'view-matches',
+      isMatchesDiscovery: true,
+      title: 'Match Discovery & Fixtures Calendar — DeepPredictBet',
+      navKey: 'matches'
+    },
+    '/matches/live': {
+      viewId: 'view-matches',
+      isMatchesDiscovery: true,
+      liveOnly: true,
+      title: 'Live Football In-Play Tracker — DeepPredictBet',
+      navKey: 'matches'
+    },
+    '/leagues': {
+      viewId: 'view-leagues',
+      title: 'Football Leagues Intelligence — DeepPredictBet',
+      navKey: 'leagues'
+    },
+    '/teams': {
+      viewId: 'view-teams',
+      title: 'Football Clubs & Teams Intelligence — DeepPredictBet',
+      navKey: 'teams'
+    },
+    '/ai-scout': {
+      viewId: 'view-ai-scout',
+      title: 'AI Scout — Conversational Football Intelligence',
+      navKey: 'ai-scout'
     },
     '/generator': {
       viewId: 'view-generator',
@@ -29,10 +95,13 @@
       title: 'Bet Generator — DeepPredict Machine',
       navKey: 'generator'
     },
+    '/bet-generator': {
+      redirect: '/generator'
+    },
     '/bet-doctor': {
       viewId: 'view-generator',
       tool: 'doctor',
-      title: 'AI Bet Doctor — DeepPredict Diagnostic Hub',
+      title: 'AI Bet Doctor — Bet Slip Diagnostic Hub',
       navKey: 'bet-doctor'
     },
     '/doctor': {
@@ -40,17 +109,11 @@
     },
     '/bet-code-converter': {
       viewId: 'view-converter',
-      title: 'Bet Code Converter — DeepPredict Multi-Bookmaker Engine',
-      navKey: 'bet-code-converter'
+      title: 'Booking Code Converter — DeepPredict Multi-Bookmaker Engine',
+      navKey: 'converter'
     },
     '/converter': {
       redirect: '/bet-code-converter'
-    },
-    '/arbitrage': {
-      viewId: 'view-generator',
-      tool: 'arbitrage',
-      title: 'Arbitrage Finder — DeepPredict SureBet Engine',
-      navKey: 'arbitrage'
     },
     '/live-scanner': {
       viewId: 'view-scanner',
@@ -67,11 +130,29 @@
     '/scanner': {
       redirect: '/live-scanner'
     },
-    '/backtester': {
+    '/value-bets': {
+      viewId: 'view-generator',
+      tool: 'valuebot',
+      title: 'Value Bet Bot — DeepPredict Value Engine',
+      navKey: 'value-bets'
+    },
+    '/valuebot': {
+      redirect: '/value-bets'
+    },
+    '/arbitrage': {
+      viewId: 'view-generator',
+      tool: 'arbitrage',
+      title: 'Arbitrage Finder — DeepPredict SureBet Engine',
+      navKey: 'arbitrage'
+    },
+    '/backtesting': {
       viewId: 'view-generator',
       tool: 'backtester',
       title: 'Strategy Backtester — DeepPredict Historical Engine',
-      navKey: 'backtester'
+      navKey: 'backtesting'
+    },
+    '/backtester': {
+      redirect: '/backtesting'
     },
     '/top-tips': {
       viewId: 'view-generator',
@@ -82,16 +163,10 @@
     '/toptips': {
       redirect: '/top-tips'
     },
-    '/valuebot': {
-      viewId: 'view-generator',
-      tool: 'valuebot',
-      title: 'Value Bet Bot — DeepPredict Value Engine',
-      navKey: 'valuebot'
-    },
     '/smart-filters': {
       viewId: 'view-generator',
       tool: 'filters',
-      title: 'Advance Filters — DeepPredict Search Engine',
+      title: 'Advanced Match Filters — DeepPredict Search Engine',
       navKey: 'smart-filters'
     },
     '/filters': {
@@ -102,12 +177,47 @@
       title: 'League Stats & Analytics — DeepPredict Data Hub',
       navKey: 'analytics'
     },
+    '/league-analytics': {
+      redirect: '/analytics'
+    },
+    '/results': {
+      viewId: 'view-results',
+      title: 'Historical Performance & Settled Results — DeepPredictBet',
+      navKey: 'results'
+    },
+    '/watchlist': {
+      viewId: 'view-watchlist',
+      title: 'Match Watchlist & Alerts — DeepPredictBet',
+      navKey: 'watchlist'
+    },
+    '/pricing': {
+      viewId: 'view-pricing',
+      title: 'VIP Membership & Pricing Plans — DeepPredictBet',
+      navKey: 'pricing'
+    },
+    '/vip': {
+      redirect: '/pricing'
+    },
+    '/help': {
+      viewId: 'view-help',
+      title: 'Help Center, Guides & FAQs — DeepPredictBet',
+      navKey: 'help'
+    },
+    '/faq': {
+      redirect: '/help'
+    },
     '/dashboard': {
       viewId: 'view-my-deeppredict',
       title: 'My DeepPredict — Personal Betting Command Center',
       navKey: 'dashboard'
     },
     '/my-deeppredict': {
+      redirect: '/dashboard'
+    },
+    '/profile': {
+      redirect: '/dashboard'
+    },
+    '/settings': {
       redirect: '/dashboard'
     },
     '/admin': {
@@ -129,29 +239,44 @@
   const HASH_REDIRECTS = {
     '#generator': '/generator',
     '#machine': '/generator',
+    '#bet-generator': '/generator',
     '#bet-doctor': '/bet-doctor',
     '#doctor': '/bet-doctor',
-    '#converter': '/bet-code-converter',
-    '#bet-code-converter': '/bet-code-converter',
+    '#converter': '/converter',
+    '#bet-code-converter': '/converter',
     '#arbitrage': '/arbitrage',
     '#live-scanner': '/live-scanner',
     '#scanner-live': '/live-scanner',
     '#pre-match-scanner': '/pre-match-scanner',
     '#scanner-prematch': '/pre-match-scanner',
     '#scanner': '/live-scanner',
-    '#backtester': '/backtester',
+    '#backtester': '/backtesting',
+    '#backtesting': '/backtesting',
     '#toptips': '/top-tips',
     '#top-tips': '/top-tips',
-    '#valuebot': '/valuebot',
+    '#valuebot': '/value-bets',
+    '#value-bets': '/value-bets',
     '#filters': '/smart-filters',
     '#smart-filters': '/smart-filters',
     '#analytics': '/analytics',
+    '#league-analytics': '/analytics',
+    '#results': '/results',
+    '#watchlist': '/watchlist',
+    '#matches': '/matches',
+    '#matches-live': '/matches/live',
+    '#leagues': '/leagues',
+    '#teams': '/teams',
+    '#ai-scout': '/ai-scout',
+    '#pricing': '/pricing',
+    '#vip': '/pricing',
+    '#help': '/help',
+    '#faq': '/help',
     '#dashboard': '/dashboard',
     '#my-deeppredict': '/dashboard',
     '#admin': '/admin',
     '#admin/analytics': '/admin/analytics',
     '#founder-analytics': '/admin',
-    '#predictions': '/',
+    '#predictions': '/predictions',
     '#home': '/'
   };
 
@@ -165,17 +290,72 @@
     return p.toLowerCase();
   }
 
-  // 4. Resolve Route Configuration
+  // 4. Resolve Route Configuration (Static + Parameterized)
   function resolveRoute(path) {
     const norm = normalizePath(path);
+
+    // Static match
     const config = ROUTE_CONFIGS[norm];
     if (config && config.redirect) {
-      return { path: config.redirect, config: ROUTE_CONFIGS[config.redirect] };
+      return resolveRoute(config.redirect);
     }
     if (config) {
       return { path: norm, config };
     }
-    // Fallback to home
+
+    // Dynamic Parameterized Routes
+    // A. Match Detail (/match/:matchId)
+    const matchDetailRegex = /^\/match\/([a-zA-Z0-9_\-]+)$/i;
+    const matchDetailExec = norm.match(matchDetailRegex);
+    if (matchDetailExec) {
+      const matchId = matchDetailExec[1];
+      return {
+        path: norm,
+        config: {
+          viewId: 'view-match-detail',
+          isMatchDetail: true,
+          matchId: matchId,
+          title: `Match Intelligence #${matchId} — DeepPredictBet`,
+          navKey: 'matches'
+        }
+      };
+    }
+
+    // B. League Detail (/league/:leagueId)
+    const leagueDetailRegex = /^\/league\/([a-zA-Z0-9_\-]+)$/i;
+    const leagueDetailExec = norm.match(leagueDetailRegex);
+    if (leagueDetailExec) {
+      const leagueId = leagueDetailExec[1];
+      return {
+        path: norm,
+        config: {
+          viewId: 'view-leagues',
+          isLeagueDetail: true,
+          leagueId: leagueId,
+          title: `League Intelligence (${leagueId}) — DeepPredictBet`,
+          navKey: 'leagues'
+        }
+      };
+    }
+
+    // C. Team Detail (/team/:teamId)
+    const teamDetailRegex = /^\/team\/([a-zA-Z0-9_\-]+)$/i;
+    const teamDetailExec = norm.match(teamDetailRegex);
+    if (teamDetailExec) {
+      const teamId = teamDetailExec[1];
+      return {
+        path: norm,
+        config: {
+          viewId: 'view-teams',
+          isTeamDetail: true,
+          teamId: teamId,
+          title: `Team Intelligence (${teamId}) — DeepPredictBet`,
+          navKey: 'teams'
+        }
+      };
+    }
+
+    // Fallback to command center home
     return { path: '/', config: ROUTE_CONFIGS['/'] };
   }
 
@@ -197,7 +377,7 @@
       window.history.replaceState(null, '', path + (window.location.hash || ''));
     }
 
-    const targetViewId = config.viewId || 'view-predictions';
+    const targetViewId = config.viewId || 'view-command-center';
 
     // Hide all page-view containers
     const pageViews = document.querySelectorAll('.page-view');
@@ -211,6 +391,13 @@
     if (activeView) {
       activeView.style.display = 'block';
       activeView.classList.add('active');
+    } else {
+      // Graceful fallback to command center if view container doesn't exist
+      const fallbackView = document.getElementById('view-command-center') || document.getElementById('view-predictions');
+      if (fallbackView) {
+        fallbackView.style.display = 'block';
+        fallbackView.classList.add('active');
+      }
     }
 
     // Update document title if specified
@@ -221,7 +408,7 @@
     // Update Universal Date Bar on dedicated dashboard views for clean command center focus
     const dateBar = document.getElementById('universal-date-bar-wrapper');
     if (dateBar) {
-      if (targetViewId === 'view-my-deeppredict' || targetViewId === 'view-founder-analytics') {
+      if (['view-my-deeppredict', 'view-founder-analytics', 'view-match-detail', 'view-ai-scout'].includes(targetViewId)) {
         dateBar.style.display = 'none';
       } else {
         dateBar.style.display = 'flex';
@@ -238,36 +425,42 @@
         breadcrumbEl.style.display = 'flex';
         let rawTitle = config.title || path;
         let cleanName = rawTitle.split('—')[0].replace(/DeepPredict/gi, '').replace(/Bet/gi, '').trim();
-        breadcrumbLabel.textContent = cleanName || 'Tool View';
+        breadcrumbLabel.textContent = cleanName || 'Platform View';
       }
     }
 
     // Update navigation active states across navbar, mobile drawer, and bottom nav
     updateNavActiveStates(path, config.navKey);
 
-    // Smooth scroll down to predictions if navigating to /predictions
-    if (path === '/predictions') {
-      setTimeout(() => {
-        const predSec = document.getElementById('today-insights-section') || document.getElementById('predictions');
-        if (predSec) {
-          predSec.scrollIntoView({ behavior: 'smooth' });
-        }
-      }, 100);
+    // Call dynamic page renderers if applicable
+    if (config.isMatchDetail && typeof window.renderMatchDetailPage === 'function') {
+      window.renderMatchDetailPage(config.matchId);
+    } else if (config.isMatchesDiscovery && typeof window.renderMatchesDiscoveryPage === 'function') {
+      window.renderMatchesDiscoveryPage({ liveOnly: config.liveOnly });
+    } else if (targetViewId === 'view-leagues' && typeof window.renderLeaguesPage === 'function') {
+      window.renderLeaguesPage();
+    } else if (targetViewId === 'view-teams' && typeof window.renderTeamsPage === 'function') {
+      window.renderTeamsPage();
+    } else if (targetViewId === 'view-ai-scout' && typeof window.renderAiScoutPage === 'function') {
+      window.renderAiScoutPage();
+    } else if (targetViewId === 'view-results' && typeof window.renderResultsPage === 'function') {
+      window.renderResultsPage();
+    } else if (targetViewId === 'view-watchlist' && typeof window.renderWatchlistPage === 'function') {
+      window.renderWatchlistPage();
     }
 
-    // Check VIP feature protection
-    if (config.tool && ['arbitrage', 'valuebot', 'backtester', 'doctor'].includes(config.tool)) {
-      if (typeof checkFeatureVipAccess === 'function') {
-        // VIP check prompts modal without breaking view
-        checkFeatureVipAccess(config.tool);
-      }
+    // Date Tab filtering for /predictions/today, /predictions/tomorrow, /predictions/yesterday
+    if (config.dateFilter && typeof window.triggerQuickFilter === 'function') {
+      window.triggerQuickFilter(config.dateFilter, 'all');
     }
+
+    // Tool navigation: direct access to analytics suite without blocking modal popup
 
     // Product Telemetry Event Mapping
     if (typeof window.trackEvent === 'function') {
       if (path === '/live-scanner') {
         window.trackEvent('SCANNER_USED', { tool: 'live_scanner', scanner_type: 'live' });
-      } else if (['/arbitrage', '/valuebot', '/smart-filters'].includes(path)) {
+      } else if (['/arbitrage', '/value-bets', '/smart-filters'].includes(path)) {
         window.trackEvent('SCANNER_USED', { tool: 'scanner', scanner_type: config.navKey || path.slice(1) });
       }
     }
@@ -358,7 +551,7 @@
       const normHref = normalizePath(href.split('#')[0]);
       const isMatch = (href === currentPath) || 
                       (normHref === currentPath && currentPath !== '/') ||
-                      (currentPath === '/' && (href === '/' || href === '#predictions' || href === '/predictions')) ||
+                      (currentPath === '/' && (href === '/' || href === '#home')) ||
                       (navKey && (href.includes(navKey) || (href.startsWith('#') && HASH_REDIRECTS[href.toLowerCase()] === currentPath)));
 
       if (isMatch) {
@@ -413,7 +606,6 @@
 
     // Check if it's a same-page section anchor
     if (href.startsWith('#')) {
-      // If we are currently on a sub-route (not home), navigate to home first, then scroll
       if (window.location.pathname !== '/' && window.location.pathname !== '/predictions') {
         e.preventDefault();
         navigateTo('/' + href);
@@ -429,7 +621,7 @@
     }
   });
 
-  // 9. Popstate and Hashchange listeners for Browser Back & Forward buttons and Hash links
+  // 9. Popstate and Hashchange listeners
   window.addEventListener('popstate', function () {
     handleRouteNavigation();
   });
@@ -449,20 +641,29 @@
   window.updateNavActiveStates = updateNavActiveStates;
   window.navigateToPage = function (routeId) {
     const map = {
-      'predictions': '/',
+      'predictions': '/predictions',
       'generator': '/generator',
       'machine': '/generator',
       'doctor': '/bet-doctor',
       'arbitrage': '/arbitrage',
-      'converter': '/bet-code-converter',
+      'converter': '/converter',
       'scanner': '/live-scanner',
       'scanner-live': '/live-scanner',
       'scanner-prematch': '/pre-match-scanner',
-      'backtester': '/backtester',
+      'backtester': '/backtesting',
+      'backtesting': '/backtesting',
       'toptips': '/top-tips',
-      'valuebot': '/valuebot',
+      'valuebot': '/value-bets',
       'filters': '/smart-filters',
       'analytics': '/analytics',
+      'results': '/results',
+      'watchlist': '/watchlist',
+      'matches': '/matches',
+      'leagues': '/leagues',
+      'teams': '/teams',
+      'ai-scout': '/ai-scout',
+      'pricing': '/pricing',
+      'help': '/help',
       'dashboard': '/dashboard',
       'my-deeppredict': '/dashboard',
       'admin': '/admin',
