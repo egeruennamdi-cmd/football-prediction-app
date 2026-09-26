@@ -75,7 +75,21 @@
     'Europa League':                   3,
     'Conference League':               848,
     'Copa Libertadores':               13,
-    'Copa Sudamericana':               11
+    'Copa Sudamericana':               11,
+    'UEFA Nations League':             5,
+    'Nations League':                  5,
+    'Europe UEFA Nations League':      5,
+    'FIFA World Cup':                  1,
+    'World Cup':                       1,
+    'UEFA European Championship':      4,
+    'Euro Championship':               4,
+    'Euros':                           4,
+    'Africa Cup of Nations':           6,
+    'AFCON':                           6,
+    'Copa América':                    9,
+    'Copa America':                    9,
+    'International Friendlies':        10,
+    'Friendlies':                      10
   };
 
   function getApiLeagueId(leagueName, countryName) {
@@ -99,6 +113,13 @@
 
     // 2. Continental / International competitions
     const international = [
+      { name: 'uefa nations league', id: 5 },
+      { name: 'nations league', id: 5 },
+      { name: 'world cup', id: 1 },
+      { name: 'euro', id: 4 },
+      { name: 'afcon', id: 6 },
+      { name: 'copa am', id: 9 },
+      { name: 'friendl', id: 10 },
       { name: 'champions league', id: 2 },
       { name: 'europa league', id: 3 },
       { name: 'conference league', id: 848 },
@@ -425,6 +446,24 @@
 
   function generateLeagueMatchesFromClubs(clubs, leagueName, countryName) {
     if (!clubs || clubs.length < 2) return [];
+
+    const isNational = (typeof isNationalTeamCompetition === 'function' && isNationalTeamCompetition(leagueName))
+      || (typeof window !== 'undefined' && typeof window.isNationalTeamCompetition === 'function' && window.isNationalTeamCompetition(leagueName))
+      || (clubs && clubs.some(c => c.participantType === 'national_team' || c.isNational));
+
+    if (isNational) {
+      if (typeof validateCompetitionParticipants === 'function') {
+        clubs = validateCompetitionParticipants(clubs, leagueName);
+      } else if (typeof window !== 'undefined' && typeof window.validateCompetitionParticipants === 'function') {
+        clubs = window.validateCompetitionParticipants(clubs, leagueName);
+      }
+      if (!clubs || clubs.length < 2) {
+        clubs = (typeof getNationalTeamsForCompetition === 'function')
+          ? getNationalTeamsForCompetition(leagueName)
+          : ((typeof window !== 'undefined' && typeof window.getNationalTeamsForCompetition === 'function') ? window.getNationalTeamsForCompetition(leagueName) : []);
+      }
+    }
+
     const todayPairs = [
       [clubs[0], clubs[1], "Today, 15:30", "today", false, null, null],
       [clubs[2] || clubs[0], clubs[3] || clubs[1], "Today, 17:45", "today", false, null, null],
@@ -492,11 +531,20 @@
         }
       }
 
+      const isNationalLeague = isNational;
+      const lEmoji = isNationalLeague
+        ? (leagueName.toLowerCase().includes('nations league') ? '🇪🇺' : (home.flag || '🏆'))
+        : (home.flag || '🏆');
+
       return {
         id: `fix-${leagueName.toLowerCase().replace(/[^a-z0-9]/g, '-')}-${idx}-${hash}`,
-        country: countryName || home.country || 'International',
+        country: countryName || home.country || (isNationalLeague ? 'International' : 'Domestic'),
         league: leagueName,
-        leagueEmoji: home.flag || '🏆',
+        leagueEmoji: lEmoji,
+        isNational: isNationalLeague,
+        participantType: isNationalLeague ? 'national_team' : 'club',
+        homeFlag: home.flag || home.logo || '⚽',
+        awayFlag: away.flag || away.logo || '⚽',
         rawDate,
         date: pair[3],
         time: pair[2],
@@ -507,12 +555,16 @@
         statusShort: isFinished ? "FT" : "NS",
         homeTeam: {
           name: home.name,
-          logo: home.logo || '⚽',
+          logo: home.logo || home.flag || '⚽',
+          flag: home.flag || '⚽',
+          isNational: isNationalLeague,
           form: isFinished ? ['W','D','W','L','W'] : ['W','W','D','W','L']
         },
         awayTeam: {
           name: away.name,
-          logo: away.logo || '⚽',
+          logo: away.logo || away.flag || '⚽',
+          flag: away.flag || '⚽',
+          isNational: isNationalLeague,
           form: isFinished ? ['L','W','D','W','L'] : ['D','W','L','W','W']
         },
         scores: { home: hScore, away: aScore },
@@ -522,11 +574,15 @@
         settledPick,
         insight: isFinished 
           ? `🏁 Final Result: ${home.name} ${hScore} – ${aScore} ${away.name} (${pair[2]})`
-          : `${home.name} displays a strong ${homeProb}% win expectation with high offensive conversion.`,
+          : isNationalLeague
+            ? `${home.name} displays a strong ${homeProb}% win expectation in ${leagueName}. Projected high international tactical intensity.`
+            : `${home.name} displays a strong ${homeProb}% win expectation with high offensive conversion.`,
         isPremium: idx === 1,
         aiAnalysis: isFinished
           ? `Post-match recap: ${hScore > aScore ? home.name : aScore > hScore ? away.name : 'Both teams'} demonstrated disciplined structure. Final score verified: ${hScore}-${aScore}.`
-          : `Tactical breakdown for ${leagueName}: ${home.name} enters in peak tactical form. Simulation projects high goal volume and edge on ${homeProb > awayProb ? home.name : away.name}.`,
+          : isNationalLeague
+            ? `International Match Intelligence for ${leagueName}: ${home.name} vs ${away.name}. Tactical simulation projects disciplined international structure and offensive edge on ${homeProb > awayProb ? home.name : away.name}.`
+            : `Tactical breakdown for ${leagueName}: ${home.name} enters in peak tactical form. Simulation projects high goal volume and edge on ${homeProb > awayProb ? home.name : away.name}.`,
         topTips: ['uo15', 'uo25', 'c75', 'c85', 'btts']
       };
     });
@@ -551,7 +607,16 @@
 
     // Set dynamic, country-accurate header title
     let displayTitle = leagueName;
-    if (countryName && countryName !== 'England' && countryName !== 'World' && !leagueName.toLowerCase().includes(countryName.toLowerCase())) {
+    const isNationalComp = (typeof isNationalTeamCompetition === 'function' && isNationalTeamCompetition(leagueName))
+      || (typeof window !== 'undefined' && typeof window.isNationalTeamCompetition === 'function' && window.isNationalTeamCompetition(leagueName));
+
+    if (isNationalComp) {
+      if (leagueName.toLowerCase().includes('nations league')) {
+        displayTitle = `🇪🇺 UEFA Nations League (2026/27)`;
+      } else {
+        displayTitle = `🏆 ${leagueName}`;
+      }
+    } else if (countryName && countryName !== 'England' && countryName !== 'World' && countryName !== 'Europe' && !leagueName.toLowerCase().includes(countryName.toLowerCase())) {
       let countryEmoji = '⚽';
       if (typeof COUNTRY_LEAGUES_DATA !== 'undefined' && Array.isArray(COUNTRY_LEAGUES_DATA)) {
         const cEntry = COUNTRY_LEAGUES_DATA.find(c => c.country.toLowerCase() === countryName.toLowerCase());
@@ -586,9 +651,22 @@
     }
 
     if (matches.length === 0) {
-      const clubs = (typeof getClubsForLeague === 'function') 
+      let clubs = (typeof getClubsForLeague === 'function') 
         ? getClubsForLeague(leagueName, countryName) 
         : ((typeof window.getClubsForLeague === 'function') ? window.getClubsForLeague(leagueName, countryName) : []);
+
+      if (isNationalComp) {
+        if (typeof validateCompetitionParticipants === 'function') {
+          clubs = validateCompetitionParticipants(clubs, leagueName);
+        } else if (typeof window !== 'undefined' && typeof window.validateCompetitionParticipants === 'function') {
+          clubs = window.validateCompetitionParticipants(clubs, leagueName);
+        }
+        if (!clubs || clubs.length < 2) {
+          clubs = (typeof getNationalTeamsForCompetition === 'function')
+            ? getNationalTeamsForCompetition(leagueName)
+            : ((typeof window !== 'undefined' && typeof window.getNationalTeamsForCompetition === 'function') ? window.getNationalTeamsForCompetition(leagueName) : []);
+        }
+      }
 
       if (clubs && clubs.length >= 2) {
         matches = generateLeagueMatchesFromClubs(clubs, leagueName, countryName);
@@ -717,9 +795,25 @@
     // Immediately seed authentic local fixtures into currentLeagueMatches and MATCH_DATA
     // This prevents any concurrent/synchronous updateFixturesDisplay call from falling back to English MATCH_DATA
     const resolvedCountry = countryName || (window.appState && window.appState.calCountry && window.appState.calCountry !== 'all' ? window.appState.calCountry : '');
-    const localClubs = (typeof getClubsForLeague === 'function')
+    let localClubs = (typeof getClubsForLeague === 'function')
       ? getClubsForLeague(leagueName, resolvedCountry)
       : ((typeof window.getClubsForLeague === 'function') ? window.getClubsForLeague(leagueName, resolvedCountry) : []);
+
+    const isNational = (typeof isNationalTeamCompetition === 'function' && isNationalTeamCompetition(leagueName))
+      || (typeof window !== 'undefined' && typeof window.isNationalTeamCompetition === 'function' && window.isNationalTeamCompetition(leagueName));
+
+    if (isNational) {
+      if (typeof validateCompetitionParticipants === 'function') {
+        localClubs = validateCompetitionParticipants(localClubs, leagueName);
+      } else if (typeof window !== 'undefined' && typeof window.validateCompetitionParticipants === 'function') {
+        localClubs = window.validateCompetitionParticipants(localClubs, leagueName);
+      }
+      if (!localClubs || localClubs.length < 2) {
+        localClubs = (typeof getNationalTeamsForCompetition === 'function')
+          ? getNationalTeamsForCompetition(leagueName)
+          : ((typeof window !== 'undefined' && typeof window.getNationalTeamsForCompetition === 'function') ? window.getNationalTeamsForCompetition(leagueName) : []);
+      }
+    }
 
     if (localClubs && localClubs.length >= 2) {
       const initialMatches = generateLeagueMatchesFromClubs(localClubs, leagueName, resolvedCountry);
@@ -846,6 +940,7 @@
   window.applyLeagueSubfilter = applyLeagueSubfilter;
   window.prefetchGlobalFixturesAndLive = prefetchGlobalFixturesAndLive;
   window.normalizeApiFootballFixture = normalizeFixture;
+  window.generateLeagueMatchesFromClubs = generateLeagueMatchesFromClubs;
 
   Object.defineProperty(window, 'selectSidebarLeague', {
     get: () => selectSidebarLeague,

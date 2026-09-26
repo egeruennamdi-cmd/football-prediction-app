@@ -5084,6 +5084,22 @@ function getClubsForLeague(leagueName, countryName) {
   const clean = (leagueName || '').replace(/^[^\w\s]+/, '').trim().toLowerCase();
   let cleanCountry = (countryName || '').trim().toLowerCase();
 
+  // 0. National Team Competition Guard: Always return authentic national teams, NEVER club teams
+  const isNationalComp = (typeof isNationalTeamCompetition === 'function')
+    ? isNationalTeamCompetition(leagueName)
+    : ((typeof window !== 'undefined' && typeof window.isNationalTeamCompetition === 'function')
+      ? window.isNationalTeamCompetition(leagueName)
+      : (clean.includes('nations league') || clean.includes('world cup') || clean.includes('afcon') || clean.includes('copa am') || (clean.includes('euro') && !clean.includes('europa') && !clean.includes('europe'))));
+
+  if (isNationalComp) {
+    const natFn = (typeof getNationalTeamsForCompetition === 'function')
+      ? getNationalTeamsForCompetition
+      : ((typeof window !== 'undefined' && typeof window.getNationalTeamsForCompetition === 'function') ? window.getNationalTeamsForCompetition : null);
+    if (natFn) {
+      return natFn(leagueName);
+    }
+  }
+
   // If countryName was not provided, look at appState or lookup from league
   if (!cleanCountry || cleanCountry === 'all') {
     if (window.appState && window.appState.calCountry && window.appState.calCountry !== 'all') {
@@ -5184,7 +5200,7 @@ function getClubsForLeague(leagueName, countryName) {
       if (res.length > 0) return res;
     }
   }
-  if (clean.includes('champions league') || clean.includes('europa league') || clean.includes('conference') || clean.includes('europe')) {
+  if (!isNationalComp && (clean.includes('champions league') || clean.includes('europa league') || clean.includes('conference'))) {
     const res = allClubs.filter(c => ['Arsenal', 'Manchester City', 'Liverpool', 'Real Madrid', 'Barcelona', 'Bayern Munich', 'Borussia Dortmund', 'Inter Milan', 'Juventus', 'Paris Saint-Germain', 'Sporting CP', 'Benfica', 'PSV Eindhoven'].includes(c.name));
     if (res.length > 0) return res;
   }
@@ -5218,7 +5234,7 @@ function getClubsForLeague(leagueName, countryName) {
 }
 window.getClubsForLeague = getClubsForLeague;
 
-// Scouting clubs for this competition with full interactive roster & stats
+// Scouting clubs/teams for this competition with full interactive roster & stats
 function scoutLeagueClubs(leagueName, btn, countryName) {
   const cleanLeague = (leagueName || '').replace(/^[^\w\s]+/, '').trim() || leagueName;
   if (btn) {
@@ -5230,6 +5246,15 @@ function scoutLeagueClubs(leagueName, btn, countryName) {
   const existing = document.getElementById("scout-clubs-modal");
   if (existing) existing.remove();
 
+  const isNationalComp = (typeof isNationalTeamCompetition === 'function')
+    ? isNationalTeamCompetition(cleanLeague)
+    : ((typeof window !== 'undefined' && typeof window.isNationalTeamCompetition === 'function')
+      ? window.isNationalTeamCompetition(cleanLeague)
+      : (cleanLeague.toLowerCase().includes('nations league') || cleanLeague.toLowerCase().includes('world cup')));
+
+  const isNationsLeague = cleanLeague.toLowerCase().includes('nations league');
+  let activeTier = 'League A';
+
   const modal = document.createElement("div");
   modal.id = "scout-clubs-modal";
   modal.style.cssText = "position:fixed;left:0;top:0;width:100vw;height:100vh;background:rgba(0,0,0,0.88);backdrop-filter:blur(8px);display:flex;align-items:center;justify-content:center;z-index:999999;padding:16px;box-sizing:border-box;";
@@ -5240,65 +5265,103 @@ function scoutLeagueClubs(leagueName, btn, countryName) {
   content.style.cssText = "width:100%;max-width:680px;max-height:88vh;background:linear-gradient(180deg,#0f172a 0%,#020617 100%);border:1px solid rgba(16,185,129,0.35);border-radius:18px;box-shadow:0 20px 50px rgba(0,0,0,0.8),0 0 30px rgba(16,185,129,0.15);display:flex;flex-direction:column;overflow:hidden;color:#f8fafc;font-family:var(--font-body,sans-serif);";
 
   let resolvedCountry = countryName || (window.appState && window.appState.calCountry && window.appState.calCountry !== 'all' ? window.appState.calCountry : '');
-  const clubs = getClubsForLeague(cleanLeague, resolvedCountry);
+  let currentList = getClubsForLeague(cleanLeague, resolvedCountry);
 
-  const clubRows = clubs.map((c, idx) => {
-    const winRate = c.matchesPlayed > 0 ? Math.round((c.wins / c.matchesPlayed) * 100) : (c.points > 0 ? 75 : 50);
-    const attackVal = (1.4 + ((c.wins || 0) * 0.4)).toFixed(1);
+  const renderRoster = (teamsList) => {
+    return teamsList.map((c, idx) => {
+      const winRate = c.matchesPlayed > 0 ? Math.round((c.wins / c.matchesPlayed) * 100) : (c.points > 0 ? 75 : 50);
+      const attackVal = (1.4 + ((c.wins || 0) * 0.4)).toFixed(1);
+      const rankBadge = c.uefaRank ? `<span style="font-size:0.7rem;color:#38bdf8;background:rgba(56,189,248,0.1);padding:2px 6px;border-radius:4px;border:1px solid rgba(56,189,248,0.25);">UEFA #${c.uefaRank}</span>` : '';
+      const tierBadge = c.leagueTier ? `<span style="font-size:0.7rem;color:#a855f7;background:rgba(168,85,247,0.1);padding:2px 6px;border-radius:4px;border:1px solid rgba(168,85,247,0.25);">${c.leagueTier}</span>` : '';
 
-    return `
-      <div style="padding:14px 16px;background:rgba(15,23,42,0.6);border:1px solid rgba(255,255,255,0.06);border-radius:12px;margin-bottom:8px;display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;transition:border-color 0.15s ease;">
-        <div style="display:flex;align-items:center;gap:12px;min-width:180px;">
-          <span style="font-size:1.6rem;background:rgba(255,255,255,0.05);padding:4px 8px;border-radius:10px;">${c.logo || '⚽'}</span>
-          <div>
-            <div style="font-weight:800;font-size:0.95rem;color:#ffffff;">${c.name}</div>
-            <div style="font-size:0.75rem;color:#94a3b8;display:flex;align-items:center;gap:6px;">
-              <span>${c.flag || '🏳️'} ${c.country || cleanLeague}</span>
-              <span>•</span>
-              <span style="color:#10b981;font-weight:700;">${c.points || 0} PTS</span>
+      return `
+        <div style="padding:14px 16px;background:rgba(15,23,42,0.6);border:1px solid rgba(255,255,255,0.06);border-radius:12px;margin-bottom:8px;display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;transition:border-color 0.15s ease;">
+          <div style="display:flex;align-items:center;gap:12px;min-width:180px;">
+            <span style="font-size:1.6rem;background:rgba(255,255,255,0.05);padding:4px 8px;border-radius:10px;">${c.logo || c.flag || '⚽'}</span>
+            <div>
+              <div style="font-weight:800;font-size:0.95rem;color:#ffffff;display:flex;align-items:center;gap:6px;">
+                ${c.name} ${tierBadge} ${rankBadge}
+              </div>
+              <div style="font-size:0.75rem;color:#94a3b8;display:flex;align-items:center;gap:6px;margin-top:2px;">
+                <span>${c.flag || '🏳️'} ${c.country || cleanLeague}</span>
+                <span>•</span>
+                <span style="color:#10b981;font-weight:700;">${c.points || 0} PTS</span>
+              </div>
             </div>
           </div>
-        </div>
 
-        <div style="display:flex;align-items:center;gap:16px;flex-wrap:wrap;">
-          <div style="text-align:center;">
-            <div style="font-size:0.68rem;color:#94a3b8;text-transform:uppercase;">Win Rate</div>
-            <div style="font-size:0.85rem;font-weight:800;color:#38bdf8;">${winRate}%</div>
+          <div style="display:flex;align-items:center;gap:16px;flex-wrap:wrap;">
+            <div style="text-align:center;">
+              <div style="font-size:0.68rem;color:#94a3b8;text-transform:uppercase;">Win Rate</div>
+              <div style="font-size:0.85rem;font-weight:800;color:#38bdf8;">${winRate}%</div>
+            </div>
+            <div style="text-align:center;">
+              <div style="font-size:0.68rem;color:#94a3b8;text-transform:uppercase;">Attack Index</div>
+              <div style="font-size:0.85rem;font-weight:800;color:#34d399;">${attackVal} xG</div>
+            </div>
+            <button onclick="document.getElementById('scout-clubs-modal').remove(); if(typeof openAiScoutChat==='function'){openAiScoutChat('${c.name.replace(/'/g, "\\'")}');}else{alert('AI Scout Tactical Report for ${c.name.replace(/'/g, "\\'")}: Disciplined international structure, dynamic transitions, and strong technical build-up.');}" style="padding:6px 12px;background:rgba(16,185,129,0.15);border:1px solid #10b981;color:#10b981;font-weight:700;font-size:0.75rem;border-radius:8px;cursor:pointer;display:flex;align-items:center;gap:4px;">
+              🤖 AI Scout
+            </button>
           </div>
-          <div style="text-align:center;">
-            <div style="font-size:0.68rem;color:#94a3b8;text-transform:uppercase;">Attack Index</div>
-            <div style="font-size:0.85rem;font-weight:800;color:#34d399;">${attackVal} xG</div>
-          </div>
-          <button onclick="document.getElementById('scout-clubs-modal').remove(); if(typeof openAiScoutChat==='function'){openAiScoutChat('${c.name.replace(/'/g, "\\'")}');}else{alert('AI Scout Analysis for ${c.name.replace(/'/g, "\\'")}: High pressing index with dangerous transition efficiency.');}" style="padding:6px 12px;background:rgba(16,185,129,0.15);border:1px solid #10b981;color:#10b981;font-weight:700;font-size:0.75rem;border-radius:8px;cursor:pointer;display:flex;align-items:center;gap:4px;">
-            🤖 AI Scout
-          </button>
         </div>
+      `;
+    }).join('');
+  };
+
+  const updateScoutModal = () => {
+    let tierSelectorHtml = '';
+    if (isNationsLeague) {
+      const tiers = ['League A', 'League B', 'League C', 'League D'];
+      tierSelectorHtml = `
+        <div style="padding:10px 20px;background:rgba(15,23,42,0.8);border-bottom:1px solid rgba(255,255,255,0.06);display:flex;gap:8px;overflow-x:auto;">
+          ${tiers.map(t => `
+            <button class="tier-tab-btn" data-tier="${t}" style="padding:6px 14px;border-radius:20px;font-size:0.78rem;font-weight:700;cursor:pointer;border:1px solid ${activeTier === t ? '#10b981' : 'rgba(255,255,255,0.12)'};background:${activeTier === t ? 'rgba(16,185,129,0.2)' : 'rgba(255,255,255,0.04)'};color:${activeTier === t ? '#34d399' : '#94a3b8'};transition:all 0.15s ease;">
+              ${t}
+            </button>
+          `).join('')}
+        </div>
+      `;
+    }
+
+    content.innerHTML = `
+      <div style="padding:18px 22px;border-bottom:1px solid rgba(255,255,255,0.08);display:flex;align-items:center;justify-content:space-between;background:linear-gradient(135deg,rgba(16,185,129,0.18) 0%,rgba(15,23,42,0.9) 100%);">
+        <div style="display:flex;align-items:center;gap:10px;">
+          <span style="font-size:1.5rem;background:rgba(16,185,129,0.2);border:1px solid #10b981;border-radius:10px;padding:4px 8px;">${isNationalComp ? '🌍' : '🏟️'}</span>
+          <div>
+            <h3 style="margin:0;font-size:1.15rem;font-weight:900;color:#ffffff;display:flex;align-items:center;gap:6px;">
+              ${isNationalComp ? 'Scouting National Teams: ' + cleanLeague : 'Scouting Clubs: ' + cleanLeague}
+            </h3>
+            <span style="font-size:0.72rem;color:#94a3b8;">${isNationalComp ? 'Official National Squad Ratings, FIFA / UEFA World Rankings & Tactical Form' : 'Squad Ratings, Attack/Defense Index & AI Tactical Profiles'}</span>
+          </div>
+        </div>
+        <button id="close-scout-modal-btn" style="background:rgba(255,255,255,0.1);border:1px solid rgba(255,255,255,0.15);color:#ffffff;border-radius:50%;width:32px;height:32px;font-size:1rem;cursor:pointer;display:flex;align-items:center;justify-content:center;">✕</button>
+      </div>
+
+      ${tierSelectorHtml}
+
+      <div id="scout-roster-container" style="padding:16px 20px;overflow-y:auto;max-height:calc(88vh - 120px);">
+        ${renderRoster(currentList)}
       </div>
     `;
-  }).join('');
 
-  content.innerHTML = `
-    <div style="padding:18px 22px;border-bottom:1px solid rgba(255,255,255,0.08);display:flex;align-items:center;justify-content:space-between;background:linear-gradient(135deg,rgba(16,185,129,0.18) 0%,rgba(15,23,42,0.9) 100%);">
-      <div style="display:flex;align-items:center;gap:10px;">
-        <span style="font-size:1.5rem;background:rgba(16,185,129,0.2);border:1px solid #10b981;border-radius:10px;padding:4px 8px;">🏟️</span>
-        <div>
-          <h3 style="margin:0;font-size:1.15rem;font-weight:900;color:#ffffff;display:flex;align-items:center;gap:6px;">
-            Scouting Clubs: ${cleanLeague}
-          </h3>
-          <span style="font-size:0.72rem;color:#94a3b8;">Squad Ratings, Attack/Defense Index & AI Tactical Profiles</span>
-        </div>
-      </div>
-      <button id="close-scout-modal-btn" style="background:rgba(255,255,255,0.1);border:1px solid rgba(255,255,255,0.15);color:#ffffff;border-radius:50%;width:32px;height:32px;font-size:1rem;cursor:pointer;display:flex;align-items:center;justify-content:center;">✕</button>
-    </div>
+    content.querySelector("#close-scout-modal-btn").addEventListener("click", () => modal.remove());
 
-    <div style="padding:16px 20px;overflow-y:auto;max-height:calc(88vh - 80px);">
-      ${clubRows}
-    </div>
-  `;
+    if (isNationsLeague) {
+      content.querySelectorAll(".tier-tab-btn").forEach(tBtn => {
+        tBtn.addEventListener("click", () => {
+          activeTier = tBtn.dataset.tier;
+          currentList = (typeof getNationalTeamsForCompetition === 'function')
+            ? getNationalTeamsForCompetition('UEFA Nations League', activeTier)
+            : (window.NATIONAL_TEAMS_DATA?.["UEFA Nations League"]?.[activeTier] || []);
+          updateScoutModal();
+        });
+      });
+    }
+  };
 
+  updateScoutModal();
   modal.appendChild(content);
   document.body.appendChild(modal);
-  content.querySelector("#close-scout-modal-btn").addEventListener("click", () => modal.remove());
 }
 window.scoutLeagueClubs = scoutLeagueClubs;
 
@@ -5414,6 +5477,15 @@ async function showMockTableStandings(leagueName, btn, countryName) {
     }
   }
 
+  const isNationalComp = (typeof isNationalTeamCompetition === 'function')
+    ? isNationalTeamCompetition(cleanLeague)
+    : ((typeof window !== 'undefined' && typeof window.isNationalTeamCompetition === 'function')
+      ? window.isNationalTeamCompetition(cleanLeague)
+      : (cleanLeague.toLowerCase().includes('nations league') || cleanLeague.toLowerCase().includes('world cup')));
+
+  const isNationsLeague = cleanLeague.toLowerCase().includes('nations league');
+  let activeTier = 'League A';
+
   const now = new Date();
   const season = now.getMonth() >= 6 ? now.getFullYear() : now.getFullYear() - 1;
   if (btn) {
@@ -5433,7 +5505,7 @@ async function showMockTableStandings(leagueName, btn, countryName) {
 
   const content = document.createElement("div");
   content.className = "glass-card";
-  content.style.cssText = "width:100%;max-width:500px;padding:16px 12px;border:1px solid var(--border-color,rgba(255,255,255,0.1));border-radius:16px;background:var(--bg-card,#1e293b);box-shadow:0 25px 60px rgba(0,0,0,0.8);box-sizing:border-box;";
+  content.style.cssText = "width:100%;max-width:520px;padding:16px 12px;border:1px solid var(--border-color,rgba(255,255,255,0.1));border-radius:16px;background:var(--bg-card,#1e293b);box-shadow:0 25px 60px rgba(0,0,0,0.8);box-sizing:border-box;";
 
   const closeFn = () => modal.remove();
 
@@ -5444,32 +5516,19 @@ async function showMockTableStandings(leagueName, btn, countryName) {
     if (rawLogo && rawLogo !== '⚽' && !rawLogo.includes('⚽')) return rawLogo;
     if (!clubName) return '⚽';
     const norm = clubName.toLowerCase().trim();
+    if (isNationalComp) {
+      if (typeof window.NATIONAL_TEAMS_DATA !== 'undefined') {
+        const allN = Object.values(window.NATIONAL_TEAMS_DATA).flatMap(v => Array.isArray(v) ? v : Object.values(v).flat());
+        const match = allN.find(n => n.name.toLowerCase() === norm);
+        if (match && (match.logo || match.flag)) return match.logo || match.flag;
+      }
+    }
     const allClubs = (typeof GLOBAL_CLUBS !== 'undefined' && Array.isArray(GLOBAL_CLUBS)) ? GLOBAL_CLUBS : (window.GLOBAL_CLUBS || []);
     const found = allClubs.find(c => {
       const cName = (c.name || '').toLowerCase();
       return cName === norm || cName.includes(norm) || norm.includes(cName);
     });
     if (found && found.logo) return found.logo;
-    if (norm.includes('man city') || norm.includes('manchester city')) return '🔵';
-    if (norm.includes('hull')) return '🐯';
-    if (norm.includes('chelsea')) return '🦁';
-    if (norm.includes('brentford')) return '🐝';
-    if (norm.includes('newcastle')) return '🦓';
-    if (norm.includes('everton')) return '🔵🦁';
-    if (norm.includes('leeds')) return '⚪🦚';
-    if (norm.includes('brighton')) return '🕊️';
-    if (norm.includes('arsenal')) return '🔴';
-    if (norm.includes('liverpool')) return '🔴🛡️';
-    if (norm.includes('tottenham') || norm.includes('spurs')) return '⚪🐓';
-    if (norm.includes('aston villa')) return '🦁🟣';
-    if (norm.includes('west ham')) return '⚒️';
-    if (norm.includes('fulham')) return '⚫⚪';
-    if (norm.includes('bournemouth')) return '🍒';
-    if (norm.includes('man united') || norm.includes('manchester united')) return '👿';
-    if (norm.includes('nottingham')) return '🌲🔴';
-    if (norm.includes('crystal palace')) return '🦅🔴🔵';
-    if (norm.includes('leicester')) return '🦊';
-    if (norm.includes('southampton')) return '⚪🔴🧣';
     return '⚽';
   };
 
@@ -5480,7 +5539,7 @@ async function showMockTableStandings(leagueName, btn, countryName) {
     const l = club.losses ?? club.all?.lose ?? 0;
     const pts = club.points ?? (w * 3 + d);
     const nm = club.name ?? club.team?.name ?? "Unknown";
-    const lg = resolveLogo(nm, club.logo);
+    const lg = resolveLogo(nm, club.logo || club.flag);
     return `<div style="display:grid;grid-template-columns:22px 1fr 28px 28px 28px 28px 34px;font-size:0.8rem;padding:8px 4px;border-bottom:1px solid rgba(255,255,255,0.04);align-items:center;">
       <span style="font-weight:700;font-size:0.75rem;color:${idx < 4 ? 'var(--secondary,#10b981)' : 'var(--text-muted,#64748b)'}">${idx + 1}</span>
       <span style="font-weight:600;color:var(--text-primary,#f1f5f9);display:flex;align-items:center;gap:5px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;padding-right:4px;">
@@ -5499,16 +5558,35 @@ async function showMockTableStandings(leagueName, btn, countryName) {
     const badge = source === 'live'
       ? `<span style="font-size:0.68rem;background:rgba(16,185,129,0.15);color:#10b981;border:1px solid rgba(16,185,129,0.3);border-radius:20px;padding:2px 8px;">🟢 Live Standings</span>`
       : `<span style="font-size:0.68rem;background:rgba(148,163,184,0.1);color:#94a3b8;border:1px solid rgba(148,163,184,0.2);border-radius:20px;padding:2px 8px;">📦 Standings</span>`;
-    const body = `<div style="max-height:380px;overflow-y:auto;">${renderStandingRows(clubs)}</div>`;
+
+    let tierSelectorHtml = '';
+    if (isNationsLeague) {
+      const tiers = ['League A', 'League B', 'League C', 'League D'];
+      tierSelectorHtml = `
+        <div style="display:flex;gap:6px;margin-bottom:10px;padding:4px 0;overflow-x:auto;">
+          ${tiers.map(t => `
+            <button class="tier-tab-standings-btn" data-tier="${t}" style="padding:4px 10px;border-radius:16px;font-size:0.72rem;font-weight:700;cursor:pointer;border:1px solid ${activeTier === t ? '#10b981' : 'rgba(255,255,255,0.12)'};background:${activeTier === t ? 'rgba(16,185,129,0.2)' : 'rgba(255,255,255,0.04)'};color:${activeTier === t ? '#34d399' : '#94a3b8'};transition:all 0.15s ease;">
+              ${t}
+            </button>
+          `).join('')}
+        </div>
+      `;
+    }
+
+    const titlePrefix = isNationalComp ? '🇪🇺' : '🏆';
+    const subTitle = isNationalComp ? `${cleanLeague} (2026/27)` : `${cleanLeague} Standings`;
+    const participantCol = isNationalComp ? 'National Team' : 'Club';
+    const body = `<div style="max-height:360px;overflow-y:auto;">${renderStandingRows(clubs)}</div>`;
     content.innerHTML = `
       <div style="display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid var(--border-color,rgba(255,255,255,0.08));padding-bottom:10px;margin-bottom:10px;">
         <div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap;">
-          <h3 style="margin:0;font-size:1rem;color:var(--text-primary,#f1f5f9);">🏆 ${leagueName} Standings</h3>${badge}
+          <h3 style="margin:0;font-size:1rem;color:var(--text-primary,#f1f5f9);">${titlePrefix} ${subTitle}</h3>${badge}
         </div>
         <button id="cls-st" style="background:rgba(255,255,255,0.08);border:none;color:#94a3b8;font-size:1rem;cursor:pointer;border-radius:50%;width:28px;height:28px;">✕</button>
       </div>
+      ${tierSelectorHtml}
       <div style="display:grid;grid-template-columns:22px 1fr 28px 28px 28px 28px 34px;font-size:0.68rem;font-weight:700;text-transform:uppercase;color:var(--text-secondary,#94a3b8);padding:6px 4px;border-bottom:1px solid var(--border-color,rgba(255,255,255,0.08));margin-bottom:4px;">
-        <span>Pos</span><span>Club</span><span style="text-align:center">P</span><span style="text-align:center">W</span><span style="text-align:center">D</span><span style="text-align:center">L</span><span style="text-align:center">Pts</span>
+        <span>Pos</span><span>${participantCol}</span><span style="text-align:center">P</span><span style="text-align:center">W</span><span style="text-align:center">D</span><span style="text-align:center">L</span><span style="text-align:center">Pts</span>
       </div>
       ${body}
       <div style="text-align:right;margin-top:12px;">
@@ -5518,9 +5596,21 @@ async function showMockTableStandings(leagueName, btn, countryName) {
     const c2 = content.querySelector("#cls-st-ok");
     if (c1) c1.addEventListener("click", closeFn);
     if (c2) c2.addEventListener("click", closeFn);
+
+    if (isNationsLeague) {
+      content.querySelectorAll(".tier-tab-standings-btn").forEach(btn => {
+        btn.addEventListener("click", () => {
+          activeTier = btn.dataset.tier;
+          const tierTeams = (typeof getNationalTeamsForCompetition === 'function')
+            ? getNationalTeamsForCompetition('UEFA Nations League', activeTier)
+            : (window.NATIONAL_TEAMS_DATA?.["UEFA Nations League"]?.[activeTier] || []);
+          buildStandingsContent(tierTeams, 'cached');
+        });
+      });
+    }
   };
 
-  // Immediate render from local clubs with smart tiebreaker sorting
+  // Immediate render from local clubs/teams with smart tiebreaker sorting
   const localClubs = [...getClubsForLeague(cleanLeague, resolvedCountry)].sort((a, b) => {
     const ptsA = (a.points ?? (a.wins * 3 + a.draws));
     const ptsB = (b.points ?? (b.wins * 3 + b.draws));
@@ -5542,7 +5632,6 @@ async function showMockTableStandings(leagueName, btn, countryName) {
 
   if (leagueId) {
     try {
-      // Determine base URL: local dev uses localhost, production uses same origin (Cloudflare Pages)
       const edgeBase = (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1')
         ? 'http://localhost:8788'
         : '';
@@ -5554,14 +5643,14 @@ async function showMockTableStandings(leagueName, btn, countryName) {
         const json = await res.json();
         const raw = json.standings || [];
         if (Array.isArray(raw) && raw.length > 0) {
-          // STRICT SECURITY: If this is a foreign country, ensure no English clubs are rendered
+          // STRICT SECURITY: If this is a foreign country or national tournament, ensure no English clubs are rendered
           const isForeignCountry = resolvedCountry && resolvedCountry.toLowerCase() !== 'england' && resolvedCountry.toLowerCase() !== 'united kingdom';
           const englishClubs = ['manchester city', 'hull city', 'chelsea', 'arsenal', 'liverpool', 'manchester united', 'tottenham', 'brentford', 'everton', 'fulham'];
-          if (isForeignCountry && raw.some(item => englishClubs.includes((item.name || '').toLowerCase()))) {
-            console.warn('[Standings] Blocked English clubs leak for foreign country:', resolvedCountry);
+          if ((isForeignCountry || isNationalComp) && raw.some(item => englishClubs.includes((item.name || '').toLowerCase()))) {
+            console.warn('[Standings] Blocked English clubs leak for:', resolvedCountry || cleanLeague);
             return;
           }
-          const liveClubs = raw.map(item => ({
+          let liveClubs = raw.map(item => ({
             name: item.name || "—",
             logo: resolveLogo(item.name, item.logo),
             matchesPlayed: item.matchesPlayed ?? 0,
@@ -5574,7 +5663,12 @@ async function showMockTableStandings(leagueName, btn, countryName) {
             points:        item.points        ?? 0,
             form:          item.form          ?? ''
           }));
-          buildStandingsContent(liveClubs, 'live');
+          if (isNationalComp && typeof validateCompetitionParticipants === 'function') {
+            liveClubs = validateCompetitionParticipants(liveClubs, cleanLeague);
+          }
+          if (liveClubs.length > 0) {
+            buildStandingsContent(liveClubs, 'live');
+          }
         }
       }
     } catch (err) {

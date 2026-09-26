@@ -2052,9 +2052,304 @@ const COUNTRY_CLUBS_DATA = {
   ]
 };
 
+// ============================================================================
+// COMPETITIONS METADATA & PARTICIPANT CLASSIFICATION SYSTEM
+// Explicitly classifies competitions as "national_team" vs "club"
+// ============================================================================
+const COMPETITIONS_METADATA = {
+  "uefa nations league": {
+    id: 5,
+    name: "UEFA Nations League",
+    shortName: "Nations League",
+    type: "national_team",
+    participantType: "national_team",
+    governingBody: "UEFA",
+    category: "International",
+    confederation: "UEFA",
+    country: "Europe",
+    emoji: "🇪🇺",
+    flag: "🇪🇺",
+    format: "League Phase (Leagues A, B, C, D) & Finals",
+    currentSeason: "2026/27",
+    editions: ["2024/25", "2026/27"],
+    description: "Biennial official national team competition organized by UEFA across four tiered leagues (Leagues A, B, C, and D)."
+  },
+  "nations league": {
+    id: 5,
+    name: "UEFA Nations League",
+    shortName: "Nations League",
+    type: "national_team",
+    participantType: "national_team",
+    country: "Europe",
+    emoji: "🇪🇺"
+  },
+  "world cup": {
+    id: 1,
+    name: "FIFA World Cup",
+    shortName: "World Cup",
+    type: "national_team",
+    participantType: "national_team",
+    governingBody: "FIFA",
+    category: "International",
+    country: "World",
+    emoji: "🏆",
+    currentSeason: "2026"
+  },
+  "euro championship": {
+    id: 4,
+    name: "UEFA European Championship",
+    shortName: "Euros",
+    type: "national_team",
+    participantType: "national_team",
+    governingBody: "UEFA",
+    category: "International",
+    country: "Europe",
+    emoji: "🏆",
+    currentSeason: "2028"
+  },
+  "afcon": {
+    id: 6,
+    name: "Africa Cup of Nations",
+    shortName: "AFCON",
+    type: "national_team",
+    participantType: "national_team",
+    governingBody: "CAF",
+    category: "International",
+    country: "Africa",
+    emoji: "🏆",
+    currentSeason: "2025/26"
+  },
+  "copa américa": {
+    id: 9,
+    name: "Copa América",
+    shortName: "Copa América",
+    type: "national_team",
+    participantType: "national_team",
+    governingBody: "CONMEBOL",
+    category: "International",
+    country: "South America",
+    emoji: "🏆",
+    currentSeason: "2028"
+  },
+  "friendlies": {
+    id: 10,
+    name: "International Friendlies",
+    shortName: "Friendlies",
+    type: "national_team",
+    participantType: "national_team",
+    governingBody: "FIFA",
+    country: "World",
+    emoji: "🌐",
+    currentSeason: "2026"
+  },
+  "champions league": {
+    id: 2,
+    name: "UEFA Champions League",
+    type: "club",
+    participantType: "club",
+    country: "Europe",
+    emoji: "🇪🇺"
+  },
+  "europa league": {
+    id: 3,
+    name: "UEFA Europa League",
+    type: "club",
+    participantType: "club",
+    country: "Europe",
+    emoji: "🇪🇺"
+  },
+  "conference league": {
+    id: 848,
+    name: "UEFA Conference League",
+    type: "club",
+    participantType: "club",
+    country: "Europe",
+    emoji: "🇪🇺"
+  },
+  "premier league": {
+    id: 39,
+    name: "Premier League",
+    type: "club",
+    participantType: "club",
+    country: "England",
+    emoji: "🏴󠁧󠁢󠁥󠁮󠁧󠁿"
+  }
+};
+
+function isNationalTeamCompetition(competitionName) {
+  if (!competitionName) return false;
+  const c = competitionName.toString().trim().toLowerCase();
+
+  // Explicit keyword checks for National Team tournaments
+  if (c.includes('nations league') || c.includes('nation league')) return true;
+  if (c.includes('world cup') && !c.includes('club world cup')) return true;
+  if (c === 'afcon' || c.includes('africa cup of nations') || c.includes('african cup of nations')) return true;
+  if (c.includes('copa américa') || c.includes('copa america')) return true;
+  if (c.includes('euro championship') || c.includes('european championship') || c === 'euros') return true;
+  if (c.includes('friendlies') || c.includes('friendly') || c.includes('international friendlies')) return true;
+  if (c.includes('asian cup') || c.includes('gold cup')) return true;
+
+  // Metadata check
+  for (const [key, meta] of Object.entries(COMPETITIONS_METADATA)) {
+    if (c === key || c.includes(key) || key.includes(c)) {
+      if (meta.participantType === 'national_team') return true;
+    }
+  }
+  return false;
+}
+
+// ============================================================================
+// OFFICIAL NATIONAL TEAMS DATA REGISTRY
+// UEFA Nations League (Leagues A, B, C, D) + World Cup Top Contenders
+// ============================================================================
+const NATIONAL_TEAMS_DATA = {
+  "UEFA Nations League": {
+    "League A": [
+      { name: "Spain", country: "Spain", flag: "🇪🇸", logo: "🇪🇸", code: "ESP", leagueTier: "League A", rank: 1, points: 10, wins: 3, draws: 1, losses: 0, goalsFor: 9, goalsAgainst: 3, matchesPlayed: 4, form: ["W","W","D","W"], uefaRank: 1, participantType: "national_team", isNational: true },
+      { name: "Germany", country: "Germany", flag: "🇩🇪", logo: "🇩🇪", code: "GER", leagueTier: "League A", rank: 2, points: 10, wins: 3, draws: 1, losses: 0, goalsFor: 10, goalsAgainst: 4, matchesPlayed: 4, form: ["W","D","W","W"], uefaRank: 4, participantType: "national_team", isNational: true },
+      { name: "Portugal", country: "Portugal", flag: "🇵🇹", logo: "🇵🇹", code: "POR", leagueTier: "League A", rank: 3, points: 9, wins: 3, draws: 0, losses: 1, goalsFor: 8, goalsAgainst: 4, matchesPlayed: 4, form: ["W","W","L","W"], uefaRank: 5, participantType: "national_team", isNational: true },
+      { name: "France", country: "France", flag: "🇫🇷", logo: "🇫🇷", code: "FRA", leagueTier: "League A", rank: 4, points: 9, wins: 3, draws: 0, losses: 1, goalsFor: 7, goalsAgainst: 3, matchesPlayed: 4, form: ["L","W","W","W"], uefaRank: 2, participantType: "national_team", isNational: true },
+      { name: "Italy", country: "Italy", flag: "🇮🇹", logo: "🇮🇹", code: "ITA", leagueTier: "League A", rank: 5, points: 8, wins: 2, draws: 2, losses: 0, goalsFor: 8, goalsAgainst: 5, matchesPlayed: 4, form: ["W","W","D","D"], uefaRank: 7, participantType: "national_team", isNational: true },
+      { name: "Netherlands", country: "Netherlands", flag: "🇳🇱", logo: "🇳🇱", code: "NED", leagueTier: "League A", rank: 6, points: 7, wins: 2, draws: 1, losses: 1, goalsFor: 7, goalsAgainst: 5, matchesPlayed: 4, form: ["W","D","L","W"], uefaRank: 6, participantType: "national_team", isNational: true },
+      { name: "Croatia", country: "Croatia", flag: "🇭🇷", logo: "🇭🇷", code: "CRO", leagueTier: "League A", rank: 7, points: 7, wins: 2, draws: 1, losses: 1, goalsFor: 6, goalsAgainst: 5, matchesPlayed: 4, form: ["L","W","W","D"], uefaRank: 9, participantType: "national_team", isNational: true },
+      { name: "Belgium", country: "Belgium", flag: "🇧🇪", logo: "🇧🇪", code: "BEL", leagueTier: "League A", rank: 8, points: 6, wins: 2, draws: 0, losses: 2, goalsFor: 6, goalsAgainst: 6, matchesPlayed: 4, form: ["W","L","W","L"], uefaRank: 8, participantType: "national_team", isNational: true },
+      { name: "Denmark", country: "Denmark", flag: "🇩🇰", logo: "🇩🇰", code: "DEN", leagueTier: "League A", rank: 9, points: 6, wins: 2, draws: 0, losses: 2, goalsFor: 5, goalsAgainst: 5, matchesPlayed: 4, form: ["W","W","L","L"], uefaRank: 11, participantType: "national_team", isNational: true },
+      { name: "England", country: "England", flag: "🏴󠁧󠁢󠁥󠁮󠁧󠁿", logo: "🏴󠁧󠁢󠁥󠁮󠁧󠁿", code: "ENG", leagueTier: "League A", rank: 10, points: 6, wins: 2, draws: 0, losses: 2, goalsFor: 7, goalsAgainst: 5, matchesPlayed: 4, form: ["W","W","L","L"], uefaRank: 3, participantType: "national_team", isNational: true },
+      { name: "Norway", country: "Norway", flag: "🇳🇴", logo: "🇳🇴", code: "NOR", leagueTier: "League A", rank: 11, points: 5, wins: 1, draws: 2, losses: 1, goalsFor: 5, goalsAgainst: 5, matchesPlayed: 4, form: ["D","W","L","D"], uefaRank: 16, participantType: "national_team", isNational: true },
+      { name: "Austria", country: "Austria", flag: "🇦🇹", logo: "🇦🇹", code: "AUT", leagueTier: "League A", rank: 12, points: 5, wins: 1, draws: 2, losses: 1, goalsFor: 6, goalsAgainst: 6, matchesPlayed: 4, form: ["D","L","W","D"], uefaRank: 15, participantType: "national_team", isNational: true },
+      { name: "Czechia", country: "Czechia", flag: "🇨🇿", logo: "🇨🇿", code: "CZE", leagueTier: "League A", rank: 13, points: 4, wins: 1, draws: 1, losses: 2, goalsFor: 4, goalsAgainst: 7, matchesPlayed: 4, form: ["L","W","D","L"], uefaRank: 18, participantType: "national_team", isNational: true },
+      { name: "Wales", country: "Wales", flag: "🏴󠁧󠁢󠁷󠁬󠁳󠁿", logo: "🏴󠁧󠁢󠁷󠁬󠁳󠁿", code: "WAL", leagueTier: "League A", rank: 14, points: 3, wins: 0, draws: 3, losses: 1, goalsFor: 3, goalsAgainst: 5, matchesPlayed: 4, form: ["D","D","D","L"], uefaRank: 17, participantType: "national_team", isNational: true },
+      { name: "Greece", country: "Greece", flag: "🇬🇷", logo: "🇬🇷", code: "GRE", leagueTier: "League A", rank: 15, points: 3, wins: 1, draws: 0, losses: 3, goalsFor: 3, goalsAgainst: 8, matchesPlayed: 4, form: ["W","L","L","L"], uefaRank: 20, participantType: "national_team", isNational: true },
+      { name: "Ukraine", country: "Ukraine", flag: "🇺🇦", logo: "🇺🇦", code: "UKR", leagueTier: "League A", rank: 16, points: 2, wins: 0, draws: 2, losses: 2, goalsFor: 3, goalsAgainst: 7, matchesPlayed: 4, form: ["L","D","L","D"], uefaRank: 14, participantType: "national_team", isNational: true }
+    ],
+    "League B": [
+      { name: "Switzerland", country: "Switzerland", flag: "🇨🇭", logo: "🇨🇭", code: "SUI", leagueTier: "League B", rank: 1, points: 9, wins: 3, draws: 0, losses: 1, goalsFor: 7, goalsAgainst: 3, matchesPlayed: 4, form: ["W","W","W","L"], uefaRank: 10, participantType: "national_team", isNational: true },
+      { name: "Poland", country: "Poland", flag: "🇵🇱", logo: "🇵🇱", code: "POL", leagueTier: "League B", rank: 2, points: 8, wins: 2, draws: 2, losses: 0, goalsFor: 6, goalsAgainst: 4, matchesPlayed: 4, form: ["W","D","W","D"], uefaRank: 19, participantType: "national_team", isNational: true },
+      { name: "Scotland", country: "Scotland", flag: "🏴󠁧󠁢󠁳󠁣󠁴󠁿", logo: "🏴󠁧󠁢󠁳󠁣󠁴󠁿", code: "SCO", leagueTier: "League B", rank: 3, points: 7, wins: 2, draws: 1, losses: 1, goalsFor: 5, goalsAgainst: 4, matchesPlayed: 4, form: ["L","W","W","D"], uefaRank: 22, participantType: "national_team", isNational: true },
+      { name: "Hungary", country: "Hungary", flag: "🇭🇺", logo: "🇭🇺", code: "HUN", leagueTier: "League B", rank: 4, points: 7, wins: 2, draws: 1, losses: 1, goalsFor: 5, goalsAgainst: 5, matchesPlayed: 4, form: ["W","L","W","D"], uefaRank: 13, participantType: "national_team", isNational: true },
+      { name: "Serbia", country: "Serbia", flag: "🇷🇸", logo: "🇷🇸", code: "SRB", leagueTier: "League B", rank: 5, points: 6, wins: 1, draws: 3, losses: 0, goalsFor: 4, goalsAgainst: 3, matchesPlayed: 4, form: ["D","D","W","D"], uefaRank: 21, participantType: "national_team", isNational: true },
+      { name: "Sweden", country: "Sweden", flag: "🇸🇪", logo: "🇸🇪", code: "SWE", leagueTier: "League B", rank: 6, points: 6, wins: 2, draws: 0, losses: 2, goalsFor: 7, goalsAgainst: 6, matchesPlayed: 4, form: ["W","W","L","L"], uefaRank: 12, participantType: "national_team", isNational: true },
+      { name: "Turkey", country: "Turkey", flag: "🇹🇷", logo: "🇹🇷", code: "TUR", leagueTier: "League B", rank: 7, points: 6, wins: 2, draws: 0, losses: 2, goalsFor: 6, goalsAgainst: 6, matchesPlayed: 4, form: ["W","L","W","L"], uefaRank: 23, participantType: "national_team", isNational: true },
+      { name: "Romania", country: "Romania", flag: "🇷🇴", logo: "🇷🇴", code: "ROU", leagueTier: "League B", rank: 8, points: 5, wins: 1, draws: 2, losses: 1, goalsFor: 5, goalsAgainst: 5, matchesPlayed: 4, form: ["D","W","L","D"], uefaRank: 24, participantType: "national_team", isNational: true },
+      { name: "Slovakia", country: "Slovakia", flag: "🇸🇰", logo: "🇸🇰", code: "SVK", leagueTier: "League B", rank: 9, points: 5, wins: 1, draws: 2, losses: 1, goalsFor: 4, goalsAgainst: 4, matchesPlayed: 4, form: ["D","L","W","D"], uefaRank: 25, participantType: "national_team", isNational: true },
+      { name: "Republic of Ireland", country: "Republic of Ireland", flag: "🇮🇪", logo: "🇮🇪", code: "IRL", leagueTier: "League B", rank: 10, points: 4, wins: 1, draws: 1, losses: 2, goalsFor: 3, goalsAgainst: 5, matchesPlayed: 4, form: ["L","W","D","L"], uefaRank: 26, participantType: "national_team", isNational: true },
+      { name: "Slovenia", country: "Slovenia", flag: "🇸🇮", logo: "🇸🇮", code: "SVN", leagueTier: "League B", rank: 11, points: 4, wins: 1, draws: 1, losses: 2, goalsFor: 4, goalsAgainst: 6, matchesPlayed: 4, form: ["D","L","W","L"], uefaRank: 27, participantType: "national_team", isNational: true },
+      { name: "Iceland", country: "Iceland", flag: "🇮🇸", logo: "🇮🇸", code: "ISL", leagueTier: "League B", rank: 12, points: 4, wins: 1, draws: 1, losses: 2, goalsFor: 4, goalsAgainst: 7, matchesPlayed: 4, form: ["L","D","W","L"], uefaRank: 28, participantType: "national_team", isNational: true },
+      { name: "Albania", country: "Albania", flag: "🇦🇱", logo: "🇦🇱", code: "ALB", leagueTier: "League B", rank: 13, points: 3, wins: 1, draws: 0, losses: 3, goalsFor: 3, goalsAgainst: 6, matchesPlayed: 4, form: ["W","L","L","L"], uefaRank: 29, participantType: "national_team", isNational: true },
+      { name: "Finland", country: "Finland", flag: "🇫🇮", logo: "🇫🇮", code: "FIN", leagueTier: "League B", rank: 14, points: 3, wins: 0, draws: 3, losses: 1, goalsFor: 2, goalsAgainst: 4, matchesPlayed: 4, form: ["D","L","D","D"], uefaRank: 30, participantType: "national_team", isNational: true },
+      { name: "Georgia", country: "Georgia", flag: "🇬🇪", logo: "🇬🇪", code: "GEO", leagueTier: "League B", rank: 15, points: 3, wins: 1, draws: 0, losses: 3, goalsFor: 4, goalsAgainst: 8, matchesPlayed: 4, form: ["L","W","L","L"], uefaRank: 31, participantType: "national_team", isNational: true },
+      { name: "Northern Ireland", country: "Northern Ireland", flag: "🇬🇧", logo: "🇬🇧", code: "NIR", leagueTier: "League B", rank: 16, points: 2, wins: 0, draws: 2, losses: 2, goalsFor: 2, goalsAgainst: 6, matchesPlayed: 4, form: ["L","D","L","D"], uefaRank: 32, participantType: "national_team", isNational: true }
+    ],
+    "League C": [
+      { name: "Bosnia & Herzegovina", country: "Bosnia & Herzegovina", flag: "🇧🇦", logo: "🇧🇦", code: "BIH", leagueTier: "League C", rank: 1, points: 9, wins: 3, draws: 0, losses: 1, goalsFor: 7, goalsAgainst: 3, matchesPlayed: 4, form: ["W","W","W","L"], participantType: "national_team", isNational: true },
+      { name: "Israel", country: "Israel", flag: "🇮🇱", logo: "🇮🇱", code: "ISR", leagueTier: "League C", rank: 2, points: 8, wins: 2, draws: 2, losses: 0, goalsFor: 6, goalsAgainst: 3, matchesPlayed: 4, form: ["W","D","W","D"], participantType: "national_team", isNational: true },
+      { name: "Montenegro", country: "Montenegro", flag: "🇲🇪", logo: "🇲🇪", code: "MNE", leagueTier: "League C", rank: 3, points: 7, wins: 2, draws: 1, losses: 1, goalsFor: 5, goalsAgainst: 4, matchesPlayed: 4, form: ["W","L","W","D"], participantType: "national_team", isNational: true },
+      { name: "Kazakhstan", country: "Kazakhstan", flag: "🇰🇿", logo: "🇰🇿", code: "KAZ", leagueTier: "League C", rank: 4, points: 6, wins: 2, draws: 0, losses: 2, goalsFor: 5, goalsAgainst: 5, matchesPlayed: 4, form: ["L","W","W","L"], participantType: "national_team", isNational: true },
+      { name: "Bulgaria", country: "Bulgaria", flag: "🇧🇬", logo: "🇧🇬", code: "BUL", leagueTier: "League C", rank: 5, points: 6, wins: 1, draws: 3, losses: 0, goalsFor: 3, goalsAgainst: 2, matchesPlayed: 4, form: ["D","D","W","D"], participantType: "national_team", isNational: true },
+      { name: "Luxembourg", country: "Luxembourg", flag: "🇱🇺", logo: "🇱🇺", code: "LUX", leagueTier: "League C", rank: 6, points: 5, wins: 1, draws: 2, losses: 1, goalsFor: 4, goalsAgainst: 4, matchesPlayed: 4, form: ["D","W","L","D"], participantType: "national_team", isNational: true },
+      { name: "Armenia", country: "Armenia", flag: "🇦🇲", logo: "🇦🇲", code: "ARM", leagueTier: "League C", rank: 7, points: 5, wins: 1, draws: 2, losses: 1, goalsFor: 5, goalsAgainst: 5, matchesPlayed: 4, form: ["W","L","D","D"], participantType: "national_team", isNational: true },
+      { name: "Kosovo", country: "Kosovo", flag: "🇽🇰", logo: "🇽🇰", code: "KOS", leagueTier: "League C", rank: 8, points: 4, wins: 1, draws: 1, losses: 2, goalsFor: 4, goalsAgainst: 6, matchesPlayed: 4, form: ["L","W","D","L"], participantType: "national_team", isNational: true },
+      { name: "Cyprus", country: "Cyprus", flag: "🇨🇾", logo: "🇨🇾", code: "CYP", leagueTier: "League C", rank: 9, points: 4, wins: 1, draws: 1, losses: 2, goalsFor: 3, goalsAgainst: 5, matchesPlayed: 4, form: ["D","L","W","L"], participantType: "national_team", isNational: true },
+      { name: "Belarus", country: "Belarus", flag: "🇧🇾", logo: "🇧🇾", code: "BLR", leagueTier: "League C", rank: 10, points: 3, wins: 0, draws: 3, losses: 1, goalsFor: 2, goalsAgainst: 4, matchesPlayed: 4, form: ["D","D","L","D"], participantType: "national_team", isNational: true },
+      { name: "North Macedonia", country: "North Macedonia", flag: "🇲🇰", logo: "🇲🇰", code: "MKD", leagueTier: "League C", rank: 11, points: 3, wins: 1, draws: 0, losses: 3, goalsFor: 3, goalsAgainst: 7, matchesPlayed: 4, form: ["L","W","L","L"], participantType: "national_team", isNational: true },
+      { name: "Estonia", country: "Estonia", flag: "🇪🇪", logo: "🇪🇪", code: "EST", leagueTier: "League C", rank: 12, points: 3, wins: 0, draws: 3, losses: 1, goalsFor: 2, goalsAgainst: 5, matchesPlayed: 4, form: ["D","L","D","D"], participantType: "national_team", isNational: true },
+      { name: "Faroe Islands", country: "Faroe Islands", flag: "🇫🇴", logo: "🇫🇴", code: "FRO", leagueTier: "League C", rank: 13, points: 2, wins: 0, draws: 2, losses: 2, goalsFor: 2, goalsAgainst: 6, matchesPlayed: 4, form: ["L","D","L","D"], participantType: "national_team", isNational: true },
+      { name: "Latvia", country: "Latvia", flag: "🇱🇻", logo: "🇱🇻", code: "LVA", leagueTier: "League C", rank: 14, points: 2, wins: 0, draws: 2, losses: 2, goalsFor: 1, goalsAgainst: 5, matchesPlayed: 4, form: ["D","L","L","D"], participantType: "national_team", isNational: true },
+      { name: "Lithuania", country: "Lithuania", flag: "🇱🇹", logo: "🇱🇹", code: "LTU", leagueTier: "League C", rank: 15, points: 2, wins: 0, draws: 2, losses: 2, goalsFor: 2, goalsAgainst: 6, matchesPlayed: 4, form: ["L","D","L","D"], participantType: "national_team", isNational: true },
+      { name: "Azerbaijan", country: "Azerbaijan", flag: "🇦🇿", logo: "🇦🇿", code: "AZE", leagueTier: "League C", rank: 16, points: 1, wins: 0, draws: 1, losses: 3, goalsFor: 1, goalsAgainst: 8, matchesPlayed: 4, form: ["L","L","D","L"], participantType: "national_team", isNational: true }
+    ],
+    "League D": [
+      { name: "Gibraltar", country: "Gibraltar", flag: "🇬🇮", logo: "🇬🇮", code: "GIB", leagueTier: "League D", rank: 1, points: 7, wins: 2, draws: 1, losses: 1, goalsFor: 5, goalsAgainst: 3, matchesPlayed: 4, form: ["W","D","W","L"], participantType: "national_team", isNational: true },
+      { name: "Moldova", country: "Moldova", flag: "🇲🇩", logo: "🇲🇩", code: "MDA", leagueTier: "League D", rank: 2, points: 7, wins: 2, draws: 1, losses: 1, goalsFor: 4, goalsAgainst: 3, matchesPlayed: 4, form: ["W","W","L","D"], participantType: "national_team", isNational: true },
+      { name: "Malta", country: "Malta", flag: "🇲🇹", logo: "🇲🇹", code: "MLT", leagueTier: "League D", rank: 3, points: 6, wins: 2, draws: 0, losses: 2, goalsFor: 4, goalsAgainst: 4, matchesPlayed: 4, form: ["L","W","W","L"], participantType: "national_team", isNational: true },
+      { name: "San Marino", country: "San Marino", flag: "🇸🇲", logo: "🇸🇲", code: "SMR", leagueTier: "League D", rank: 4, points: 4, wins: 1, draws: 1, losses: 2, goalsFor: 3, goalsAgainst: 4, matchesPlayed: 4, form: ["W","L","D","L"], participantType: "national_team", isNational: true },
+      { name: "Andorra", country: "Andorra", flag: "🇦🇩", logo: "🇦🇩", code: "AND", leagueTier: "League D", rank: 5, points: 4, wins: 1, draws: 1, losses: 2, goalsFor: 2, goalsAgainst: 4, matchesPlayed: 4, form: ["D","L","W","L"], participantType: "national_team", isNational: true },
+      { name: "Liechtenstein", country: "Liechtenstein", flag: "🇱🇮", logo: "🇱🇮", code: "LIE", leagueTier: "League D", rank: 6, points: 3, wins: 0, draws: 3, losses: 1, goalsFor: 1, goalsAgainst: 3, matchesPlayed: 4, form: ["D","D","L","D"], participantType: "national_team", isNational: true }
+    ]
+  },
+  "World Cup": [
+    { name: "Argentina", country: "Argentina", flag: "🇦🇷", logo: "🇦🇷", code: "ARG", rank: 1, points: 9, wins: 3, draws: 0, losses: 0, goalsFor: 8, goalsAgainst: 1, matchesPlayed: 3, form: ["W","W","W"], participantType: "national_team", isNational: true },
+    { name: "France", country: "France", flag: "🇫🇷", logo: "🇫🇷", code: "FRA", rank: 2, points: 7, wins: 2, draws: 1, losses: 0, goalsFor: 7, goalsAgainst: 2, matchesPlayed: 3, form: ["W","W","D"], participantType: "national_team", isNational: true },
+    { name: "Brazil", country: "Brazil", flag: "🇧🇷", logo: "🇧🇷", code: "BRA", rank: 3, points: 7, wins: 2, draws: 1, losses: 0, goalsFor: 6, goalsAgainst: 2, matchesPlayed: 3, form: ["W","D","W"], participantType: "national_team", isNational: true },
+    { name: "England", country: "England", flag: "🏴󠁧󠁢󠁥󠁮󠁧󠁿", logo: "🏴󠁧󠁢󠁥󠁮󠁧󠁿", code: "ENG", rank: 4, points: 7, wins: 2, draws: 1, losses: 0, goalsFor: 6, goalsAgainst: 1, matchesPlayed: 3, form: ["W","D","W"], participantType: "national_team", isNational: true },
+    { name: "Spain", country: "Spain", flag: "🇪🇸", logo: "🇪🇸", code: "ESP", rank: 5, points: 6, wins: 2, draws: 0, losses: 1, goalsFor: 7, goalsAgainst: 3, matchesPlayed: 3, form: ["W","W","L"], participantType: "national_team", isNational: true },
+    { name: "Germany", country: "Germany", flag: "🇩🇪", logo: "🇩🇪", code: "GER", rank: 6, points: 6, wins: 2, draws: 0, losses: 1, goalsFor: 6, goalsAgainst: 4, matchesPlayed: 3, form: ["W","L","W"], participantType: "national_team", isNational: true },
+    { name: "Portugal", country: "Portugal", flag: "🇵🇹", logo: "🇵🇹", code: "POR", rank: 7, points: 6, wins: 2, draws: 0, losses: 1, goalsFor: 5, goalsAgainst: 3, matchesPlayed: 3, form: ["W","W","L"], participantType: "national_team", isNational: true },
+    { name: "Netherlands", country: "Netherlands", flag: "🇳🇱", logo: "🇳🇱", code: "NED", rank: 8, points: 5, wins: 1, draws: 2, losses: 0, goalsFor: 4, goalsAgainst: 2, matchesPlayed: 3, form: ["W","D","D"], participantType: "national_team", isNational: true },
+    { name: "Italy", country: "Italy", flag: "🇮🇹", logo: "🇮🇹", code: "ITA", rank: 9, points: 5, wins: 1, draws: 2, losses: 0, goalsFor: 4, goalsAgainst: 3, matchesPlayed: 3, form: ["D","W","D"], participantType: "national_team", isNational: true },
+    { name: "Croatia", country: "Croatia", flag: "🇭🇷", logo: "🇭🇷", code: "CRO", rank: 10, points: 5, wins: 1, draws: 2, losses: 0, goalsFor: 3, goalsAgainst: 2, matchesPlayed: 3, form: ["D","D","W"], participantType: "national_team", isNational: true },
+    { name: "Morocco", country: "Morocco", flag: "🇲🇦", logo: "🇲🇦", code: "MAR", rank: 11, points: 4, wins: 1, draws: 1, losses: 1, goalsFor: 3, goalsAgainst: 3, matchesPlayed: 3, form: ["D","W","L"], participantType: "national_team", isNational: true },
+    { name: "Uruguay", country: "Uruguay", flag: "🇺🇾", logo: "🇺🇾", code: "URU", rank: 12, points: 4, wins: 1, draws: 1, losses: 1, goalsFor: 4, goalsAgainst: 4, matchesPlayed: 3, form: ["L","W","D"], participantType: "national_team", isNational: true },
+    { name: "Colombia", country: "Colombia", flag: "🇨🇴", logo: "🇨🇴", code: "COL", rank: 13, points: 4, wins: 1, draws: 1, losses: 1, goalsFor: 4, goalsAgainst: 4, matchesPlayed: 3, form: ["W","L","D"], participantType: "national_team", isNational: true },
+    { name: "Nigeria", country: "Nigeria", flag: "🇳🇬", logo: "🇳🇬", code: "NGA", rank: 14, points: 3, wins: 1, draws: 0, losses: 2, goalsFor: 3, goalsAgainst: 5, matchesPlayed: 3, form: ["L","W","L"], participantType: "national_team", isNational: true },
+    { name: "Japan", country: "Japan", flag: "🇯🇵", logo: "🇯🇵", code: "JPN", rank: 15, points: 3, wins: 1, draws: 0, losses: 2, goalsFor: 3, goalsAgainst: 5, matchesPlayed: 3, form: ["W","L","L"], participantType: "national_team", isNational: true },
+    { name: "USA", country: "USA", flag: "🇺🇸", logo: "🇺🇸", code: "USA", rank: 16, points: 3, wins: 1, draws: 0, losses: 2, goalsFor: 2, goalsAgainst: 5, matchesPlayed: 3, form: ["L","L","W"], participantType: "national_team", isNational: true }
+  ]
+};
+
+// Guarantee type: "national_team" and participantType: "national_team" across all entries
+try {
+  Object.values(NATIONAL_TEAMS_DATA).forEach(comp => {
+    if (Array.isArray(comp)) {
+      comp.forEach(t => { t.type = 'national_team'; t.participantType = 'national_team'; t.isNational = true; });
+    } else if (typeof comp === 'object' && comp !== null) {
+      Object.values(comp).forEach(tierList => {
+        if (Array.isArray(tierList)) {
+          tierList.forEach(t => { t.type = 'national_team'; t.participantType = 'national_team'; t.isNational = true; });
+        }
+      });
+    }
+  });
+} catch (e) { }
+
+function getNationalTeamsForCompetition(competitionName, tier) {
+  const clean = (competitionName || '').toLowerCase().trim();
+  if (clean.includes('nations league')) {
+    const nlData = NATIONAL_TEAMS_DATA["UEFA Nations League"];
+    if (tier && nlData[tier]) {
+      return nlData[tier];
+    }
+    // Default: return League A (or combined)
+    return nlData["League A"] || [];
+  }
+  if (clean.includes('world cup') || clean.includes('friendl') || clean.includes('copa') || clean.includes('afcon') || clean.includes('euro')) {
+    return NATIONAL_TEAMS_DATA["World Cup"] || [];
+  }
+  return [];
+}
+
+// Reusable validation layer: Rejects/filters out club participants from national team tournaments
+function validateCompetitionParticipants(participants, competitionName) {
+  if (!Array.isArray(participants)) return [];
+  const isNational = isNationalTeamCompetition(competitionName);
+  if (!isNational) return participants;
+
+  const knownClubs = [
+    'real madrid', 'manchester city', 'man city', 'bayern munich', 'barcelona',
+    'paris saint-germain', 'psg', 'inter milan', 'arsenal', 'juventus',
+    'liverpool', 'chelsea', 'borussia dortmund', 'atletico madrid', 'manchester united',
+    'tottenham', 'ac milan', 'napoli', 'roma', 'ajax', 'benfica', 'sporting cp', 'porto',
+    'aston villa', 'newcastle', 'everton', 'hull city', 'brentford'
+  ];
+
+  return participants.filter(p => {
+    const pName = (p.name || p.team?.name || '').toLowerCase();
+    if (knownClubs.includes(pName)) return false;
+    if (pName.includes(' fc') || pName.includes(' sc') || pName.includes(' afc') || pName.includes(' united') || pName.includes(' city')) {
+      return false;
+    }
+    return true;
+  });
+}
+
 function getCountryClubs(countryOrLeague) {
   if (!countryOrLeague) return [];
   const query = countryOrLeague.trim().toLowerCase();
+
+  // CRITICAL: If this is a National Team competition, return authentic national teams, NEVER club teams!
+  if (isNationalTeamCompetition(query)) {
+    return getNationalTeamsForCompetition(query);
+  }
 
   // 1. Direct match by country key in COUNTRY_CLUBS_DATA
   for (const [cName, clubs] of Object.entries(COUNTRY_CLUBS_DATA)) {
@@ -2068,6 +2363,10 @@ function getCountryClubs(countryOrLeague) {
   if (!genericNames.includes(query) && typeof COUNTRY_LEAGUES_DATA !== 'undefined' && Array.isArray(COUNTRY_LEAGUES_DATA)) {
     const lEntry = COUNTRY_LEAGUES_DATA.find(c => c.leagues && c.leagues.some(l => l.toLowerCase() === query || (query.length > 5 && query.includes(l.toLowerCase()))));
     if (lEntry && COUNTRY_CLUBS_DATA[lEntry.country]) {
+      // If the league is a national competition, do not return European clubs
+      if (lEntry.country.toLowerCase() === 'europe' && isNationalTeamCompetition(query)) {
+        return getNationalTeamsForCompetition(query);
+      }
       return hydrateCountryClubs(lEntry.country, COUNTRY_CLUBS_DATA[lEntry.country], countryOrLeague);
     }
   }
@@ -2315,7 +2614,7 @@ const TOP_LEAGUES_DATA = [
   { name: "Champions League",        emoji: "🇪🇺", country: "Europe" },
   { name: "Europa League",           emoji: "🇪🇺", country: "Europe" },
   { name: "Conference League",       emoji: "🇪🇺", country: "Europe" },
-  { name: "UEFA Nations League",     emoji: "🇪🇺", country: "Europe" },
+  { name: "UEFA Nations League",     emoji: "🇪🇺", country: "Europe", type: "national_team", participantType: "national_team" },
   { name: "UEFA Super Cup",          emoji: "🏆", country: "Europe" },
   { name: "Eredivisie",              emoji: "🇳🇱", country: "Netherlands" },
   { name: "Eerste Divisie",          emoji: "🇳🇱", country: "Netherlands" },
@@ -2395,6 +2694,17 @@ const TOP_LEAGUES_DATA = [
   { name: "Euro Championship",       emoji: "🏆", country: "Europe" }
 ];
 
+try {
+  TOP_LEAGUES_DATA.forEach(league => {
+    if (!league.type) {
+      league.type = isNationalTeamCompetition(league.name) ? 'national_team' : 'club';
+    }
+    if (!league.participantType) {
+      league.participantType = isNationalTeamCompetition(league.name) ? 'national_team' : 'club';
+    }
+  });
+} catch (e) { }
+
 try { if (typeof MATCH_DATA !== 'undefined') window.MATCH_DATA = MATCH_DATA; } catch (e) { }
 try { if (typeof MATCHES_DATA !== 'undefined') window.MATCHES_DATA = MATCHES_DATA; else if (typeof MATCH_DATA !== 'undefined') window.MATCHES_DATA = MATCH_DATA; } catch (e) { }
 try { if (typeof MATCH_STATS_DATA !== 'undefined') window.MATCH_STATS_DATA = MATCH_STATS_DATA; } catch (e) { }
@@ -2409,6 +2719,11 @@ try { if (typeof TOP_LEAGUES_DATA !== 'undefined') window.TOP_LEAGUES_DATA = TOP
 try { if (typeof GLOBAL_CLUBS !== 'undefined') window.GLOBAL_CLUBS = GLOBAL_CLUBS; } catch (e) { }
 try { if (typeof LEAGUE_STATS !== 'undefined') window.LEAGUE_STATS = LEAGUE_STATS; } catch (e) { }
 try { if (typeof HISTORICAL_PERFORMANCE !== 'undefined') window.HISTORICAL_PERFORMANCE = HISTORICAL_PERFORMANCE; } catch (e) { }
+try { if (typeof COMPETITIONS_METADATA !== 'undefined') window.COMPETITIONS_METADATA = COMPETITIONS_METADATA; } catch (e) { }
+try { if (typeof isNationalTeamCompetition !== 'undefined') window.isNationalTeamCompetition = isNationalTeamCompetition; } catch (e) { }
+try { if (typeof NATIONAL_TEAMS_DATA !== 'undefined') window.NATIONAL_TEAMS_DATA = NATIONAL_TEAMS_DATA; } catch (e) { }
+try { if (typeof getNationalTeamsForCompetition !== 'undefined') window.getNationalTeamsForCompetition = getNationalTeamsForCompetition; } catch (e) { }
+try { if (typeof validateCompetitionParticipants !== 'undefined') window.validateCompetitionParticipants = validateCompetitionParticipants; } catch (e) { }
 
 // Auto-Export Window Bindings for data.js
 
