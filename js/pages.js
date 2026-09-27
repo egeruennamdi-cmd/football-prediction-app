@@ -481,20 +481,53 @@
     `;
   }
 
+  function escapeHtml(str) {
+    if (!str) return '';
+    return String(str)
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;');
+  }
+
+  function escapeQuotes(str) {
+    if (!str) return '';
+    return String(str).replace(/'/g, "\\'");
+  }
+
   // 5. Dedicated Leagues Hub (/leagues, /league/:leagueId)
-  function renderLeaguesPage() {
+  function renderLeaguesPage(targetLeagueId) {
     const container = document.getElementById('view-leagues');
     if (!container) return;
 
-    const leagues = (window.LEAGUE_STATS && Array.isArray(window.LEAGUE_STATS)) ? window.LEAGUE_STATS : [
-      { name: 'Premier League', country: 'England', flag: '🏴󠁧󠁢󠁥󠁮󠁧󠁿', matches: 380, homeWinRate: 46, avgGoals: 2.85, btts: 54 },
-      { name: 'La Liga', country: 'Spain', flag: '🇪🇸', matches: 380, homeWinRate: 44, avgGoals: 2.62, btts: 49 },
-      { name: 'Serie A', country: 'Italy', flag: '🇮🇹', matches: 380, homeWinRate: 42, avgGoals: 2.71, btts: 52 },
-      { name: 'Bundesliga', country: 'Germany', flag: '🇩🇪', matches: 306, homeWinRate: 47, avgGoals: 3.12, btts: 61 },
-      { name: 'Ligue 1', country: 'France', flag: '🇫🇷', matches: 306, homeWinRate: 43, avgGoals: 2.68, btts: 50 },
-      { name: 'Champions League', country: 'Europe', flag: '🇪🇺', matches: 125, homeWinRate: 48, avgGoals: 3.05, btts: 58 },
-      { name: 'NPFL', country: 'Nigeria', flag: '🇳🇬', matches: 380, homeWinRate: 64, avgGoals: 2.15, btts: 38 }
-    ];
+    // Retrieve normalized league models through centralized normalizer
+    let leagues = [];
+    if (typeof window.getNormalizedLeagues === 'function') {
+      leagues = window.getNormalizedLeagues();
+    } else if (window.LEAGUE_STATS && Array.isArray(window.LEAGUE_STATS)) {
+      leagues = window.LEAGUE_STATS.map(item => (typeof window.normalizeLeague === 'function' ? window.normalizeLeague(item) : item));
+    }
+
+    if (!leagues || leagues.length === 0) {
+      container.innerHTML = `
+        <div style="padding: 40px; text-align: center; color: #94a3b8;">
+          <h3>League information unavailable</h3>
+          <p>Unable to load competition records at this time.</p>
+        </div>
+      `;
+      return;
+    }
+
+    // If specific league requested via /league/:leagueId, find it
+    let targetLeague = null;
+    if (targetLeagueId) {
+      if (typeof window.getCanonicalLeagueById === 'function') {
+        targetLeague = window.getCanonicalLeagueById(targetLeagueId);
+      }
+      if (!targetLeague && typeof window.getCanonicalLeagueByName === 'function') {
+        targetLeague = window.getCanonicalLeagueByName(targetLeagueId);
+      }
+    }
 
     container.innerHTML = `
       <div style="margin-bottom: 24px;">
@@ -505,35 +538,86 @@
           🏆 Football Leagues Intelligence
         </h2>
         <p style="font-size: 0.82rem; color: var(--text-secondary); margin-top: 4px;">
-          Statistical breakdown, home win biases, over/under rates, and standings across major domestic and continental leagues.
+          Statistical breakdown, home win biases, over/under rates, and seasonal benchmarks across elite domestic and international competitions.
         </p>
       </div>
 
-      <div class="leagues-grid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 16px;">
-        ${leagues.map(l => `
-          <div class="glass-card" style="padding: 20px; border-radius: var(--radius-md); border: 1px solid rgba(255,255,255,0.08);">
-            <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 14px;">
-              <span style="font-size: 1.8rem;">${l.flag || '🏆'}</span>
-              <div>
-                <h3 style="font-family: var(--font-display); font-size: 1.15rem; color: #ffffff; margin: 0;">${l.name}</h3>
-                <span style="font-size: 0.75rem; color: #94a3b8;">${l.country}</span>
-              </div>
+      ${targetLeague ? `
+        <div class="glass-card" style="margin-bottom: 24px; padding: 20px 24px; border-radius: 14px; background: linear-gradient(135deg, rgba(30,58,138,0.4) 0%, rgba(15,23,42,0.9) 100%); border: 1px solid rgba(59,130,246,0.4); display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 16px;">
+          <div style="display: flex; align-items: center; gap: 16px;">
+            <span style="font-size: 2.4rem;">${targetLeague.flag || '🏆'}</span>
+            <div>
+              <div style="font-size: 0.72rem; color: #38bdf8; font-weight: 800; text-transform: uppercase; letter-spacing: 0.5px;">CANONICAL LEAGUE INTELLIGENCE</div>
+              <h3 style="font-size: 1.4rem; font-weight: 900; color: #ffffff; margin: 2px 0 4px;">${escapeHtml(targetLeague.name)}</h3>
+              <span style="font-size: 0.8rem; color: #94a3b8;">${escapeHtml(targetLeague.country)} &bull; Season ${escapeHtml(targetLeague.seasonId)} &bull; ${targetLeague.type === 'national_team' ? 'Official National Tournament' : 'Domestic Club Competition'}</span>
             </div>
+          </div>
+          <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+            <a href="/predictions?leagueId=${targetLeague.id}" onclick="if(typeof window.navigateToLeaguePredictions==='function'){window.navigateToLeaguePredictions('${targetLeague.id}','${escapeQuotes(targetLeague.name)}','${escapeQuotes(targetLeague.country)}'); return false;} window.navigateTo('/predictions?leagueId=${targetLeague.id}'); return false;" class="btn btn-primary" style="padding: 10px 18px; font-weight: 800; font-size: 0.82rem; text-decoration: none;">
+              View All Match Predictions →
+            </a>
+            <button type="button" onclick="if(typeof openLeagueHubModal==='function') openLeagueHubModal('${escapeQuotes(targetLeague.name)}', null, '${escapeQuotes(targetLeague.country)}');" class="btn btn-secondary" style="padding: 10px 18px; font-weight: 700; font-size: 0.82rem;">
+              Full Analytics Hub ⚡
+            </button>
+          </div>
+        </div>
+      ` : ''}
+
+      <div class="leagues-grid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(310px, 1fr)); gap: 18px;">
+        ${leagues.map(l => {
+          const norm = (typeof window.normalizeLeague === 'function') ? window.normalizeLeague(l) : l;
+          const leagueName = norm.name || norm.league || 'League information unavailable';
+          const countryName = norm.country || 'International';
+          const flagEmoji = norm.flag || '🏆';
+          const typeBadge = norm.type === 'national_team' ? 'National Team' : 'Club';
+          const typeColor = norm.type === 'national_team' ? '#c084fc' : '#60a5fa';
+          const typeBg = norm.type === 'national_team' ? 'rgba(192,132,252,0.12)' : 'rgba(96,165,250,0.12)';
+          const homeWinVal = (norm.homeWinRate !== undefined && norm.homeWinRate !== null) ? norm.homeWinRate : (parseInt(norm.homeWinPct) || 45);
+          const avgGoalsVal = (norm.avgGoals !== undefined && norm.avgGoals !== null) ? norm.avgGoals : 2.75;
+          const canonicalId = norm.id || '39';
+          const isTargeted = targetLeague && (targetLeague.id === norm.id || targetLeague.name.toLowerCase() === leagueName.toLowerCase());
+
+          return `
+          <div class="glass-card league-intel-card" id="league-card-${canonicalId}" style="padding: 20px; border-radius: var(--radius-md); border: 1px solid ${isTargeted ? 'rgba(59,130,246,0.6)' : 'rgba(255,255,255,0.08)'}; background: ${isTargeted ? 'linear-gradient(180deg, rgba(30,58,138,0.25) 0%, rgba(15,23,42,0.9) 100%)' : ''}; transition: transform 0.2s ease, border-color 0.2s ease;">
+            <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 14px;">
+              <div style="display: flex; align-items: center; gap: 12px;">
+                <span style="font-size: 2rem;" role="img" aria-label="${escapeHtml(countryName)} Flag">${flagEmoji}</span>
+                <div>
+                  <h3 style="font-family: var(--font-display); font-size: 1.15rem; font-weight: 800; color: #ffffff; margin: 0; line-height: 1.3;">
+                    ${escapeHtml(leagueName)}
+                  </h3>
+                  <div style="display: flex; align-items: center; gap: 6px; margin-top: 3px;">
+                    <span style="font-size: 0.76rem; color: #94a3b8; font-weight: 600;">${escapeHtml(countryName)}</span>
+                    <span style="color: #475569; font-size: 0.7rem;">•</span>
+                    <span style="font-size: 0.68rem; color: #64748b; font-weight: 600;">${escapeHtml(norm.seasonId || '2026/27')}</span>
+                  </div>
+                </div>
+              </div>
+              <span class="badge" style="background: ${typeBg}; color: ${typeColor}; border: 1px solid ${typeColor}40; font-size: 0.68rem; font-weight: 700; padding: 3px 8px; border-radius: 6px; text-transform: uppercase;">
+                ${typeBadge}
+              </span>
+            </div>
+
             <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; font-size: 0.8rem; margin-bottom: 16px;">
-              <div style="background: rgba(255,255,255,0.03); padding: 8px 10px; border-radius: 6px;">
-                <span style="color: var(--text-muted); font-size: 0.72rem; display: block;">Home Win %</span>
-                <span style="font-weight: 800; color: #60a5fa;">${l.homeWinRate || 45}%</span>
+              <div style="background: rgba(255,255,255,0.03); padding: 9px 12px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.04);">
+                <span style="color: var(--text-muted); font-size: 0.72rem; display: block; margin-bottom: 2px;">Home Win %</span>
+                <span style="font-weight: 800; font-size: 1.05rem; color: #60a5fa;">${homeWinVal}%</span>
               </div>
-              <div style="background: rgba(255,255,255,0.03); padding: 8px 10px; border-radius: 6px;">
-                <span style="color: var(--text-muted); font-size: 0.72rem; display: block;">Avg Goals</span>
-                <span style="font-weight: 800; color: #34d399;">${l.avgGoals || 2.75}</span>
+              <div style="background: rgba(255,255,255,0.03); padding: 9px 12px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.04);">
+                <span style="color: var(--text-muted); font-size: 0.72rem; display: block; margin-bottom: 2px;">Avg Goals</span>
+                <span style="font-weight: 800; font-size: 1.05rem; color: #34d399;">${avgGoalsVal}</span>
               </div>
             </div>
-            <a href="/predictions" onclick="if(typeof window.triggerQuickFilter==='function') window.triggerQuickFilter('all', 'all'); window.navigateTo('/predictions'); return false;" class="btn btn-secondary" style="width: 100%; text-align: center; display: block; font-size: 0.78rem; padding: 8px;">
+
+            <a href="/predictions?leagueId=${canonicalId}" 
+               onclick="if(typeof window.navigateToLeaguePredictions==='function'){window.navigateToLeaguePredictions('${canonicalId}','${escapeQuotes(leagueName)}','${escapeQuotes(countryName)}'); return false;} window.navigateTo('/predictions?leagueId=${canonicalId}'); return false;" 
+               class="btn btn-secondary" 
+               style="width: 100%; text-align: center; display: block; font-size: 0.8rem; font-weight: 700; padding: 9px; border-radius: 8px;">
               View League Predictions →
             </a>
           </div>
-        `).join('')}
+          `;
+        }).join('')}
       </div>
     `;
   }

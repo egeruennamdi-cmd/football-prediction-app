@@ -469,7 +469,7 @@
     } else if (config.isMatchesDiscovery && typeof window.renderMatchesDiscoveryPage === 'function') {
       window.renderMatchesDiscoveryPage({ liveOnly: config.liveOnly });
     } else if (targetViewId === 'view-leagues' && typeof window.renderLeaguesPage === 'function') {
-      window.renderLeaguesPage();
+      window.renderLeaguesPage(config.isLeagueDetail ? config.leagueId : null);
     } else if (targetViewId === 'view-teams' && typeof window.renderTeamsPage === 'function') {
       window.renderTeamsPage();
     } else if (targetViewId === 'view-ai-scout' && typeof window.renderAiScoutPage === 'function') {
@@ -478,6 +478,33 @@
       window.renderResultsPage();
     } else if (targetViewId === 'view-watchlist' && typeof window.renderWatchlistPage === 'function') {
       window.renderWatchlistPage();
+    }
+
+    // Handle query param league filtering for /predictions or command center
+    if (targetViewId === 'view-predictions-hub' || targetViewId === 'view-command-center' || path === '/' || path === '/predictions') {
+      try {
+        const urlParams = new URLSearchParams(window.location.search);
+        const queryLeagueId = urlParams.get('leagueId') || urlParams.get('league_id');
+        const queryLeague = urlParams.get('league');
+        if (queryLeagueId || queryLeague) {
+          setTimeout(() => {
+            let targetName = queryLeague;
+            let targetCountry = null;
+            if (queryLeagueId && typeof window.getCanonicalLeagueById === 'function') {
+              const canonical = window.getCanonicalLeagueById(queryLeagueId);
+              if (canonical) {
+                targetName = canonical.name;
+                targetCountry = canonical.country;
+              }
+            }
+            if (targetName && typeof window.selectSidebarLeague === 'function') {
+              window.selectSidebarLeague(targetName, null, targetCountry);
+            }
+          }, 150);
+        }
+      } catch (e) {
+        console.warn('[Router] League query param filter error:', e);
+      }
     }
 
     // Date Tab filtering for /predictions/today, /predictions/tomorrow, /predictions/yesterday
