@@ -379,6 +379,37 @@
 
     const targetViewId = config.viewId || 'view-command-center';
 
+    // STRICT ROLE-BASED ACCESS CONTROL (RBAC) FOR FOUNDER / ADMIN CONSOLE
+    if (!options.skipAuthCheck && (targetViewId === 'view-founder-analytics' || path === '/admin' || path === '/admin/analytics' || path === '/founder-analytics')) {
+      const isLoggedIn = typeof localStorage !== 'undefined' && localStorage.getItem('userLoggedIn') === 'true';
+      const isUserAdmin = typeof window.isAdmin === 'function' ? window.isAdmin() : false;
+
+      if (!isLoggedIn) {
+        console.warn('[Router RBAC Guard] Unauthorized attempt to access admin view without authentication.');
+        if (typeof showToast === 'function') {
+          showToast('🔒 Please log in with an Administrator account to access the Founder Console.', 'warning');
+        } else if (typeof showAppNotification === 'function') {
+          showAppNotification('🔒 Administrator login required.');
+        }
+        window.history.replaceState(null, '', '/dashboard');
+        if (typeof openAuthModal === 'function') {
+          openAuthModal('login');
+        }
+        return navigateTo('/dashboard', true, { skipAuthCheck: true });
+      }
+
+      if (!isUserAdmin) {
+        console.warn('[Router RBAC Guard] Forbidden attempt to access admin view by non-admin user.');
+        if (typeof showToast === 'function') {
+          showToast('⛔ Access Denied: The Founder Analytics & BI Console is restricted to verified Administrators.', 'error');
+        } else if (typeof showAppNotification === 'function') {
+          showAppNotification('⛔ Access Denied: Administrator role required.');
+        }
+        window.history.replaceState(null, '', '/dashboard');
+        return navigateTo('/dashboard', true, { skipAuthCheck: true });
+      }
+    }
+
     // Hide all page-view containers
     const pageViews = document.querySelectorAll('.page-view');
     pageViews.forEach(view => {
@@ -563,8 +594,18 @@
   }
 
   // 7. Programmatic Navigation function
-  function navigateTo(targetPath, replace = false, options = {}) {
+  function navigateTo(targetPath, replaceOrOptions = false, maybeOptions = {}) {
     if (!targetPath) return;
+
+    let replace = false;
+    let options = {};
+    if (typeof replaceOrOptions === 'boolean') {
+      replace = replaceOrOptions;
+      options = maybeOptions || {};
+    } else if (typeof replaceOrOptions === 'object' && replaceOrOptions !== null) {
+      options = replaceOrOptions;
+      replace = !!options.replace;
+    }
 
     // Resolve any hash redirect passed into navigateTo
     if (targetPath.startsWith('#') && HASH_REDIRECTS[targetPath.toLowerCase()]) {

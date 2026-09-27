@@ -226,17 +226,12 @@
     }
 
     const isVip = data.sub && data.sub.active;
-    const isFounder = (function() {
-      const username = (localStorage.getItem("currentUsername") || '').trim();
+    const isFounder = typeof window.isAdmin === 'function' ? window.isAdmin() : (function() {
+      const username = (localStorage.getItem("currentUsername") || '').trim().toLowerCase();
       const email = (localStorage.getItem("currentUserEmail") || '').trim().toLowerCase();
       const role = (localStorage.getItem("user_role") || '').toUpperCase();
-      const sessionAuth = sessionStorage.getItem("dp_founder_authenticated") === "true";
-      return (
-        sessionAuth ||
-        username === 'Egeruennamdi78' ||
-        email === 'admin@deeppredictbet.com' ||
-        role === 'ADMIN'
-      );
+      const isAuthAdmin = (email === 'admin@deeppredictbet.com' || email === 'egeruennamdi@gmail.com' || username === 'egeruennamdi78' || username === 'egeruennamdi');
+      return isAuthAdmin && role === 'ADMIN';
     })();
     const tierBadge = isVip ? '👑 VIP PASS ACTIVE' : (data.role === 'PRO' ? '⚡ PRO ANALYST' : '🛡️ FREE PUNTER');
     const tierColor = isVip ? '#f59e0b' : (data.role === 'PRO' ? '#10b981' : '#60a5fa');
@@ -1604,14 +1599,16 @@
   let currentAdminPeriod = '30d';
 
   function isFounderAuthenticated() {
-    const sessionAuth = sessionStorage.getItem("dp_founder_authenticated") === "true";
+    if (typeof window.isAdmin === 'function') {
+      return window.isAdmin();
+    }
     const loggedIn = localStorage.getItem("userLoggedIn") === "true";
-    const username = (localStorage.getItem("currentUsername") || '').trim();
+    const username = (localStorage.getItem("currentUsername") || '').trim().toLowerCase();
     const email = (localStorage.getItem("currentUserEmail") || '').trim().toLowerCase();
     const role = (localStorage.getItem("user_role") || '').toUpperCase();
+    const isAuthAdmin = (email === 'admin@deeppredictbet.com' || email === 'egeruennamdi@gmail.com' || username === 'egeruennamdi78' || username === 'egeruennamdi');
 
-    // Must be logged in AND have explicitly authenticated the founder passkey session OR have active ADMIN role
-    return sessionAuth && loggedIn && (role === 'ADMIN' || username === 'Egeruennamdi78' || email === 'admin@deeppredictbet.com');
+    return loggedIn && isAuthAdmin && role === 'ADMIN';
   }
 
   window.authenticateFounder = function (e) {
@@ -1626,6 +1623,7 @@
       localStorage.setItem("currentUserEmail", "admin@deeppredictbet.com");
       localStorage.setItem("user_role", "ADMIN");
       showToast('👑 Founder Access Verified! Welcome Alex Nnamdi.', 'success');
+      if (typeof updateAuthUIState === 'function') updateAuthUIState();
       renderFounderDashboard();
     } else {
       alert('Invalid Administrator Passkey. Please verify your credentials.');
@@ -1633,13 +1631,11 @@
   };
 
   window.quickFounderLogin = function () {
-    sessionStorage.setItem("dp_founder_authenticated", "true");
-    localStorage.setItem("userLoggedIn", "true");
-    localStorage.setItem("currentUsername", "Egeruennamdi78");
-    localStorage.setItem("currentUserEmail", "admin@deeppredictbet.com");
-    localStorage.setItem("user_role", "ADMIN");
-    showToast('👑 Founder Quick-Auth Activated.', 'success');
-    renderFounderDashboard();
+    if (typeof window.isAdmin === 'function' && window.isAdmin()) {
+      renderFounderDashboard();
+    } else {
+      showToast('⛔ Quick-auth disabled. Administrator passkey required.', 'error');
+    }
   };
 
   window.founderSignOut = function () {
@@ -1681,6 +1677,10 @@
 
   window.downloadAdminCsv = async function () {
     try {
+      if (typeof window.isAdmin === 'function' && !window.isAdmin()) {
+        showToast('⛔ Access Denied: Administrator privileges required.', 'error');
+        return;
+      }
       showToast('Generating sanitized business intelligence report...', 'info');
       const res = await fetch(`/api/admin/export?period=${currentAdminPeriod}&adminKey=deep_admin_78_key`, {
         headers: { 'Authorization': 'Bearer deep_admin_78_key' }
@@ -1707,8 +1707,31 @@
     if (!container) return;
 
     // Strict Authorization Check
-    if (!isFounderAuthenticated()) {
-      renderFounderAuthGate(container);
+    const isUserAdmin = typeof window.isAdmin === 'function' ? window.isAdmin() : isFounderAuthenticated();
+    const userLoggedIn = localStorage.getItem("userLoggedIn") === "true";
+
+    if (!userLoggedIn) {
+      if (typeof showToast === 'function') {
+        showToast('Please sign in to access administrator features.', 'warning');
+      }
+      if (typeof openAuthModal === 'function') {
+        openAuthModal('login');
+      }
+      if (typeof navigateTo === 'function') {
+        navigateTo('/dashboard');
+      }
+      return;
+    }
+
+    if (!isUserAdmin) {
+      if (typeof showToast === 'function') {
+        showToast('⛔ Access Denied: The Founder Analytics & BI Console is restricted to verified Administrators.', 'error');
+      }
+      if (typeof navigateTo === 'function') {
+        navigateTo('/dashboard');
+      } else if (typeof navigateToPage === 'function') {
+        navigateToPage('dashboard');
+      }
       return;
     }
 
@@ -1929,9 +1952,6 @@
           </form>
 
           <div style="margin-top: 24px; padding-top: 20px; border-top: 1px solid rgba(255,255,255,0.08); display: flex; flex-direction: column; gap: 10px;">
-            <button onclick="window.quickFounderLogin()" style="background: rgba(255,255,255,0.05); border: 1px dashed rgba(255,255,255,0.25); color: #cbd5e1; font-size: 0.8rem; font-weight: 700; padding: 10px 14px; border-radius: 10px; cursor: pointer;">
-              👑 1-Click Founder Authenticate (Alex Nnamdi)
-            </button>
             <a href="/" style="font-size: 0.78rem; color: #64748b; text-decoration: none; margin-top: 4px;">&larr; Return to DeepPredictBet Home</a>
           </div>
         </div>

@@ -131,7 +131,7 @@ export async function onRequestOptions() {
 export async function onRequestGet(context) {
   try {
     const url = new URL(context.request.url);
-    const selfEmail = (url.searchParams.get('email') || '').trim().toLowerCase();
+    const selfEmail = (url.searchParams.get('email') || url.searchParams.get('selfEmail') || '').trim().toLowerCase();
     const isAdmin = checkIsAdmin(context);
 
     const members = await getMembers(context);
@@ -160,16 +160,20 @@ export async function onRequestGet(context) {
       }
     }
 
-    // Roster view: If requester is admin, return full list; otherwise scrub emails to protect privacy
+    // Roster view: Restricted strictly to verified Administrators
+    if (!isAdmin) {
+      return new Response(JSON.stringify({
+        success: false,
+        error: 'Forbidden: Administrator privileges required to access user roster.'
+      }), {
+        status: 403,
+        headers: corsHeaders()
+      });
+    }
+
     const safeMembers = members.map(m => {
       const safe = { ...m };
       delete safe.passwordHash;
-      if (!isAdmin) {
-        const parts = (safe.email || '').split('@');
-        if (parts.length === 2) {
-          safe.email = parts[0].substring(0, 2) + '***@' + parts[1];
-        }
-      }
       return safe;
     });
 
@@ -183,17 +187,18 @@ export async function onRequestGet(context) {
     });
   } catch (err) {
     const isAdmin = checkIsAdmin(context);
+    if (!isAdmin) {
+      return new Response(JSON.stringify({
+        success: false,
+        error: 'Forbidden: Administrator privileges required.'
+      }), {
+        status: 403,
+        headers: corsHeaders()
+      });
+    }
     const safeSeed = SEED_ADMIN.map(m => {
       const copy = { ...m };
-      if (!isAdmin) {
-        delete copy.passwordHash;
-        if (copy.email) {
-          const parts = copy.email.split('@');
-          if (parts.length === 2) {
-            copy.email = parts[0].substring(0, 2) + '***@' + parts[1];
-          }
-        }
-      }
+      delete copy.passwordHash;
       return copy;
     });
     return new Response(JSON.stringify({

@@ -8279,6 +8279,16 @@ if (document.readyState === 'loading') {
 }
 
 async function openAdminUsersModal() {
+  const isUserAdmin = typeof isAdmin === 'function' ? isAdmin() : (typeof window.isAdmin === 'function' ? window.isAdmin() : false);
+  if (!isUserAdmin) {
+    if (typeof showToast === 'function') {
+      showToast('⛔ Access Denied: Administrator role required.', 'error');
+    } else {
+      alert('⛔ Access Denied: Administrator role required.');
+    }
+    return;
+  }
+
   const existing = document.getElementById("admin-users-modal");
   if (existing) existing.remove();
 
@@ -8835,6 +8845,13 @@ function updateAuthUIState() {
     profileAvatarInitial.innerText = isLoggedIn ? username.charAt(0).toUpperCase() : "👤";
   }
 
+  // Authoritative RBAC check for User Account Hub: Show Founder Console ONLY for ADMIN
+  const founderBtn = document.getElementById("prof-founder-console-btn");
+  if (founderBtn) {
+    const isUserAdmin = typeof isAdmin === 'function' ? isAdmin() : (typeof window.isAdmin === 'function' ? window.isAdmin() : false);
+    founderBtn.style.display = isUserAdmin ? "flex" : "none";
+  }
+
   const mobileAuthText = document.getElementById("mobile-drawer-auth-text");
   if (mobileAuthText) {
     mobileAuthText.innerText = isLoggedIn ? ("Account: " + username) : "Login";
@@ -8950,6 +8967,11 @@ function openProfileModal(activeTab) {
   if (!modal) return;
 
   updateAuthUIState();
+  const founderBtn = document.getElementById("prof-founder-console-btn");
+  if (founderBtn) {
+    const isUserAdmin = typeof isAdmin === 'function' ? isAdmin() : (typeof window.isAdmin === 'function' ? window.isAdmin() : false);
+    founderBtn.style.display = isUserAdmin ? "flex" : "none";
+  }
   if (typeof updateSavedTicketsCountUI === 'function') {
     updateSavedTicketsCountUI();
   }

@@ -7803,9 +7803,9 @@
           📊 Open My DeepPredict Dashboard
         </button>
 
-        <!-- Founder Analytics Console Trigger -->
-        <button onclick="closeProfileModal(null, true); if(typeof navigateTo==='function'){navigateTo('/founder-analytics');}else{openAdminUsersModal();}"
-          style="width: 100%; background: rgba(16, 185, 129, 0.15); border: 1px solid #10b981; color: #34d399; font-weight: 800; font-size: 0.88rem; padding: 10px; border-radius: 10px; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; margin-bottom: 10px; text-transform: uppercase; letter-spacing: 0.3px;">
+        <!-- Founder Analytics Console Trigger (Admin RBAC Only - Hidden by default) -->
+        <button id="prof-founder-console-btn" onclick="closeProfileModal(null, true); if(typeof navigateTo==='function'){navigateTo('/founder-analytics');}else{openAdminUsersModal();}"
+          style="display: none; width: 100%; background: rgba(16, 185, 129, 0.15); border: 1px solid #10b981; color: #34d399; font-weight: 800; font-size: 0.88rem; padding: 10px; border-radius: 10px; cursor: pointer; align-items: center; justify-content: center; gap: 8px; margin-bottom: 10px; text-transform: uppercase; letter-spacing: 0.3px;">
           👑 Founder Analytics & BI Console
         </button>
 
@@ -8745,6 +8745,7 @@
   <script defer src="/js/data.js?v=20260924_multipage_v3"></script>
   <script defer src="/js/analytics.js?v=20260924_multipage_v3"></script>
   <script defer src="/js/vipManager.js?v=20260924_multipage_v3"></script>
+  <script defer src="/js/authManager.js?v=20260927_rbac_v1"></script>
   <script defer src="/js/ui.js?v=20260925_mobile_footer_v1"></script>
   <script defer src="/js/pages.js?v=20260924_multipage_v3"></script>
   <script defer src="/js/router.js?v=20260924_multipage_v3"></script>
