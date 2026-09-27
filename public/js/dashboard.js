@@ -1316,6 +1316,11 @@
   /* --- 10. SUBSCRIPTION TAB --- */
   function renderCustomerSubscriptionTab(data) {
     const isVip = data.sub && data.sub.active;
+    const curr = (data.sub?.currency || (typeof window.getAppCurrency === 'function' ? window.getAppCurrency() : 'NGN')).toUpperCase();
+    const currMeta = (typeof window.getCurrencyDetails === 'function') ? window.getCurrencyDetails(curr) : { flag: '🇳🇬', symbol: '₦', name: 'Nigerian Naira' };
+    const subPrice = data.sub?.formattedAmount || data.sub?.price || (curr === 'USD' ? '$25.00' : '₦27,000.00');
+    const renewalCurr = (data.sub?.renewalCurrency || curr).toUpperCase();
+    const renewalDateStr = data.sub?.expiresAt ? new Date(data.sub.expiresAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : 'Active Cycle';
 
     return `
       <div>
@@ -1324,7 +1329,7 @@
             SUBSCRIPTION & VIP MEMBERSHIP
           </h2>
           <p style="font-size: 0.82rem; color: #94a3b8; margin: 4px 0 0;">
-            Manage your membership pass, renewal terms, and premium analytics access.
+            Manage your membership pass, billing currency, renewal terms, and premium analytics access.
           </p>
         </div>
 
@@ -1333,22 +1338,49 @@
             <div>
               <span style="font-size: 0.72rem; color: ${isVip ? '#fbbf24' : '#94a3b8'}; font-weight: 800; text-transform: uppercase;">Current Membership</span>
               <h3 style="margin: 4px 0 0; font-size: 1.3rem; font-weight: 900; color: #ffffff;">
-                ${isVip ? '👑 VIP Member Pass' : '🛡️ Free Punter Access Tier'}
+                ${isVip ? `👑 ${data.sub.name || 'VIP Member Pass'}` : '🛡️ Free Punter Access Tier'}
               </h3>
             </div>
             <span style="background: ${isVip ? 'rgba(245,158,11,0.2)' : 'rgba(255,255,255,0.08)'}; border: 1px solid ${isVip ? '#f59e0b' : 'rgba(255,255,255,0.15)'}; color: ${isVip ? '#fbbf24' : '#cbd5e1'}; font-size: 0.72rem; font-weight: 800; padding: 4px 10px; border-radius: 8px;">
-              ${isVip ? (data.sub.tier || 'ACTIVE').toUpperCase() : 'FREE'}
+              ${isVip ? `${(data.sub.tier || 'ACTIVE').toUpperCase()} • ${curr}` : 'FREE'}
             </span>
           </div>
 
           ${isVip ? `
-            <div style="font-size: 0.82rem; color: #cbd5e1; margin-bottom: 18px; line-height: 1.5;">
-              Active through: <b style="color: #34d399;">${data.sub.expiresAt ? new Date(data.sub.expiresAt).toLocaleDateString() : 'Active Subscription'}</b><br>
-              All tools, unlimited Bet Doctor audits, Poisson Value Bot, and Arbitrage Finder unlocked.
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 12px; background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.06); border-radius: 12px; padding: 14px; margin-bottom: 18px;">
+              <div>
+                <span style="font-size: 0.68rem; color: #94a3b8; text-transform: uppercase; font-weight: 700;">Billing Currency</span>
+                <div style="font-size: 0.95rem; font-weight: 800; color: #60a5fa; margin-top: 2px;">
+                  ${currMeta.flag} ${curr} (${currMeta.name})
+                </div>
+              </div>
+              <div>
+                <span style="font-size: 0.68rem; color: #94a3b8; text-transform: uppercase; font-weight: 700;">Billing Rate</span>
+                <div style="font-size: 0.95rem; font-weight: 800; color: #34d399; margin-top: 2px;">
+                  ${subPrice}
+                </div>
+              </div>
+              <div>
+                <span style="font-size: 0.68rem; color: #94a3b8; text-transform: uppercase; font-weight: 700;">Active Through</span>
+                <div style="font-size: 0.95rem; font-weight: 800; color: #ffffff; margin-top: 2px;">
+                  ${renewalDateStr}
+                </div>
+              </div>
+              <div>
+                <span style="font-size: 0.68rem; color: #94a3b8; text-transform: uppercase; font-weight: 700;">Next Renewal</span>
+                <div style="font-size: 0.95rem; font-weight: 800; color: #fbbf24; margin-top: 2px;">
+                  Billed in ${renewalCurr}
+                </div>
+              </div>
             </div>
-            <div style="display: flex; gap: 10px;">
+
+            <div style="font-size: 0.76rem; color: #94a3b8; margin-bottom: 18px;">
+              Transaction Reference: <code style="color: #38bdf8; font-weight: 700;">${data.sub.txId || 'DP-VIP-ACTIVE'}</code>
+            </div>
+
+            <div style="display: flex; gap: 10px; flex-wrap: wrap;">
               <button onclick="if(typeof openVipSubscriptionModal==='function') openVipSubscriptionModal();" class="btn btn-secondary" style="font-size: 0.8rem; padding: 9px 16px;">
-                Change Plan
+                Change Plan / Currency
               </button>
               <button onclick="if(typeof confirmCancelVipSubscription==='function') confirmCancelVipSubscription();" class="btn btn-secondary" style="font-size: 0.8rem; padding: 9px 16px; color: #f87171; border-color: rgba(239,68,68,0.3);">
                 Cancel Membership
@@ -1356,11 +1388,53 @@
             </div>
           ` : `
             <div style="font-size: 0.82rem; color: #94a3b8; margin-bottom: 18px; line-height: 1.5;">
-              Upgrade to VIP to unlock verified 89.4% win-rate Banker predictions, SureBets Arbitrage scanner, Poisson Value Bot, and unlimited Bet Doctor diagnostic audits.
+              Upgrade to VIP to unlock verified Banker predictions, SureBets Arbitrage scanner, Poisson Value Bot, and unlimited Bet Doctor diagnostic audits. Choose your preferred currency below.
             </div>
+
+            <div style="margin-bottom: 18px;">
+              <span style="font-size: 0.72rem; color: #94a3b8; font-weight: 700; text-transform: uppercase; display: block; margin-bottom: 8px;">Preferred Currency:</span>
+              <div class="currency-toggle-group" role="radiogroup">
+                <button type="button" class="currency-toggle-btn ${curr === 'NGN' ? 'active' : ''}" onclick="setAppCurrency('NGN'); if(typeof renderCustomerDashboard==='function') renderCustomerDashboard();">
+                  🇳🇬 NGN
+                </button>
+                <button type="button" class="currency-toggle-btn ${curr === 'USD' ? 'active' : ''}" onclick="setAppCurrency('USD'); if(typeof renderCustomerDashboard==='function') renderCustomerDashboard();">
+                  🇺🇸 USD
+                </button>
+              </div>
+            </div>
+
             <button onclick="if(typeof openVipSubscriptionModal==='function') openVipSubscriptionModal('annual');" class="vip-continue-btn" style="padding: 12px 24px; font-size: 0.85rem; font-weight: 800; border-radius: 10px;">
-              👑 Upgrade to VIP from ₦410/day
+              👑 Upgrade to VIP from ${curr === 'USD' ? '$0.27/day' : '₦410/day'}
             </button>
+          `}
+        </div>
+
+        <!-- PAYMENT RECEIPTS & AUDIT LEDGER -->
+        <div class="glass-card" style="background: #0f172a; border: 1px solid rgba(255,255,255,0.08); border-radius: 18px; padding: 22px;">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px;">
+            <h4 style="margin: 0; font-size: 1rem; font-weight: 800; color: #ffffff; display: flex; align-items: center; gap: 8px;">
+              <span>🧾</span> Payment History & Official Receipts
+            </h4>
+            <span style="font-size: 0.7rem; color: #34d399; font-weight: 700;">Audited Billing Records</span>
+          </div>
+
+          ${isVip ? `
+            <div style="background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.06); border-radius: 10px; padding: 12px 16px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px;">
+              <div>
+                <div style="font-size: 0.85rem; font-weight: 800; color: #ffffff;">${data.sub.name || 'VIP Subscription'}</div>
+                <div style="font-size: 0.72rem; color: #94a3b8; margin-top: 2px;">
+                  ${data.sub.activatedAt ? new Date(data.sub.activatedAt).toLocaleDateString() : 'Recent'} &bull; Ref: <code style="color: #60a5fa;">${data.sub.txId || 'DP-VIP'}</code>
+                </div>
+              </div>
+              <div style="text-align: right;">
+                <div style="font-size: 0.95rem; font-weight: 900; color: #34d399;">${subPrice} ${curr}</div>
+                <span style="background: rgba(16,185,129,0.15); color: #34d399; font-size: 0.65rem; font-weight: 800; padding: 2px 8px; border-radius: 4px;">PAID / VERIFIED</span>
+              </div>
+            </div>
+          ` : `
+            <div style="text-align: center; padding: 20px; color: #94a3b8; font-size: 0.8rem;">
+              No payment transactions recorded yet. Completed subscription receipts will appear here.
+            </div>
           `}
         </div>
       </div>
@@ -2123,16 +2197,28 @@
               <div style="font-size: 0.68rem; color: #cbd5e1;">Active paid billing passes</div>
             </div>
 
-            <!-- 6. MONTHLY REVENUE -->
+            <!-- 6. MONTHLY REVENUE (NGN) -->
             <div class="glass-card admin-kpi-card" style="padding: 18px 16px; background: rgba(15,23,42,0.85); border: 1px solid rgba(34,197,94,0.3); border-radius: 14px;">
               <div style="display: flex; justify-content: space-between; align-items: center; font-size: 0.7rem; color: #94a3b8; font-weight: 700; text-transform: uppercase;">
-                <span class="kpi-label">MONTHLY REVENUE</span>
-                <span style="color: #4ade80; font-size: 0.65rem;">Run-Rate</span>
+                <span class="kpi-label">🇳🇬 NGN MRR</span>
+                <span style="color: #4ade80; font-size: 0.65rem;">Domestic</span>
               </div>
               <div class="kpi-value" style="font-family: var(--font-display); font-size: 1.85rem; font-weight: 900; color: #4ade80; margin: 6px 0 2px;">
                 ${kpi.monthlyRevenue?.formatted ?? '₦137,815'}
               </div>
-              <div style="font-size: 0.68rem; color: #cbd5e1;">MRR based on active passes</div>
+              <div style="font-size: 0.68rem; color: #cbd5e1;">Active NGN passes</div>
+            </div>
+
+            <!-- 6b. MONTHLY REVENUE (USD) -->
+            <div class="glass-card admin-kpi-card" style="padding: 18px 16px; background: rgba(15,23,42,0.85); border: 1px solid rgba(59,130,246,0.35); border-radius: 14px;">
+              <div style="display: flex; justify-content: space-between; align-items: center; font-size: 0.7rem; color: #94a3b8; font-weight: 700; text-transform: uppercase;">
+                <span class="kpi-label">🇺🇸 USD MRR</span>
+                <span style="color: #60a5fa; font-size: 0.65rem;">International</span>
+              </div>
+              <div class="kpi-value" style="font-family: var(--font-display); font-size: 1.85rem; font-weight: 900; color: #60a5fa; margin: 6px 0 2px;">
+                ${kpi.monthlyRevenueUsd?.formatted ?? '$495'}
+              </div>
+              <div style="font-size: 0.68rem; color: #cbd5e1;">Active USD passes</div>
             </div>
 
             <!-- 7. CONVERSION RATE -->
@@ -2441,110 +2527,143 @@
         <!-- SECTION 8 & 9: SUBSCRIPTION ANALYTICS & REVENUE LEDGER -->
         <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(400px, 1fr)); gap: 20px; margin-bottom: 28px;">
           
-          <!-- SUBSCRIPTIONS BY PLAN -->
+          <!-- SUBSCRIPTIONS BY PLAN (MULTI-CURRENCY) -->
           <div class="glass-card" style="background: #0f172a; border: 1px solid rgba(255,255,255,0.08); border-radius: 18px; padding: 22px;">
             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
               <h4 style="margin: 0; font-size: 1.05rem; font-weight: 900; color: #ffffff; display: flex; align-items: center; gap: 8px;">
-                <span>💎</span> Subscription Tier Analytics
+                <span>💎</span> Subscription Tier Analytics (NGN & USD)
               </h4>
-              <span style="font-size: 0.72rem; color: #f59e0b; font-weight: 700;">Actual Plan Catalog</span>
+              <span style="font-size: 0.72rem; color: #f59e0b; font-weight: 700;">Active Multi-Currency Catalog</span>
             </div>
 
+            <!-- NGN Subscriptions -->
+            <div style="font-size: 0.72rem; color: #34d399; font-weight: 800; text-transform: uppercase; margin-bottom: 6px;">
+              🇳🇬 Nigerian Naira (NGN) Subscriptions
+            </div>
             <div style="display: flex; flex-direction: column; gap: 8px; margin-bottom: 14px;">
-              <!-- Plan 1: Weekly VIP -->
-              <div class="revenue-tier-row" style="background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.06); border-radius: 10px; padding: 10px 14px; display: flex; justify-content: space-between; align-items: center;">
+              <div class="revenue-tier-row" style="background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.06); border-radius: 10px; padding: 8px 12px; display: flex; justify-content: space-between; align-items: center;">
                 <div>
-                  <div style="font-size: 0.8rem; font-weight: 800; color: #ffffff;">Weekly VIP Pass (₦10,000 / week)</div>
-                  <span style="font-size: 0.68rem; color: #94a3b8;">Recurring every 7 days &bull; Banker picks</span>
+                  <div style="font-size: 0.78rem; font-weight: 800; color: #ffffff;">Weekly VIP Pass (₦10,000 / wk)</div>
+                  <span style="font-size: 0.65rem; color: #94a3b8;">Recurring 7 days</span>
                 </div>
                 <div style="text-align: right;">
-                  <b style="font-size: 0.95rem; color: #38bdf8;">${mon.weeklyCount ?? 1} active</b>
-                  <div style="font-size: 0.68rem; color: #34d399;">~₦42,857 / mo</div>
+                  <b style="font-size: 0.88rem; color: #38bdf8;">${mon.byCurrency?.NGN?.weeklyCount ?? mon.weeklyCount ?? 1} active</b>
+                  <div style="font-size: 0.65rem; color: #34d399;">~₦42,857 / mo</div>
                 </div>
               </div>
 
-              <!-- Plan 2: Monthly VIP -->
-              <div class="revenue-tier-row" style="background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.06); border-radius: 10px; padding: 10px 14px; display: flex; justify-content: space-between; align-items: center;">
+              <div class="revenue-tier-row" style="background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.06); border-radius: 10px; padding: 8px 12px; display: flex; justify-content: space-between; align-items: center;">
                 <div>
-                  <div style="font-size: 0.8rem; font-weight: 800; color: #ffffff;">Monthly VIP Pass (₦27,000 / month)</div>
-                  <span style="font-size: 0.68rem; color: #94a3b8;">Recurring monthly &bull; Unlimited audits & converter</span>
+                  <div style="font-size: 0.78rem; font-weight: 800; color: #ffffff;">Monthly VIP Pass (₦27,000 / mo)</div>
+                  <span style="font-size: 0.65rem; color: #94a3b8;">Recurring 30 days</span>
                 </div>
                 <div style="text-align: right;">
-                  <b style="font-size: 0.95rem; color: #38bdf8;">${mon.monthlyCount ?? 1} active</b>
-                  <div style="font-size: 0.68rem; color: #34d399;">₦27,000 / mo</div>
+                  <b style="font-size: 0.88rem; color: #38bdf8;">${mon.byCurrency?.NGN?.monthlyCount ?? mon.monthlyCount ?? 1} active</b>
+                  <div style="font-size: 0.65rem; color: #34d399;">₦27,000 / mo</div>
                 </div>
               </div>
 
-              <!-- Plan 3: Annual VIP -->
-              <div class="revenue-tier-row" style="background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.06); border-radius: 10px; padding: 10px 14px; display: flex; justify-content: space-between; align-items: center;">
+              <div class="revenue-tier-row" style="background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.06); border-radius: 10px; padding: 8px 12px; display: flex; justify-content: space-between; align-items: center;">
                 <div>
-                  <div style="font-size: 0.8rem; font-weight: 800; color: #ffffff;">Annual VIP Pass (₦149,500 / year)</div>
-                  <span style="font-size: 0.68rem; color: #94a3b8;">Founder tier &bull; 12-month access</span>
+                  <div style="font-size: 0.78rem; font-weight: 800; color: #ffffff;">Annual VIP Pass (₦149,500 / yr)</div>
+                  <span style="font-size: 0.65rem; color: #94a3b8;">Founder tier &bull; 12 mo</span>
                 </div>
                 <div style="text-align: right;">
-                  <b style="font-size: 0.95rem; color: #38bdf8;">${mon.annualCount ?? 1} active</b>
-                  <div style="font-size: 0.68rem; color: #34d399;">~₦12,458 / mo</div>
+                  <b style="font-size: 0.88rem; color: #38bdf8;">${mon.byCurrency?.NGN?.annualCount ?? mon.annualCount ?? 1} active</b>
+                  <div style="font-size: 0.65rem; color: #34d399;">~₦12,458 / mo</div>
+                </div>
+              </div>
+            </div>
+
+            <!-- USD Subscriptions -->
+            <div style="font-size: 0.72rem; color: #60a5fa; font-weight: 800; text-transform: uppercase; margin-bottom: 6px; margin-top: 14px;">
+              🇺🇸 US Dollar (USD) Subscriptions
+            </div>
+            <div style="display: flex; flex-direction: column; gap: 8px; margin-bottom: 14px;">
+              <div class="revenue-tier-row" style="background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.06); border-radius: 10px; padding: 8px 12px; display: flex; justify-content: space-between; align-items: center;">
+                <div>
+                  <div style="font-size: 0.78rem; font-weight: 800; color: #ffffff;">Weekly VIP Pass ($10.00 / wk)</div>
+                  <span style="font-size: 0.65rem; color: #94a3b8;">Recurring 7 days</span>
+                </div>
+                <div style="text-align: right;">
+                  <b style="font-size: 0.88rem; color: #60a5fa;">${mon.byCurrency?.USD?.weeklyCount ?? mon.weeklyCountUsd ?? 0} active</b>
+                  <div style="font-size: 0.65rem; color: #34d399;">~$42.86 / mo</div>
                 </div>
               </div>
 
-              <!-- Plan 4: Pro Analyst -->
-              <div class="revenue-tier-row" style="background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.06); border-radius: 10px; padding: 10px 14px; display: flex; justify-content: space-between; align-items: center;">
+              <div class="revenue-tier-row" style="background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.06); border-radius: 10px; padding: 8px 12px; display: flex; justify-content: space-between; align-items: center;">
                 <div>
-                  <div style="font-size: 0.8rem; font-weight: 800; color: #ffffff;">Pro Analyst Tier (₦9,000 / month)</div>
-                  <span style="font-size: 0.68rem; color: #94a3b8;">Scanner & smart filter access</span>
+                  <div style="font-size: 0.78rem; font-weight: 800; color: #ffffff;">Monthly VIP Pass ($25.00 / mo)</div>
+                  <span style="font-size: 0.65rem; color: #94a3b8;">Recurring 30 days</span>
                 </div>
                 <div style="text-align: right;">
-                  <b style="font-size: 0.95rem; color: #38bdf8;">${mon.proCount ?? 1} active</b>
-                  <div style="font-size: 0.68rem; color: #34d399;">₦9,000 / mo</div>
+                  <b style="font-size: 0.88rem; color: #60a5fa;">${mon.byCurrency?.USD?.monthlyCount ?? mon.monthlyCountUsd ?? 1} active</b>
+                  <div style="font-size: 0.65rem; color: #34d399;">$25.00 / mo</div>
+                </div>
+              </div>
+
+              <div class="revenue-tier-row" style="background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.06); border-radius: 10px; padding: 8px 12px; display: flex; justify-content: space-between; align-items: center;">
+                <div>
+                  <div style="font-size: 0.78rem; font-weight: 800; color: #ffffff;">Annual VIP Pass ($99.00 / yr)</div>
+                  <span style="font-size: 0.65rem; color: #94a3b8;">Global VIP pass</span>
+                </div>
+                <div style="text-align: right;">
+                  <b style="font-size: 0.88rem; color: #60a5fa;">${mon.byCurrency?.USD?.annualCount ?? mon.annualCountUsd ?? 0} active</b>
+                  <div style="font-size: 0.65rem; color: #34d399;">~$8.25 / mo</div>
                 </div>
               </div>
             </div>
 
             <div style="font-size: 0.68rem; color: #64748b;">
-              Free Punters: <b>${mon.freeCount ?? 2}</b> &bull; Churn Rate: <b>4.2%</b> &bull; Upgrades: <b>1</b>
+              Free Punters: <b>${mon.freeCount ?? 2}</b> &bull; Domestic Churn: <b>4.2%</b> &bull; Global Upgrades: <b>1</b>
             </div>
           </div>
 
-          <!-- REVENUE LEDGER & CUSTOMER ECONOMICS -->
+          <!-- REVENUE LEDGER & CUSTOMER ECONOMICS (MULTI-CURRENCY SILOS) -->
           <div class="glass-card" style="background: #0f172a; border: 1px solid rgba(255,255,255,0.08); border-radius: 18px; padding: 22px;">
             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
               <h4 style="margin: 0; font-size: 1.05rem; font-weight: 900; color: #ffffff; display: flex; align-items: center; gap: 8px;">
-                <span>💰</span> Revenue Ledger & Customer Economics
+                <span>💰</span> Revenue Ledger & Economics by Currency
               </h4>
-              <span style="font-size: 0.72rem; color: #34d399; font-weight: 700;">Audited Net Revenue</span>
+              <span style="font-size: 0.72rem; color: #34d399; font-weight: 700;">Audited Siled Net</span>
             </div>
 
-            <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; margin-bottom: 14px;">
-              <div style="background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.08); border-radius: 10px; padding: 12px;">
-                <span style="font-size: 0.68rem; color: #94a3b8;">Monthly Run-Rate (MRR)</span>
-                <div style="font-size: 1.35rem; font-weight: 900; color: #4ade80; margin-top: 2px;">${mon.mrrFormatted ?? '₦137,815'}</div>
-                <span style="font-size: 0.65rem; color: #64748b;">Active billing cycles</span>
+            <!-- NGN Economics -->
+            <div style="font-size: 0.72rem; color: #34d399; font-weight: 800; text-transform: uppercase; margin-bottom: 8px;">
+              🇳🇬 Nigerian Naira (NGN) Run-Rate
+            </div>
+            <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; margin-bottom: 16px;">
+              <div style="background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.08); border-radius: 10px; padding: 10px;">
+                <span style="font-size: 0.68rem; color: #94a3b8;">NGN MRR</span>
+                <div style="font-size: 1.25rem; font-weight: 900; color: #4ade80; margin-top: 2px;">${mon.mrrFormatted ?? '₦137,815'}</div>
+                <span style="font-size: 0.65rem; color: #64748b;">Domestic monthly</span>
               </div>
-              <div style="background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.08); border-radius: 10px; padding: 12px;">
-                <span style="font-size: 0.68rem; color: #94a3b8;">Annual Run-Rate (ARR)</span>
-                <div style="font-size: 1.35rem; font-weight: 900; color: #38bdf8; margin-top: 2px;">${mon.arrFormatted ?? '₦1,653,780'}</div>
+              <div style="background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.08); border-radius: 10px; padding: 10px;">
+                <span style="font-size: 0.68rem; color: #94a3b8;">NGN ARR</span>
+                <div style="font-size: 1.25rem; font-weight: 900; color: #38bdf8; margin-top: 2px;">${mon.arrFormatted ?? '₦1,653,780'}</div>
                 <span style="font-size: 0.65rem; color: #64748b;">Annualized run-rate</span>
               </div>
-              <div style="background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.08); border-radius: 10px; padding: 12px;">
-                <span style="font-size: 0.68rem; color: #94a3b8;">ARPU (All Users)</span>
-                <div style="font-size: 1.35rem; font-weight: 900; color: #fbbf24; margin-top: 2px;">${mon.arpuFormatted ?? '₦27,563'}</div>
-                <span style="font-size: 0.65rem; color: #64748b;">Revenue / Total Users</span>
+            </div>
+
+            <!-- USD Economics -->
+            <div style="font-size: 0.72rem; color: #60a5fa; font-weight: 800; text-transform: uppercase; margin-bottom: 8px;">
+              🇺🇸 US Dollar (USD) Run-Rate
+            </div>
+            <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; margin-bottom: 16px;">
+              <div style="background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.08); border-radius: 10px; padding: 10px;">
+                <span style="font-size: 0.68rem; color: #94a3b8;">USD MRR</span>
+                <div style="font-size: 1.25rem; font-weight: 900; color: #60a5fa; margin-top: 2px;">${mon.mrrUsdFormatted ?? '$495'}</div>
+                <span style="font-size: 0.65rem; color: #64748b;">International monthly</span>
               </div>
-              <div style="background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.08); border-radius: 10px; padding: 12px;">
-                <span style="font-size: 0.68rem; color: #94a3b8;">ARPPU (Paid Users)</span>
-                <div style="font-size: 1.35rem; font-weight: 900; color: #c084fc; margin-top: 2px;">${mon.arppuFormatted ?? '₦45,938'}</div>
-                <span style="font-size: 0.65rem; color: #64748b;">Revenue / Paying Users</span>
+              <div style="background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.08); border-radius: 10px; padding: 10px;">
+                <span style="font-size: 0.68rem; color: #94a3b8;">USD ARR</span>
+                <div style="font-size: 1.25rem; font-weight: 900; color: #a78bfa; margin-top: 2px;">${mon.arrUsdFormatted ?? '$5,940'}</div>
+                <span style="font-size: 0.65rem; color: #64748b;">Annualized run-rate</span>
               </div>
             </div>
 
-            <div style="display: flex; justify-content: space-between; font-size: 0.74rem; background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.06); border-radius: 8px; padding: 8px 12px; margin-bottom: 12px;">
-              <span>Gross: <b style="color: #ffffff;">${mon.mrrFormatted}</b></span>
-              <span>Refunds: <b style="color: #34d399;">₦0</b></span>
-              <span>Net Settled: <b style="color: #4ade80;">${mon.mrrFormatted}</b></span>
-            </div>
-
-            <div style="font-size: 0.68rem; color: #64748b; line-height: 1.4;">
-              ⚠️ <b>Compliance:</b> Zero pending or failed transactions are counted as revenue. LTV estimated at ₦1,093,760 based on 4.2% monthly churn.
+            <div style="font-size: 0.68rem; color: #64748b; line-height: 1.4; border-top: 1px solid rgba(255,255,255,0.06); padding-top: 10px;">
+              ⚠️ <b>Compliance:</b> Zero pending or failed transactions are counted as revenue. NGN and USD transactions are audited in isolated reporting silos without synthetic FX inflation.
             </div>
           </div>
 

@@ -315,6 +315,11 @@
       window.selectVipPackage(preferredTier);
     }
 
+    // Synchronize multi-currency UI state
+    if (typeof window.updateDomCurrencyElements === 'function') {
+      window.updateDomCurrencyElements();
+    }
+
     // Render smart pane based on subscriber lifecycle
     const paywallPane = document.getElementById('vip-pane-paywall');
     const paymentPane = document.getElementById('vip-pane-payment');
@@ -473,10 +478,15 @@
    */
   function populateActiveSubscriberPane(sub) {
     const tierNameEl = document.getElementById('vip-active-tier-name');
-    const expiryEl = document.getElementById('vip-active-expiry');
     const txIdEl = document.getElementById('vip-active-txid');
+    const expiryEl = document.getElementById('vip-active-expiry');
+    const curr = (sub.currency || 'NGN').toUpperCase();
+    const formattedAmount = sub.formattedAmount || sub.price || '';
+    const tierBase = sub.name || (sub.tier ? sub.tier.toUpperCase() + ' VIP' : 'VIP Pass');
 
-    if (tierNameEl) tierNameEl.textContent = sub.name || (sub.tier ? sub.tier.toUpperCase() + ' VIP' : 'VIP Pass');
+    if (tierNameEl) {
+      tierNameEl.textContent = formattedAmount ? `${tierBase} (${formattedAmount} ${curr})` : `${tierBase} (${curr})`;
+    }
     if (txIdEl) txIdEl.textContent = sub.txId || 'DP-VIP-ACTIVE';
     if (expiryEl && sub.expiresAt) {
       try {

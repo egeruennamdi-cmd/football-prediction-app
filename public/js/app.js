@@ -11045,38 +11045,43 @@ window.closeConversionResultModal = closeConversionResultModal;
 // PUNTERS VIP SUBSCRIPTION USER JOURNEY & PAYMENT CONTROLLER
 // ==========================================================================
 
-const VIP_PACKAGES = {
-  weekly: {
-    id: 'weekly',
-    name: 'Weekly VIP Pass',
-    billingLabel: 'Weekly VIP',
-    durationDays: 7,
-    price: '₦10,000.00',
-    priceNum: 10000,
-    dailyText: '₦1,429 / day',
-    saveText: ''
-  },
-  monthly: {
-    id: 'monthly',
-    name: 'Monthly VIP Pass',
-    billingLabel: 'Monthly VIP',
-    durationDays: 30,
-    price: '₦27,000.00',
-    priceNum: 27000,
-    dailyText: '₦900 / day',
-    saveText: 'Save 32%'
-  },
-  annual: {
-    id: 'annual',
-    name: 'Annual VIP Pass',
-    billingLabel: 'Yearly VIP',
-    durationDays: 365,
-    price: '₦149,500.00',
-    priceNum: 149500,
-    dailyText: '₦410 / day',
-    saveText: 'Save 71%'
-  }
-};
+const VIP_PACKAGES = (typeof window.getVipPackagesForCurrency === 'function')
+  ? window.getVipPackagesForCurrency()
+  : {
+    weekly: {
+      id: 'weekly',
+      name: 'Weekly VIP Pass',
+      billingLabel: 'Weekly VIP',
+      durationDays: 7,
+      price: '₦10,000.00',
+      priceNum: 10000,
+      dailyText: '₦1,429 / day',
+      saveText: '',
+      currency: 'NGN'
+    },
+    monthly: {
+      id: 'monthly',
+      name: 'Monthly VIP Pass',
+      billingLabel: 'Monthly VIP',
+      durationDays: 30,
+      price: '₦27,000.00',
+      priceNum: 27000,
+      dailyText: '₦900 / day',
+      saveText: 'Save 32%',
+      currency: 'NGN'
+    },
+    annual: {
+      id: 'annual',
+      name: 'Annual VIP Pass',
+      billingLabel: 'Yearly VIP',
+      durationDays: 365,
+      price: '₦149,500.00',
+      priceNum: 149500,
+      dailyText: '₦410 / day',
+      saveText: 'Save 71%',
+      currency: 'NGN'
+    }
+  };
 window.VIP_PACKAGES = VIP_PACKAGES;
 
 let currentSelectedVipTier = 'annual';
@@ -11094,6 +11099,27 @@ window.getStoredVipSubscription = getStoredVipSubscription;
 function setStoredVipSubscription(sub) {
   try {
     localStorage.setItem('deeppredictbet_vip', JSON.stringify(sub));
+    if (sub && sub.active) {
+      const historyRaw = localStorage.getItem('deeppredictbet_payment_history');
+      let history = [];
+      try { if (historyRaw) history = JSON.parse(historyRaw); } catch(e) {}
+      if (!Array.isArray(history)) history = [];
+      // Avoid duplicate entry by txId
+      if (!history.some(h => h.txId === sub.txId)) {
+        history.unshift({
+          txId: sub.txId || `DP-VIP-${Date.now()}`,
+          tier: sub.tier,
+          name: sub.name,
+          currency: sub.currency,
+          amount: sub.amount,
+          formattedAmount: sub.formattedAmount,
+          paymentMethod: sub.paymentMethod,
+          activatedAt: sub.activatedAt || new Date().toISOString(),
+          status: 'PAID'
+        });
+        localStorage.setItem('deeppredictbet_payment_history', JSON.stringify(history));
+      }
+    }
   } catch (e) {}
   syncVipSubscriptionUI();
 }
@@ -11207,17 +11233,30 @@ function selectPageVipPackage(tierKey) {
 }
 window.selectPageVipPackage = selectPageVipPackage;
 
-function proceedToVipPayment() {
-  const _checkoutPkg = (typeof VIP_PACKAGES !== 'undefined' && VIP_PACKAGES[currentSelectedVipTier]) ? VIP_PACKAGES[currentSelectedVipTier] : { id: 'annual', price: '₦149,500' };
+function proceedToVipPayment(tierOverride) {
+  if (tierOverride) {
+    currentSelectedVipTier = tierOverride;
+    if (typeof window !== 'undefined') window.currentSelectedVipTier = tierOverride;
+  }
+  const pkgs = (typeof window.VIP_PACKAGES !== 'undefined') ? window.VIP_PACKAGES : VIP_PACKAGES;
+  const currentTier = (typeof currentSelectedVipTier !== 'undefined' ? currentSelectedVipTier : 'annual');
+  const pkg = pkgs[currentTier] || pkgs.annual;
+  const activeCurr = pkg.currency || (typeof window.getAppCurrency === 'function' ? window.getAppCurrency() : 'NGN');
+
   if (typeof window.trackEvent === 'function') {
     window.trackEvent('CHECKOUT_STARTED', {
       tool: 'vip_packages',
-      tier: _checkoutPkg.id,
-      amount_ngn: _checkoutPkg.price,
-      currency: 'NGN'
+      tier: pkg.id,
+      amount: pkg.priceNum,
+      amount_formatted: pkg.price,
+      currency: activeCurr
+    });
+    window.trackEvent('checkout_started', {
+      plan: pkg.id,
+      amount: pkg.priceNum,
+      currency: activeCurr
     });
   }
-  const pkg = VIP_PACKAGES[currentSelectedVipTier] || VIP_PACKAGES.annual;
 
   const paywallPane = document.getElementById('vip-pane-paywall');
   const paymentPane = document.getElementById('vip-pane-payment');
@@ -11228,11 +11267,28 @@ function proceedToVipPayment() {
   const checkoutPlanDaily = document.getElementById('vip-checkout-plan-daily');
   const checkoutPlanPrice = document.getElementById('vip-checkout-plan-price');
   const btnAmountText = document.getElementById('vip-btn-amount-text');
+  const checkoutCurrTag = document.getElementById('vip-checkout-currency-tag');
 
   if (checkoutPlanName) { checkoutPlanName.textContent = `${pkg.name} (${pkg.durationDays} Days)`; checkoutPlanName.innerText = `${pkg.name} (${pkg.durationDays} Days)`; }
   if (checkoutPlanDaily) { checkoutPlanDaily.textContent = `Billed at ${pkg.dailyText}`; checkoutPlanDaily.innerText = `Billed at ${pkg.dailyText}`; }
   if (checkoutPlanPrice) { checkoutPlanPrice.textContent = pkg.price; checkoutPlanPrice.innerText = pkg.price; }
   if (btnAmountText) { btnAmountText.textContent = pkg.price; btnAmountText.innerText = pkg.price; }
+  if (checkoutCurrTag) {
+    checkoutCurrTag.textContent = activeCurr === 'USD' ? '🇺🇸 USD International Billing' : '🇳🇬 NGN Nigerian Billing';
+  }
+
+  const transferNoticeEl = document.getElementById('vip-transfer-currency-notice');
+  if (transferNoticeEl) {
+    if (activeCurr === 'USD') {
+      transferNoticeEl.innerHTML = `
+        <div style="background: rgba(59,130,246,0.1); border: 1px solid rgba(59,130,246,0.3); border-radius: 8px; padding: 10px; font-size: 0.75rem; color: #93c5fd; margin-bottom: 12px;">
+          🌐 <b>USD International Payment:</b> For instant card activation, use <b>Debit / Credit Card</b> (Visa/Mastercard/Amex). For Web3 borderless payment, use <b>USDT (TRC-20)</b>. For local NGN bank transfer, switch currency to <b>🇳🇬 NGN</b>.
+        </div>
+      `;
+    } else {
+      transferNoticeEl.innerHTML = '';
+    }
+  }
 }
 window.proceedToVipPayment = proceedToVipPayment;
 
@@ -11278,7 +11334,10 @@ function fillVipDemoCard() {
 window.fillVipDemoCard = fillVipDemoCard;
 
 function processVipPayment() {
-  const pkg = VIP_PACKAGES[currentSelectedVipTier] || VIP_PACKAGES.annual;
+  const pkgs = (typeof window.VIP_PACKAGES !== 'undefined') ? window.VIP_PACKAGES : VIP_PACKAGES;
+  const currentTier = (typeof currentSelectedVipTier !== 'undefined' ? currentSelectedVipTier : 'annual');
+  const pkg = pkgs[currentTier] || pkgs.annual;
+  const activeCurr = pkg.currency || (typeof window.getAppCurrency === 'function' ? window.getAppCurrency() : 'NGN');
   const submitBtn = document.getElementById('vip-submit-payment-btn');
   
   if (submitBtn) {
@@ -11286,77 +11345,159 @@ function processVipPayment() {
     submitBtn.innerText = 'Verifying with Bank Network ⏳...';
   }
 
-  setTimeout(() => {
-    if (submitBtn) {
-      submitBtn.disabled = false;
-      submitBtn.innerText = `Pay ${pkg.price} Securely 🔒`;
-    }
+  return new Promise((resolve) => {
+    setTimeout(() => {
+      if (submitBtn) {
+        submitBtn.disabled = false;
+        submitBtn.innerText = `Pay ${pkg.price} Securely 🔒`;
+      }
 
-    const expiryDate = new Date();
-    expiryDate.setDate(expiryDate.getDate() + pkg.durationDays);
+      const expiryDate = new Date();
+      expiryDate.setDate(expiryDate.getDate() + pkg.durationDays);
 
-    const subscriptionData = {
-      active: true,
-      tier: pkg.id,
-      name: pkg.name,
-      billingLabel: pkg.billingLabel,
-      price: pkg.price,
-      activatedAt: new Date().toISOString(),
-      expiresAt: expiryDate.toISOString(),
-      status: 'active',
-      txId: `DP-VIP-${Math.floor(100000 + Math.random() * 900000)}`
-    };
-
-    setStoredVipSubscription(subscriptionData);
-
-    if (typeof window.trackEvent === 'function') {
-      window.trackEvent('PAYMENT_SUCCEEDED', {
-        tool: 'vip_packages',
+      const subscriptionData = {
+        active: true,
         tier: pkg.id,
-        amount_ngn: pkg.price,
-        currency: 'NGN',
-        payment_method: currentVipPaymentMethod,
-        success: true
-      });
-      window.trackEvent('payment_success', {
-        plan: pkg.id,
-        amount_ngn: pkg.price,
-        txId: subscriptionData.txId,
-        payment_method: currentVipPaymentMethod
-      });
-      window.trackEvent('SUBSCRIPTION_STARTED', {
-        tool: 'vip_packages',
-        tier: pkg.id,
-        success: true
-      });
-      window.trackEvent('upgrade_completed', {
-        plan: pkg.id,
-        txId: subscriptionData.txId,
-        timestamp: subscriptionData.activatedAt
-      });
-    }
+        name: pkg.name,
+        billingLabel: pkg.billingLabel,
+        currency: activeCurr,
+        amount: pkg.priceNum,
+        formattedAmount: pkg.price,
+        price: pkg.price, // backward compat
+        billingIntervalDays: pkg.durationDays,
+        activatedAt: new Date().toISOString(),
+        expiresAt: expiryDate.toISOString(),
+        renewalDate: expiryDate.toISOString(),
+        renewalCurrency: activeCurr, // strict renewal currency retention
+        renewalAmount: pkg.priceNum,
+        status: 'active',
+        paymentMethod: currentVipPaymentMethod,
+        paymentGateway: activeCurr === 'USD' ? (currentVipPaymentMethod === 'crypto' ? 'web3_usdt_trc20' : 'international_stripe_flutterwave') : 'paystack_flutterwave_local',
+        txId: `DP-VIP-${activeCurr}-${Math.floor(100000 + Math.random() * 900000)}`
+      };
 
-    const paymentPane = document.getElementById('vip-pane-payment');
-    const successPane = document.getElementById('vip-pane-success');
-    if (paymentPane) paymentPane.style.display = 'none';
-    if (successPane) successPane.style.display = 'block';
+      setStoredVipSubscription(subscriptionData);
 
-    const successPlanLabel = document.getElementById('vip-success-plan-label');
-    const successTxId = document.getElementById('vip-success-txid');
-    const successBilling = document.getElementById('vip-success-billing');
-    const successExpiry = document.getElementById('vip-success-expiry');
+      if (typeof window.trackEvent === 'function') {
+        window.trackEvent('PAYMENT_SUCCEEDED', {
+          tool: 'vip_packages',
+          tier: pkg.id,
+          amount: pkg.priceNum,
+          amount_formatted: pkg.price,
+          currency: activeCurr,
+          payment_method: currentVipPaymentMethod,
+          txId: subscriptionData.txId,
+          success: true
+        });
+        window.trackEvent('payment_success', {
+          plan: pkg.id,
+          amount: pkg.priceNum,
+          currency: activeCurr,
+          amount_formatted: pkg.price,
+          txId: subscriptionData.txId,
+          payment_method: currentVipPaymentMethod
+        });
+        window.trackEvent('SUBSCRIPTION_STARTED', {
+          tool: 'vip_packages',
+          tier: pkg.id,
+          currency: activeCurr,
+          success: true
+        });
+        window.trackEvent('upgrade_completed', {
+          plan: pkg.id,
+          currency: activeCurr,
+          amount: pkg.priceNum,
+          txId: subscriptionData.txId,
+          timestamp: subscriptionData.activatedAt
+        });
+      }
 
-    if (successPlanLabel) successPlanLabel.innerText = pkg.name;
-    if (successTxId) successTxId.innerText = subscriptionData.txId;
-    if (successBilling) successBilling.innerText = pkg.billingLabel;
-    if (successExpiry) successExpiry.innerText = expiryDate.toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' });
+      // Non-blocking server-side verification request
+      try {
+        if (typeof fetch === 'function') {
+          fetch('/api/payment/verify', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              planId: pkg.id,
+              currency: activeCurr,
+              paymentMethod: currentVipPaymentMethod,
+              clientTxId: subscriptionData.txId,
+              userEmail: (typeof localStorage !== 'undefined' && localStorage.getItem('currentUserEmail')) || 'punter@deeppredictbet.com',
+              claimedAmount: pkg.priceNum
+            })
+          }).catch(() => {});
+        }
+      } catch (e) {}
 
-    const msg = `🎉 VIP Membership Activated! Welcome to ${pkg.name}.`;
-    if (typeof showAppNotification === 'function') showAppNotification(msg);
-    else if (typeof showToast === 'function') showToast(msg);
-  }, 900);
+      const paymentPane = document.getElementById('vip-pane-payment');
+      const successPane = document.getElementById('vip-pane-success');
+      if (paymentPane) paymentPane.style.display = 'none';
+      if (successPane) successPane.style.display = 'block';
+
+      const successPlanLabel = document.getElementById('vip-success-plan-label');
+      const successTxId = document.getElementById('vip-success-txid');
+      const successBilling = document.getElementById('vip-success-billing');
+      const successExpiry = document.getElementById('vip-success-expiry');
+
+      if (successPlanLabel) successPlanLabel.innerText = `${pkg.name} (${activeCurr})`;
+      if (successTxId) successTxId.innerText = subscriptionData.txId;
+      if (successBilling) successBilling.innerText = `${pkg.billingLabel} • ${pkg.price}`;
+      if (successExpiry) successExpiry.innerText = expiryDate.toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' });
+
+      const msg = `🎉 VIP Membership Activated! Welcome to ${pkg.name} (${activeCurr}).`;
+      if (typeof showAppNotification === 'function') showAppNotification(msg);
+      else if (typeof showToast === 'function') showToast(msg);
+
+      resolve(subscriptionData);
+    }, 900);
+  });
 }
 window.processVipPayment = processVipPayment;
+
+function renewVipSubscription() {
+  const sub = getStoredVipSubscription();
+  if (!sub || !sub.active) return null;
+  const renewalCurrency = (sub.renewalCurrency || sub.currency || 'NGN').toUpperCase();
+  const tier = (sub.tier || 'annual').toLowerCase();
+
+  let renewalPricing = null;
+  if (typeof window.getPlanPricing === 'function') {
+    renewalPricing = window.getPlanPricing(tier, renewalCurrency);
+  } else {
+    const pkgs = window.VIP_PACKAGES || {};
+    renewalPricing = pkgs[tier] || { durationDays: 30, formatted: sub.price, amount: sub.amount };
+  }
+
+  const currentExpiry = sub.expiresAt ? new Date(sub.expiresAt) : new Date();
+  const newExpiry = new Date(Math.max(Date.now(), currentExpiry.getTime()) + (renewalPricing.durationDays * 24 * 60 * 60 * 1000));
+
+  const renewedSub = {
+    ...sub,
+    active: true,
+    expiresAt: newExpiry.toISOString(),
+    renewalDate: newExpiry.toISOString(),
+    renewalCurrency: renewalCurrency,
+    amount: renewalPricing.amount,
+    formattedAmount: renewalPricing.formatted,
+    price: renewalPricing.formatted,
+    txId: `DP-VIP-${renewalCurrency}-REN-${Math.floor(100000 + Math.random() * 900000)}`
+  };
+
+  setStoredVipSubscription(renewedSub);
+
+  if (typeof window.trackEvent === 'function') {
+    window.trackEvent('SUBSCRIPTION_RENEWED', {
+      tier: renewedSub.tier,
+      currency: renewalCurrency,
+      amount: renewedSub.amount,
+      txId: renewedSub.txId
+    });
+  }
+
+  return renewedSub;
+}
+window.renewVipSubscription = renewVipSubscription;
 
 function openEasyToCancelModal() {
   const modal = document.getElementById('vip-cancel-modal');

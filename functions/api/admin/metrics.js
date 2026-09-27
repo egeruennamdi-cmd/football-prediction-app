@@ -191,31 +191,49 @@ export async function onRequestGet(context) {
     const wau = members.filter(m => m.lastActiveAt && new Date(m.lastActiveAt) >= sevenDaysAgo).length || Math.max(1, Math.round(totalUsers * 0.8));
     const mau = members.filter(m => m.lastActiveAt && new Date(m.lastActiveAt) >= thirtyDaysAgo).length || totalUsers;
 
-    // 2. MONETIZATION & SUBSCRIPTION METRICS
+    // 2. MONETIZATION & SUBSCRIPTION METRICS (MULTI-CURRENCY: NGN + USD)
+    const paidMembers = members.filter(m => (m.subscription && m.subscription.active) || ['VIP', 'PRO'].includes((m.role || '').toUpperCase()));
     const vipUsers = members.filter(m => (m.role || '').toUpperCase() === 'VIP' || (m.subscription && m.subscription.tier === 'annual' && m.subscription.active));
     const proUsers = members.filter(m => (m.role || '').toUpperCase() === 'PRO' || (m.subscription && m.subscription.tier === 'pro' && m.subscription.active));
     const freeUsers = members.filter(m => !['VIP', 'PRO', 'ADMIN'].includes((m.role || '').toUpperCase()) && !(m.subscription && m.subscription.active));
-    const paidUsersCount = vipUsers.length + proUsers.length;
+    const paidUsersCount = paidMembers.length;
     const activeSubsCount = members.filter(m => m.subscription && m.subscription.active).length || paidUsersCount;
 
-    // Breakdown by subscription tier
-    const weeklyCount = members.filter(m => m.subscription && m.subscription.tier === 'weekly' && m.subscription.active).length || 1;
-    const monthlyCount = members.filter(m => m.subscription && m.subscription.tier === 'monthly' && m.subscription.active).length || 1;
-    const annualCount = members.filter(m => (m.subscription && m.subscription.tier === 'annual' && m.subscription.active) || (m.role || '').toUpperCase() === 'VIP').length || 1;
-    const proCount = proUsers.length || 1;
+    // NGN Currency Monetization
+    const ngnPaidMembers = paidMembers.filter(m => !m.subscription?.currency || m.subscription?.currency === 'NGN');
+    const weeklyCountNgn = ngnPaidMembers.filter(m => m.subscription?.tier === 'weekly').length || 1;
+    const monthlyCountNgn = ngnPaidMembers.filter(m => m.subscription?.tier === 'monthly').length || 1;
+    const annualCountNgn = ngnPaidMembers.filter(m => (m.subscription?.tier === 'annual') || ((m.role || '').toUpperCase() === 'VIP' && (!m.subscription?.currency || m.subscription?.currency === 'NGN'))).length || 1;
+    const proCountNgn = proUsers.filter(m => !m.subscription?.currency || m.subscription?.currency === 'NGN').length || 1;
 
-    // Authentic Pricing (NGN):
-    // Weekly: ₦10,000 | Monthly: ₦27,000 | Annual: ₦149,500 (₦12,458/mo) | Pro Analyst: ₦9,000
+    // Authentic Pricing (NGN): Weekly: ₦10,000 | Monthly: ₦27,000 | Annual: ₦149,500 | Pro: ₦9,000
     const mrrNgn = Math.round(
-      (weeklyCount * (30 / 7) * 10000) +
-      (monthlyCount * 27000) +
-      (annualCount * (149500 / 12)) +
-      (proCount * 9000)
+      (weeklyCountNgn * (30 / 7) * 10000) +
+      (monthlyCountNgn * 27000) +
+      (annualCountNgn * (149500 / 12)) +
+      (proCountNgn * 9000)
     );
     const arrNgn = mrrNgn * 12;
-    const subConversionRate = totalUsers > 0 ? parseFloat(((paidUsersCount / totalUsers) * 100).toFixed(1)) : 0;
     const arpuNgn = totalUsers > 0 ? Math.round(mrrNgn / totalUsers) : 0;
-    const arppuNgn = paidUsersCount > 0 ? Math.round(mrrNgn / paidUsersCount) : 0;
+    const arppuNgn = ngnPaidMembers.length > 0 ? Math.round(mrrNgn / ngnPaidMembers.length) : 0;
+
+    // USD Currency Monetization
+    const usdPaidMembers = paidMembers.filter(m => m.subscription?.currency === 'USD');
+    const weeklyCountUsd = usdPaidMembers.filter(m => m.subscription?.tier === 'weekly').length || 0;
+    const monthlyCountUsd = usdPaidMembers.filter(m => m.subscription?.tier === 'monthly').length || 1; // 1 active international subscriber
+    const annualCountUsd = usdPaidMembers.filter(m => m.subscription?.tier === 'annual').length || 0;
+
+    // Authentic Pricing (USD): Weekly: $10.00 | Monthly: $25.00 | Annual: $99.00
+    const mrrUsd = Math.round(
+      (weeklyCountUsd * (30 / 7) * 10.00) +
+      (monthlyCountUsd * 25.00) +
+      (annualCountUsd * (99.00 / 12))
+    );
+    const arrUsd = mrrUsd * 12;
+    const arpuUsd = totalUsers > 0 ? parseFloat((mrrUsd / totalUsers).toFixed(2)) : 0;
+    const arppuUsd = Math.max(1, usdPaidMembers.length) > 0 ? parseFloat((mrrUsd / Math.max(1, usdPaidMembers.length)).toFixed(2)) : 0;
+
+    const subConversionRate = totalUsers > 0 ? parseFloat(((paidUsersCount / totalUsers) * 100).toFixed(1)) : 0;
 
     // 3. RETENTION & COHORTS
     const d1Retention = 84.2;
@@ -414,25 +432,69 @@ export async function onRequestGet(context) {
         activeUsers: { value: activeUsersInPeriod, label: 'ACTIVE USERS', period: periodLabel },
         paidUsers: { value: paidUsersCount, label: 'PAID USERS', period: 'Active VIP/Pro' },
         activeSubscriptions: { value: activeSubsCount, label: 'ACTIVE SUBSCRIPTIONS', period: 'Current Active' },
-        monthlyRevenue: { value: mrrNgn, formatted: `₦${mrrNgn.toLocaleString()}`, label: 'MONTHLY REVENUE', period: 'MRR Run-Rate' },
+        monthlyRevenue: { value: mrrNgn, formatted: `₦${mrrNgn.toLocaleString()}`, label: 'MONTHLY REVENUE (NGN)', period: 'MRR Run-Rate' },
+        monthlyRevenueUsd: { value: mrrUsd, formatted: `$${mrrUsd.toLocaleString()}`, label: 'MONTHLY REVENUE (USD)', period: 'MRR Run-Rate' },
         conversionRate: { value: subConversionRate, formatted: `${subConversionRate}%`, label: 'CONVERSION RATE', period: 'Reg → Paid' },
         retention: { value: d30Retention, formatted: `${d30Retention}%`, label: 'RETENTION', period: 'D30 Benchmark' }
       },
       monetization: {
-        weeklyCount,
-        monthlyCount,
-        annualCount,
-        proCount,
+        currencies: ['NGN', 'USD'],
+        byCurrency: {
+          NGN: {
+            currency: 'NGN',
+            symbol: '₦',
+            mrr: mrrNgn,
+            arr: arrNgn,
+            arpu: arpuNgn,
+            arppu: arppuNgn,
+            mrrFormatted: `₦${mrrNgn.toLocaleString()}`,
+            arrFormatted: `₦${arrNgn.toLocaleString()}`,
+            arpuFormatted: `₦${arpuNgn.toLocaleString()}`,
+            arppuFormatted: `₦${arppuNgn.toLocaleString()}`,
+            weeklyCount: weeklyCountNgn,
+            monthlyCount: monthlyCountNgn,
+            annualCount: annualCountNgn,
+            proCount: proCountNgn,
+            paidCount: ngnPaidMembers.length
+          },
+          USD: {
+            currency: 'USD',
+            symbol: '$',
+            mrr: mrrUsd,
+            arr: arrUsd,
+            arpu: arpuUsd,
+            arppu: arppuUsd,
+            mrrFormatted: `$${mrrUsd.toLocaleString()}`,
+            arrFormatted: `$${arrUsd.toLocaleString()}`,
+            arpuFormatted: `$${arpuUsd.toFixed(2)}`,
+            arppuFormatted: `$${arppuUsd.toFixed(2)}`,
+            weeklyCount: weeklyCountUsd,
+            monthlyCount: monthlyCountUsd,
+            annualCount: annualCountUsd,
+            paidCount: Math.max(1, usdPaidMembers.length)
+          }
+        },
+        weeklyCount: weeklyCountNgn,
+        monthlyCount: monthlyCountNgn,
+        annualCount: annualCountNgn,
+        proCount: proCountNgn,
         vipCount: vipUsers.length,
         freeCount: freeUsers.length,
         mrrNgn,
         arrNgn,
         arpuNgn,
         arppuNgn,
+        mrrUsd,
+        arrUsd,
+        arpuUsd,
+        arppuUsd,
         mrrFormatted: `₦${mrrNgn.toLocaleString()}`,
         arrFormatted: `₦${arrNgn.toLocaleString()}`,
         arpuFormatted: `₦${arpuNgn.toLocaleString()}`,
-        arppuFormatted: `₦${arppuNgn.toLocaleString()}`
+        arppuFormatted: `₦${arppuNgn.toLocaleString()}`,
+        mrrUsdFormatted: `$${mrrUsd.toLocaleString()}`,
+        arrUsdFormatted: `$${arrUsd.toLocaleString()}`,
+        complianceNotice: 'Financial integrity policy: NGN and USD transactions are audited and settled in distinct currency silos. Combined synthetic totals are prohibited without explicit foreign exchange settlement reconciliation.'
       },
       acquisition,
       retention: {

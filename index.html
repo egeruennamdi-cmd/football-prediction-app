@@ -6371,12 +6371,25 @@
           </ul>
         </div>
 
+        <!-- On-Page Currency Selector -->
+        <div class="currency-selector-bar">
+          <span class="currency-selector-label">Pay in:</span>
+          <div class="currency-toggle-group" role="radiogroup" aria-label="Select Payment Currency">
+            <button type="button" class="currency-toggle-btn active" data-currency="NGN" onclick="setAppCurrency('NGN')" role="radio" aria-checked="true">
+              <span class="currency-flag">🇳🇬</span> NGN
+            </button>
+            <button type="button" class="currency-toggle-btn" data-currency="USD" onclick="setAppCurrency('USD')" role="radio" aria-checked="false">
+              <span class="currency-flag">🇺🇸</span> USD
+            </button>
+          </div>
+        </div>
+
         <!-- 3-Package Subscription Selector Grid -->
         <div class="vip-plans-grid" style="padding: 6px 28px 22px;">
           <!-- Weekly VIP -->
           <div class="vip-plan-card" id="page-vip-card-weekly" onclick="selectPageVipPackage('weekly')">
             <div class="vip-plan-name-label">Weekly VIP</div>
-            <div class="vip-plan-price">₦10,000.00</div>
+            <div class="vip-plan-price" id="page-vip-price-weekly">₦10,000.00</div>
             <div class="vip-plan-daily">₦1,429 / day</div>
             <div class="vip-save-placeholder"></div>
           </div>
@@ -6385,7 +6398,7 @@
           <div class="vip-plan-card" id="page-vip-card-monthly" onclick="selectPageVipPackage('monthly')">
             <div class="vip-best-value-pill" style="background: rgba(59, 130, 246, 0.2); border-color: #3b82f6; color: #60a5fa;">MOST POPULAR</div>
             <div class="vip-plan-name-label">Monthly VIP</div>
-            <div class="vip-plan-price">₦27,000.00</div>
+            <div class="vip-plan-price" id="page-vip-price-monthly">₦27,000.00</div>
             <div class="vip-plan-daily">₦900 / day</div>
             <div class="vip-save-pill">Save 32%</div>
           </div>
@@ -6394,7 +6407,7 @@
           <div class="vip-plan-card selected" id="page-vip-card-annual" onclick="selectPageVipPackage('annual')">
             <div class="vip-best-value-pill">BEST VALUE</div>
             <div class="vip-plan-name-label">Annual VIP</div>
-            <div class="vip-plan-price">₦149,500.00</div>
+            <div class="vip-plan-price" id="page-vip-price-annual">₦149,500.00</div>
             <div class="vip-plan-daily">₦410 / day</div>
             <div class="vip-save-pill">Save 71%</div>
           </div>
@@ -7287,6 +7300,23 @@
           </div>
         </div>
 
+        <!-- Multi-Currency Selector (NGN & USD) -->
+        <div class="paywall-currency-wrapper">
+          <span class="paywall-currency-prompt">Select billing currency</span>
+          <div class="paywall-currency-toggle" role="radiogroup" aria-label="Subscription Billing Currency">
+            <button type="button" class="paywall-curr-btn active" data-currency="NGN" onclick="setAppCurrency('NGN')" role="radio" aria-checked="true">
+              <span class="curr-flag">🇳🇬</span>
+              <span class="curr-code">NGN</span>
+              <span class="curr-desc">Nigerian Naira</span>
+            </button>
+            <button type="button" class="paywall-curr-btn" data-currency="USD" onclick="setAppCurrency('USD')" role="radio" aria-checked="false">
+              <span class="curr-flag">🇺🇸</span>
+              <span class="curr-code">USD</span>
+              <span class="curr-desc">US Dollar</span>
+            </button>
+          </div>
+        </div>
+
         <!-- 3-Package Subscription Selector Grid (Authoritative Pricing) -->
         <div class="vip-plans-grid">
           <!-- Plan 1: Weekly VIP -->
@@ -7505,6 +7535,7 @@
               <div style="font-size: 0.72rem; color: #10b981; font-weight: 800; text-transform: uppercase;">Selected Package</div>
               <div style="font-size: 1rem; font-weight: 800; color: #ffffff;" id="vip-checkout-plan-name">Annual VIP Pass (365 Days)</div>
               <div style="font-size: 0.72rem; color: #94a3b8;" id="vip-checkout-plan-daily">Billed at ₦410 / day</div>
+              <div id="vip-checkout-currency-tag" style="font-size: 0.65rem; color: #60a5fa; font-weight: 700; margin-top: 3px;">🇳🇬 NGN Nigerian Billing</div>
             </div>
             <div style="text-align: right;">
               <div style="font-size: 1.25rem; font-weight: 900; color: #34d399; font-family: var(--font-display);" id="vip-checkout-plan-price">₦149,500.00</div>
@@ -7534,7 +7565,7 @@
           <!-- Method 1: Card Form -->
           <div id="vip-form-card" style="display: flex; flex-direction: column; gap: 10px;">
             <div style="display: flex; justify-content: space-between; align-items: center;">
-              <span style="font-size: 0.75rem; color: #cbd5e1; font-weight: 600;">Paystack / Flutterwave Secured</span>
+              <span style="font-size: 0.75rem; color: #cbd5e1; font-weight: 600;">Global & Domestic Secured Gateway</span>
               <button type="button" onclick="fillVipDemoCard()" style="background: rgba(59,130,246,0.15); border: 1px solid rgba(59,130,246,0.3); color: #60a5fa; font-size: 0.68rem; font-weight: 700; padding: 2px 8px; border-radius: 4px; cursor: pointer;">Fill Demo Card</button>
             </div>
             <input type="text" id="vip-card-number" class="vip-pay-form-input" placeholder="Card Number (0000 0000 0000 0000)" maxlength="19">
@@ -7547,6 +7578,7 @@
 
           <!-- Method 2: Bank Transfer Details -->
           <div id="vip-form-transfer" style="display: none; flex-direction: column; gap: 10px; background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.08); padding: 14px; border-radius: 12px;">
+            <div id="vip-transfer-currency-notice"></div>
             <div style="font-size: 0.75rem; color: #cbd5e1; font-weight: 700;">Instant Virtual Bank Transfer</div>
             <div style="display: flex; justify-content: space-between; align-items: center; background: rgba(0,0,0,0.3); padding: 10px 12px; border-radius: 8px;">
               <div>
@@ -8917,6 +8949,7 @@
   <script defer src="/js/analytics.js?v=20260924_multipage_v3"></script>
   <script defer src="/js/vipManager.js?v=20260924_multipage_v3"></script>
   <script defer src="/js/authManager.js?v=20260927_rbac_v1"></script>
+  <script defer src="/js/currencyConfig.js?v=20260927_currency_v1"></script>
   <script defer src="/js/paywallManager.js?v=20260927_paywall_v2"></script>
   <script defer src="/js/ui.js?v=20260925_mobile_footer_v1"></script>
   <script defer src="/js/pages.js?v=20260924_multipage_v3"></script>
