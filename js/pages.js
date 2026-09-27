@@ -573,17 +573,25 @@
 
       <div class="leagues-grid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(310px, 1fr)); gap: 18px;">
         ${leagues.map(l => {
-          const norm = (typeof window.normalizeLeague === 'function') ? window.normalizeLeague(l) : l;
-          const leagueName = norm.name || norm.league || 'League information unavailable';
-          const countryName = norm.country || 'International';
+          const norm = (typeof window.normalizeLeague === 'function') ? window.normalizeLeague(l, {}, 'renderLeaguesPage') : l;
+          const integrity = (typeof window.validateCompetitionIntegrity === 'function')
+            ? window.validateCompetitionIntegrity(norm)
+            : { isValid: !!(norm && norm.id && norm.name && norm.country && norm.type && norm.seasonId) };
+
+          if (!integrity.isValid) {
+            return ''; // Strictly do not display corrupted/unverified records (Rule 1 & Rule 2)
+          }
+
+          const leagueName = norm.name;
+          const countryName = norm.country;
           const flagEmoji = norm.flag || '🏆';
           const typeBadge = norm.type === 'national_team' ? 'National Team' : 'Club';
           const typeColor = norm.type === 'national_team' ? '#c084fc' : '#60a5fa';
           const typeBg = norm.type === 'national_team' ? 'rgba(192,132,252,0.12)' : 'rgba(96,165,250,0.12)';
           const homeWinVal = (norm.homeWinRate !== undefined && norm.homeWinRate !== null) ? norm.homeWinRate : (parseInt(norm.homeWinPct) || 45);
           const avgGoalsVal = (norm.avgGoals !== undefined && norm.avgGoals !== null) ? norm.avgGoals : 2.75;
-          const canonicalId = norm.id || '39';
-          const isTargeted = targetLeague && (targetLeague.id === norm.id || targetLeague.name.toLowerCase() === leagueName.toLowerCase());
+          const canonicalId = norm.id;
+          const isTargeted = targetLeague && (targetLeague.id === norm.id || String(targetLeague.name).toLowerCase() === String(leagueName).toLowerCase());
 
           return `
           <div class="glass-card league-intel-card" id="league-card-${canonicalId}" style="padding: 20px; border-radius: var(--radius-md); border: 1px solid ${isTargeted ? 'rgba(59,130,246,0.6)' : 'rgba(255,255,255,0.08)'}; background: ${isTargeted ? 'linear-gradient(180deg, rgba(30,58,138,0.25) 0%, rgba(15,23,42,0.9) 100%)' : ''}; transition: transform 0.2s ease, border-color 0.2s ease;">

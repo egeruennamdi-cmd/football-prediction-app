@@ -1973,19 +1973,26 @@ function renderLeagueStatsLedger() {
     : ((typeof LEAGUE_STATS !== 'undefined' && Array.isArray(LEAGUE_STATS)) ? LEAGUE_STATS : []);
 
   statsList.forEach(stat => {
+    const norm = (typeof window.normalizeLeague === 'function') ? window.normalizeLeague(stat, {}, 'renderLeagueStatsLedger') : stat;
+    const integrity = (typeof window.validateCompetitionIntegrity === 'function')
+      ? window.validateCompetitionIntegrity(norm)
+      : { isValid: !!(norm && norm.id && norm.name && norm.country && norm.type && norm.seasonId) };
+
+    if (!integrity.isValid) return; // Strictly omit corrupted or unverified records (Rule 1 & Rule 2)
+
     const tr = document.createElement("tr");
     tr.style.borderBottom = "1px solid var(--border-color)";
     tr.style.fontSize = "0.85rem";
 
-    const flag = stat.flag || "🏆";
-    const name = stat.name || stat.league || "Unknown League";
-    const avgGoals = stat.avgGoals || "2.75";
-    const btts = stat.bttsPct || `${stat.bttsRate || 50}%`;
-    const homeWin = stat.homeWinPct || `${stat.homeWinRate || 45}%`;
-    const draw = stat.drawPct || `${stat.drawRate || 25}%`;
-    const over25 = stat.over25Pct || `${stat.over25Rate || 55}%`;
-    const avgCards = stat.avgCards || "3.9";
-    const avgCorners = stat.avgCorners || "9.8";
+    const flag = norm.flag || "🏆";
+    const name = norm.name;
+    const avgGoals = norm.avgGoals || "2.75";
+    const btts = norm.bttsPct || `${norm.bttsRate || 50}%`;
+    const homeWin = norm.homeWinPct || `${norm.homeWinRate || 45}%`;
+    const draw = norm.drawPct || `${norm.drawRate || 25}%`;
+    const over25 = norm.over25Pct || `${norm.over25Rate || 55}%`;
+    const avgCards = norm.avgCards || "3.9";
+    const avgCorners = norm.avgCorners || "9.8";
 
     tr.innerHTML = `
       <td style="padding: 12px 8px; font-weight: 700; color: var(--text-primary);">

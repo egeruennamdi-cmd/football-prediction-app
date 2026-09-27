@@ -426,10 +426,10 @@
 
     const rawL = item.league || {};
     const normL = (typeof window !== 'undefined' && typeof window.normalizeLeague === 'function')
-      ? window.normalizeLeague(rawL, { country: item.country || rawL.country })
+      ? window.normalizeLeague(rawL, { country: item.country || rawL.country }, 'liveFixtures:normalizeFixture')
       : null;
     const resolvedLeagueId = normL ? normL.id : (rawL.id || null);
-    const resolvedLeagueName = normL ? normL.name : (rawL.name || 'Unknown League');
+    const resolvedLeagueName = normL ? normL.name : (rawL.name || '');
     const resolvedCountry = normL ? normL.country : (rawL.country || '');
     const resolvedFlag = normL ? normL.flag : flagHtml;
     const resolvedType = normL ? normL.type : 'club';

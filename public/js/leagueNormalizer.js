@@ -893,34 +893,256 @@
   NAME_TO_ID_MAP['euro championship'] = 4;
   NAME_TO_ID_MAP['uefa european championship'] = 4;
 
+  // ─────────────────────────────────────────────────────────────────────────────
+  // GLOBAL DATA-INTEGRITY RULE & DIAGNOSTIC SYSTEM
+  // ─────────────────────────────────────────────────────────────────────────────
+
+  const INTEGRITY_PROBLEM_CATEGORIES = {
+    MISSING_PROVIDER_DATA: 'missing_provider_data',
+    INCORRECT_FIELD_MAPPING: 'incorrect_field_mapping',
+    STALE_CACHE: 'stale_cache',
+    WRONG_COMPETITION_ID: 'wrong_competition_id',
+    WRONG_SEASON_ID: 'wrong_season_id',
+    FAILED_NORMALIZATION: 'failed_normalization',
+    FRONTEND_TRANSFORMATION_BUG: 'frontend_transformation_bug'
+  };
+
+  const COMPETITION_INTEGRITY_LOGS = [];
+
   /**
    * Defensive formatting: Never return "undefined", "null", or "[object Object]".
    */
-  function safeLeagueName(val) {
-    if (!val || typeof val !== 'string') return 'League information unavailable';
+  function isCorruptedValue(val) {
+    if (val === undefined || val === null) return true;
+    const str = String(val).trim().toLowerCase();
+    return str === '' || str === 'undefined' || str === 'null' || str === '[object object]' || str === 'nan';
+  }
+
+  function safeLeagueName(val, fallback = 'League information unavailable') {
+    if (!val || typeof val !== 'string') return fallback;
     const clean = val.trim();
-    if (['undefined', 'null', '[object object]'].includes(clean.toLowerCase())) {
-      return 'League information unavailable';
+    if (isCorruptedValue(clean)) {
+      return fallback;
     }
     return clean;
   }
 
-  function safeCountryName(val) {
-    if (!val || typeof val !== 'string') return 'International';
+  function safeCountryName(val, fallback = 'International') {
+    if (!val || typeof val !== 'string') return fallback;
     const clean = val.trim();
-    if (['undefined', 'null', '[object object]'].includes(clean.toLowerCase())) {
-      return 'International';
+    if (isCorruptedValue(clean)) {
+      return fallback;
     }
     return clean;
   }
 
-  function safeFlag(val) {
-    if (!val || typeof val !== 'string') return '🏆';
+  function safeFlag(val, fallback = '🏆') {
+    if (!val || typeof val !== 'string') return fallback;
     const clean = val.trim();
-    if (['undefined', 'null', '[object object]'].includes(clean.toLowerCase())) {
-      return '🏆';
+    if (isCorruptedValue(clean)) {
+      return fallback;
     }
     return clean;
+  }
+
+  /**
+   * GLOBAL DATA-INTEGRITY VALIDATOR
+   * Every competition displayed anywhere in DeepPredictBet must satisfy:
+   * - competition.id
+   * - competition.name
+   * - competition.country
+   * - competition.type
+   * - competition.seasonId
+   */
+  function validateCompetitionIntegrity(competition) {
+    if (!competition || typeof competition !== 'object') {
+      return {
+        isValid: false,
+        missingFields: ['id', 'name', 'country', 'type', 'seasonId'],
+        errors: ['Competition payload is null, undefined, or not an object']
+      };
+    }
+
+    const missingFields = [];
+    const errors = [];
+
+    // 1. competition.id
+    if (competition.id === undefined || competition.id === null || competition.id === '' || isCorruptedValue(competition.id) || competition.id === 'unknown' || competition.id === 'unresolved-competition') {
+      missingFields.push('id');
+      errors.push('competition.id is missing or invalid');
+    }
+
+    // 2. competition.name
+    if (!competition.name || typeof competition.name !== 'string' || isCorruptedValue(competition.name) || competition.name === 'League information unavailable') {
+      missingFields.push('name');
+      errors.push('competition.name is missing or corrupted');
+    }
+
+    // 3. competition.country
+    if (!competition.country || typeof competition.country !== 'string' || isCorruptedValue(competition.country)) {
+      missingFields.push('country');
+      errors.push('competition.country is missing or corrupted');
+    }
+
+    // 4. competition.type ('club' or 'national_team')
+    if (!competition.type || !['club', 'national_team'].includes(competition.type)) {
+      missingFields.push('type');
+      errors.push('competition.type must be either "club" or "national_team"');
+    }
+
+    // 5. competition.seasonId (e.g. '2026/27' or '2026')
+    if (!competition.seasonId || isCorruptedValue(competition.seasonId)) {
+      missingFields.push('seasonId');
+      errors.push('competition.seasonId is missing or corrupted');
+    }
+
+    return {
+      isValid: missingFields.length === 0,
+      missingFields,
+      errors
+    };
+  }
+
+  /**
+   * Automated Diagnostic Root Cause Classifier
+   */
+  function diagnoseCompetitionIssue(raw, normCandidate, context = 'general') {
+    // 1. FAILED_NORMALIZATION
+    if (raw === undefined || raw === null || (typeof raw !== 'object' && typeof raw !== 'string')) {
+      return {
+        category: INTEGRITY_PROBLEM_CATEGORIES.FAILED_NORMALIZATION,
+        explanation: `Input is not an object or string: received ${typeof raw}`,
+        missingFields: ['id', 'name', 'country', 'type', 'seasonId'],
+        remediation: 'Ensure valid object or string identifier is passed into normalization layer.'
+      };
+    }
+
+    const rawId = raw.id || raw.leagueId || raw.league?.id;
+    const rawName = raw.name || raw.leagueName || raw.league?.name || (typeof raw === 'string' ? raw : (typeof raw.league === 'string' ? raw.league : null));
+    const rawCountry = raw.country?.name || (typeof raw.country === 'string' ? raw.country : null) || raw.countryName || raw.league?.country;
+    const canonical = (rawName && !isCorruptedValue(rawName))
+      ? resolveCanonicalCompetition(rawName, rawCountry)
+      : (rawId && !isCorruptedValue(rawId) ? resolveCanonicalCompetition(rawId, rawCountry) : null);
+
+    // 2. FRONTEND_TRANSFORMATION_BUG
+    if (typeof context === 'string' && (context.includes('render') || context.includes('template') || context.includes('page') || context.includes('view'))) {
+      if (raw.league && !raw.name) {
+        return {
+          category: INTEGRITY_PROBLEM_CATEGORIES.FRONTEND_TRANSFORMATION_BUG,
+          explanation: 'Frontend component accessed legacy .league instead of canonical .name or vice-versa.',
+          missingFields: ['name'],
+          remediation: 'Provide bi-directional getter/alias for .name and .league.'
+        };
+      }
+    }
+
+    // 3. INCORRECT_FIELD_MAPPING
+    const altKeysFound = [];
+    if (raw.league_name || raw.competition_name || raw.tournament_name || raw.tournament) altKeysFound.push('name');
+    if (raw.league_id || raw.competition_id || raw.tournament_id) altKeysFound.push('id');
+    if (raw.country_name || raw.nation || raw.league?.country_name) altKeysFound.push('country');
+    if (raw.season_id || raw.season_year || raw.league?.season_id) altKeysFound.push('seasonId');
+    if (raw.competition_type || raw.participant_type) altKeysFound.push('type');
+
+    if (altKeysFound.length > 0 && (!normCandidate?.id || !normCandidate?.name || !normCandidate?.country)) {
+      return {
+        category: INTEGRITY_PROBLEM_CATEGORIES.INCORRECT_FIELD_MAPPING,
+        explanation: `Provider payload used alternative property keys: ${altKeysFound.join(', ')}`,
+        missingFields: altKeysFound,
+        remediation: 'Extract and map alternative provider fields into canonical properties.'
+      };
+    }
+
+    // 4. STALE_CACHE
+    const isCached = raw._cached || raw.cacheTime || raw.t || (typeof context === 'string' && context.includes('cache'));
+    if (isCached && (!raw.seasonId || !raw.country || !raw.type)) {
+      return {
+        category: INTEGRITY_PROBLEM_CATEGORIES.STALE_CACHE,
+        explanation: 'Record retrieved from legacy cache lacking modern canonical competition schema.',
+        missingFields: ['seasonId', 'country'].filter(f => !raw[f]),
+        remediation: 'Invalidate stale cache and re-normalize with authoritative registry.'
+      };
+    }
+
+    // 5. WRONG_COMPETITION_ID
+    if (rawName && rawId && canonical && Number(canonical.id) !== Number(rawId)) {
+      return {
+        category: INTEGRITY_PROBLEM_CATEGORIES.WRONG_COMPETITION_ID,
+        explanation: `Provider competition ID (${rawId}) does not match canonical ID (${canonical.id}) for "${rawName}"`,
+        missingFields: [],
+        remediation: `Re-bind canonical ID ${canonical.id} matching official catalog.`
+      };
+    }
+
+    // 6. WRONG_SEASON_ID
+    const rawSeason = raw.seasonId || raw.season || raw.league?.season;
+    const expectedSeason = canonical?.seasonId || '2026/27';
+    if (rawSeason && (isCorruptedValue(rawSeason) || String(rawSeason).trim() !== String(expectedSeason).trim())) {
+      return {
+        category: INTEGRITY_PROBLEM_CATEGORIES.WRONG_SEASON_ID,
+        explanation: `Season identifier "${rawSeason}" does not match canonical season "${expectedSeason}".`,
+        missingFields: ['seasonId'],
+        remediation: `Bind authoritative ${expectedSeason} active season identifier.`
+      };
+    }
+
+    // 7. MISSING_PROVIDER_DATA (Fallback for true omissions)
+    const missing = [];
+    if (!normCandidate?.id) missing.push('id');
+    if (!normCandidate?.name) missing.push('name');
+    if (!normCandidate?.country) missing.push('country');
+    if (!normCandidate?.type) missing.push('type');
+    if (!normCandidate?.seasonId) missing.push('seasonId');
+
+    return {
+      category: INTEGRITY_PROBLEM_CATEGORIES.MISSING_PROVIDER_DATA,
+      explanation: `Provider record literally omitted required fields: ${missing.join(', ') || 'unspecified'}`,
+      missingFields: missing,
+      remediation: 'Reconcile against CANONICAL_COMPETITIONS registry without fabricating false data.'
+    };
+  }
+
+  /**
+   * Structured Integrity Logger
+   */
+  function logIntegrityViolation(diagnosis) {
+    const entry = {
+      id: `integ-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`,
+      timestamp: new Date().toISOString(),
+      category: diagnosis.category,
+      missingFields: diagnosis.missingFields || [],
+      rawRecord: diagnosis.rawRecord,
+      resolvedRecord: diagnosis.resolvedRecord,
+      explanation: diagnosis.explanation,
+      remediation: diagnosis.remediation,
+      context: diagnosis.context || 'global'
+    };
+
+    if (COMPETITION_INTEGRITY_LOGS.length >= 200) {
+      COMPETITION_INTEGRITY_LOGS.shift();
+    }
+    COMPETITION_INTEGRITY_LOGS.push(entry);
+
+    console.warn(`[DeepPredictBet Competition Integrity Audit] ${diagnosis.category.toUpperCase()}: ${diagnosis.explanation}`, {
+      raw: diagnosis.rawRecord,
+      resolved: diagnosis.resolvedRecord,
+      missing: diagnosis.missingFields
+    });
+
+    return entry;
+  }
+
+  function auditCompetitionIntegrity(raw, normCandidate, context = 'general') {
+    const valResult = validateCompetitionIntegrity(normCandidate);
+    if (!valResult.isValid) {
+      const diagnosis = diagnoseCompetitionIssue(raw, normCandidate, context);
+      diagnosis.rawRecord = raw;
+      diagnosis.resolvedRecord = normCandidate;
+      diagnosis.missingFields = valResult.missingFields;
+      diagnosis.context = context;
+      return logIntegrityViolation(diagnosis);
+    }
+    return null;
   }
 
   /**
@@ -969,85 +1191,173 @@
   }
 
   /**
-   * CENTRAL LEAGUE NORMALIZER
+   * CENTRAL LEAGUE NORMALIZER WITH UNDERLYING CAUSE REMEDIATION
    * Converts any raw provider or application league representation into a standardized model.
    *
    * @param {Object|string} raw - Raw league input from provider, database, or UI state
    * @param {Object} [fallbackMeta] - Optional contextual overrides
+   * @param {string} [context] - Context string for audit logging
    * @returns {Object} Normalized league object
    */
-  function normalizeLeague(raw, fallbackMeta = {}) {
-    if (!raw) {
-      return {
-        id: 'unknown',
-        name: 'League information unavailable',
-        league: 'League information unavailable',
-        country: 'International',
-        countryCode: 'GL',
-        flag: '🏆',
+  function normalizeLeague(raw, fallbackMeta = {}, context = 'normalizeLeague') {
+    // Check for null / undefined raw input
+    if (raw === undefined || raw === null || raw === '') {
+      const unrec = {
+        id: null,
+        name: safeLeagueName(null),
+        league: safeLeagueName(null),
+        country: safeCountryName(fallbackMeta.country),
+        countryCode: fallbackMeta.countryCode || 'GL',
+        flag: safeFlag(fallbackMeta.flag),
         type: 'club',
         seasonId: '2026/27',
-        avgGoals: 2.75,
-        homeWinRate: 45,
-        bttsRate: 50,
-        drawRate: 25,
-        over25Rate: 55,
-        matchesPlayed: 380,
-        predictionRoute: '/predictions',
-        detailRoute: '/leagues'
+        isValid: false,
+        status: 'unresolved'
       };
+      auditCompetitionIntegrity(raw, unrec, `${context}:null_input`);
+      return unrec;
     }
 
     // Handle plain string input
     if (typeof raw === 'string') {
-      const canonical = resolveCanonicalCompetition(raw, fallbackMeta.country);
+      const cleanRaw = raw.trim();
+      if (isCorruptedValue(cleanRaw)) {
+        const unrec = {
+          id: null,
+          name: safeLeagueName(cleanRaw),
+          league: safeLeagueName(cleanRaw),
+          country: safeCountryName(fallbackMeta.country),
+          countryCode: fallbackMeta.countryCode || 'GL',
+          flag: safeFlag(fallbackMeta.flag),
+          type: 'club',
+          seasonId: '2026/27',
+          isValid: false,
+          status: 'unresolved'
+        };
+        auditCompetitionIntegrity(raw, unrec, `${context}:corrupted_string`);
+        return unrec;
+      }
+
+      const canonical = resolveCanonicalCompetition(cleanRaw, fallbackMeta.country);
       if (canonical) {
         return {
           ...canonical,
           league: canonical.name, // backward-compat alias
+          season: canonical.seasonId, // backward-compat alias
+          competitionType: canonical.type, // backward-compat alias
+          participantType: canonical.type, // backward-compat alias
+          leagueEmoji: canonical.flag, // backward-compat alias
+          isValid: true,
           predictionRoute: `/predictions?leagueId=${canonical.id}`,
           detailRoute: `/league/${canonical.id}`
         };
       }
+
+      // If not in canonical catalog, ensure genuine metadata is preserved without fabrication
+      const isNat = (typeof window !== 'undefined' && typeof window.isNationalTeamCompetition === 'function' && window.isNationalTeamCompetition(cleanRaw));
+      const resCountry = safeCountryName(fallbackMeta.country);
+      const resSeason = fallbackMeta.seasonId || '2026/27';
+      const cleanSlug = cleanRaw.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
+
       return {
-        id: String(raw).toLowerCase().replace(/\s+/g, '-'),
-        name: safeLeagueName(raw),
-        league: safeLeagueName(raw),
-        country: safeCountryName(fallbackMeta.country),
+        id: cleanSlug || 'unresolved-competition',
+        name: cleanRaw,
+        league: cleanRaw,
+        country: resCountry,
         countryCode: fallbackMeta.countryCode || 'GL',
         flag: safeFlag(fallbackMeta.flag),
-        type: (typeof window.isNationalTeamCompetition === 'function' && window.isNationalTeamCompetition(raw)) ? 'national_team' : 'club',
-        seasonId: '2026/27',
+        type: isNat ? 'national_team' : 'club',
+        participantType: isNat ? 'national_team' : 'club',
+        seasonId: resSeason,
+        season: resSeason,
         avgGoals: 2.75,
         homeWinRate: 45,
         bttsRate: 50,
         drawRate: 25,
         over25Rate: 55,
         matchesPlayed: 380,
-        predictionRoute: `/predictions?league=${encodeURIComponent(raw)}`,
-        detailRoute: `/league/${encodeURIComponent(raw)}`
+        isValid: true,
+        predictionRoute: `/predictions?league=${encodeURIComponent(cleanRaw)}`,
+        detailRoute: `/league/${encodeURIComponent(cleanRaw)}`
       };
     }
 
-    // Handle nested API-Football structure:
-    // { league: { id: 39, name: "Premier League" }, country: { name: "England", code: "GB" } }
-    let rawId = raw.id || raw.leagueId || raw.league?.id || raw.competition?.id;
-    let rawName = raw.name || raw.league?.name || raw.competition?.name || raw.league;
-    let rawCountry = raw.country?.name || raw.country || raw.league?.country || fallbackMeta.country;
-    let rawCountryCode = raw.country?.code || raw.countryCode || raw.league?.countryCode;
-    let rawFlag = raw.flag || raw.emoji || raw.country?.flag || raw.league?.flag || raw.league?.logo;
-    let rawSeason = raw.seasonId || raw.season || raw.league?.season || '2026/27';
+    // Handle Object Input: Scan standard AND alternative provider keys
+    // (Corrects INCORRECT_FIELD_MAPPING)
+    let rawId = raw.id ?? raw.leagueId ?? raw.league_id ?? raw.competitionId ?? raw.competition_id ?? raw.tournamentId ?? raw.tournament_id ?? raw.league?.id ?? raw.competition?.id;
+    let rawName = raw.name ?? raw.leagueName ?? raw.league_name ?? raw.competitionName ?? raw.competition_name ?? raw.tournamentName ?? raw.tournament_name ?? raw.tournament ?? raw.league?.name ?? raw.competition?.name ?? (typeof raw.league === 'string' ? raw.league : null);
+    let rawCountry = raw.country?.name ?? (typeof raw.country === 'string' ? raw.country : null) ?? raw.countryName ?? raw.country_name ?? raw.nation ?? raw.league?.country ?? raw.league?.country_name ?? raw.competition?.country ?? fallbackMeta.country;
+    let rawCountryCode = raw.country?.code ?? raw.countryCode ?? raw.country_code ?? raw.league?.countryCode ?? raw.league?.country_code ?? raw.league?.country?.code ?? fallbackMeta.countryCode;
+    let rawFlag = raw.flag ?? raw.emoji ?? raw.leagueEmoji ?? raw.country?.flag ?? raw.league?.flag ?? raw.league?.emoji ?? raw.league?.logo ?? fallbackMeta.flag;
+    let rawSeason = raw.seasonId ?? raw.season_id ?? raw.season ?? raw.league?.season ?? raw.league?.seasonId ?? fallbackMeta.seasonId;
+    let rawType = raw.type ?? raw.competitionType ?? raw.competition_type ?? raw.participantType ?? raw.participant_type ?? raw.league?.type;
 
-    // Check if canonical metadata matches this league ID or Name
-    const canonical = resolveCanonicalCompetition(rawId || rawName, rawCountry);
+    // Prioritize name resolution to detect WRONG_COMPETITION_ID
+    let canonical = (rawName && !isCorruptedValue(rawName)) ? resolveCanonicalCompetition(rawName, rawCountry) : null;
 
-    const resolvedId = canonical ? canonical.id : (rawId || (rawName ? String(rawName).toLowerCase().replace(/\s+/g, '-') : 'unknown'));
-    const resolvedName = safeLeagueName(canonical ? canonical.name : rawName);
-    const resolvedCountry = safeCountryName(canonical ? canonical.country : rawCountry);
+    // Root-Cause Anomaly Detection:
+    // Check if ID was wrong (WRONG_COMPETITION_ID)
+    if (canonical && rawId && Number(canonical.id) !== Number(rawId)) {
+      logIntegrityViolation({
+        category: INTEGRITY_PROBLEM_CATEGORIES.WRONG_COMPETITION_ID,
+        explanation: `Corrected mismatched competition ID from ${rawId} to canonical ${canonical.id} for "${canonical.name}".`,
+        rawRecord: raw,
+        resolvedRecord: canonical,
+        missingFields: [],
+        remediation: `Re-bound canonical ID ${canonical.id}.`,
+        context
+      });
+    }
+
+    // If not found by name, try resolving by ID
+    if (!canonical && rawId && !isCorruptedValue(rawId)) {
+      canonical = resolveCanonicalCompetition(rawId, rawCountry);
+    }
+
+    // Check if season was wrong/stale (WRONG_SEASON_ID)
+    const expectedSeason = canonical ? canonical.seasonId : '2026/27';
+    if (rawSeason && (isCorruptedValue(rawSeason) || String(rawSeason).trim() !== String(expectedSeason).trim())) {
+      logIntegrityViolation({
+        category: INTEGRITY_PROBLEM_CATEGORIES.WRONG_SEASON_ID,
+        explanation: `Corrected non-canonical/outdated season "${rawSeason}" to canonical active season "${expectedSeason}".`,
+        rawRecord: raw,
+        resolvedRecord: canonical,
+        missingFields: ['seasonId'],
+        remediation: `Bound active ${expectedSeason} season identifier.`,
+        context
+      });
+    }
+
+    // Check if raw data was from stale cache missing modern fields (STALE_CACHE)
+    if ((raw._cached || raw.cacheTime || raw.t) && (!raw.seasonId || !raw.country)) {
+      logIntegrityViolation({
+        category: INTEGRITY_PROBLEM_CATEGORIES.STALE_CACHE,
+        explanation: 'Refreshed competition data retrieved from legacy cache lacking modern canonical fields.',
+        rawRecord: raw,
+        resolvedRecord: canonical,
+        missingFields: ['seasonId', 'country'].filter(f => !raw[f]),
+        remediation: 'Re-hydrated from authoritative canonical registry.',
+        context
+      });
+    }
+
+    // Resolve Canonical Properties
+    let resolvedId = null;
+    if (canonical) {
+      resolvedId = canonical.id;
+    } else if (rawId && !isCorruptedValue(rawId)) {
+      resolvedId = rawId;
+    } else if (rawName && !isCorruptedValue(rawName)) {
+      const slug = String(rawName).toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
+      resolvedId = isCorruptedValue(slug) ? null : slug;
+    }
+
+    const resolvedName = canonical ? canonical.name : safeLeagueName(rawName);
+    const resolvedCountry = canonical ? canonical.country : safeCountryName(rawCountry);
     const resolvedCountryCode = canonical ? canonical.countryCode : (rawCountryCode || 'GL');
-    const resolvedFlag = safeFlag(canonical ? canonical.flag : rawFlag);
-    const resolvedType = canonical ? canonical.type : ((typeof window.isNationalTeamCompetition === 'function' && window.isNationalTeamCompetition(resolvedName)) ? 'national_team' : 'club');
-    const resolvedSeason = canonical ? canonical.seasonId : (String(rawSeason).includes('/') ? rawSeason : `${rawSeason}/${(Number(rawSeason) + 1).toString().slice(-2)}`);
+    const resolvedFlag = canonical ? canonical.flag : safeFlag(rawFlag);
+    const resolvedType = canonical ? canonical.type : ((typeof window !== 'undefined' && typeof window.isNationalTeamCompetition === 'function' && window.isNationalTeamCompetition(resolvedName)) ? 'national_team' : (rawType || 'club'));
+    const resolvedSeason = canonical ? canonical.seasonId : (rawSeason ? (String(rawSeason).includes('/') ? rawSeason : `${rawSeason}/${(Number(rawSeason) + 1).toString().slice(-2)}`) : '2026/27');
 
     // Parse stats cleanly to numbers
     const parseNum = (val, fallback) => {
@@ -1063,16 +1373,19 @@
     const over25Rate = parseNum(raw.over25Rate || raw.over25Pct || canonical?.over25Rate, 55);
     const matchesPlayed = parseNum(raw.matches || raw.matchesPlayed || canonical?.matchesPlayed, 380);
 
-    return {
+    const result = {
       id: resolvedId,
       name: resolvedName,
       league: resolvedName, // Strict backward-compatibility for legacy `stat.league` consumers
       country: resolvedCountry,
       countryCode: resolvedCountryCode,
       flag: resolvedFlag,
+      leagueEmoji: resolvedFlag, // Strict backward-compatibility
       type: resolvedType,
-      participantType: resolvedType,
+      competitionType: resolvedType, // Strict backward-compatibility
+      participantType: resolvedType, // Strict backward-compatibility
       seasonId: resolvedSeason,
+      season: resolvedSeason, // Strict backward-compatibility
       matchesPlayed: matchesPlayed,
       matches: matchesPlayed,
       homeWinRate: homeWinRate,
@@ -1084,9 +1397,20 @@
       drawPct: `${drawRate}%`,
       over25Rate: over25Rate,
       over25Pct: `${over25Rate}%`,
-      predictionRoute: `/predictions?leagueId=${resolvedId}`,
-      detailRoute: `/league/${resolvedId}`
+      predictionRoute: resolvedId ? `/predictions?leagueId=${resolvedId}` : '/predictions',
+      detailRoute: resolvedId ? `/league/${resolvedId}` : '/leagues'
     };
+
+    // Validate global integrity
+    const validation = validateCompetitionIntegrity(result);
+    result.isValid = validation.isValid;
+    result.status = validation.isValid ? 'canonical' : 'unresolved';
+
+    if (!validation.isValid) {
+      auditCompetitionIntegrity(raw, result, context);
+    }
+
+    return result;
   }
 
   /**
@@ -1225,6 +1549,19 @@
     window.addEventListener('load', syncGlobalLeagueCatalogs);
   }
 
+  function getCompetitionIntegrityReport() {
+    const total = COMPETITION_INTEGRITY_LOGS.length;
+    const breakdown = {};
+    Object.values(INTEGRITY_PROBLEM_CATEGORIES).forEach(cat => {
+      breakdown[cat] = COMPETITION_INTEGRITY_LOGS.filter(l => l.category === cat).length;
+    });
+    return {
+      totalAuditedIncidents: total,
+      breakdown,
+      logs: [...COMPETITION_INTEGRITY_LOGS]
+    };
+  }
+
   // Export to Global Window Namespace
   window.CANONICAL_COMPETITIONS = CANONICAL_COMPETITIONS;
   window.normalizeLeague = normalizeLeague;
@@ -1237,6 +1574,12 @@
   window.safeCountryName = safeCountryName;
   window.safeFlag = safeFlag;
   window.syncGlobalLeagueCatalogs = syncGlobalLeagueCatalogs;
+  window.validateCompetitionIntegrity = validateCompetitionIntegrity;
+  window.diagnoseCompetitionIssue = diagnoseCompetitionIssue;
+  window.auditCompetitionIntegrity = auditCompetitionIntegrity;
+  window.getCompetitionIntegrityReport = getCompetitionIntegrityReport;
+  window.COMPETITION_INTEGRITY_LOGS = COMPETITION_INTEGRITY_LOGS;
+  window.INTEGRITY_PROBLEM_CATEGORIES = INTEGRITY_PROBLEM_CATEGORIES;
 
   if (typeof module !== 'undefined' && module.exports) {
     module.exports = {
@@ -1250,7 +1593,13 @@
       safeLeagueName,
       safeCountryName,
       safeFlag,
-      syncGlobalLeagueCatalogs
+      syncGlobalLeagueCatalogs,
+      validateCompetitionIntegrity,
+      diagnoseCompetitionIssue,
+      auditCompetitionIntegrity,
+      getCompetitionIntegrityReport,
+      COMPETITION_INTEGRITY_LOGS,
+      INTEGRITY_PROBLEM_CATEGORIES
     };
   }
 
