@@ -11077,6 +11077,7 @@ const VIP_PACKAGES = {
     saveText: 'Save 71%'
   }
 };
+window.VIP_PACKAGES = VIP_PACKAGES;
 
 let currentSelectedVipTier = 'annual';
 let currentVipPaymentMethod = 'card';
@@ -11088,6 +11089,7 @@ function getStoredVipSubscription() {
   } catch (e) {}
   return { active: false, tier: 'none', expiresAt: null, status: 'inactive' };
 }
+window.getStoredVipSubscription = getStoredVipSubscription;
 
 function setStoredVipSubscription(sub) {
   try {
@@ -11095,8 +11097,13 @@ function setStoredVipSubscription(sub) {
   } catch (e) {}
   syncVipSubscriptionUI();
 }
+window.setStoredVipSubscription = setStoredVipSubscription;
 
 function openVipSubscriptionModal(preferredTier = 'annual', triggerFeature = null) {
+  if (typeof window.openPremiumPaywall === 'function') {
+    return window.openPremiumPaywall(preferredTier, triggerFeature);
+  }
+
   if (typeof window.trackEvent === 'function') {
     window.trackEvent('SUBSCRIPTION_VIEWED', {
       tool: 'vip_packages',
@@ -11166,7 +11173,19 @@ function selectVipPackage(tierKey) {
 
   const continueBtn = document.getElementById('vip-continue-btn');
   if (continueBtn) {
-    continueBtn.innerHTML = `CONTINUE &rarr;`;
+    if (typeof window.updateDynamicCtaText === 'function') {
+      window.updateDynamicCtaText(pkg.id);
+    } else {
+      continueBtn.innerHTML = `CONTINUE &bull; ${pkg.price} &rarr;`;
+    }
+  }
+
+  if (typeof window.trackEvent === 'function') {
+    window.trackEvent('plan_selected', {
+      plan: pkg.id,
+      price: pkg.price,
+      daily_rate: pkg.dailyText
+    });
   }
 }
 window.selectVipPackage = selectVipPackage;
@@ -11210,10 +11229,10 @@ function proceedToVipPayment() {
   const checkoutPlanPrice = document.getElementById('vip-checkout-plan-price');
   const btnAmountText = document.getElementById('vip-btn-amount-text');
 
-  if (checkoutPlanName) checkoutPlanName.innerText = `${pkg.name} (${pkg.durationDays} Days)`;
-  if (checkoutPlanDaily) checkoutPlanDaily.innerText = `Billed at ${pkg.dailyText}`;
-  if (checkoutPlanPrice) checkoutPlanPrice.innerText = pkg.price;
-  if (btnAmountText) btnAmountText.innerText = pkg.price;
+  if (checkoutPlanName) { checkoutPlanName.textContent = `${pkg.name} (${pkg.durationDays} Days)`; checkoutPlanName.innerText = `${pkg.name} (${pkg.durationDays} Days)`; }
+  if (checkoutPlanDaily) { checkoutPlanDaily.textContent = `Billed at ${pkg.dailyText}`; checkoutPlanDaily.innerText = `Billed at ${pkg.dailyText}`; }
+  if (checkoutPlanPrice) { checkoutPlanPrice.textContent = pkg.price; checkoutPlanPrice.innerText = pkg.price; }
+  if (btnAmountText) { btnAmountText.textContent = pkg.price; btnAmountText.innerText = pkg.price; }
 }
 window.proceedToVipPayment = proceedToVipPayment;
 
@@ -11299,10 +11318,21 @@ function processVipPayment() {
         payment_method: currentVipPaymentMethod,
         success: true
       });
+      window.trackEvent('payment_success', {
+        plan: pkg.id,
+        amount_ngn: pkg.price,
+        txId: subscriptionData.txId,
+        payment_method: currentVipPaymentMethod
+      });
       window.trackEvent('SUBSCRIPTION_STARTED', {
         tool: 'vip_packages',
         tier: pkg.id,
         success: true
+      });
+      window.trackEvent('upgrade_completed', {
+        plan: pkg.id,
+        txId: subscriptionData.txId,
+        timestamp: subscriptionData.activatedAt
       });
     }
 

@@ -859,7 +859,7 @@ function renderMatchCards(fixtures) {
               <p class="premium-lock-desc">Unlock DeepPredict Pro algorithmic outcomes.</p>
             </div>
           </div>
-          <a href="#premium" class="btn btn-premium btn-premium-card" onclick="smoothScrollToPremium()">Unlock Pro Pick</a>
+          <button type="button" class="btn btn-premium btn-premium-card" onclick="if(typeof openPremiumPaywall==='function'){openPremiumPaywall({feature:'match_intelligence'});}else if(typeof openVipSubscriptionModal==='function'){openVipSubscriptionModal('annual',{id:'predictions',name:'Match Intelligence'});}">Unlock Pro Pick</button>
         </div>
       `;
       grid.appendChild(card);
@@ -11187,7 +11187,7 @@ function buildMatchCardElement(match) {
             <p class="premium-lock-desc">Unlock DeepPredict Pro algorithmic outcomes.</p>
           </div>
         </div>
-        <a href="#premium" class="btn btn-premium btn-premium-card" onclick="smoothScrollToPremium()">Unlock Pro Pick</a>
+        <button type="button" class="btn btn-premium btn-premium-card" onclick="if(typeof openPremiumPaywall==='function'){openPremiumPaywall({feature:'match_intelligence'});}else if(typeof openVipSubscriptionModal==='function'){openVipSubscriptionModal('annual',{id:'predictions',name:'Match Intelligence'});}">Unlock Pro Pick</button>
       </div>
     `;
     return card;
