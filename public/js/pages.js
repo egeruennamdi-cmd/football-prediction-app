@@ -139,7 +139,14 @@
     const away = match.awayTeam?.name || (typeof match.awayTeam === 'string' ? match.awayTeam : 'Away Team');
     const homeLogo = match.homeTeam?.logo || '🔵';
     const awayLogo = match.awayTeam?.logo || '🔴';
-    const league = match.league || 'International Football';
+    const normLeague = (typeof window.normalizeLeague === 'function')
+      ? window.normalizeLeague(match.league || match.leagueId, { country: match.country })
+      : null;
+    const league = normLeague ? normLeague.name : (match.league || 'International Football');
+    const leagueFlag = normLeague ? normLeague.flag : '🏆';
+    const leagueCountry = normLeague ? normLeague.country : (match.country || 'Global');
+    const leagueSeason = normLeague ? normLeague.seasonId : '2026/27';
+    const leagueCanonicalId = normLeague ? normLeague.id : (match.leagueId || 'all');
     const time = match.time || '18:00';
     const isLive = Boolean(match.isLive);
     const score = match.score || (isLive ? (match.liveScore || '1 - 0') : 'VS');
@@ -180,9 +187,10 @@
       <div class="match-hero-card glass-card" style="padding: 28px 24px; border-radius: var(--radius-lg); background: linear-gradient(135deg, rgba(15, 23, 42, 0.95) 0%, rgba(26, 104, 219, 0.15) 100%); border: 1px solid rgba(59, 130, 246, 0.3); box-shadow: 0 16px 40px rgba(0, 0, 0, 0.5); margin-bottom: 28px;">
         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; flex-wrap: wrap; gap: 10px;">
           <div style="display: flex; align-items: center; gap: 10px;">
-            <span class="badge" style="background: rgba(59, 130, 246, 0.2); color: #60a5fa; border: 1px solid rgba(59, 130, 246, 0.4); padding: 5px 12px; border-radius: 20px; font-weight: 800; font-size: 0.8rem;">
-              🏆 ${league}
-            </span>
+            <a href="/league/${leagueCanonicalId}" onclick="window.navigateTo('/league/${leagueCanonicalId}'); return false;" class="badge" style="background: rgba(59, 130, 246, 0.2); color: #60a5fa; border: 1px solid rgba(59, 130, 246, 0.4); padding: 5px 12px; border-radius: 20px; font-weight: 800; font-size: 0.8rem; text-decoration: none; display: inline-flex; align-items: center; gap: 6px; cursor: pointer;">
+              <span>${leagueFlag}</span> <span>${league}</span>
+              <span style="color: #94a3b8; font-weight: 600; font-size: 0.72rem;">• ${leagueCountry} (${leagueSeason})</span>
+            </a>
             ${isLive ? `<span class="badge badge-danger" style="animation: pulse 1.5s infinite; font-weight: 900; padding: 5px 12px; border-radius: 20px;">● LIVE IN-PLAY</span>` : `<span style="font-size: 0.82rem; color: #94a3b8; font-weight: 700;">🕒 ${time}</span>`}
           </div>
           
@@ -653,17 +661,21 @@
       <div class="teams-grid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 16px;">
         ${clubs.map(c => {
           const winRate = ((c.wins / (c.matchesPlayed || 1)) * 100).toFixed(0);
+          const normL = (window.normalizeLeague && typeof window.normalizeLeague === 'function') ? window.normalizeLeague(c.league) : null;
+          const leagueName = normL ? normL.name : (c.league || 'League');
+          const leagueFlag = normL ? normL.flag : '🏆';
+          const predUrl = normL ? `/predictions?leagueId=${normL.id}` : '/predictions';
           return `
             <div class="glass-card" style="padding: 18px; border-radius: var(--radius-md); border: 1px solid rgba(255,255,255,0.08);">
               <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
                 <h3 style="font-family: var(--font-display); font-size: 1.1rem; color: #ffffff; margin: 0;">${c.name}</h3>
-                <span class="badge" style="background: rgba(59,130,246,0.15); color: #60a5fa; font-size: 0.7rem;">${c.league || 'League'}</span>
+                <span class="badge" style="background: rgba(59,130,246,0.15); color: #60a5fa; font-size: 0.7rem;">${leagueFlag} ${leagueName}</span>
               </div>
               <div style="display: flex; justify-content: space-between; font-size: 0.8rem; color: #cbd5e1; margin-bottom: 12px;">
                 <span>Record: ${c.wins}W - ${c.draws}D - ${c.losses}L</span>
                 <span style="color: #34d399; font-weight: 800;">${winRate}% Win Rate</span>
               </div>
-              <a href="/predictions" onclick="window.navigateTo('/predictions'); return false;" class="btn btn-secondary" style="width: 100%; text-align: center; display: block; font-size: 0.75rem; padding: 6px;">
+              <a href="${predUrl}" onclick="window.navigateTo('${predUrl}'); return false;" class="btn btn-secondary" style="width: 100%; text-align: center; display: block; font-size: 0.75rem; padding: 6px;">
                 Find Upcoming Matches →
               </a>
             </div>
@@ -812,6 +824,23 @@
           <br/><br/>
           <a href="/live-scanner" onclick="window.navigateTo('/live-scanner'); return false;" class="btn btn-primary" style="display: inline-flex; align-items: center; gap: 6px; padding: 6px 14px; font-size: 0.82rem; border-radius: 6px; text-decoration: none;">
             <span>📡</span> <span>Open Live In-Play Scanner →</span>
+          </a>
+        `;
+      } else if ((window.resolveCanonicalCompetition && window.resolveCanonicalCompetition(lower)) || (window.getCanonicalLeagueByName && window.getCanonicalLeagueByName(lower))) {
+        const comp = (window.resolveCanonicalCompetition && window.resolveCanonicalCompetition(lower)) || window.getCanonicalLeagueByName(lower);
+        replyHtml = `
+          Intelligence dossier for <b>${comp.flag} ${comp.name}</b> (${comp.country} • Season ${comp.seasonId || comp.season || '2026/27'}):
+          <br/><br/>
+          • <b>Competition Type:</b> ${comp.type === 'national_team' ? 'International / National Team' : 'Domestic League'}
+          <br/>
+          • <b>Avg Goals per Match:</b> ${comp.avgGoals || '2.82'}
+          <br/>
+          • <b>Home Win Edge:</b> ${comp.homeWinRate || '45'}% (Draw: ${comp.drawRate || '25'}%)
+          <br/>
+          • <b>Both Teams to Score (BTTS):</b> ${comp.bttsRate || '52'}% | Over 2.5: ${comp.over25Rate || '54'}%
+          <br/><br/>
+          <a href="/predictions?leagueId=${comp.id}" onclick="window.navigateTo('/predictions?leagueId=${comp.id}'); return false;" class="btn btn-primary" style="display: inline-flex; align-items: center; gap: 6px; padding: 6px 14px; font-size: 0.82rem; border-radius: 6px; text-decoration: none;">
+            <span>⚽</span> <span>Explore ${comp.name} Predictions →</span>
           </a>
         `;
       } else if (/(arsenal|city|madrid|barca|liverpool|chelsea|bayern|dortmund|inter|milan)/i.test(lower)) {

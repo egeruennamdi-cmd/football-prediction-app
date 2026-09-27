@@ -1968,22 +1968,36 @@ function renderLeagueStatsLedger() {
   if (!tbody) return;
   tbody.innerHTML = "";
 
-  LEAGUE_STATS.forEach(stat => {
+  const statsList = (typeof window !== 'undefined' && typeof window.getNormalizedLeagues === 'function')
+    ? window.getNormalizedLeagues()
+    : ((typeof LEAGUE_STATS !== 'undefined' && Array.isArray(LEAGUE_STATS)) ? LEAGUE_STATS : []);
+
+  statsList.forEach(stat => {
     const tr = document.createElement("tr");
     tr.style.borderBottom = "1px solid var(--border-color)";
     tr.style.fontSize = "0.85rem";
 
+    const flag = stat.flag || "🏆";
+    const name = stat.name || stat.league || "Unknown League";
+    const avgGoals = stat.avgGoals || "2.75";
+    const btts = stat.bttsPct || `${stat.bttsRate || 50}%`;
+    const homeWin = stat.homeWinPct || `${stat.homeWinRate || 45}%`;
+    const draw = stat.drawPct || `${stat.drawRate || 25}%`;
+    const over25 = stat.over25Pct || `${stat.over25Rate || 55}%`;
+    const avgCards = stat.avgCards || "3.9";
+    const avgCorners = stat.avgCorners || "9.8";
+
     tr.innerHTML = `
       <td style="padding: 12px 8px; font-weight: 700; color: var(--text-primary);">
-        <span style="margin-right: 6px;">${stat.flag}</span> ${stat.league}
+        <span style="margin-right: 6px;">${flag}</span> ${name}
       </td>
-      <td style="padding: 12px 8px; color: var(--text-secondary); font-family: var(--font-display);">${stat.avgGoals}</td>
-      <td style="padding: 12px 8px; color: var(--text-secondary);">${stat.bttsPct}</td>
-      <td style="padding: 12px 8px; color: var(--text-secondary);">${stat.homeWinPct}</td>
-      <td style="padding: 12px 8px; color: var(--text-secondary);">${stat.drawPct}</td>
-      <td style="padding: 12px 8px; color: var(--secondary); font-weight: 600;">${stat.over25Pct}</td>
-      <td style="padding: 12px 8px; color: var(--text-secondary);">${stat.avgCards}</td>
-      <td style="padding: 12px 8px; color: var(--text-secondary);">${stat.avgCorners}</td>
+      <td style="padding: 12px 8px; color: var(--text-secondary); font-family: var(--font-display);">${avgGoals}</td>
+      <td style="padding: 12px 8px; color: var(--text-secondary);">${btts}</td>
+      <td style="padding: 12px 8px; color: var(--text-secondary);">${homeWin}</td>
+      <td style="padding: 12px 8px; color: var(--text-secondary);">${draw}</td>
+      <td style="padding: 12px 8px; color: var(--secondary); font-weight: 600;">${over25}</td>
+      <td style="padding: 12px 8px; color: var(--text-secondary);">${avgCards}</td>
+      <td style="padding: 12px 8px; color: var(--text-secondary);">${avgCorners}</td>
     `;
     tbody.appendChild(tr);
   });
@@ -3131,18 +3145,26 @@ function openLeagueHubModal(leagueName, btn, countryName) {
   content.className = "glass-card";
   content.style.cssText = "width:100%;max-width:560px;background:linear-gradient(180deg,#0f172a 0%,#020617 100%);border:1px solid rgba(59,130,246,0.35);border-radius:18px;box-shadow:0 20px 50px rgba(0,0,0,0.8),0 0 30px rgba(59,130,246,0.15);overflow:hidden;color:#f8fafc;font-family:var(--font-body,sans-serif);animation:fadeIn 0.2s ease-out;";
 
-  const safeLeague = cleanLeague.replace(/'/g, "\\'");
-  const safeCountry = (resolvedCountry || '').replace(/'/g, "\\'");
+  const normComp = (typeof window.normalizeLeague === 'function')
+    ? window.normalizeLeague(cleanLeague, { country: resolvedCountry })
+    : null;
+  const canonicalLeagueName = normComp ? normComp.name : cleanLeague;
+  const canonicalCountry = normComp ? normComp.country : (resolvedCountry || '');
+  const canonicalFlag = normComp ? normComp.flag : '🏆';
+  const canonicalSeason = normComp ? normComp.seasonId : '2026/27';
+
+  const safeLeague = canonicalLeagueName.replace(/'/g, "\\'");
+  const safeCountry = canonicalCountry.replace(/'/g, "\\'");
 
   content.innerHTML = `
     <div style="padding:18px 22px;border-bottom:1px solid rgba(255,255,255,0.08);display:flex;align-items:center;justify-content:space-between;background:linear-gradient(135deg,rgba(59,130,246,0.18) 0%,rgba(15,23,42,0.9) 100%);">
       <div style="display:flex;align-items:center;gap:10px;">
-        <span style="font-size:1.5rem;background:rgba(59,130,246,0.2);border:1px solid rgba(59,130,246,0.4);border-radius:10px;padding:4px 8px;">🏆</span>
+        <span style="font-size:1.5rem;background:rgba(59,130,246,0.2);border:1px solid rgba(59,130,246,0.4);border-radius:10px;padding:4px 8px;">${canonicalFlag}</span>
         <div>
           <h3 style="margin:0;font-size:1.15rem;font-weight:900;color:#ffffff;display:flex;align-items:center;gap:6px;">
-            ${leagueName}
+            ${canonicalLeagueName}
           </h3>
-          <span style="font-size:0.72rem;color:#94a3b8;">Integrated Competition Hub & AI Tools</span>
+          <span style="font-size:0.72rem;color:#94a3b8;">${canonicalCountry} • Season ${canonicalSeason}</span>
         </div>
       </div>
       <button id="close-league-hub-btn" style="background:rgba(255,255,255,0.1);border:1px solid rgba(255,255,255,0.15);color:#ffffff;border-radius:50%;width:32px;height:32px;font-size:1rem;cursor:pointer;display:flex;align-items:center;justify-content:center;">✕</button>
@@ -3509,14 +3531,15 @@ function openLeagueAveragesModal(leagueName, btn) {
   content.className = "glass-card";
   content.style.cssText = "width:100%;max-width:580px;background:linear-gradient(180deg,#0f172a 0%,#020617 100%);border:1px solid rgba(245,158,11,0.35);border-radius:18px;box-shadow:0 20px 50px rgba(0,0,0,0.8),0 0 30px rgba(245,158,11,0.15);overflow:hidden;color:#f8fafc;font-family:var(--font-body,sans-serif);animation:fadeIn 0.2s ease-out;";
 
-  // Find league record in LEAGUE_STATS
-  const qLeague = cleanLeague.toLowerCase();
-  const stat = (typeof LEAGUE_STATS !== 'undefined' ? LEAGUE_STATS : []).find(s => {
-    const sLeague = (s.league || '').toLowerCase();
-    return sLeague.includes(qLeague) || qLeague.includes(sLeague);
-  }) || {
+  // Find canonical league record via leagueNormalizer
+  const normStat = (typeof window.normalizeLeague === 'function')
+    ? window.normalizeLeague(cleanLeague, { country: (typeof resolvedCountry !== 'undefined' ? resolvedCountry : '') })
+    : null;
+  const stat = normStat || {
     league: cleanLeague,
+    name: cleanLeague,
     flag: "🏆",
+    country: (typeof resolvedCountry !== 'undefined' && resolvedCountry) ? resolvedCountry : "International",
     avgGoals: "2.75",
     bttsPct: "54%",
     homeWinPct: "46%",
@@ -3526,15 +3549,19 @@ function openLeagueAveragesModal(leagueName, btn) {
     avgCorners: "9.8"
   };
 
+  const displayName = stat.name || stat.league || cleanLeague;
+  const displayFlag = stat.flag || "🏆";
+  const displayCountry = stat.country || "International";
+
   content.innerHTML = `
     <div style="padding:18px 22px;border-bottom:1px solid rgba(255,255,255,0.08);display:flex;align-items:center;justify-content:space-between;background:linear-gradient(135deg,rgba(245,158,11,0.18) 0%,rgba(15,23,42,0.9) 100%);">
       <div style="display:flex;align-items:center;gap:10px;">
-        <span style="font-size:1.5rem;background:rgba(245,158,11,0.2);border:1px solid #f59e0b;border-radius:10px;padding:4px 8px;">📊</span>
+        <span style="font-size:1.5rem;background:rgba(245,158,11,0.2);border:1px solid #f59e0b;border-radius:10px;padding:4px 8px;">${displayFlag}</span>
         <div>
           <h3 style="margin:0;font-size:1.15rem;font-weight:900;color:#ffffff;display:flex;align-items:center;gap:6px;">
-            ${stat.flag || '🏆'} ${stat.league} Averages
+            ${displayName} Averages
           </h3>
-          <span style="font-size:0.72rem;color:#94a3b8;">Tournament Metrics, Goal Intensity & Betting Market Indicators</span>
+          <span style="font-size:0.72rem;color:#94a3b8;">${displayCountry} • Tournament Metrics & Market Indicators</span>
         </div>
       </div>
       <button id="close-averages-modal-btn" style="background:rgba(255,255,255,0.1);border:1px solid rgba(255,255,255,0.15);color:#ffffff;border-radius:50%;width:32px;height:32px;font-size:1rem;cursor:pointer;display:flex;align-items:center;justify-content:center;">✕</button>

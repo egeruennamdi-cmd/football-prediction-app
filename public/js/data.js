@@ -863,7 +863,8 @@ const LEAGUE_STATS = [
   { league: "Egyptian Premier", flag: "🇪🇬", avgGoals: "2.35", bttsPct: "45%", homeWinPct: "46%", drawPct: "29%", over25Pct: "46%", avgCards: "3.9", avgCorners: "9.0" },
   { league: "Copa Libertadores", flag: "🏆", avgGoals: "2.55", bttsPct: "49%", homeWinPct: "51%", drawPct: "24%", over25Pct: "52%", avgCards: "5.3", avgCorners: "9.6" },
   { league: "AFCON", flag: "🏆", avgGoals: "2.40", bttsPct: "46%", homeWinPct: "44%", drawPct: "28%", over25Pct: "48%", avgCards: "3.7", avgCorners: "8.6" },
-  { league: "World Cup", flag: "🏆", avgGoals: "2.75", bttsPct: "52%", homeWinPct: "45%", drawPct: "25%", over25Pct: "55%", avgCards: "3.8", avgCorners: "9.5" }
+  { league: "World Cup", flag: "🏆", avgGoals: "2.75", bttsPct: "52%", homeWinPct: "45%", drawPct: "25%", over25Pct: "55%", avgCards: "3.8", avgCorners: "9.5" },
+  { league: "UEFA Nations League", flag: "🇪🇺", avgGoals: "2.68", bttsPct: "50%", homeWinPct: "44%", drawPct: "27%", over25Pct: "48%", avgCards: "3.9", avgCorners: "9.3" }
 ];
 
 const DAILY_TIPS = [

@@ -1127,16 +1127,102 @@
     // 1. Update routing
     if (typeof window.navigateTo === 'function') {
       window.navigateTo(targetUrl);
-    } else {
+    } else if (typeof window.location !== 'undefined') {
       window.location.href = targetUrl;
     }
 
-    // 2. Filter matches in state
-    if (typeof window.selectSidebarLeague === 'function') {
-      setTimeout(() => {
-        window.selectSidebarLeague(leagueName, null, countryName);
-      }, 50);
+    // 2. Synchronize application state immediately
+    if (window.appState) {
+      if (leagueName) window.appState.calLeague = leagueName;
+      if (leagueId) window.appState.calLeagueId = leagueId;
+      if (countryName) window.appState.calCountry = countryName;
     }
+
+    // 3. Filter matches in state
+    if (typeof window.selectSidebarLeague === 'function') {
+      try {
+        window.selectSidebarLeague(leagueName, null, countryName);
+      } catch (e) {}
+    }
+  }
+
+  /**
+   * Synchronizes global data sets across modules:
+   * - window.LEAGUE_STATS
+   * - window.TOP_LEAGUES_DATA
+   * - window.MATCH_DATA
+   * - window.AUTHENTIC_TOP_LEAGUES_FIXTURES
+   * - window.TOP_LEAGUES_FIXTURES_POOL
+   */
+  function syncGlobalLeagueCatalogs() {
+    if (typeof window === 'undefined') return;
+
+    // 1. Synchronize window.LEAGUE_STATS
+    if (Array.isArray(window.LEAGUE_STATS)) {
+      window.LEAGUE_STATS = window.LEAGUE_STATS.map(l => normalizeLeague(l));
+    }
+
+    // 2. Synchronize window.TOP_LEAGUES_DATA
+    if (Array.isArray(window.TOP_LEAGUES_DATA)) {
+      window.TOP_LEAGUES_DATA = window.TOP_LEAGUES_DATA.map(l => {
+        const norm = normalizeLeague(l);
+        return {
+          ...l,
+          id: norm.id,
+          name: norm.name,
+          league: norm.name,
+          country: norm.country,
+          countryCode: norm.countryCode,
+          emoji: norm.flag,
+          flag: norm.flag,
+          type: norm.type,
+          participantType: norm.type,
+          seasonId: norm.seasonId,
+          season: norm.seasonId,
+          homeWinRate: norm.homeWinRate,
+          avgGoals: norm.avgGoals
+        };
+      });
+    }
+
+    // 3. Synchronize match pools
+    const enrichMatch = m => {
+      if (m && (m.league || m.leagueId)) {
+        const norm = normalizeLeague(m.league || m.leagueId, { country: m.country });
+        if (norm && norm.id !== 'unknown') {
+          m.leagueId = norm.id;
+          m.league = norm.name;
+          m.country = norm.country;
+          m.leagueEmoji = norm.flag;
+          m.competitionType = norm.type;
+          m.season = norm.seasonId;
+        }
+      }
+    };
+
+    if (Array.isArray(window.MATCH_DATA)) {
+      window.MATCH_DATA.forEach(enrichMatch);
+    }
+    if (Array.isArray(window.AUTHENTIC_TOP_LEAGUES_FIXTURES)) {
+      window.AUTHENTIC_TOP_LEAGUES_FIXTURES.forEach(enrichMatch);
+    }
+    if (Array.isArray(window.TOP_LEAGUES_FIXTURES_POOL)) {
+      window.TOP_LEAGUES_FIXTURES_POOL.forEach(enrichMatch);
+    }
+  }
+
+  // Execute immediate catalog sync
+  syncGlobalLeagueCatalogs();
+
+  if (typeof document !== 'undefined') {
+    if (typeof document.addEventListener === 'function' && document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', syncGlobalLeagueCatalogs);
+    } else {
+      syncGlobalLeagueCatalogs();
+    }
+  }
+  if (typeof window !== 'undefined' && typeof window.addEventListener === 'function') {
+    window.addEventListener('load', syncGlobalLeagueCatalogs);
   }
 
   // Export to Global Window Namespace
@@ -1145,10 +1231,12 @@
   window.getNormalizedLeagues = getNormalizedLeagues;
   window.getCanonicalLeagueById = getCanonicalLeagueById;
   window.getCanonicalLeagueByName = getCanonicalLeagueByName;
+  window.resolveCanonicalCompetition = resolveCanonicalCompetition;
   window.navigateToLeaguePredictions = navigateToLeaguePredictions;
   window.safeLeagueName = safeLeagueName;
   window.safeCountryName = safeCountryName;
   window.safeFlag = safeFlag;
+  window.syncGlobalLeagueCatalogs = syncGlobalLeagueCatalogs;
 
   if (typeof module !== 'undefined' && module.exports) {
     module.exports = {
@@ -1157,10 +1245,12 @@
       getNormalizedLeagues,
       getCanonicalLeagueById,
       getCanonicalLeagueByName,
+      resolveCanonicalCompetition,
       navigateToLeaguePredictions,
       safeLeagueName,
       safeCountryName,
-      safeFlag
+      safeFlag,
+      syncGlobalLeagueCatalogs
     };
   }
 

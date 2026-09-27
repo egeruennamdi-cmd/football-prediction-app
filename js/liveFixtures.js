@@ -98,6 +98,20 @@
     const lLower = cleanL.toLowerCase();
     const cLower = (countryName || '').trim().toLowerCase();
 
+    // 0. Primary Source of Truth: Canonical Competition Registry
+    if (typeof window !== 'undefined' && typeof window.resolveCanonicalCompetition === 'function') {
+      const canonical = window.resolveCanonicalCompetition(cleanL, countryName);
+      if (canonical && typeof canonical.id === 'number') {
+        if (cLower && cLower !== 'all' && canonical.type === 'club') {
+          const canCountryLower = (canonical.country || '').toLowerCase();
+          if (canCountryLower !== 'europe' && canCountryLower !== 'world' && canCountryLower !== 'international' && !canCountryLower.includes(cLower) && !cLower.includes(canCountryLower)) {
+            return null; // Foreign nation protection
+          }
+        }
+        return canonical.id;
+      }
+    }
+
     // 1. Direct country + league match in LEAGUE_ID_MAP
     if (cLower && cLower !== 'all') {
       for (const [key, id] of Object.entries(LEAGUE_ID_MAP)) {
@@ -410,18 +424,34 @@
       }
     }
 
+    const rawL = item.league || {};
+    const normL = (typeof window !== 'undefined' && typeof window.normalizeLeague === 'function')
+      ? window.normalizeLeague(rawL, { country: item.country || rawL.country })
+      : null;
+    const resolvedLeagueId = normL ? normL.id : (rawL.id || null);
+    const resolvedLeagueName = normL ? normL.name : (rawL.name || 'Unknown League');
+    const resolvedCountry = normL ? normL.country : (rawL.country || '');
+    const resolvedFlag = normL ? normL.flag : flagHtml;
+    const resolvedType = normL ? normL.type : 'club';
+    const resolvedSeason = normL ? normL.seasonId : '2026/27';
+
     return {
-      id:          `apifb-${item.fixture?.id || Math.random().toString(36).slice(2)}`,
-      rawDate:     rawTimestamp,
-      date:        isToday ? 'today' : isTomorrow ? 'tomorrow' : (isFT ? 'yesterday' : 'future'),
-      isYesterday: isFT,
-      isFT:        isFT,
-      country:     item.league?.country || '',
-      league:      item.league?.name  || 'Unknown League',
-      leagueEmoji: flagHtml,
-      time:        timeDisplay,
+      id:              `apifb-${item.fixture?.id || Math.random().toString(36).slice(2)}`,
+      leagueId:        resolvedLeagueId,
+      rawDate:         rawTimestamp,
+      date:            isToday ? 'today' : isTomorrow ? 'tomorrow' : (isFT ? 'yesterday' : 'future'),
+      isYesterday:     isFT,
+      isFT:            isFT,
+      country:         resolvedCountry,
+      league:          resolvedLeagueName,
+      leagueEmoji:     resolvedFlag,
+      competitionType: resolvedType,
+      participantType: resolvedType,
+      season:          resolvedSeason,
+      seasonId:        resolvedSeason,
+      time:            timeDisplay,
       isLive,
-      status:      statusShort,
+      status:          statusShort,
       statusShort,
       homeTeam: {
         name: homeName,
@@ -464,18 +494,23 @@
       }
     }
 
+    const getClub = (idx) => {
+      if (!clubs || clubs.length === 0) return { name: 'Club ' + (idx + 1), logo: '⚽' };
+      return clubs[idx % clubs.length] || clubs[0];
+    };
+
     const todayPairs = [
-      [clubs[0], clubs[1], "Today, 15:30", "today", false, null, null],
-      [clubs[2] || clubs[0], clubs[3] || clubs[1], "Today, 17:45", "today", false, null, null],
-      [clubs[4] || clubs[2] || clubs[0], clubs[5] || clubs[3] || clubs[1], "Today, 20:00", "today", false, null, null],
-      [clubs[6] || clubs[1], clubs[7] || clubs[0], "Today, 21:15", "today", false, null, null]
+      [getClub(0), getClub(1), "Today, 15:30", "today", false, null, null],
+      [getClub(2), getClub(3), "Today, 17:45", "today", false, null, null],
+      [getClub(4), getClub(5), "Today, 20:00", "today", false, null, null],
+      [getClub(6), getClub(7), "Today, 21:15", "today", false, null, null]
     ];
 
     const tomorrowPairs = [
-      [clubs[1] || clubs[0], clubs[2] || clubs[1], "Tomorrow, 14:00", "tomorrow", false, null, null],
-      [clubs[3] || clubs[1], clubs[4] || clubs[0], "Tomorrow, 16:30", "tomorrow", false, null, null],
-      [clubs[5] || clubs[2], clubs[0], "Tomorrow, 18:45", "tomorrow", false, null, null],
-      [clubs[7] || clubs[3], clubs[6] || clubs[2], "Tomorrow, 20:30", "tomorrow", false, null, null]
+      [getClub(1), getClub(2), "Tomorrow, 14:00", "tomorrow", false, null, null],
+      [getClub(3), getClub(4), "Tomorrow, 16:30", "tomorrow", false, null, null],
+      [getClub(5), getClub(0), "Tomorrow, 18:45", "tomorrow", false, null, null],
+      [getClub(7), getClub(6), "Tomorrow, 20:30", "tomorrow", false, null, null]
     ];
 
     const now = Date.now();
@@ -490,10 +525,10 @@
     };
 
     const recentFinishedPairs = [
-      [clubs[0], clubs[2] || clubs[1], fmtPastDate(1), "yesterday", true, 2, 1, 1], // Home Win -> WON
-      [clubs[1] || clubs[0], clubs[3] || clubs[2], fmtPastDate(1), "yesterday", true, 1, 1, 1], // Home Win tip, draw 1-1 -> LOST
-      [clubs[4] || clubs[1], clubs[5] || clubs[0], fmtPastDate(2), "yesterday", true, 0, 2, 2], // Away Win -> WON
-      [clubs[6] || clubs[0], clubs[7] || clubs[2], fmtPastDate(3), "yesterday", true, 1, 1, 1]  // Home Win tip, draw 1-1 -> LOST
+      [getClub(0), getClub(2), fmtPastDate(1), "yesterday", true, 2, 1, 1], // Home Win -> WON
+      [getClub(1), getClub(3), fmtPastDate(1), "yesterday", true, 1, 1, 1], // Home Win tip, draw 1-1 -> LOST
+      [getClub(4), getClub(5), fmtPastDate(2), "yesterday", true, 0, 2, 2], // Away Win -> WON
+      [getClub(6), getClub(7), fmtPastDate(3), "yesterday", true, 1, 1, 1]  // Home Win tip, draw 1-1 -> LOST
     ];
 
     const allPairs = [...todayPairs, ...tomorrowPairs, ...recentFinishedPairs];
@@ -532,17 +567,27 @@
       }
 
       const isNationalLeague = isNational;
-      const lEmoji = isNationalLeague
-        ? (leagueName.toLowerCase().includes('nations league') ? '🇪🇺' : (home.flag || '🏆'))
-        : (home.flag || '🏆');
+      const canonical = (typeof window !== 'undefined' && typeof window.normalizeLeague === 'function')
+        ? window.normalizeLeague(leagueName, { country: countryName || home.country })
+        : null;
+      const finalLeagueId = canonical ? canonical.id : null;
+      const finalLeagueName = canonical ? canonical.name : leagueName;
+      const finalCountry = canonical ? canonical.country : (countryName || home.country || (isNationalLeague ? 'International' : 'Domestic'));
+      const finalEmoji = canonical ? canonical.flag : (isNationalLeague ? (leagueName.toLowerCase().includes('nations league') ? '🇪🇺' : (home.flag || '🏆')) : (home.flag || '🏆'));
+      const finalType = canonical ? canonical.type : (isNationalLeague ? 'national_team' : 'club');
+      const finalSeason = canonical ? canonical.seasonId : '2026/27';
 
       return {
-        id: `fix-${leagueName.toLowerCase().replace(/[^a-z0-9]/g, '-')}-${idx}-${hash}`,
-        country: countryName || home.country || (isNationalLeague ? 'International' : 'Domestic'),
-        league: leagueName,
-        leagueEmoji: lEmoji,
-        isNational: isNationalLeague,
-        participantType: isNationalLeague ? 'national_team' : 'club',
+        id: `fix-${String(finalLeagueId || finalLeagueName).toLowerCase().replace(/[^a-z0-9]/g, '-')}-${idx}-${hash}`,
+        leagueId: finalLeagueId,
+        country: finalCountry,
+        league: finalLeagueName,
+        leagueEmoji: finalEmoji,
+        isNational: finalType === 'national_team',
+        competitionType: finalType,
+        participantType: finalType,
+        season: finalSeason,
+        seasonId: finalSeason,
         homeFlag: home.flag || home.logo || '⚽',
         awayFlag: away.flag || away.logo || '⚽',
         rawDate,
@@ -781,51 +826,59 @@
   }
 
   function selectSidebarLeague(leagueName, btn, countryName) {
+    const canonical = (typeof window !== 'undefined' && typeof window.normalizeLeague === 'function')
+      ? window.normalizeLeague(leagueName, { country: countryName })
+      : null;
+    const targetLeagueName = canonical ? canonical.name : leagueName;
+    const targetCountryName = canonical ? canonical.country : countryName;
+    const targetLeagueId = canonical ? canonical.id : null;
+
     if (btn) {
       document.querySelectorAll('.sidebar-league-btn').forEach(b => b.classList.remove('active'));
       if (btn.classList) btn.classList.add('active');
     }
     if (window.appState) {
-      window.appState.calLeague = leagueName;
-      if (countryName) {
-        window.appState.calCountry = countryName;
+      window.appState.calLeague = targetLeagueName;
+      window.appState.calLeagueId = targetLeagueId;
+      if (targetCountryName) {
+        window.appState.calCountry = targetCountryName;
       }
     }
 
     // Immediately seed authentic local fixtures into currentLeagueMatches and MATCH_DATA
     // This prevents any concurrent/synchronous updateFixturesDisplay call from falling back to English MATCH_DATA
-    const resolvedCountry = countryName || (window.appState && window.appState.calCountry && window.appState.calCountry !== 'all' ? window.appState.calCountry : '');
+    const resolvedCountry = targetCountryName || (window.appState && window.appState.calCountry && window.appState.calCountry !== 'all' ? window.appState.calCountry : '');
     let localClubs = (typeof getClubsForLeague === 'function')
-      ? getClubsForLeague(leagueName, resolvedCountry)
-      : ((typeof window.getClubsForLeague === 'function') ? window.getClubsForLeague(leagueName, resolvedCountry) : []);
+      ? getClubsForLeague(targetLeagueName, resolvedCountry)
+      : ((typeof window.getClubsForLeague === 'function') ? window.getClubsForLeague(targetLeagueName, resolvedCountry) : []);
 
-    const isNational = (typeof isNationalTeamCompetition === 'function' && isNationalTeamCompetition(leagueName))
-      || (typeof window !== 'undefined' && typeof window.isNationalTeamCompetition === 'function' && window.isNationalTeamCompetition(leagueName));
+    const isNational = (typeof isNationalTeamCompetition === 'function' && isNationalTeamCompetition(targetLeagueName))
+      || (typeof window !== 'undefined' && typeof window.isNationalTeamCompetition === 'function' && window.isNationalTeamCompetition(targetLeagueName));
 
     if (isNational) {
       if (typeof validateCompetitionParticipants === 'function') {
-        localClubs = validateCompetitionParticipants(localClubs, leagueName);
+        localClubs = validateCompetitionParticipants(localClubs, targetLeagueName);
       } else if (typeof window !== 'undefined' && typeof window.validateCompetitionParticipants === 'function') {
-        localClubs = window.validateCompetitionParticipants(localClubs, leagueName);
+        localClubs = window.validateCompetitionParticipants(localClubs, targetLeagueName);
       }
       if (!localClubs || localClubs.length < 2) {
         localClubs = (typeof getNationalTeamsForCompetition === 'function')
-          ? getNationalTeamsForCompetition(leagueName)
-          : ((typeof window !== 'undefined' && typeof window.getNationalTeamsForCompetition === 'function') ? window.getNationalTeamsForCompetition(leagueName) : []);
+          ? getNationalTeamsForCompetition(targetLeagueName)
+          : ((typeof window !== 'undefined' && typeof window.getNationalTeamsForCompetition === 'function') ? window.getNationalTeamsForCompetition(targetLeagueName) : []);
       }
     }
 
     if (localClubs && localClubs.length >= 2) {
-      const initialMatches = generateLeagueMatchesFromClubs(localClubs, leagueName, resolvedCountry);
+      const initialMatches = generateLeagueMatchesFromClubs(localClubs, targetLeagueName, resolvedCountry);
       window.currentLeagueMatches = initialMatches;
       window.MATCH_DATA = initialMatches;
     }
 
     if (typeof window.renderTodayInsightsPreview === 'function') {
-      window.renderTodayInsightsPreview(leagueName, resolvedCountry, window.currentLeagueMatches);
+      window.renderTodayInsightsPreview(targetLeagueName, resolvedCountry, window.currentLeagueMatches);
     }
     if (typeof window.renderRecentSettledPredictions === 'function') {
-      window.renderRecentSettledPredictions(leagueName, resolvedCountry, window.currentLeagueMatches);
+      window.renderRecentSettledPredictions(targetLeagueName, resolvedCountry, window.currentLeagueMatches);
     }
 
     // Synchronize Top Filter Selectors so subsequent calendar/date clicks respect the chosen country
@@ -940,6 +993,7 @@
   window.applyLeagueSubfilter = applyLeagueSubfilter;
   window.prefetchGlobalFixturesAndLive = prefetchGlobalFixturesAndLive;
   window.normalizeApiFootballFixture = normalizeFixture;
+  window.normalizeFixture = normalizeFixture;
   window.generateLeagueMatchesFromClubs = generateLeagueMatchesFromClubs;
 
   Object.defineProperty(window, 'selectSidebarLeague', {
