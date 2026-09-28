@@ -6994,6 +6994,8 @@
             Picks</button>
           <button class="btn btn-secondary action-btn" onclick="quickPromptScout('Generate 20 selections')">🚀 20
             Picks</button>
+          <button class="btn btn-secondary action-btn" onclick="quickPromptScout('Generate 10 selections')">🚀 10
+            Picks</button>
         </div>
       </div>
 
@@ -7013,9 +7015,18 @@
           <span
             style="font-size: 0.68rem; color: var(--text-muted); font-weight: 700; display: flex; align-items: center; white-space: nowrap;">Quick
             Prompts:</span>
+          <button onclick="quickPromptScout('Generate 10 selections')"
+            style="background: rgba(16, 185, 129, 0.15); border: 1px solid rgba(16, 185, 129, 0.4); color: #10b981; font-weight: 700; font-size: 0.7rem; padding: 4px 10px; border-radius: 12px; cursor: pointer; white-space: nowrap; transition: all 0.2s;">✨
+            10 Selections</button>
+          <button onclick="quickPromptScout('Generate 20 selections')"
+            style="background: rgba(16, 185, 129, 0.15); border: 1px solid rgba(16, 185, 129, 0.4); color: #10b981; font-weight: 700; font-size: 0.7rem; padding: 4px 10px; border-radius: 12px; cursor: pointer; white-space: nowrap; transition: all 0.2s;">✨
+            20 Selections</button>
+          <button onclick="quickPromptScout('Generate 30 selections')"
+            style="background: rgba(16, 185, 129, 0.15); border: 1px solid rgba(16, 185, 129, 0.4); color: #10b981; font-weight: 700; font-size: 0.7rem; padding: 4px 10px; border-radius: 12px; cursor: pointer; white-space: nowrap; transition: all 0.2s;">✨
+            30 Selections</button>
           <button onclick="quickPromptScout('Generate 40 selections')"
             style="background: rgba(16, 185, 129, 0.15); border: 1px solid rgba(16, 185, 129, 0.4); color: #10b981; font-weight: 700; font-size: 0.7rem; padding: 4px 10px; border-radius: 12px; cursor: pointer; white-space: nowrap; transition: all 0.2s;">✨
-            Generate 40 Selections</button>
+            40 Selections</button>
           <button onclick="quickPromptScout('What is the best tactical angle?')"
             style="background: rgba(245, 158, 11, 0.15); border: 1px solid rgba(245, 158, 11, 0.4); color: var(--accent-gold); font-weight: 700; font-size: 0.7rem; padding: 4px 10px; border-radius: 12px; cursor: pointer; white-space: nowrap; transition: all 0.2s;">🎯
             Tactical Angle</button>
@@ -7032,7 +7043,7 @@
             </label>
             <div style="display: flex; gap: 10px; width: 100%;">
               <input type="text" class="chat-input prominent-chat-input" id="scout-chat-input"
-                placeholder="Type prompt (e.g. 'Generate 40 selections' or ask tactics)..."
+                placeholder="Type prompt (e.g. 'Generate 10, 20, 30, or 40 selections' or ask tactics)..."
                 onkeypress="handleChatKeyPress(event)">
               <button class="btn btn-primary scout-send-btn" onclick="sendScoutMessage()">
                 <span>Send</span>
