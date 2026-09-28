@@ -1037,6 +1037,126 @@ function sendBetslipToConverter() {
 }
 window.sendBetslipToConverter = sendBetslipToConverter;
 
+/**
+ * DEEPPREDICTBET AUTHORITATIVE BETSLIP TOTAL ODDS CALCULATOR
+ * Standard betting multiplication: Total Odds = Odds_1 * Odds_2 * ... * Odds_n
+ * Real-time calculation from actual active betslip selections.
+ * Removes all placeholder caps (@99,999+, 99999).
+ * Maintains full floating-point precision during intermediate multiplication.
+ * Final display rounded to 2 decimal places with thousands separators.
+ *
+ * @param {Array} selections - Array of selection objects { odds: number|string, ... }
+ * @returns {Object} {
+ *   totalOdds: number,          // raw calculated float (e.g. 5.4, or 0 if empty)
+ *   formatted: string,          // e.g. "@5.40" or "—" if empty, or "Odds unavailable"
+ *   displayOdds: string,        // e.g. "5.40" or "—", or "Odds unavailable"
+ *   count: number,              // count of valid selections
+ *   isValid: boolean,           // true if all selections have valid odds
+ *   hasInvalidOdds: boolean,    // true if any selection has missing/invalid odds
+ *   invalidCount: number        // count of invalid selections
+ * }
+ */
+function calculateBetslipTotalOdds(selections) {
+  if (!selections || !Array.isArray(selections) || selections.length === 0) {
+    return {
+      totalOdds: 0,
+      formatted: "—",
+      displayOdds: "—",
+      count: 0,
+      isValid: true,
+      hasInvalidOdds: false,
+      invalidCount: 0
+    };
+  }
+
+  const validOdds = [];
+  let invalidCount = 0;
+
+  for (let i = 0; i < selections.length; i++) {
+    const s = selections[i];
+    if (!s) {
+      invalidCount++;
+      continue;
+    }
+    let rawVal = (typeof s.odds !== 'undefined' && s.odds !== null) ? s.odds : (s.price || s.odd);
+    if (typeof rawVal === 'string') {
+      rawVal = rawVal.replace(/^@/, '').replace(/,/g, '').trim();
+    }
+    const num = Number(rawVal);
+    if (typeof num === 'number' && !isNaN(num) && isFinite(num) && num > 1.0) {
+      validOdds.push(num);
+    } else {
+      invalidCount++;
+    }
+  }
+
+  const hasInvalidOdds = invalidCount > 0;
+  const isValid = !hasInvalidOdds;
+
+  if (validOdds.length === 0) {
+    return {
+      totalOdds: 0,
+      formatted: hasInvalidOdds ? "Odds unavailable" : "—",
+      displayOdds: hasInvalidOdds ? "Odds unavailable" : "—",
+      count: 0,
+      isValid: false,
+      hasInvalidOdds: true,
+      invalidCount: invalidCount
+    };
+  }
+
+  // Exact floating-point multiplication (no intermediate rounding)
+  const rawProduct = validOdds.reduce((acc, val) => acc * val, 1.0);
+
+  // Final display rounded to 2 decimal places with thousands separators
+  const formattedNumber = rawProduct.toLocaleString('en-US', {
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2
+  });
+
+  if (hasInvalidOdds) {
+    return {
+      totalOdds: rawProduct,
+      formatted: "Odds unavailable",
+      displayOdds: "Odds unavailable",
+      count: validOdds.length,
+      isValid: false,
+      hasInvalidOdds: true,
+      invalidCount: invalidCount
+    };
+  }
+
+  return {
+    totalOdds: rawProduct,
+    formatted: `@${formattedNumber}`,
+    displayOdds: formattedNumber,
+    count: validOdds.length,
+    isValid: true,
+    hasInvalidOdds: false,
+    invalidCount: 0
+  };
+}
+
+function formatBetslipTotalOdds(odds) {
+  if (odds === null || odds === undefined || odds === 0 || odds === '—') {
+    return '—';
+  }
+  if (typeof odds === 'string') {
+    if (odds === '—' || odds === 'Odds unavailable') return odds;
+    const stripped = odds.replace(/^@/, '').replace(/,/g, '').trim();
+    const num = Number(stripped);
+    if (isNaN(num)) return odds;
+    return `@${num.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+  }
+  if (typeof odds === 'number' && !isNaN(odds) && isFinite(odds)) {
+    return `@${odds.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+  }
+  return '—';
+}
+
+window.calculateBetslipTotalOdds = calculateBetslipTotalOdds;
+window.formatBetslipTotalOdds = formatBetslipTotalOdds;
+
 function renderBetslip() {
   const countBadge = document.getElementById("betslip-count-badge");
   const headerOdds = document.getElementById("betslip-header-odds");
@@ -1062,28 +1182,44 @@ function renderBetslip() {
     }
   }
 
-  const count = window.appState.betslip.length;
+  // Always keep localStorage synchronized with active betslip state
+  try {
+    localStorage.setItem("dp_betslip", JSON.stringify((window.appState && window.appState.betslip) ? window.appState.betslip : []));
+  } catch (e) {}
+
+  const betslipList = (window.appState && Array.isArray(window.appState.betslip)) ? window.appState.betslip : [];
+  const count = betslipList.length;
   countBadge.textContent = count;
   countBadge.innerText = count;
 
   if (count === 0) {
     if (emptyState) emptyState.style.display = "block";
-    if (itemsContainer) itemsContainer.style.display = "none";
+    if (itemsContainer) {
+      itemsContainer.style.display = "none";
+      itemsContainer.innerHTML = "";
+    }
     if (summaryActions) summaryActions.style.display = "none";
-    if (headerOdds) headerOdds.style.display = "none";
+    if (headerOdds) {
+      headerOdds.style.display = "none";
+      headerOdds.textContent = "Total Odds: —";
+      headerOdds.innerText = "Total Odds: —";
+    }
+    if (totalOddsVal) {
+      totalOddsVal.textContent = "—";
+      totalOddsVal.innerText = "—";
+    }
   } else {
     if (emptyState) emptyState.style.display = "none";
     if (itemsContainer) {
       itemsContainer.style.display = "flex";
       itemsContainer.innerHTML = "";
       
-      let totalOdds = 1.0;
-
-      const betslipList = (window.appState && Array.isArray(window.appState.betslip)) ? window.appState.betslip : [];
-
       betslipList.forEach((item, index) => {
-        const itemOdds = (typeof item.odds === 'number' && !isNaN(item.odds)) ? item.odds : 1.45;
-        totalOdds *= itemOdds;
+        let rawOdds = (typeof item.odds !== 'undefined' && item.odds !== null) ? item.odds : (item.price || item.odd);
+        if (typeof rawOdds === 'string') rawOdds = rawOdds.replace(/^@/, '').replace(/,/g, '').trim();
+        const parsedOdds = Number(rawOdds);
+        const hasValidOdd = (typeof parsedOdds === 'number' && !isNaN(parsedOdds) && isFinite(parsedOdds) && parsedOdds > 1.0);
+        const itemOddsDisplay = hasValidOdd ? `@${parsedOdds.toFixed(2)}` : '<span style="color:#ef4444; font-size:0.75rem;">Odds unavailable</span>';
         
         let homeName = item.match?.homeTeam?.name || item.match?.homeTeam || item.homeTeam || 'Home';
         let awayName = item.match?.awayTeam?.name || item.match?.awayTeam || item.awayTeam || 'Away';
@@ -1117,22 +1253,22 @@ function renderBetslip() {
             </div>
           </div>
           <div style="display: flex; align-items: center; gap: 10px;">
-            <span style="font-weight: 700; color: var(--text-primary); font-size: 0.8rem; pointer-events: none;">@${itemOdds.toFixed(2)}</span>
+            <span style="font-weight: 700; color: var(--text-primary); font-size: 0.8rem; pointer-events: none;">${itemOddsDisplay}</span>
             <button type="button" class="betslip-item-remove" data-index="${index}" onclick="removeBetslipItem(${index}, event)" aria-label="Remove match" title="Remove selection">&times;</button>
           </div>
         `;
         itemsContainer.appendChild(row);
       });
 
-      const formattedOdds = (totalOdds > 99999 ? "99,999+" : totalOdds.toFixed(2));
+      const oddsCalc = calculateBetslipTotalOdds(betslipList);
       if (totalOddsVal) {
-        totalOddsVal.textContent = `@${formattedOdds}`;
-        totalOddsVal.innerText = `@${formattedOdds}`;
+        totalOddsVal.textContent = oddsCalc.formatted;
+        totalOddsVal.innerText = oddsCalc.formatted;
       }
       if (headerOdds) {
         headerOdds.style.display = "block";
-        headerOdds.textContent = `Total Odds: @${formattedOdds}`;
-        headerOdds.innerText = `Total Odds: @${formattedOdds}`;
+        headerOdds.textContent = `Total Odds: ${oddsCalc.formatted}`;
+        headerOdds.innerText = `Total Odds: ${oddsCalc.formatted}`;
       }
     }
     if (summaryActions) {
@@ -1259,15 +1395,18 @@ function openBetslipShareModal(e) {
     // 2. Active Betslip Builder drawer remains open and intact beneath modal overlay
 
     // 3. Populate Modal Fixture List with all clubs from Active Betslip Builder
-    let totalOdds = 1.0;
+    const oddsCalc = calculateBetslipTotalOdds(betslip);
     const count = betslip.length;
 
     const fixturesList = document.getElementById("share-modal-fixtures-list");
     if (fixturesList) {
       fixturesList.innerHTML = "";
       betslip.forEach((item, idx) => {
-        const itemOdds = (typeof item.odds === 'number' && !isNaN(item.odds)) ? item.odds : 1.45;
-        totalOdds *= itemOdds;
+        let rawVal = (typeof item.odds !== 'undefined' && item.odds !== null) ? item.odds : (item.price || item.odd);
+        if (typeof rawVal === 'string') rawVal = rawVal.replace(/^@/, '').replace(/,/g, '').trim();
+        const num = Number(rawVal);
+        const valid = (typeof num === 'number' && !isNaN(num) && isFinite(num) && num > 1.0);
+        const itemOddsDisplay = valid ? `@${num.toFixed(2)}` : 'Odds unavailable';
 
         let homeName = item.match?.homeTeam?.name || item.match?.homeTeam || item.homeTeam || 'Home';
         let awayName = item.match?.awayTeam?.name || item.match?.awayTeam || item.awayTeam || 'Away';
@@ -1308,15 +1447,14 @@ function openBetslipShareModal(e) {
               </div>
             </div>
           </div>
-          <div class="share-fixture-odds">@${itemOdds.toFixed(2)}</div>
+          <div class="share-fixture-odds">${itemOddsDisplay}</div>
         `;
         fixturesList.appendChild(fixtureRow);
       });
     }
 
-    const formattedOdds = (totalOdds > 99999 ? "99,999+" : totalOdds.toFixed(2));
     const oddsEl = document.getElementById("share-modal-total-odds");
-    if (oddsEl) oddsEl.textContent = `@${formattedOdds}`;
+    if (oddsEl) oddsEl.textContent = oddsCalc.formatted;
 
     const countEl = document.getElementById("share-modal-matches-count");
     if (countEl) countEl.textContent = `${count} ${count === 1 ? 'Match' : 'Matches'}`;
@@ -1369,10 +1507,12 @@ function closeBetslipShareModal(event, force) {
 
 function getBetslipShareData() {
   const betslip = (window.appState && Array.isArray(window.appState.betslip)) ? window.appState.betslip : [];
-  let totalOdds = 1.0;
+  const oddsCalc = calculateBetslipTotalOdds(betslip);
   const items = betslip.map((item, idx) => {
-    const itemOdds = (typeof item.odds === 'number' && !isNaN(item.odds)) ? item.odds : 1.45;
-    totalOdds *= itemOdds;
+    let rawVal = (typeof item.odds !== 'undefined' && item.odds !== null) ? item.odds : (item.price || item.odd);
+    if (typeof rawVal === 'string') rawVal = rawVal.replace(/^@/, '').replace(/,/g, '').trim();
+    const num = Number(rawVal);
+    const valid = (typeof num === 'number' && !isNaN(num) && isFinite(num) && num > 1.0);
 
     let homeName = item.match?.homeTeam?.name || item.match?.homeTeam || item.homeTeam || 'Home';
     let awayName = item.match?.awayTeam?.name || item.match?.awayTeam || item.awayTeam || 'Away';
@@ -1386,15 +1526,15 @@ function getBetslipShareData() {
       fixture: `${homeName} vs ${awayName}`,
       league: leagueName,
       tip: tipVal,
-      odds: itemOdds.toFixed(2)
+      odds: valid ? num.toFixed(2) : 'N/A'
     };
   });
 
-  const formattedOdds = (totalOdds > 99999 ? "99,999+" : totalOdds.toFixed(2));
   return {
     items,
     count: items.length,
-    totalOdds: formattedOdds,
+    totalOdds: oddsCalc.displayOdds,
+    formattedOdds: oddsCalc.formatted,
     siteUrl: "https://deeppredictbet.com/"
   };
 }
@@ -4419,19 +4559,21 @@ function quickPromptScout(text, autoOpenModal = true) {
   }
 
   // Calculate total odds with realistic product
-  let calculatedOdds = 1.0;
-  selections.forEach(s => {
-    calculatedOdds *= (s.odds || 1.45);
-  });
-  const totalOdds = (calculatedOdds > 99999 ? "99,999+" : calculatedOdds.toFixed(2));
+  const accSelections = selections.slice(0, count);
+  const oddsCalc = calculateBetslipTotalOdds(accSelections);
+  const totalOdds = oddsCalc.displayOdds;
 
-  const selectionsList = selections.slice(0, count).map((s, idx) => {
+  const selectionsList = accSelections.map((s, idx) => {
     const hName = s.match?.homeTeam?.name || 'Home Team';
     const aName = s.match?.awayTeam?.name || 'Away Team';
     const leagueName = s.match?.league || 'Football League';
     const isLive = !!(s.match?.isLive && s.match?.rawDate && new Date(s.match.rawDate).toDateString() === new Date().toDateString());
     const timeStr = formatStandardMatchDateString(s.match?.time, s.match?.rawDate, isLive);
-    const oddVal = (s.odds || 1.45).toFixed(2);
+    let rawVal = (typeof s.odds !== 'undefined' && s.odds !== null) ? s.odds : (s.price || s.odd);
+    if (typeof rawVal === 'string') rawVal = rawVal.replace(/^@/, '').replace(/,/g, '').trim();
+    const num = Number(rawVal);
+    const valid = (typeof num === 'number' && !isNaN(num) && isFinite(num) && num > 1.0);
+    const oddVal = valid ? num.toFixed(2) : '—';
     return `
       <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid rgba(255,255,255,0.08); padding: 8px 0; font-size:0.8rem; gap: 8px;">
         <div style="display:flex; flex-direction:column; gap:2px; min-width:0;">
