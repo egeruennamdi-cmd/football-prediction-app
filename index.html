@@ -8539,6 +8539,23 @@
       </div>
     </div>
     <div class="betslip-drawer-body" id="betslip-drawer-body">
+      <!-- Unavailable selections alert banner -->
+      <div id="betslip-unavailable-alert" style="display: none; background: rgba(239, 68, 68, 0.12); border: 1.5px solid rgba(239, 68, 68, 0.45); border-radius: 8px; padding: 10px 12px; margin-bottom: 10px;">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
+          <span style="color: #f87171; font-weight: 700; font-size: 0.8rem; display: flex; align-items: center; gap: 6px;">
+            <span>⚠️</span> <span id="betslip-unavailable-count">0</span> selection(s) unavailable
+          </span>
+          <button onclick="dismissUnavailableAlert()" style="background: none; border: none; color: #94a3b8; cursor: pointer; font-size: 1.1rem; line-height: 1; padding: 0 4px;" title="Dismiss">&times;</button>
+        </div>
+        <p style="font-size: 0.73rem; color: #cbd5e1; margin: 0 0 8px 0;">Matches have started or market odds expired. Review or replace with fresh upcoming picks:</p>
+        <div style="display: flex; gap: 6px; flex-wrap: wrap;">
+          <button class="btn" onclick="toggleUnavailableReview()" style="font-size: 0.72rem; padding: 4px 8px; background: rgba(239, 68, 68, 0.25); color: #fca5a5; border: 1px solid rgba(239, 68, 68, 0.4); border-radius: 6px; cursor: pointer; font-weight: 600;">🔍 Review</button>
+          <button class="btn" onclick="replaceUnavailableSelections()" style="font-size: 0.72rem; padding: 4px 8px; background: rgba(16, 185, 129, 0.2); color: #34d399; border: 1px solid rgba(16, 185, 129, 0.4); border-radius: 6px; cursor: pointer; font-weight: 700;">🔄 Replace Selections</button>
+          <button class="btn" onclick="dismissUnavailableAlert()" style="font-size: 0.72rem; padding: 4px 8px; background: rgba(255,255,255,0.06); color: #94a3b8; border: 1px solid rgba(255,255,255,0.12); border-radius: 6px; cursor: pointer;">Dismiss</button>
+        </div>
+        <div id="betslip-unavailable-review-list" style="display: none; margin-top: 8px; max-height: 130px; overflow-y: auto; background: rgba(0,0,0,0.4); border-radius: 6px; padding: 6px 8px;">
+        </div>
+      </div>
       <div id="betslip-empty-state"
         style="text-align: center; padding: 24px 16px; color: var(--text-muted); font-size: 0.82rem;">
         <span style="font-size: 2rem; display: block; margin-bottom: 8px;">🎫</span>

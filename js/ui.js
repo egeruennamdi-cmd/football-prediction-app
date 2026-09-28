@@ -4269,92 +4269,97 @@ window.formatStandardMatchDateString = formatStandardMatchDateString;
 // ── Shared Pool of Authentic Future Top Leagues Fixtures ──
 var AUTHENTIC_TOP_LEAGUES_FIXTURES = (typeof window !== 'undefined' && window.AUTHENTIC_TOP_LEAGUES_FIXTURES) ? window.AUTHENTIC_TOP_LEAGUES_FIXTURES : [
   // ── Premier League Fixtures ──
-  { id: "epl-fix-1", homeTeam: { name: "Arsenal", logo: "🔴" }, awayTeam: { name: "Brighton", logo: "🕊️" }, league: "Premier League", leagueEmoji: "🏴󠁧󠁢󠁥󠁮󠁧󠁿", time: "26th, September 2026, 12:30", dateSlot: "2026-09-26-1230", date: "future" },
-  { id: "epl-fix-2", homeTeam: { name: "Manchester City", logo: "🔵" }, awayTeam: { name: "Brentford", logo: "🐝" }, league: "Premier League", leagueEmoji: "🏴󠁧󠁢󠁥󠁮󠁧󠁿", time: "26th, September 2026, 15:00", dateSlot: "2026-09-26-1500", date: "future" },
-  { id: "epl-fix-3", homeTeam: { name: "Tottenham", logo: "⚪🐓" }, awayTeam: { name: "Arsenal", logo: "🔴" }, league: "Premier League", leagueEmoji: "🏴󠁧󠁢󠁥󠁮󠁧󠁿", time: "27th, September 2026, 16:30", dateSlot: "2026-09-27-1630", date: "future" },
-  { id: "epl-fix-4", homeTeam: { name: "Manchester City", logo: "🔵" }, awayTeam: { name: "Arsenal", logo: "🔴" }, league: "Premier League", leagueEmoji: "🏴󠁧󠁢󠁥󠁮󠁧󠁿", time: "20th, September 2026, 16:30", dateSlot: "2026-09-20-1630", date: "future" },
-  { id: "epl-fix-5", homeTeam: { name: "Liverpool", logo: "🔴🛡️" }, awayTeam: { name: "Bournemouth", logo: "🍒" }, league: "Premier League", leagueEmoji: "🏴󠁧󠁢󠁥󠁮󠁧󠁿", time: "21st, September 2026, 15:00", dateSlot: "2026-09-21-1500", date: "future" },
-  { id: "epl-fix-6", homeTeam: { name: "Chelsea", logo: "🦁" }, awayTeam: { name: "Crystal Palace", logo: "🦅" }, league: "Premier League", leagueEmoji: "🏴󠁧󠁢󠁥󠁮󠁧󠁿", time: "27th, September 2026, 14:00", dateSlot: "2026-09-27-1400", date: "future" },
-  { id: "epl-fix-7", homeTeam: { name: "Bournemouth", logo: "🍒" }, awayTeam: { name: "Chelsea", logo: "🦁" }, league: "Premier League", leagueEmoji: "🏴󠁧󠁢󠁥󠁮󠁧󠁿", time: "26th, September 2026, 20:00", dateSlot: "2026-09-26-2000", date: "future" },
-  { id: "epl-fix-8", homeTeam: { name: "West Ham", logo: "⚒️" }, awayTeam: { name: "Chelsea", logo: "🦁" }, league: "Premier League", leagueEmoji: "🏴󠁧󠁢󠁥󠁮󠁧󠁿", time: "21st, September 2026, 12:30", dateSlot: "2026-09-21-1230", date: "future" },
+  { id: "epl-fix-1", homeTeam: { name: "Arsenal", logo: "🔴" }, awayTeam: { name: "Southampton", logo: "🔴⚪" }, league: "Premier League", leagueEmoji: "🏴󠁧󠁢󠁥󠁮󠁧󠁿", time: "4th, October 2026, 15:00", dateSlot: "2026-10-04-1500", date: "future" },
+  { id: "epl-fix-2", homeTeam: { name: "Manchester City", logo: "🔵" }, awayTeam: { name: "Fulham", logo: "⚪" }, league: "Premier League", leagueEmoji: "🏴󠁧󠁢󠁥󠁮󠁧󠁿", time: "5th, October 2026, 15:00", dateSlot: "2026-10-05-1500", date: "future" },
+  { id: "epl-fix-3", homeTeam: { name: "Crystal Palace", logo: "🦅" }, awayTeam: { name: "Liverpool", logo: "🔴🛡️" }, league: "Premier League", leagueEmoji: "🏴󠁧󠁢󠁥󠁮󠁧󠁿", time: "5th, October 2026, 12:30", dateSlot: "2026-10-05-1230", date: "future" },
+  { id: "epl-fix-4", homeTeam: { name: "Brighton", logo: "🕊️" }, awayTeam: { name: "Tottenham", logo: "⚪🐓" }, league: "Premier League", leagueEmoji: "🏴󠁧󠁢󠁥󠁮󠁧󠁿", time: "6th, October 2026, 16:30", dateSlot: "2026-10-06-1630", date: "future" },
+  { id: "epl-fix-5", homeTeam: { name: "Chelsea", logo: "🦁" }, awayTeam: { name: "Nottingham Forest", logo: "🌳" }, league: "Premier League", leagueEmoji: "🏴󠁧󠁢󠁥󠁮󠁧󠁿", time: "6th, October 2026, 14:00", dateSlot: "2026-10-06-1400", date: "future" },
+  { id: "epl-fix-6", homeTeam: { name: "Brentford", logo: "🐝" }, awayTeam: { name: "Wolves", logo: "🐺" }, league: "Premier League", leagueEmoji: "🏴󠁧󠁢󠁥󠁮󠁧󠁿", time: "5th, October 2026, 15:00", dateSlot: "2026-10-05-1500-b", date: "future" },
+  { id: "epl-fix-7", homeTeam: { name: "Leicester", logo: "🦊" }, awayTeam: { name: "Bournemouth", logo: "🍒" }, league: "Premier League", leagueEmoji: "🏴󠁧󠁢󠁥󠁮󠁧󠁿", time: "5th, October 2026, 15:00", dateSlot: "2026-10-05-1500-c", date: "future" },
+  { id: "epl-fix-8", homeTeam: { name: "West Ham", logo: "⚒️" }, awayTeam: { name: "Ipswich Town", logo: "🚜" }, league: "Premier League", leagueEmoji: "🏴󠁧󠁢󠁥󠁮󠁧󠁿", time: "5th, October 2026, 15:00", dateSlot: "2026-10-05-1500-d", date: "future" },
   { id: "epl-fix-9", homeTeam: { name: "Newcastle", logo: "🦓" }, awayTeam: { name: "Tottenham", logo: "⚪🐓" }, league: "Premier League", leagueEmoji: "🏴󠁧󠁢󠁥󠁮󠁧󠁿", time: "4th, October 2026, 16:30", dateSlot: "2026-10-04-1630", date: "future" },
   { id: "epl-fix-10", homeTeam: { name: "Aston Villa", logo: "🦁🟣" }, awayTeam: { name: "Everton", logo: "🔵" }, league: "Premier League", leagueEmoji: "🏴󠁧󠁢󠁥󠁮󠁧󠁿", time: "3rd, October 2026, 17:30", dateSlot: "2026-10-03-1730", date: "future" },
   { id: "epl-fix-11", homeTeam: { name: "Manchester United", logo: "👿" }, awayTeam: { name: "Liverpool", logo: "🔴🛡️" }, league: "Premier League", leagueEmoji: "🏴󠁧󠁢󠁥󠁮󠁧󠁿", time: "18th, October 2026, 16:30", dateSlot: "2026-10-18-1630", date: "future" },
-  { id: "epl-fix-12", homeTeam: { name: "Southampton", logo: "🔴⚪" }, awayTeam: { name: "Manchester United", logo: "👿" }, league: "Premier League", leagueEmoji: "🏴󠁧󠁢󠁥󠁮󠁧󠁿", time: "26th, September 2026, 17:30", dateSlot: "2026-09-26-1730", date: "future" },
-  { id: "epl-fix-13", homeTeam: { name: "Crystal Palace", logo: "🦅" }, awayTeam: { name: "Manchester United", logo: "👿" }, league: "Premier League", leagueEmoji: "🏴󠁧󠁢󠁥󠁮󠁧󠁿", time: "21st, September 2026, 17:30", dateSlot: "2026-09-21-1730", date: "future" },
-  
+  { id: "epl-fix-12", homeTeam: { name: "Arsenal", logo: "🔴" }, awayTeam: { name: "Liverpool", logo: "🔴🛡️" }, league: "Premier League", leagueEmoji: "🏴󠁧󠁢󠁥󠁮󠁧󠁿", time: "27th, October 2026, 16:30", dateSlot: "2026-10-27-1630", date: "future" },
+  { id: "epl-fix-13", homeTeam: { name: "Manchester United", logo: "👿" }, awayTeam: { name: "Chelsea", logo: "🦁" }, league: "Premier League", leagueEmoji: "🏴󠁧󠁢󠁥󠁮󠁧󠁿", time: "3rd, November 2026, 16:30", dateSlot: "2026-11-03-1630", date: "future" },
+
   // ── UEFA Champions League Elite Matches ──
-  { id: "ucl-fix-1", homeTeam: { name: "Manchester City", logo: "🔵" }, awayTeam: { name: "Inter Milan", logo: "🔵⚫🐍" }, league: "Champions League", leagueEmoji: "🇪🇺", time: "17th, September 2026, 20:00", dateSlot: "2026-09-17-2000", date: "future" },
-  { id: "ucl-fix-2", homeTeam: { name: "Real Madrid", logo: "⚪👑" }, awayTeam: { name: "Stuttgart", logo: "⚪🔴" }, league: "Champions League", leagueEmoji: "🇪🇺", time: "16th, September 2026, 20:00", dateSlot: "2026-09-16-2000", date: "future" },
-  { id: "ucl-fix-3", homeTeam: { name: "Atalanta", logo: "🔵⚫" }, awayTeam: { name: "Arsenal", logo: "🔴" }, league: "Champions League", leagueEmoji: "🇪🇺", time: "18th, September 2026, 20:00", dateSlot: "2026-09-18-2000", date: "future" },
-  { id: "ucl-fix-4", homeTeam: { name: "AC Milan", logo: "🔴⚫👿" }, awayTeam: { name: "Liverpool", logo: "🔴🛡️" }, league: "Champions League", leagueEmoji: "🇪🇺", time: "16th, September 2026, 20:00", dateSlot: "2026-09-16-2000-b", date: "future" },
-  { id: "ucl-fix-5", homeTeam: { name: "Bayern Munich", logo: "🔴⚪" }, awayTeam: { name: "Dinamo Zagreb", logo: "🔵" }, league: "Champions League", leagueEmoji: "🇪🇺", time: "17th, September 2026, 20:00", dateSlot: "2026-09-17-2000-b", date: "future" },
-  { id: "ucl-fix-6", homeTeam: { name: "Monaco", logo: "⚪🔴" }, awayTeam: { name: "Barcelona", logo: "🔵🔴" }, league: "Champions League", leagueEmoji: "🇪🇺", time: "18th, September 2026, 20:00", dateSlot: "2026-09-18-2000-b", date: "future" },
-  { id: "ucl-fix-7", homeTeam: { name: "PSG", logo: "🔵🔴🗼" }, awayTeam: { name: "Girona", logo: "🔴⚪" }, league: "Champions League", leagueEmoji: "🇪🇺", time: "17th, September 2026, 20:00", dateSlot: "2026-09-17-2000-c", date: "future" },
+  { id: "ucl-fix-1", homeTeam: { name: "Barcelona", logo: "🔵🔴" }, awayTeam: { name: "Young Boys", logo: "🟡⚫" }, league: "Champions League", leagueEmoji: "🇪🇺", time: "1st, October 2026, 20:00", dateSlot: "2026-10-01-2000-c", date: "future" },
+  { id: "ucl-fix-2", homeTeam: { name: "Inter Milan", logo: "🔵⚫🐍" }, awayTeam: { name: "Crvena Zvezda", logo: "🔴⚪" }, league: "Champions League", leagueEmoji: "🇪🇺", time: "1st, October 2026, 20:00", dateSlot: "2026-10-01-2000-d", date: "future" },
+  { id: "ucl-fix-3", homeTeam: { name: "Borussia Dortmund", logo: "🟡⚫" }, awayTeam: { name: "Celtic", logo: "🟢⚪" }, league: "Champions League", leagueEmoji: "🇪🇺", time: "1st, October 2026, 20:00", dateSlot: "2026-10-01-2000-e", date: "future" },
+  { id: "ucl-fix-4", homeTeam: { name: "Lille", logo: "🔴⚪" }, awayTeam: { name: "Real Madrid", logo: "⚪👑" }, league: "Champions League", leagueEmoji: "🇪🇺", time: "2nd, October 2026, 20:00", dateSlot: "2026-10-02-2000-c", date: "future" },
+  { id: "ucl-fix-5", homeTeam: { name: "RB Leipzig", logo: "⚪🔴" }, awayTeam: { name: "Juventus", logo: "⚫⚪" }, league: "Champions League", leagueEmoji: "🇪🇺", time: "2nd, October 2026, 20:00", dateSlot: "2026-10-02-2000-b", date: "future" },
+  { id: "ucl-fix-6", homeTeam: { name: "Real Madrid", logo: "⚪👑" }, awayTeam: { name: "Borussia Dortmund", logo: "🟡⚫" }, league: "Champions League", leagueEmoji: "🇪🇺", time: "22nd, October 2026, 20:00", dateSlot: "2026-10-22-2000", date: "future" },
+  { id: "ucl-fix-7", homeTeam: { name: "Barcelona", logo: "🔵🔴" }, awayTeam: { name: "Bayern Munich", logo: "🔴⚪" }, league: "Champions League", leagueEmoji: "🇪🇺", time: "23rd, October 2026, 20:00", dateSlot: "2026-10-23-2000", date: "future" },
   { id: "ucl-fix-8", homeTeam: { name: "Bayer Leverkusen", logo: "🔴⚫" }, awayTeam: { name: "AC Milan", logo: "🔴⚫👿" }, league: "Champions League", leagueEmoji: "🇪🇺", time: "1st, October 2026, 20:00", dateSlot: "2026-10-01-2000", date: "future" },
   { id: "ucl-fix-9", homeTeam: { name: "Arsenal", logo: "🔴" }, awayTeam: { name: "PSG", logo: "🔵🔴🗼" }, league: "Champions League", leagueEmoji: "🇪🇺", time: "1st, October 2026, 20:00", dateSlot: "2026-10-01-2000-b", date: "future" },
   { id: "ucl-fix-10", homeTeam: { name: "Aston Villa", logo: "🦁🟣" }, awayTeam: { name: "Bayern Munich", logo: "🔴⚪" }, league: "Champions League", leagueEmoji: "🇪🇺", time: "2nd, October 2026, 20:00", dateSlot: "2026-10-02-2000", date: "future" },
-  
+  { id: "ucl-fix-11", homeTeam: { name: "Liverpool", logo: "🔴🛡️" }, awayTeam: { name: "Bayer Leverkusen", logo: "🔴⚫" }, league: "Champions League", leagueEmoji: "🇪🇺", time: "5th, November 2026, 20:00", dateSlot: "2026-11-05-2000", date: "future" },
+  { id: "ucl-fix-12", homeTeam: { name: "Real Madrid", logo: "⚪👑" }, awayTeam: { name: "AC Milan", logo: "🔴⚫👿" }, league: "Champions League", leagueEmoji: "🇪🇺", time: "5th, November 2026, 20:00", dateSlot: "2026-11-05-2000-b", date: "future" },
+
   // ── La Liga ──
   { id: "laliga-fix-1", homeTeam: { name: "Real Madrid", logo: "⚪👑" }, awayTeam: { name: "Real Betis", logo: "🟢⚪" }, league: "La Liga", leagueEmoji: "🇪🇸", time: "4th, October 2026, 20:30", dateSlot: "2026-10-04-2030", date: "future" },
   { id: "laliga-fix-2", homeTeam: { name: "Real Sociedad", logo: "🔵⚪" }, awayTeam: { name: "Real Madrid", logo: "⚪👑" }, league: "La Liga", leagueEmoji: "🇪🇸", time: "17th, October 2026, 20:00", dateSlot: "2026-10-17-2000", date: "future" },
-  { id: "laliga-fix-3", homeTeam: { name: "Atletico Madrid", logo: "🔴⚪" }, awayTeam: { name: "Real Madrid", logo: "⚪👑" }, league: "La Liga", leagueEmoji: "🇪🇸", time: "28th, September 2026, 20:00", dateSlot: "2026-09-28-2000", date: "future" },
-  { id: "laliga-fix-4", homeTeam: { name: "Barcelona", logo: "🔵🔴" }, awayTeam: { name: "Real Valladolid", logo: "🟣⚪" }, league: "La Liga", leagueEmoji: "🇪🇸", time: "28th, September 2026, 16:00", dateSlot: "2026-09-28-1600", date: "future" },
-  { id: "laliga-fix-5", homeTeam: { name: "Girona", logo: "🔴⚪" }, awayTeam: { name: "Barcelona", logo: "🔵🔴" }, league: "La Liga", leagueEmoji: "🇪🇸", time: "27th, September 2026, 16:15", dateSlot: "2026-09-27-1615", date: "future" },
-  { id: "laliga-fix-6", homeTeam: { name: "Villarreal", logo: "🟡" }, awayTeam: { name: "Barcelona", logo: "🔵🔴" }, league: "La Liga", leagueEmoji: "🇪🇸", time: "21st, September 2026, 17:30", dateSlot: "2026-09-21-1730-b", date: "future" },
+  { id: "laliga-fix-3", homeTeam: { name: "Atletico Madrid", logo: "🔴⚪" }, awayTeam: { name: "Real Madrid", logo: "⚪👑" }, league: "La Liga", leagueEmoji: "🇪🇸", time: "24th, October 2026, 20:00", dateSlot: "2026-10-24-2000", date: "future" },
+  { id: "laliga-fix-4", homeTeam: { name: "Barcelona", logo: "🔵🔴" }, awayTeam: { name: "Real Valladolid", logo: "🟣⚪" }, league: "La Liga", leagueEmoji: "🇪🇸", time: "17th, October 2026, 16:00", dateSlot: "2026-10-17-1600", date: "future" },
+  { id: "laliga-fix-5", homeTeam: { name: "Real Madrid", logo: "⚪👑" }, awayTeam: { name: "Villarreal", logo: "🟡" }, league: "La Liga", leagueEmoji: "🇪🇸", time: "5th, October 2026, 20:00", dateSlot: "2026-10-05-2000", date: "future" },
+  { id: "laliga-fix-6", homeTeam: { name: "Alaves", logo: "🔵⚪" }, awayTeam: { name: "Barcelona", logo: "🔵🔴" }, league: "La Liga", leagueEmoji: "🇪🇸", time: "6th, October 2026, 15:15", dateSlot: "2026-10-06-1515", date: "future" },
   { id: "laliga-fix-7", homeTeam: { name: "Athletic Bilbao", logo: "🔴⚪🦁" }, awayTeam: { name: "Atletico Madrid", logo: "🔴⚪" }, league: "La Liga", leagueEmoji: "🇪🇸", time: "18th, October 2026, 18:00", dateSlot: "2026-10-18-1800", date: "future" },
-  { id: "laliga-fix-8", homeTeam: { name: "Sevilla", logo: "⚪🔴" }, awayTeam: { name: "Getafe", logo: "🔵" }, league: "La Liga", leagueEmoji: "🇪🇸", time: "27th, September 2026, 17:30", dateSlot: "2026-09-27-1730", date: "future" },
-  { id: "laliga-fix-9", homeTeam: { name: "Barcelona", logo: "🔵🔴" }, awayTeam: { name: "Real Madrid", logo: "⚪👑" }, league: "La Liga", leagueEmoji: "🇪🇸", time: "25th, October 2026, 21:00", dateSlot: "2026-10-25-2100", date: "future" },
+  { id: "laliga-fix-8", homeTeam: { name: "Sevilla", logo: "⚪🔴" }, awayTeam: { name: "Real Betis", logo: "🟢⚪" }, league: "La Liga", leagueEmoji: "🇪🇸", time: "6th, October 2026, 17:30", dateSlot: "2026-10-06-1730", date: "future" },
+  { id: "laliga-fix-9", homeTeam: { name: "Barcelona", logo: "🔵🔴" }, awayTeam: { name: "Sevilla", logo: "⚪🔴" }, league: "La Liga", leagueEmoji: "🇪🇸", time: "20th, October 2026, 20:00", dateSlot: "2026-10-20-2000", date: "future" },
+  { id: "laliga-fix-10", homeTeam: { name: "Celta Vigo", logo: "🩵⚪" }, awayTeam: { name: "Real Madrid", logo: "⚪👑" }, league: "La Liga", leagueEmoji: "🇪🇸", time: "19th, October 2026, 20:00", dateSlot: "2026-10-19-2000", date: "future" },
 
   // ── Serie A ──
   { id: "seriea-fix-1", homeTeam: { name: "Inter Milan", logo: "🔵⚫🐍" }, awayTeam: { name: "Atalanta", logo: "🔵⚫" }, league: "Serie A", leagueEmoji: "🇮🇹", time: "18th, October 2026, 19:45", dateSlot: "2026-10-18-1945", date: "future" },
-  { id: "seriea-fix-2", homeTeam: { name: "Monza", logo: "🔴⚪" }, awayTeam: { name: "Inter Milan", logo: "🔵⚫🐍" }, league: "Serie A", leagueEmoji: "🇮🇹", time: "26th, September 2026, 19:45", dateSlot: "2026-09-26-1945", date: "future" },
-  { id: "seriea-fix-3", homeTeam: { name: "Inter Milan", logo: "🔵⚫🐍" }, awayTeam: { name: "AC Milan", logo: "🔴⚫👿" }, league: "Serie A", leagueEmoji: "🇮🇹", time: "21st, September 2026, 19:45", dateSlot: "2026-09-21-1945", date: "future" },
+  { id: "seriea-fix-2", homeTeam: { name: "Inter Milan", logo: "🔵⚫🐍" }, awayTeam: { name: "Torino", logo: "🐂🟤" }, league: "Serie A", leagueEmoji: "🇮🇹", time: "5th, October 2026, 19:45", dateSlot: "2026-10-05-1945", date: "future" },
+  { id: "seriea-fix-3", homeTeam: { name: "Juventus", logo: "⚪⚫🦓" }, awayTeam: { name: "Cagliari", logo: "🔴🔵" }, league: "Serie A", leagueEmoji: "🇮🇹", time: "6th, October 2026, 11:30", dateSlot: "2026-10-06-1130", date: "future" },
   { id: "seriea-fix-4", homeTeam: { name: "Juventus", logo: "⚪⚫🦓" }, awayTeam: { name: "Roma", logo: "🐺🟡🔴" }, league: "Serie A", leagueEmoji: "🇮🇹", time: "25th, October 2026, 19:45", dateSlot: "2026-10-25-1945", date: "future" },
   { id: "seriea-fix-5", homeTeam: { name: "Empoli", logo: "🔵" }, awayTeam: { name: "Juventus", logo: "⚪⚫🦓" }, league: "Serie A", leagueEmoji: "🇮🇹", time: "4th, October 2026, 17:00", dateSlot: "2026-10-04-1700", date: "future" },
-  { id: "seriea-fix-6", homeTeam: { name: "Juventus", logo: "⚪⚫🦓" }, awayTeam: { name: "Napoli", logo: "🔵👑" }, league: "Serie A", leagueEmoji: "🇮🇹", time: "20th, September 2026, 17:00", dateSlot: "2026-09-20-1700", date: "future" },
+  { id: "seriea-fix-6", homeTeam: { name: "Fiorentina", logo: "🟣" }, awayTeam: { name: "AC Milan", logo: "🔴⚫👿" }, league: "Serie A", leagueEmoji: "🇮🇹", time: "6th, October 2026, 19:45", dateSlot: "2026-10-06-1945", date: "future" },
   { id: "seriea-fix-7", homeTeam: { name: "Lazio", logo: "🦅🔵" }, awayTeam: { name: "AC Milan", logo: "🔴⚫👿" }, league: "Serie A", leagueEmoji: "🇮🇹", time: "1st, November 2026, 19:45", dateSlot: "2026-11-01-1945", date: "future" },
-  { id: "seriea-fix-8", homeTeam: { name: "Cagliari", logo: "🔴🔵" }, awayTeam: { name: "Napoli", logo: "🔵👑" }, league: "Serie A", leagueEmoji: "🇮🇹", time: "27th, September 2026, 17:00", dateSlot: "2026-09-27-1700", date: "future" },
+  { id: "seriea-fix-8", homeTeam: { name: "Roma", logo: "🐺🟡🔴" }, awayTeam: { name: "Inter Milan", logo: "🔵⚫🐍" }, league: "Serie A", leagueEmoji: "🇮🇹", time: "20th, October 2026, 19:45", dateSlot: "2026-10-20-1945", date: "future" },
+  { id: "seriea-fix-9", homeTeam: { name: "Juventus", logo: "⚪⚫🦓" }, awayTeam: { name: "Lazio", logo: "🦅🔵" }, league: "Serie A", leagueEmoji: "🇮🇹", time: "19th, October 2026, 19:45", dateSlot: "2026-10-19-1945", date: "future" },
 
   // ── Bundesliga ──
   { id: "bundes-fix-1", homeTeam: { name: "Bayern Munich", logo: "🔴⚪" }, awayTeam: { name: "Freiburg", logo: "⚫⚪" }, league: "Bundesliga", leagueEmoji: "🇩🇪", time: "17th, October 2026, 16:30", dateSlot: "2026-10-17-1630", date: "future" },
   { id: "bundes-fix-2", homeTeam: { name: "Holstein Kiel", logo: "🔵⚪🔴" }, awayTeam: { name: "Bayern Munich", logo: "🔴⚪" }, league: "Bundesliga", leagueEmoji: "🇩🇪", time: "24th, October 2026, 17:30", dateSlot: "2026-10-24-1730", date: "future" },
-  { id: "bundes-fix-3", homeTeam: { name: "Werder Bremen", logo: "🟢⚪" }, awayTeam: { name: "Bayern Munich", logo: "🔴⚪" }, league: "Bundesliga", leagueEmoji: "🇩🇪", time: "20th, September 2026, 14:30", dateSlot: "2026-09-20-1430", date: "future" },
-  { id: "bundes-fix-4", homeTeam: { name: "Bayern Munich", logo: "🔴⚪" }, awayTeam: { name: "Bayer Leverkusen", logo: "🔴⚫" }, league: "Bundesliga", leagueEmoji: "🇩🇪", time: "27th, September 2026, 17:30", dateSlot: "2026-09-27-1730", date: "future" },
+  { id: "bundes-fix-3", homeTeam: { name: "Union Berlin", logo: "🔴⚪" }, awayTeam: { name: "Borussia Dortmund", logo: "🟡⚫" }, league: "Bundesliga", leagueEmoji: "🇩🇪", time: "5th, October 2026, 14:30", dateSlot: "2026-10-05-1430", date: "future" },
+  { id: "bundes-fix-4", homeTeam: { name: "Eintracht Frankfurt", logo: "🦅🔴⚫" }, awayTeam: { name: "Bayern Munich", logo: "🔴⚪" }, league: "Bundesliga", leagueEmoji: "🇩🇪", time: "6th, October 2026, 16:30", dateSlot: "2026-10-06-1630", date: "future" },
   { id: "bundes-fix-5", homeTeam: { name: "Bayer Leverkusen", logo: "🔴⚫" }, awayTeam: { name: "RB Leipzig", logo: "⚪🔴" }, league: "Bundesliga", leagueEmoji: "🇩🇪", time: "18th, October 2026, 17:30", dateSlot: "2026-10-18-1730", date: "future" },
   { id: "bundes-fix-6", homeTeam: { name: "Hoffenheim", logo: "🔵⚪" }, awayTeam: { name: "Bayer Leverkusen", logo: "🔴⚫" }, league: "Bundesliga", leagueEmoji: "🇩🇪", time: "24th, October 2026, 14:30", dateSlot: "2026-10-24-1430", date: "future" },
   { id: "bundes-fix-7", homeTeam: { name: "Borussia Dortmund", logo: "🟡⚫" }, awayTeam: { name: "Heidenheim", logo: "🔴🔵" }, league: "Bundesliga", leagueEmoji: "🇩🇪", time: "3rd, October 2026, 19:30", dateSlot: "2026-10-03-1930", date: "future" },
-  { id: "bundes-fix-8", homeTeam: { name: "Stuttgart", logo: "⚪🔴" }, awayTeam: { name: "Borussia Dortmund", logo: "🟡⚫" }, league: "Bundesliga", leagueEmoji: "🇩🇪", time: "21st, September 2026, 16:30", dateSlot: "2026-09-21-1630", date: "future" },
+  { id: "bundes-fix-8", homeTeam: { name: "Bayern Munich", logo: "🔴⚪" }, awayTeam: { name: "Stuttgart", logo: "⚪🔴" }, league: "Bundesliga", leagueEmoji: "🇩🇪", time: "19th, October 2026, 17:30", dateSlot: "2026-10-19-1730", date: "future" },
 
   // ── Ligue 1 ──
   { id: "ligue1-fix-1", homeTeam: { name: "Lille", logo: "🔴⚪🐕" }, awayTeam: { name: "PSG", logo: "🔵🔴🗼" }, league: "Ligue 1", leagueEmoji: "🇫🇷", time: "18th, October 2026, 19:45", dateSlot: "2026-10-18-1945-c", date: "future" },
   { id: "ligue1-fix-2", homeTeam: { name: "PSG", logo: "🔵🔴🗼" }, awayTeam: { name: "Brest", logo: "🔴⚪" }, league: "Ligue 1", leagueEmoji: "🇫🇷", time: "25th, October 2026, 20:00", dateSlot: "2026-10-25-2000-c", date: "future" },
-  { id: "ligue1-fix-3", homeTeam: { name: "Reims", logo: "🔴⚪" }, awayTeam: { name: "PSG", logo: "🔵🔴🗼" }, league: "Ligue 1", leagueEmoji: "🇫🇷", time: "20th, September 2026, 20:00", dateSlot: "2026-09-20-2000", date: "future" },
-  { id: "ligue1-fix-4", homeTeam: { name: "Lyon", logo: "🔵🔴🦁" }, awayTeam: { name: "Marseille", logo: "⚪🔵" }, league: "Ligue 1", leagueEmoji: "🇫🇷", time: "21st, September 2026, 19:45", dateSlot: "2026-09-21-1945-b", date: "future" },
+  { id: "ligue1-fix-3", homeTeam: { name: "Rennes", logo: "🔴⚫" }, awayTeam: { name: "Monaco", logo: "⚪🔴" }, league: "Ligue 1", leagueEmoji: "🇫🇷", time: "5th, October 2026, 20:00", dateSlot: "2026-10-05-2000-b", date: "future" },
+  { id: "ligue1-fix-4", homeTeam: { name: "Nice", logo: "🦅🔴⚫" }, awayTeam: { name: "PSG", logo: "🔵🔴🗼" }, league: "Ligue 1", leagueEmoji: "🇫🇷", time: "6th, October 2026, 19:45", dateSlot: "2026-10-06-1945-b", date: "future" },
   { id: "ligue1-fix-5", homeTeam: { name: "Monaco", logo: "⚪🔴" }, awayTeam: { name: "Lens", logo: "🔴🟡" }, league: "Ligue 1", leagueEmoji: "🇫🇷", time: "17th, October 2026, 17:00", dateSlot: "2026-10-17-1700", date: "future" },
+  { id: "ligue1-fix-6", homeTeam: { name: "Marseille", logo: "⚪🔵" }, awayTeam: { name: "PSG", logo: "🔵🔴🗼" }, league: "Ligue 1", leagueEmoji: "🇫🇷", time: "27th, October 2026, 19:45", dateSlot: "2026-10-27-1945", date: "future" },
 
-  // ── Global Top Leagues Roster (Saudi, NPFL, PSL, Egypt, MLS, Brazil, Argentina, etc.) ──
+  // ── Global Top Leagues Roster (Saudi, NPFL, PSL, Egypt, MLS, Brazil, etc.) ──
   { id: "saudi-fix-1", homeTeam: { name: "Al Hilal", logo: "🔵🌙" }, awayTeam: { name: "Damac", logo: "🔴🟡" }, league: "Saudi Pro League", leagueEmoji: "🇸🇦", time: "2nd, October 2026, 19:00", dateSlot: "2026-10-02-1900", date: "future" },
   { id: "saudi-fix-2", homeTeam: { name: "Al Nassr", logo: "🟡🔵👑" }, awayTeam: { name: "Al Ahli", logo: "🟢⚪" }, league: "Saudi Pro League", leagueEmoji: "🇸🇦", time: "9th, October 2026, 19:00", dateSlot: "2026-10-09-1900", date: "future" },
-  { id: "saudi-fix-3", homeTeam: { name: "Al Hilal", logo: "🔵🌙" }, awayTeam: { name: "Al Ittihad", logo: "🟡⚫🐯" }, league: "Saudi Pro League", leagueEmoji: "🇸🇦", time: "20th, September 2026, 19:00", dateSlot: "2026-09-20-1900", date: "future" },
-  { id: "npfl-fix-1", homeTeam: { name: "Enyimba", logo: "🔵🐘" }, awayTeam: { name: "Heartland", logo: "🔴⚪" }, league: "NPFL", leagueEmoji: "🇳🇬", time: "27th, September 2026, 16:00", dateSlot: "2026-09-27-1600", date: "future" },
-  { id: "npfl-fix-2", homeTeam: { name: "Rivers United", logo: "🔵⚪🐬" }, awayTeam: { name: "Bendel Insurance", logo: "🟢⚪" }, league: "NPFL", leagueEmoji: "🇳🇬", time: "27th, September 2026, 16:00", dateSlot: "2026-09-27-1600-b", date: "future" },
+  { id: "saudi-fix-3", homeTeam: { name: "Al Shabab", logo: "⚪⚫🦁" }, awayTeam: { name: "Al Nassr", logo: "🟡🔵👑" }, league: "Saudi Pro League", leagueEmoji: "🇸🇦", time: "18th, October 2026, 19:00", dateSlot: "2026-10-18-1900", date: "future" },
+  { id: "npfl-fix-1", homeTeam: { name: "Enyimba", logo: "🔵🐘" }, awayTeam: { name: "Kano Pillars", logo: "🟡🟢" }, league: "NPFL", leagueEmoji: "🇳🇬", time: "11th, October 2026, 16:00", dateSlot: "2026-10-11-1600", date: "future" },
+  { id: "npfl-fix-2", homeTeam: { name: "Shooting Stars", logo: "🔵⭐" }, awayTeam: { name: "Rivers United", logo: "🔵⚪🐬" }, league: "NPFL", leagueEmoji: "🇳🇬", time: "18th, October 2026, 16:00", dateSlot: "2026-10-18-1600", date: "future" },
   { id: "npfl-fix-3", homeTeam: { name: "Remo Stars", logo: "🔵⭐" }, awayTeam: { name: "Rangers Int", logo: "🟢⚪" }, league: "NPFL", leagueEmoji: "🇳🇬", time: "4th, October 2026, 16:00", dateSlot: "2026-10-04-1600", date: "future" },
-  { id: "psl-fix-1", homeTeam: { name: "Mamelodi Sundowns", logo: "🟡🔵👆" }, awayTeam: { name: "SuperSport Utd", logo: "🔵⚪" }, league: "South African PSL", leagueEmoji: "🇿🇦", time: "16th, September 2026, 18:30", dateSlot: "2026-09-16-1830", date: "future" },
-  { id: "psl-fix-2", homeTeam: { name: "Orlando Pirates", logo: "☠️⚫⚪" }, awayTeam: { name: "Polokwane City", logo: "🟠⚪" }, league: "South African PSL", leagueEmoji: "🇿🇦", time: "17th, September 2026, 18:30", dateSlot: "2026-09-17-1830", date: "future" },
-  { id: "psl-fix-3", homeTeam: { name: "Kaizer Chiefs", logo: "🟡⚫" }, awayTeam: { name: "Mamelodi Sundowns", logo: "🟡🔵👆" }, league: "South African PSL", leagueEmoji: "🇿🇦", time: "27th, September 2026, 14:00", dateSlot: "2026-09-27-1400", date: "future" },
+  { id: "psl-fix-1", homeTeam: { name: "Mamelodi Sundowns", logo: "🟡🔵👆" }, awayTeam: { name: "Stellenbosch", logo: "🍇⚪" }, league: "South African PSL", leagueEmoji: "🇿🇦", time: "5th, October 2026, 18:30", dateSlot: "2026-10-05-1830", date: "future" },
+  { id: "psl-fix-2", homeTeam: { name: "Orlando Pirates", logo: "☠️⚫⚪" }, awayTeam: { name: "SuperSport Utd", logo: "🔵⚪" }, league: "South African PSL", leagueEmoji: "🇿🇦", time: "22nd, October 2026, 18:30", dateSlot: "2026-10-22-1830", date: "future" },
+  { id: "psl-fix-3", homeTeam: { name: "Kaizer Chiefs", logo: "🟡⚫" }, awayTeam: { name: "Orlando Pirates", logo: "☠️⚫⚪" }, league: "South African PSL", leagueEmoji: "🇿🇦", time: "9th, November 2026, 14:00", dateSlot: "2026-11-09-1400", date: "future" },
   { id: "egypt-fix-1", homeTeam: { name: "Al Ahly", logo: "🔴🦅" }, awayTeam: { name: "Smouha", logo: "🔵⚪" }, league: "Egyptian Premier League", leagueEmoji: "🇪🇬", time: "2nd, October 2026, 19:00", dateSlot: "2026-10-02-1900", date: "future" },
-  { id: "egypt-fix-2", homeTeam: { name: "Al Ahly", logo: "🔴🦅" }, awayTeam: { name: "Zamalek", logo: "⚪🔴🏹" }, league: "Egyptian Premier League", leagueEmoji: "🇪🇬", time: "25th, September 2026, 19:00", dateSlot: "2026-09-25-1900", date: "future" },
-  { id: "mls-fix-1", homeTeam: { name: "Inter Miami", logo: "🦩🌸" }, awayTeam: { name: "Chicago Fire", logo: "🔴⚪🔵" }, league: "MLS", leagueEmoji: "🇺🇸", time: "20th, September 2026, 23:30", dateSlot: "2026-09-20-2330", date: "future" },
-  { id: "mls-fix-2", homeTeam: { name: "Atlanta United", logo: "🔴⚫" }, awayTeam: { name: "Inter Miami", logo: "🦩🌸" }, league: "MLS", leagueEmoji: "🇺🇸", time: "19th, September 2026, 00:30", dateSlot: "2026-09-19-0030", date: "future" },
-  { id: "mls-fix-3", homeTeam: { name: "LA Galaxy", logo: "⭐⚪🔵" }, awayTeam: { name: "LAFC", logo: "⚫🟡" }, league: "MLS", leagueEmoji: "🇺🇸", time: "15th, September 2026, 03:30", dateSlot: "2026-09-15-0330", date: "future" },
+  { id: "egypt-fix-2", homeTeam: { name: "Pyramids", logo: "🔵⭐" }, awayTeam: { name: "Zamalek", logo: "⚪🔴🏹" }, league: "Egyptian Premier League", leagueEmoji: "🇪🇬", time: "16th, October 2026, 19:00", dateSlot: "2026-10-16-1900", date: "future" },
+  { id: "mls-fix-1", homeTeam: { name: "Inter Miami", logo: "🦩🌸" }, awayTeam: { name: "New England", logo: "🔴⚪🔵" }, league: "MLS", leagueEmoji: "🇺🇸", time: "19th, October 2026, 23:30", dateSlot: "2026-10-19-2330", date: "future" },
+  { id: "mls-fix-2", homeTeam: { name: "Columbus Crew", logo: "🟡⚫" }, awayTeam: { name: "NY Red Bulls", logo: "🔴⚪" }, league: "MLS", leagueEmoji: "🇺🇸", time: "19th, October 2026, 23:30", dateSlot: "2026-10-19-2330-b", date: "future" },
+  { id: "mls-fix-3", homeTeam: { name: "LA Galaxy", logo: "⭐⚪🔵" }, awayTeam: { name: "Austin FC", logo: "🟢⚫" }, league: "MLS", leagueEmoji: "🇺🇸", time: "19th, October 2026, 23:30", dateSlot: "2026-10-19-2330-c", date: "future" },
   { id: "br-fix-1", homeTeam: { name: "Flamengo", logo: "🔴⚫" }, awayTeam: { name: "Corinthians", logo: "⚪⚫" }, league: "Brasileirão Série A", leagueEmoji: "🇧🇷", time: "4th, October 2026, 20:00", dateSlot: "2026-10-04-2000", date: "future" },
-  { id: "br-fix-2", homeTeam: { name: "Palmeiras", logo: "🟢⚪" }, awayTeam: { name: "Athletico PR", logo: "🔴⚫" }, league: "Brasileirão Série A", leagueEmoji: "🇧🇷", time: "28th, September 2026, 20:00", dateSlot: "2026-09-28-2000-c", date: "future" },
-  { id: "br-fix-3", homeTeam: { name: "Flamengo", logo: "🔴⚫" }, awayTeam: { name: "Palmeiras", logo: "🟢⚪" }, league: "Brasileirão Série A", leagueEmoji: "🇧🇷", time: "28th, September 2026, 20:00", dateSlot: "2026-09-28-2000-b", date: "future" },
-  { id: "arg-fix-1", homeTeam: { name: "River Plate", logo: "⚪🔴" }, awayTeam: { name: "Boca Juniors", logo: "🔵🟡" }, league: "Liga Profesional", leagueEmoji: "🇦🇷", time: "21st, September 2026, 20:00", dateSlot: "2026-09-21-2000", date: "future" },
-  { id: "ered-fix-1", homeTeam: { name: "Feyenoord", logo: "🔴⚪" }, awayTeam: { name: "Ajax", logo: "⚪🔴⚪" }, league: "Eredivisie", leagueEmoji: "🇳🇱", time: "27th, September 2026, 13:30", dateSlot: "2026-09-27-1330", date: "future" },
-  { id: "port-fix-1", homeTeam: { name: "Sporting CP", logo: "🟢⚪🦁" }, awayTeam: { name: "Porto", logo: "🔵⚪🐉" }, league: "Primeira Liga", leagueEmoji: "🇵🇹", time: "28th, September 2026, 20:30", dateSlot: "2026-09-28-2030", date: "future" },
-  { id: "turk-fix-1", homeTeam: { name: "Galatasaray", logo: "🟡🔴🦁" }, awayTeam: { name: "Fenerbahçe", logo: "🟡🔵" }, league: "Süper Lig", leagueEmoji: "🇹🇷", time: "21st, September 2026, 18:00", dateSlot: "2026-09-21-1800", date: "future" },
+  { id: "br-fix-2", homeTeam: { name: "Palmeiras", logo: "🟢⚪" }, awayTeam: { name: "Athletico PR", logo: "🔴⚫" }, league: "Brasileirão Série A", leagueEmoji: "🇧🇷", time: "18th, October 2026, 20:00", dateSlot: "2026-10-18-2000-c", date: "future" },
+  { id: "br-fix-3", homeTeam: { name: "Flamengo", logo: "🔴⚫" }, awayTeam: { name: "Palmeiras", logo: "🟢⚪" }, league: "Brasileirão Série A", leagueEmoji: "🇧🇷", time: "25th, October 2026, 20:00", dateSlot: "2026-10-25-2000-b", date: "future" },
+  { id: "arg-fix-1", homeTeam: { name: "River Plate", logo: "⚪🔴" }, awayTeam: { name: "Boca Juniors", logo: "🔵🟡" }, league: "Liga Profesional", leagueEmoji: "🇦🇷", time: "18th, October 2026, 20:00", dateSlot: "2026-10-18-2000", date: "future" },
+  { id: "ered-fix-1", homeTeam: { name: "Ajax", logo: "⚪🔴⚪" }, awayTeam: { name: "Utrecht", logo: "🔴⚪" }, league: "Eredivisie", leagueEmoji: "🇳🇱", time: "6th, October 2026, 13:30", dateSlot: "2026-10-06-1330", date: "future" },
+  { id: "port-fix-1", homeTeam: { name: "Sporting CP", logo: "🟢⚪🦁" }, awayTeam: { name: "Porto", logo: "🔵⚪🐉" }, league: "Primeira Liga", leagueEmoji: "🇵🇹", time: "18th, October 2026, 20:30", dateSlot: "2026-10-18-2030", date: "future" },
+  { id: "turk-fix-1", homeTeam: { name: "Galatasaray", logo: "🟡🔴🦁" }, awayTeam: { name: "Besiktas", logo: "🦅⚫⚪" }, league: "Süper Lig", leagueEmoji: "🇹🇷", time: "28th, October 2026, 18:00", dateSlot: "2026-10-28-1800", date: "future" },
   { id: "scot-fix-1", homeTeam: { name: "Celtic", logo: "🟢⚪🍀" }, awayTeam: { name: "Rangers", logo: "🔵⚪" }, league: "Scottish Premiership", leagueEmoji: "🏴󠁧󠁢󠁥󠁮󠁧󠁿", time: "18th, October 2026, 12:30", dateSlot: "2026-10-18-1230", date: "future" }
 ];
 if (typeof window !== 'undefined') {
@@ -4653,6 +4658,14 @@ window.removeBetslipItem = removeBetslipItem;
 function clearBetslip() {
   if (window.appState) {
     window.appState.betslip = [];
+    window.appState.unavailableSelections = [];
+  }
+  try {
+    localStorage.removeItem("dp_betslip");
+    localStorage.removeItem("dp_betslip_unavailable");
+  } catch (e) {}
+  if (typeof renderUnavailableAlert === 'function') {
+    renderUnavailableAlert();
   }
   if (typeof renderBetslip === 'function') {
     renderBetslip();
@@ -4811,17 +4824,39 @@ function renderBetslip() {
 
   if (!countBadge) return;
 
-  // Auto-prune any outdated or completed matches from active betslip
+  // Track and isolate any selections whose kickoff passed or matches finished
   if (window.appState && Array.isArray(window.appState.betslip)) {
-    const originalLen = window.appState.betslip.length;
-    window.appState.betslip = window.appState.betslip.filter(item => {
-      if (!item) return false;
+    const validSelections = [];
+    const newlyUnavailable = [];
+
+    window.appState.betslip.forEach(item => {
+      if (!item) return;
       const m = item.match || item;
-      return !isMatchOutdated(m);
+      if (isMatchOutdated(m)) {
+        newlyUnavailable.push(item);
+      } else {
+        validSelections.push(item);
+      }
     });
-    if (window.appState.betslip.length !== originalLen) {
+
+    if (newlyUnavailable.length > 0) {
+      if (!window.appState.unavailableSelections) {
+        window.appState.unavailableSelections = [];
+      }
+      newlyUnavailable.forEach(un => {
+        const unMatchId = un.matchId || un.id || (un.match && un.match.id);
+        const alreadyHas = window.appState.unavailableSelections.some(x => {
+          const xMatchId = x.matchId || x.id || (x.match && x.match.id);
+          return (unMatchId && xMatchId && unMatchId === xMatchId);
+        });
+        if (!alreadyHas) {
+          window.appState.unavailableSelections.push(un);
+        }
+      });
+      window.appState.betslip = validSelections;
       try {
         localStorage.setItem("dp_betslip", JSON.stringify(window.appState.betslip));
+        localStorage.setItem("dp_betslip_unavailable", JSON.stringify(window.appState.unavailableSelections));
       } catch (e) {}
     }
   }
@@ -4830,6 +4865,11 @@ function renderBetslip() {
   try {
     localStorage.setItem("dp_betslip", JSON.stringify((window.appState && window.appState.betslip) ? window.appState.betslip : []));
   } catch (e) {}
+
+  // Render the unavailable banner
+  if (typeof renderUnavailableAlert === 'function') {
+    renderUnavailableAlert();
+  }
 
   const betslipList = (window.appState && Array.isArray(window.appState.betslip)) ? window.appState.betslip : [];
   const count = betslipList.length;
@@ -4922,7 +4962,162 @@ function renderBetslip() {
   }
 }
 window.renderBetslip = renderBetslip;
-window.renderBetslip = renderBetslip;
+
+// ── Unavailable Selections Alert Banner Management & Auto-Replacement ──
+function renderUnavailableAlert() {
+  const alertEl = document.getElementById("betslip-unavailable-alert");
+  const countEl = document.getElementById("betslip-unavailable-count");
+  const reviewListEl = document.getElementById("betslip-unavailable-review-list");
+
+  if (!alertEl) return;
+
+  const unavailList = (window.appState && Array.isArray(window.appState.unavailableSelections))
+    ? window.appState.unavailableSelections
+    : [];
+
+  if (unavailList.length === 0) {
+    alertEl.style.display = "none";
+    if (reviewListEl) reviewListEl.innerHTML = "";
+    return;
+  }
+
+  alertEl.style.display = "block";
+  if (countEl) countEl.textContent = unavailList.length;
+
+  if (reviewListEl) {
+    reviewListEl.innerHTML = unavailList.map(item => {
+      const hName = item.match?.homeTeam?.name || item.match?.homeTeam || item.homeTeam || 'Home';
+      const aName = item.match?.awayTeam?.name || item.match?.awayTeam || item.awayTeam || 'Away';
+      const league = item.match?.league || '';
+      const tip = item.tip || item.market || '1X';
+      let rawOdds = (typeof item.odds !== 'undefined' && item.odds !== null) ? item.odds : (item.price || item.odd || 1.50);
+      if (typeof rawOdds === 'string') rawOdds = rawOdds.replace(/^@/, '').replace(/,/g, '').trim();
+      const numOdds = Number(rawOdds);
+      const oddsDisp = (!isNaN(numOdds) && numOdds > 1.0) ? `@${numOdds.toFixed(2)}` : '—';
+      return `
+        <div style="font-size: 0.72rem; color: #cbd5e1; padding: 4px 0; border-bottom: 1px solid rgba(255,255,255,0.06); display: flex; justify-content: space-between; align-items: center; gap: 6px;">
+          <div>
+            <div style="font-weight: 600; color: #fca5a5;">${hName} vs ${aName}</div>
+            <div style="font-size: 0.65rem; color: #94a3b8;">${league ? league + ' • ' : ''}Tip: ${tip} (${oddsDisp}) • <span style="color: #ef4444;">Kickoff passed / Finished</span></div>
+          </div>
+        </div>
+      `;
+    }).join("");
+  }
+}
+
+function toggleUnavailableReview() {
+  const reviewListEl = document.getElementById("betslip-unavailable-review-list");
+  if (!reviewListEl) return;
+  reviewListEl.style.display = (reviewListEl.style.display === "none" || !reviewListEl.style.display) ? "block" : "none";
+}
+
+function dismissUnavailableAlert() {
+  if (window.appState) {
+    window.appState.unavailableSelections = [];
+  }
+  try {
+    localStorage.removeItem("dp_betslip_unavailable");
+  } catch (e) {}
+  renderUnavailableAlert();
+}
+
+function replaceUnavailableSelections() {
+  const unavailList = (window.appState && Array.isArray(window.appState.unavailableSelections))
+    ? window.appState.unavailableSelections
+    : [];
+  const needed = unavailList.length;
+  if (needed === 0) return;
+
+  const currentBetslip = (window.appState && Array.isArray(window.appState.betslip)) ? window.appState.betslip : [];
+  const selectedMatchupKeys = new Set();
+  const clubDateSlots = new Set();
+
+  currentBetslip.forEach(item => {
+    const h = (item.match?.homeTeam?.name || item.match?.homeTeam || item.homeTeam || '').toLowerCase();
+    const a = (item.match?.awayTeam?.name || item.match?.awayTeam || item.awayTeam || '').toLowerCase();
+    if (h && a) selectedMatchupKeys.add(`${h}-vs-${a}`);
+    const slot = item.match?.dateSlot || item.match?.time || item.match?.date || 'upcoming';
+    if (h) clubDateSlots.add(`${h}@${slot}`);
+    if (a) clubDateSlots.add(`${a}@${slot}`);
+  });
+
+  const pool = (typeof getStrictlyFutureMatchesPool === 'function')
+    ? getStrictlyFutureMatchesPool()
+    : ((typeof AUTHENTIC_TOP_LEAGUES_FIXTURES !== 'undefined') ? AUTHENTIC_TOP_LEAGUES_FIXTURES : []);
+
+  const marketOptions = [
+    "Home Win (1)", "Over 2.5 Goals", "Both Teams To Score (BTTS)", "Double Chance (1X)",
+    "Over 1.5 Goals", "Away Win (2)", "Home Win or Draw", "Draw (X)",
+    "Under 3.5 Goals", "Multi-Goals 2-4", "Over 0.5 HT Goals", "Corners Over 8.5"
+  ];
+
+  let added = 0;
+  for (let i = 0; i < pool.length && added < needed; i++) {
+    const match = pool[i];
+    if (!match || isMatchOutdated(match) || !isStrictlyFutureMatch(match)) continue;
+
+    const homeName = (match.homeTeam && match.homeTeam.name) ? match.homeTeam.name.trim() : (typeof match.homeTeam === 'string' ? match.homeTeam.trim() : "Home Team");
+    const awayName = (match.awayTeam && match.awayTeam.name) ? match.awayTeam.name.trim() : (typeof match.awayTeam === 'string' ? match.awayTeam.trim() : "Away Team");
+
+    const hKey = homeName.toLowerCase();
+    const aKey = awayName.toLowerCase();
+    const matchupKey = `${hKey}-vs-${aKey}`;
+
+    if (selectedMatchupKeys.has(matchupKey)) continue;
+
+    const slot = match.dateSlot || match.time || match.date || 'upcoming';
+    const hSlotKey = `${hKey}@${slot}`;
+    const aSlotKey = `${aKey}@${slot}`;
+
+    if (clubDateSlots.has(hSlotKey) || clubDateSlots.has(aSlotKey)) continue;
+
+    selectedMatchupKeys.add(matchupKey);
+    clubDateSlots.add(hSlotKey);
+    clubDateSlots.add(aSlotKey);
+
+    const tip = marketOptions[(currentBetslip.length + added) % marketOptions.length];
+    const isLiveMatch = !!(match.isLive && match.rawDate && new Date(match.rawDate).toDateString() === new Date().toDateString());
+    const timeDisplay = formatStandardMatchDateString(match.time, match.rawDate, isLiveMatch);
+
+    const hash = (homeName + awayName + (currentBetslip.length + added));
+    let h = 0;
+    for (let j = 0; j < hash.length; j++) h = hash.charCodeAt(j) + ((h << 5) - h);
+    const odds = parseFloat((1.35 + (Math.abs(h) % 18) * 0.05).toFixed(2));
+
+    currentBetslip.push({
+      matchId: `scout-repl-${Date.now()}-${added}-${match.id || added}`,
+      match: {
+        ...match,
+        homeTeam: { name: homeName, logo: match.homeTeam?.logo || '⚽' },
+        awayTeam: { name: awayName, logo: match.awayTeam?.logo || '⚽' },
+        time: timeDisplay
+      },
+      tip,
+      odds
+    });
+
+    added++;
+  }
+
+  // Clear unavailable selections
+  window.appState.unavailableSelections = [];
+  try {
+    localStorage.removeItem("dp_betslip_unavailable");
+    localStorage.setItem("dp_betslip", JSON.stringify(window.appState.betslip));
+  } catch (e) {}
+
+  renderBetslip();
+
+  if (typeof showAppNotification === 'function') {
+    showAppNotification(`🔄 Successfully replaced ${added} unavailable selection(s) with fresh upcoming fixtures!`);
+  }
+}
+
+window.renderUnavailableAlert = renderUnavailableAlert;
+window.toggleUnavailableReview = toggleUnavailableReview;
+window.dismissUnavailableAlert = dismissUnavailableAlert;
+window.replaceUnavailableSelections = replaceUnavailableSelections;
 
 function sendBetslipToConverter() {
   if (!window.appState || !Array.isArray(window.appState.betslip) || window.appState.betslip.length === 0) {
@@ -6942,10 +7137,19 @@ function quickPromptScout(text, autoOpenModal = true) {
     }
   }
 
-  // Calculate total odds with realistic product
-  const accSelections = selections.slice(0, count);
+  // Authoritative selection count strictly derived from actual active betslip
+  const finalCount = (selections && selections.length) ? selections.length : 0;
+  const accSelections = selections.slice(0, finalCount);
   const oddsCalc = calculateBetslipTotalOdds(accSelections);
   const totalOdds = oddsCalc.displayOdds;
+
+  // Dynamic title derived strictly from actual finalCount
+  title = `🎯 AI Scout Generated ${finalCount}-Match Football Event Selections`;
+  if (mode === 'tactics') {
+    title = `🎯 AI Tactical Angle Briefing & ${finalCount}-Match Football Selections`;
+  } else if (mode === 'value') {
+    title = `📊 High EV Algorithmic Value Picks (${finalCount} Matches)`;
+  }
 
   const selectionsList = accSelections.map((s, idx) => {
     const hName = s.match?.homeTeam?.name || 'Home Team';
@@ -6981,13 +7185,13 @@ function quickPromptScout(text, autoOpenModal = true) {
     `;
   }).join("");
 
-  let subtitleText = `Here are your <b>${count} high-probability football event selections</b> evaluated by AI Scout algorithms:`;
+  let subtitleText = `Here are your <b>${finalCount} high-probability football event selections</b> evaluated by AI Scout algorithms:`;
   if (mode === 'tactics') {
-    subtitleText = `Tactical evaluation analyzing high pressing triggers & transition speed. Curated <b>${count} Positive EV picks</b>:`;
+    subtitleText = `Tactical evaluation analyzing high pressing triggers & transition speed. Curated <b>${finalCount} Positive EV picks</b>:`;
   } else if (mode === 'value') {
-    subtitleText = `Algorithmic value models identified <b>${count} High Expected Value (EV) opportunities</b> today:`;
+    subtitleText = `Algorithmic value models identified <b>${finalCount} High Expected Value (EV) opportunities</b> today:`;
   } else if (promptText && promptText.length > 2 && !promptText.startsWith("Generate")) {
-    subtitleText = `AI Scout analyzed your query <i>"${promptText}"</i> and curated <b>${count} high-probability selections</b>:`;
+    subtitleText = `AI Scout analyzed your query <i>"${promptText}"</i> and curated <b>${finalCount} high-probability selections</b>:`;
   }
 
   const contentHtml = `
@@ -7034,7 +7238,7 @@ function quickPromptScout(text, autoOpenModal = true) {
   // 6. Show notification
   if (autoOpenModal) {
     if (typeof showAppNotification === 'function') {
-      showAppNotification(`🎯 AI Scout generated ${count} football event selections!`);
+      showAppNotification(`🎯 AI Scout generated ${finalCount} football event selections!`);
     }
   }
 }
@@ -7054,6 +7258,8 @@ window.quickPromptScout = quickPromptScout;
 
 // Auto-run AI Scout Selections on page load
 function initHeroScoutDynamicOutput() {
+  if (window._heroScoutDynamicInitialized) return;
+  window._heroScoutDynamicInitialized = true;
   setTimeout(() => {
     quickPromptScout("Generate 40 selections", false);
   }, 100);
