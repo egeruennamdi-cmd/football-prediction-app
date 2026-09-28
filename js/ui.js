@@ -5243,23 +5243,16 @@ function openBetslipShareModal(e) {
       if (typeof e.preventDefault === 'function') e.preventDefault();
     }
 
-    // Only debounce actual rapid user event clicks within 350ms
+    // Protect against double-click bounce while allowing instant reopening
     if (e && e.type && typeof Date !== 'undefined') {
       const now = Date.now();
       const lastTime = window._lastOpenShareModalTime || _lastOpenShareModalTime || 0;
-      if (now - lastTime < 350) return;
+      if (now - lastTime < 60) return;
       window._lastOpenShareModalTime = now;
       _lastOpenShareModalTime = now;
     }
 
-    // 1. Ensure betslip has selections from the Active Betslip Builder (strictly future only)
-    if (window.appState && Array.isArray(window.appState.betslip)) {
-      window.appState.betslip = window.appState.betslip.filter(item => {
-        if (!item) return false;
-        const m = item.match || item;
-        return !isMatchOutdated(m);
-      });
-    }
+    // 1. Authoritative betslip source: read directly from Active Betslip Builder
     const betslip = (window.appState && Array.isArray(window.appState.betslip)) ? window.appState.betslip : [];
     if (!betslip || betslip.length === 0) {
       if (typeof showAppNotification === 'function') {
@@ -5276,12 +5269,25 @@ function openBetslipShareModal(e) {
       return;
     }
 
-    // 2. Active Betslip Builder drawer remains open and intact beneath modal overlay
+    // 2. Open modal in DOM immediately to establish active layout tree
+    modal.classList.add("active");
+    modal.style.display = "flex";
+    modal.style.opacity = "1";
+    modal.style.pointerEvents = "all";
+    modal.style.visibility = "visible";
+    modal.style.zIndex = "10000005";
+    document.body.style.overflow = "hidden";
 
-    // 3. Populate Modal Fixture List with all clubs from Active Betslip Builder
-    const oddsCalc = calculateBetslipTotalOdds(betslip);
+    // 3. Force synchronous reflow so browser renders modal layout box before populating
+    void modal.offsetHeight;
+
+    // 4. Calculate Authoritative Total Odds matching Active Betslip Builder exactly
+    const oddsCalc = (typeof calculateBetslipTotalOdds === 'function')
+      ? calculateBetslipTotalOdds(betslip)
+      : { formatted: '—', displayOdds: '1.00' };
     const count = betslip.length;
 
+    // 5. Populate Modal Fixture List immediately with genuine active selections
     const fixturesList = document.getElementById("share-modal-fixtures-list");
     if (fixturesList) {
       fixturesList.innerHTML = "";
@@ -5292,30 +5298,15 @@ function openBetslipShareModal(e) {
         const valid = (typeof num === 'number' && !isNaN(num) && isFinite(num) && num > 1.0);
         const itemOddsDisplay = valid ? `@${num.toFixed(2)}` : 'Odds unavailable';
 
-        let homeName = item.match?.homeTeam?.name || item.match?.homeTeam || item.homeTeam || 'Home';
-        let awayName = item.match?.awayTeam?.name || item.match?.awayTeam || item.awayTeam || 'Away';
+        let homeName = item.homeTeam || item.match?.homeTeam?.name || item.match?.homeTeam || 'Home';
+        let awayName = item.awayTeam || item.match?.awayTeam?.name || item.match?.awayTeam || 'Away';
         if (typeof homeName === 'object' && homeName !== null) homeName = homeName.name || homeName.team || 'Home';
         if (typeof awayName === 'object' && awayName !== null) awayName = awayName.name || awayName.team || 'Away';
         homeName = String(homeName || 'Home');
         awayName = String(awayName || 'Away');
 
-        const leagueName = String(item.match?.league || 'Football');
-        const isLive = !!(item.match?.isLive && item.match?.rawDate && new Date(item.match.rawDate).toDateString() === new Date().toDateString());
-        let timeStr = (typeof formatStandardMatchDateString === 'function')
-          ? formatStandardMatchDateString(item.match?.time, item.match?.rawDate, isLive)
-          : (item.match?.time || 'Upcoming');
-        timeStr = String(timeStr || 'Upcoming');
-
-        if (timeStr && (timeStr.includes('FT') || timeStr.includes('Yesterday') || timeStr.includes('Days Ago') || timeStr.includes('Weeks Ago'))) {
-          timeStr = '20th, September 2026, 16:30';
-        }
-        const isClasicoPair = (homeName.toLowerCase().includes('real madrid') && awayName.toLowerCase().includes('barcelona')) || (homeName.toLowerCase().includes('barcelona') && awayName.toLowerCase().includes('real madrid'));
-        if (isClasicoPair && (timeStr.includes('October 2026') || timeStr.includes('26th') || timeStr.includes('25th'))) {
-          homeName = 'Barcelona';
-          awayName = 'Real Madrid';
-          timeStr = '25th, October 2026, 21:00';
-        }
-        const tipVal = String(item.tip || item.market || '1X');
+        const leagueName = String(item.league || item.match?.league || 'Football');
+        const tipVal = String(item.tip || item.prediction || item.market || '1X');
 
         const fixtureRow = document.createElement("div");
         fixtureRow.className = "share-fixture-row";
@@ -5343,7 +5334,11 @@ function openBetslipShareModal(e) {
     const countEl = document.getElementById("share-modal-matches-count");
     if (countEl) countEl.textContent = `${count} ${count === 1 ? 'Match' : 'Matches'}`;
 
-    // Check device share support
+    // 6. Reset scroll container to top
+    const shareBody = modal.querySelector(".betslip-share-body");
+    if (shareBody) shareBody.scrollTop = 0;
+
+    // 7. Check device share support
     const deviceShareBtn = document.getElementById("betslip-device-share-btn");
     if (deviceShareBtn) {
       if (typeof navigator !== 'undefined' && navigator.share) {
@@ -5353,22 +5348,13 @@ function openBetslipShareModal(e) {
       }
     }
 
-    // Initialize share format from state / localStorage (default: 'image')
+    // 8. Initialize share format from state / localStorage (default: 'image')
     const savedFormat = (function() {
       try { return localStorage.getItem('betslip_share_format'); } catch(e) { return null; }
     })() || 'image';
     if (typeof setBetslipShareFormat === 'function') {
       setBetslipShareFormat(savedFormat);
     }
-
-    // 4. Force modal visibility explicitly (overriding any inline style="display: none" from closeCurrentModal)
-    modal.classList.add("active");
-    modal.style.display = "flex";
-    modal.style.opacity = "1";
-    modal.style.pointerEvents = "all";
-    modal.style.visibility = "visible";
-    modal.style.zIndex = "10000005";
-    document.body.style.overflow = "hidden";
   } catch (err) {
     console.error("Error in openBetslipShareModal:", err);
   }
@@ -5389,19 +5375,38 @@ function closeBetslipShareModal(event, force) {
   }
 }
 
+// Support desktop ESC key to dismiss modal immediately
+if (typeof document !== 'undefined') {
+  document.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape' || e.keyCode === 27) {
+      if (typeof closeBetslipShareModal === 'function') {
+        closeBetslipShareModal(null, true);
+      }
+    }
+  });
+}
+
 function getBetslipShareData() {
   const betslip = (window.appState && Array.isArray(window.appState.betslip)) ? window.appState.betslip : [];
-  const oddsCalc = calculateBetslipTotalOdds(betslip);
+  const oddsCalc = (typeof calculateBetslipTotalOdds === 'function')
+    ? calculateBetslipTotalOdds(betslip)
+    : { formatted: '—', displayOdds: '1.00' };
+
   const items = betslip.map((item, idx) => {
     let rawVal = (typeof item.odds !== 'undefined' && item.odds !== null) ? item.odds : (item.price || item.odd);
     if (typeof rawVal === 'string') rawVal = rawVal.replace(/^@/, '').replace(/,/g, '').trim();
     const num = Number(rawVal);
     const valid = (typeof num === 'number' && !isNaN(num) && isFinite(num) && num > 1.0);
 
-    let homeName = item.match?.homeTeam?.name || item.match?.homeTeam || item.homeTeam || 'Home';
-    let awayName = item.match?.awayTeam?.name || item.match?.awayTeam || item.awayTeam || 'Away';
-    const leagueName = item.match?.league || 'Football';
-    const tipVal = item.tip || item.market || '1X';
+    let homeName = item.homeTeam || item.match?.homeTeam?.name || item.match?.homeTeam || 'Home';
+    let awayName = item.awayTeam || item.match?.awayTeam?.name || item.match?.awayTeam || 'Away';
+    if (typeof homeName === 'object' && homeName !== null) homeName = homeName.name || homeName.team || 'Home';
+    if (typeof awayName === 'object' && awayName !== null) awayName = awayName.name || awayName.team || 'Away';
+    homeName = String(homeName || 'Home');
+    awayName = String(awayName || 'Away');
+
+    const leagueName = String(item.league || item.match?.league || 'Football');
+    const tipVal = String(item.tip || item.prediction || item.market || '1X');
 
     return {
       index: idx + 1,

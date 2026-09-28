@@ -8805,7 +8805,7 @@
   </div>
 
   <!-- --- ACTIVE BETSLIP SOCIAL SHARE MODAL (7-PLATFORM SYNC WITH DEEPPREDICTBET LOGO) --- -->
-  <div class="modal-overlay" id="betslip-share-modal" style="display: none; position: fixed; inset: 0; z-index: 10000005; align-items: center; justify-content: center; background: rgba(8, 11, 17, 0.88); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);" onclick="closeBetslipShareModal(event)">
+  <div class="modal-overlay" id="betslip-share-modal" role="dialog" aria-modal="true" aria-labelledby="betslip-share-title" style="display: none; position: fixed; inset: 0; z-index: 10000005; align-items: center; justify-content: center; background: rgba(8, 11, 17, 0.88); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);" onclick="closeBetslipShareModal(event)">
     <div class="modal-content betslip-share-content" onclick="event.stopPropagation()">
       <!-- Modal Header -->
       <div class="betslip-share-header">
@@ -8814,7 +8814,7 @@
             📤
           </div>
           <div>
-            <h3 style="font-family: var(--font-display); font-size: 1.15rem; font-weight: 900; color: #ffffff; margin: 0;">
+            <h3 id="betslip-share-title" style="font-family: var(--font-display); font-size: 1.15rem; font-weight: 900; color: #ffffff; margin: 0;">
               Share Active Betslip
             </h3>
             <span style="font-size: 0.74rem; color: #94a3b8;">
@@ -8831,7 +8831,7 @@
         <!-- Branded Ticket Preview Card (Carrying DeepPredictBet logo always) -->
         <div class="betslip-ticket-preview" id="betslip-ticket-card">
           <div class="betslip-ticket-top">
-            <img src="/assets/logo-3d.png?v=20261028_brand_logo_v3" alt="DeepPredictBet" class="betslip-ticket-logo">
+            <img src="/assets/logo-3d.png?v=20261028_brand_logo_v3" alt="DeepPredictBet" class="betslip-ticket-logo" width="160" height="38" loading="eager" decoding="sync">
             <div class="betslip-ticket-badge">AI ACCUMULATOR</div>
           </div>
 
