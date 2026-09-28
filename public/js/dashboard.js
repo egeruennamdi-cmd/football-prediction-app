@@ -494,7 +494,7 @@
             <div style="background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.08); border-radius: 14px; padding: 16px;">
               <div style="font-size: 1.4rem; margin-bottom: 6px;">🎟️</div>
               <h4 style="margin: 0 0 4px; color: #ffffff; font-size: 0.92rem;">Saved Tickets & Slips</h4>
-              <p style="margin: 0; font-size: 0.78rem; color: #94a3b8; line-height: 1.4;">Track accumulators generated or converted across major bookmakers.</p>
+              <p style="margin: 0; font-size: 0.78rem; color: #94a3b8; line-height: 1.4;">Track accumulators generated or converted between supported bookmakers.</p>
             </div>
             <div style="background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.08); border-radius: 14px; padding: 16px;">
               <div style="font-size: 1.4rem; margin-bottom: 6px;">🩺</div>
@@ -995,7 +995,7 @@
             BET CODE CONVERTER
           </h2>
           <p style="font-size: 0.82rem; color: #94a3b8; margin: 4px 0 0;">
-            Instantly convert booking slips across major African and European sportsbooks.
+            Instantly convert booking slips between supported bookmakers.
           </p>
         </div>
 

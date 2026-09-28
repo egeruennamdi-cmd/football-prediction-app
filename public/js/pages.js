@@ -820,7 +820,7 @@
         `;
       } else if (/(convert|code|booking|sportybet|bet9ja|1xbet)/i.test(lower)) {
         replyHtml = `
-          Need to convert a booking code between bookmakers? Our <b>Bet Code Converter</b> seamlessly re-maps markets across 90+ African and global sportsbooks:
+          Need to convert a booking code between bookmakers? Our <b>Bet Code Converter</b> seamlessly re-maps markets between supported bookmakers:
           <br/><br/>
           <a href="/converter" onclick="window.navigateTo('/converter'); return false;" class="btn btn-primary" style="display: inline-flex; align-items: center; gap: 6px; padding: 6px 14px; font-size: 0.82rem; border-radius: 6px; text-decoration: none;">
             <span>🔄</span> <span>Launch Code Converter →</span>

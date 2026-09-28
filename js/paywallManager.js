@@ -56,7 +56,7 @@
         'Instant multi-leg accumulator risk & variance audit',
         'Negative covariance & conflicting outcome detection',
         'Algorithmic replacement recommendations with higher EV',
-        'Seamless bet code conversion across 14+ top sportsbooks',
+        'Seamless bet code conversion between supported bookmakers',
         'Unlimited daily slip scans & diagnostic history'
       ]
     },
@@ -165,7 +165,7 @@
       benefits: [
         'High-conviction daily selections curated by algorithmic models',
         'Full tactical reasoning & quantitative variance explanation',
-        '1-click instant booking codes across 14+ major bookmakers',
+        '1-click instant booking codes between supported bookmakers',
         '100% transparent historical performance & ROI ledger',
         'Priority Telegram bot notifications the second bankers are published'
       ]
@@ -182,7 +182,7 @@
         { label: 'Algorithmic Outcomes', val: 'Poisson Distributions · xG Models · Form' },
         { label: 'Market Discrepancy Detection', val: 'Value Bet Bot (+EV) · Arbitrage SureBets' },
         { label: 'Analytical Bet Diagnostics', val: 'AI Bet Doctor · Accumulator Machine' },
-        { label: 'Execution & Automation', val: '14+ Bookmaker Code Converter · Backtester' }
+        { label: 'Execution & Automation', val: 'Supported Bookmakers Code Converter · Backtester' }
       ],
       benefits: [
         'Unrestricted access across all analytical tools, scanners & models',

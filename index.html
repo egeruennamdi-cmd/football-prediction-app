@@ -353,7 +353,7 @@
                     <span class="mega-menu-icon" style="background: rgba(245, 158, 11, 0.15); color: #fbbf24;">🎫</span>
                     <div class="mega-menu-text">
                       <span class="mega-menu-title">Booking Code Converter</span>
-                      <span class="mega-menu-desc">Convert slips across bookmakers</span>
+                      <span class="mega-menu-desc">Convert slips between supported bookmakers</span>
                     </div>
                   </a>
                 </div>
@@ -1013,7 +1013,7 @@
               </div>
             </div>
             <p class="command-card-desc">
-              Convert supported booking codes between bookmakers.
+              Convert booking codes between supported bookmakers.
             </p>
           </div>
           <div class="command-card-cta">
@@ -1353,7 +1353,7 @@
                 </div>
                 <h3 class="journey-step-title">CONVERT</h3>
                 <p class="journey-step-desc">
-                  Transfer booking codes across 90+ global and regional bookmakers in seconds.
+                  Move your selections between available bookmakers without rebuilding your betslip manually.
                 </p>
                 <a href="/converter" class="journey-step-link" onclick="if(typeof navigateTo==='function'){navigateTo('/converter'); return false;}">
                   <span>Convert Code</span>
@@ -1874,11 +1874,11 @@
               <div class="sec-tool-icon-wrap" style="color: #38bdf8;">
                 <span>🔄</span>
               </div>
-              <span class="sec-tool-badge">90+ Bookies</span>
+              <span class="sec-tool-badge dyn-bookmaker-badge" id="sec-tool-converter-badge"><span class="dyn-bookmaker-count">96</span> Bookmakers</span>
             </div>
             <h3 class="sec-tool-title">Code Converter</h3>
             <p class="sec-tool-desc">
-              Transfer booking codes seamlessly across global and regional sportsbooks.
+              Convert booking codes between supported bookmakers.
             </p>
             <button type="button" class="btn-sec-tool-cta" onclick="event.stopPropagation(); if(typeof navigateTo==='function'){navigateTo('/converter');}else{window.location.hash='/converter';}">
               <span>OPEN</span>
@@ -2213,11 +2213,11 @@
               </div>
               <span class="pillar-tag" style="color: #f59e0b; background: rgba(245, 158, 11, 0.08);">Converter</span>
             </div>
-            <h3 class="pillar-title">Instant Booking Code Conversion Across 90+ Sportsbooks</h3>
+            <h3 class="pillar-title">Instant Booking Code Conversion Between Supported Bookmakers</h3>
             <p class="pillar-desc">Never re-enter a 15-leg accumulator by hand again. Paste any booking code from SportyBet, Bet9ja, 1xBet, or Betway and instantly transform it for your chosen platform.</p>
             <ul class="pillar-highlights-list">
               <li class="pillar-highlight-item"><span class="bullet">✓</span> Cross-bookmaker market re-mapping</li>
-              <li class="pillar-highlight-item"><span class="bullet">✓</span> Support for 90+ African and global sportsbooks</li>
+              <li class="pillar-highlight-item"><span class="bullet">✓</span> Support for all currently enabled bookmakers in our conversion network</li>
               <li class="pillar-highlight-item"><span class="bullet">✓</span> One-tap copy for rapid slip placement</li>
             </ul>
           </div>
@@ -3211,7 +3211,7 @@
               </li>
               <li class="plan-feature-item">
                 <span class="feature-icon check">✓</span>
-                <span><strong>Bet Code Converter:</strong> Convert booking codes across 10+ major bookmakers</span>
+                <span><strong>Bet Code Converter:</strong> Convert booking codes between supported bookmakers</span>
               </li>
               <li class="plan-feature-item">
                 <span class="feature-icon check">✓</span>
@@ -3396,7 +3396,8 @@
               <span class="faq-chevron" aria-hidden="true">▼</span>
             </button>
             <div class="faq-answer-panel" id="faq-answer-5" role="region" aria-labelledby="faq-btn-5">
-              <p>DeepPredictBet supports over 90 regional and global bookmakers. Supported sportsbooks include SportyBet, Bet9ja, 1xBet, Betway, Betano, 22bet, Bangbet, Betika, MSport, Mozzart, Parimatch, PremierBet, Bet365, and many others across Nigeria, Ghana, Kenya, South Africa, and worldwide.</p>
+              <p>DeepPredictBet supports the bookmakers currently enabled in our booking-code conversion network. Coverage can change as new integrations are added or temporarily unavailable integrations are restored.</p>
+              <p style="margin-top: 8px;"><strong>Currently supported:</strong> <span class="dyn-bookmaker-count" id="faq-supported-bookmaker-count">96</span> bookmakers.</p>
             </div>
           </div>
 
@@ -3445,14 +3446,29 @@
     <div style="margin-bottom: 24px; border-bottom: 1px solid rgba(16, 185, 129, 0.3); padding-bottom: 16px;">
       <div
         style="font-size: 0.75rem; color: #10b981; font-weight: 800; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 4px;">
-        <a href="/" style="color: #10b981; text-decoration: none;">Home</a> &gt; Bet Code Converter
+        <a href="/" style="color: #10b981; text-decoration: none;">Home</a> &gt; Booking Code Converter
+      </div>
+      <div style="color: #3b82f6; font-weight: 800; text-transform: uppercase; letter-spacing: 1.2px; font-size: 0.82rem; margin-bottom: 4px; font-family: var(--font-display);">
+        BOOKING CODE CONVERTER
       </div>
       <h2 class="view-panel-title"
-        style="font-family: var(--font-display); font-size: 1.9rem; font-weight: 900; background: linear-gradient(135deg, #ffffff 0%, #10b981 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; margin: 0;">
-        🎫 Bet Code Converter Engine
+        style="font-family: var(--font-display); font-size: clamp(1.3rem, 3.2vw, 1.95rem); font-weight: 900; background: linear-gradient(135deg, #ffffff 0%, #10b981 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; margin: 0; line-height: 1.25;">
+        Convert booking codes between supported bookmakers
       </h2>
-      <p style="font-size: 0.82rem; color: var(--text-secondary); margin-top: 4px;">Convert booking codes seamlessly
-        between global and regional bookmakers.</p>
+      <p style="font-size: 0.85rem; color: var(--text-secondary); margin-top: 6px; line-height: 1.45; max-width: 680px;">
+        Move your selections between available bookmakers without rebuilding your betslip manually.
+      </p>
+      <div style="margin-top: 10px; display: flex; align-items: center; gap: 12px; flex-wrap: wrap;">
+        <div id="converter-hero-coverage-indicator">
+          <span class="coverage-pill" style="display: inline-flex; align-items: center; gap: 8px; background: rgba(16, 185, 129, 0.12); border: 1px solid rgba(16, 185, 129, 0.3); padding: 5px 12px; border-radius: 20px; font-size: 0.78rem; font-weight: 700; color: #34d399;">
+            <span style="width: 7px; height: 7px; border-radius: 50%; background: #10b981; display: inline-block;"></span>
+            <strong>[ <span class="dyn-bookmaker-count">96</span> ]</strong> bookmakers currently supported
+          </span>
+        </div>
+        <button type="button" onclick="if(typeof toggleSupportedBookmakersModal==='function'){toggleSupportedBookmakersModal();}else if(window.toggleSupportedBookmakersModal){window.toggleSupportedBookmakersModal();}" style="background: rgba(30, 41, 59, 0.8); border: 1px solid rgba(255, 255, 255, 0.15); color: #94a3b8; font-size: 0.75rem; font-weight: 700; padding: 5px 12px; border-radius: 20px; cursor: pointer; display: inline-flex; align-items: center; gap: 6px; transition: all 0.2s;">
+          <span>📖 View Supported Bookmakers</span>
+        </button>
+      </div>
     </div>
 
     <!-- --- STANDALONE BET CODE CONVERTER SECTION --- -->
@@ -3466,11 +3482,11 @@
           <div>
             <div
               style="color: #3b82f6; font-weight: 800; text-transform: uppercase; letter-spacing: 1.2px; font-size: 0.85rem; display: flex; align-items: center; gap: 6px; font-family: var(--font-display);">
-              <span>🚀</span> MULTI-BOOKMAKER ENGINE
+              <span>🔄</span> BOOKING CODE CONVERTER
             </div>
             <h2
-              style="font-family: var(--font-display); font-size: 1.8rem; font-weight: 900; background: linear-gradient(135deg, #ffffff 30%, #3b82f6 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; text-shadow: 0 0 20px rgba(59, 130, 246, 0.35); margin: 2px 0 0 0;">
-              Bet Code Converter
+              style="font-family: var(--font-display); font-size: clamp(1.2rem, 2.8vw, 1.7rem); font-weight: 900; background: linear-gradient(135deg, #ffffff 30%, #3b82f6 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; text-shadow: 0 0 20px rgba(59, 130, 246, 0.35); margin: 2px 0 0 0; line-height: 1.25;">
+              Convert booking codes between supported bookmakers
             </h2>
           </div>
 
@@ -6366,7 +6382,7 @@
             </li>
             <li class="paywall-benefit-item">
               <span class="paywall-benefit-check">✓</span>
-              <span>Priority automated booking code conversion across 14+ sportsbooks</span>
+              <span>Priority automated booking code conversion between supported bookmakers</span>
             </li>
           </ul>
         </div>
@@ -7256,7 +7272,7 @@
             </li>
             <li class="paywall-benefit-item">
               <span class="paywall-benefit-check">✓</span>
-              <span>Priority automated booking code conversion across 14+ sportsbooks</span>
+              <span>Priority automated booking code conversion between supported bookmakers</span>
             </li>
           </ul>
         </div>
@@ -7287,7 +7303,7 @@
                 </div>
                 <div class="paywall-preview-metric-row">
                   <span class="paywall-metric-label">Execution & Automation</span>
-                  <span class="paywall-metric-val">14+ Bookmaker Code Converter · Backtester</span>
+                  <span class="paywall-metric-val">Supported Bookmakers Code Converter · Backtester</span>
                 </div>
               </div>
               <div class="paywall-preview-blur-overlay">
@@ -7411,7 +7427,7 @@
                 <td class="cmp-check">✓ Unlimited</td>
               </tr>
               <tr>
-                <td>Cross-Platform Code Converter (14+ Books)</td>
+                <td>Cross-Platform Code Converter (Supported Bookmakers)</td>
                 <td class="cmp-check">✓</td>
                 <td class="cmp-check">✓ Fast-Sync</td>
               </tr>
@@ -8664,7 +8680,7 @@
 
         <!-- Architecture Badge -->
         <div style="margin-top: 18px; text-align: center; font-size: 0.72rem; color: #94a3b8; line-height: 1.4;">
-          🔒 Powered by <b>DeepPredictBet Universal Normalizer Engine</b> (50+ Bookmakers Supported • Real-time Market Mapping)
+          🔒 Powered by <b>DeepPredictBet Universal Normalizer Engine</b> (<span class="dyn-bookmaker-count">96</span> bookmakers currently supported • Real-time Market Mapping)
         </div>
       </div>
     </div>
@@ -8766,6 +8782,57 @@
           🛡️ Universal 50-Bookmaker Arbitrage Scanning Network
         </span>
         <button class="btn btn-secondary" onclick="closeScannedBookmakersModal(event, true);" style="font-size: 0.75rem; padding: 6px 14px; border-radius: var(--radius-xs);">
+          Close Window
+        </button>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- --- MODAL: SUPPORTED BOOKMAKERS DIRECTORY (SECTION 15 AUTHORITATIVE REGISTRY VIEW) --- -->
+  <div class="modal-overlay" id="supported-bookmakers-modal" style="display: none; position: fixed; inset: 0; z-index: 10000004; align-items: center; justify-content: center; background: rgba(8, 11, 17, 0.88); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);" onclick="if(typeof closeSupportedBookmakersModal==='function')closeSupportedBookmakersModal(event)">
+    <div class="modal-content" onclick="event.stopPropagation()"
+      style="max-width: 840px; width: 92%; max-height: 88vh; background: #0b1329; border: 1.5px solid rgba(16,185,129,0.5); border-radius: 20px; box-shadow: 0 24px 70px rgba(0,0,0,0.9); padding: 0; display: flex; flex-direction: column; overflow: hidden;">
+      
+      <!-- Modal Header -->
+      <div style="background: linear-gradient(135deg, rgba(16,185,129,0.2) 0%, rgba(5,150,105,0.3) 50%, #0b1329 100%); padding: 18px 22px; display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid rgba(16,185,129,0.25);">
+        <div style="display: flex; align-items: center; gap: 12px;">
+          <div style="width: 42px; height: 42px; border-radius: 50%; background: rgba(16,185,129,0.2); border: 1.5px solid #10b981; display: flex; align-items: center; justify-content: center; font-size: 1.3rem;">
+            🎫
+          </div>
+          <div>
+            <h3 style="font-family: var(--font-display); font-size: 1.15rem; font-weight: 900; color: #ffffff; margin: 0;">
+              Supported Bookmakers Directory
+            </h3>
+            <span style="font-size: 0.75rem; color: #34d399; font-weight: 700;">
+              [ <span class="dyn-bookmaker-count">96</span> ] bookmakers currently supported • Real-Time Market Mapping
+            </span>
+          </div>
+        </div>
+        <button class="modal-close" onclick="if(typeof closeSupportedBookmakersModal==='function')closeSupportedBookmakersModal(event, true);" style="font-size: 1.5rem; background: transparent; border: none; color: #94a3b8; cursor: pointer;">&times;</button>
+      </div>
+
+      <!-- Search Toolbar -->
+      <div style="padding: 14px 20px; border-bottom: 1px solid rgba(255,255,255,0.06); background: rgba(0,0,0,0.25); display: flex; gap: 12px; align-items: center; justify-content: space-between; flex-wrap: wrap;">
+        <input type="text" id="search-supported-bookmakers-input" placeholder="🔍 Search supported bookmakers (e.g. SportyBet, Bet9ja, Betway)..." oninput="if(typeof filterSupportedBookmakersDirectory==='function')filterSupportedBookmakersDirectory(this.value)"
+          style="background: rgba(15,23,42,0.8); border: 1px solid rgba(255,255,255,0.15); border-radius: var(--radius-xs); padding: 8px 14px; font-size: 0.85rem; color: #ffffff; flex-grow: 1; max-width: 380px; outline: none;">
+        <div style="display: flex; align-items: center; gap: 8px;">
+          <span style="display: inline-block; width: 8px; height: 8px; border-radius: 50%; background: #10b981; animation: pulse 1.5s infinite;"></span>
+          <span style="font-size: 0.78rem; font-weight: 800; color: #34d399;"><span class="dyn-bookmaker-count">96</span> Active Integrations</span>
+        </div>
+      </div>
+
+      <!-- Directory Body Container -->
+      <div id="supported-bookmakers-directory-container" style="padding: 18px 20px; overflow-y: auto; max-height: 56vh;">
+        <!-- Populated dynamically by window.renderSupportedBookmakersDirectory -->
+      </div>
+
+      <!-- Modal Footer -->
+      <div style="padding: 12px 20px; background: rgba(6,11,19,0.9); border-top: 1px solid rgba(255,255,255,0.08); display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px;">
+        <span style="font-size: 0.75rem; color: var(--text-muted);">
+          🛡️ DeepPredictBet Booking Code Conversion Network
+        </span>
+        <button class="btn btn-secondary" onclick="if(typeof closeSupportedBookmakersModal==='function')closeSupportedBookmakersModal(event, true);" style="font-size: 0.75rem; padding: 6px 14px; border-radius: var(--radius-xs);">
           Close Window
         </button>
       </div>
@@ -8951,6 +9018,7 @@
   <script defer src="/js/authManager.js?v=20260927_rbac_v1"></script>
   <script defer src="/js/currencyConfig.js?v=20260927_currency_v1"></script>
   <script defer src="/js/leagueNormalizer.js?v=20260927_league_v1"></script>
+  <script defer src="/js/bookmakerRegistry.js?v=20260928_bookmaker_v1"></script>
   <script defer src="/js/paywallManager.js?v=20260927_paywall_v2"></script>
   <script defer src="/js/ui.js?v=20260925_mobile_footer_v1"></script>
   <script defer src="/js/pages.js?v=20260924_multipage_v3"></script>

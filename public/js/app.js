@@ -2949,7 +2949,7 @@ function executeCommandScoutPrompt(promptText) {
         <button type="button" onclick="document.getElementById('command-scout-feedback').style.display='none'" style="background:none; border:none; color:#94a3b8; font-size:1rem; cursor:pointer;">✕</button>
       </div>
       <p class="command-scout-feedback-text">
-        Converting booking codes across 50+ supported global bookmakers. Opening the <b>Bet Code Converter</b> to map your odds and legs instantly.
+        Converting booking codes between supported bookmakers. Opening the <b>Bet Code Converter</b> to map your odds and legs instantly.
       </p>
       <div class="command-scout-feedback-actions">
         <button type="button" class="btn btn-primary" onclick="if(typeof navigateTo==='function'){navigateTo('/bet-code-converter');}else{window.location.hash='#converter';}" style="font-size:0.82rem; padding:8px 16px; border-radius:8px; cursor:pointer;">Open Converter →</button>
