@@ -11225,6 +11225,30 @@ if (typeof window.auditActiveBetslipInDoctor !== 'function') {
   };
 }
 
+if (typeof window.applyDoctorPrescription !== 'function') {
+  window.applyDoctorPrescription = function(targetMatchId) {
+    if (typeof applyDoctorPrescription === 'function') {
+      return applyDoctorPrescription(targetMatchId);
+    }
+  };
+}
+
+if (typeof window.revertDoctorPrescriptions !== 'function') {
+  window.revertDoctorPrescriptions = function(targetMatchId) {
+    if (typeof revertDoctorPrescriptions === 'function') {
+      return revertDoctorPrescriptions(targetMatchId);
+    }
+  };
+}
+
+if (typeof window.dispatchBetslipAction !== 'function') {
+  window.dispatchBetslipAction = function(action) {
+    if (typeof dispatchBetslipAction === 'function') {
+      return dispatchBetslipAction(action);
+    }
+  };
+}
+
 // --- ADVANCED STATISTICAL DATABASE FILTERS SUITE ---
 function onFilterMarketChange() {
   const marketSelect = document.getElementById("filt-market-select");

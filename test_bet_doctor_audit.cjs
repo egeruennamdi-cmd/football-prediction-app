@@ -221,19 +221,27 @@ console.log('✅ State 2 (Loading State) verified with skeleton blocks (██�
 console.log('\n--- TEST SUITE 4: State 3 (Dynamic Success) - Active Betslip Audit ---');
 
 sandbox.window.appState = sandbox.window.appState || {};
+const futurePool = (typeof sandbox.window.getStrictlyFutureMatchesPool === 'function')
+  ? sandbox.window.getStrictlyFutureMatchesPool()
+  : sandbox.window.MATCH_DATA.filter(m => !sandbox.window.isMatchOutdated(m));
+
+const testMatch0 = futurePool[0] || sandbox.window.MATCH_DATA[1];
+const testMatch1 = futurePool[1] || sandbox.window.MATCH_DATA[2];
+const testMatch2 = futurePool[2] || { ...sandbox.window.MATCH_DATA[0], rawDate: new Date(Date.now() + 86400000).toISOString(), time: '29th, September 2026, 20:00' };
+
 sandbox.window.appState.betslip = [
   {
-    match: sandbox.window.MATCH_DATA[0],
+    match: testMatch0,
     tip: 'Manchester City Win (1)',
     odds: 1.35
   },
   {
-    match: sandbox.window.MATCH_DATA[1],
+    match: testMatch1,
     tip: 'Over 2.5 Goals',
     odds: 1.70
   },
   {
-    match: sandbox.window.MATCH_DATA[2],
+    match: testMatch2,
     tip: 'Away Win (2) - High Risk',
     odds: 2.85
   }
@@ -243,9 +251,9 @@ sandbox.window.auditActiveBetslipInDoctor();
 
 const betslipAuditHTML = elements['bet-doctor-results'].innerHTML;
 assert(betslipAuditHTML.includes('ACTIVE-BETSLIP'), 'Results must reference Active Betslip');
-assert(betslipAuditHTML.includes(sandbox.window.MATCH_DATA[0].homeTeam.name), 'Results must render real betslip fixture 1');
-assert(betslipAuditHTML.includes(sandbox.window.MATCH_DATA[1].homeTeam.name), 'Results must render real betslip fixture 2');
-assert(betslipAuditHTML.includes(sandbox.window.MATCH_DATA[2].homeTeam.name), 'Results must render real betslip fixture 3');
+assert(betslipAuditHTML.includes(testMatch0.homeTeam.name), 'Results must render real betslip fixture 1');
+assert(betslipAuditHTML.includes(testMatch1.homeTeam.name), 'Results must render real betslip fixture 2');
+assert(betslipAuditHTML.includes(testMatch2.homeTeam.name), 'Results must render real betslip fixture 3');
 assert(sandbox.window.doctorState.auditedSelections.length === 3, 'Audited selections count must equal betslip length');
 console.log(`✅ Active Betslip audited with ${sandbox.window.doctorState.auditedSelections.length} live selections.`);
 console.log(`   Health Score: ${sandbox.window.doctorState.auditedHealth}%, Traps: ${sandbox.window.doctorState.auditedSelections.filter(s => s.isTrap).length}`);

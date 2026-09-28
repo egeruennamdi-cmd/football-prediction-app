@@ -6888,11 +6888,34 @@ function auditActiveBetslipInDoctor() {
   runBetDoctorAudit(true, 'betslip');
 }
 
+function findBetslipIndex(target, betslip) {
+  if (!betslip || !Array.isArray(betslip) || !target) return -1;
+  const targetMatchId = target.matchId ? String(target.matchId) : (target.match && target.match.id ? String(target.match.id) : (target.id ? String(target.id) : null));
+  const targetFixture = target.fixtureId || (target.homeTeam && target.awayTeam ? `${String(target.homeTeam).toLowerCase().trim()}-${String(target.awayTeam).toLowerCase().trim()}` : null);
+
+  return betslip.findIndex(item => {
+    if (!item) return false;
+    const itemMatchId = item.matchId ? String(item.matchId) : (item.match && item.match.id ? String(item.match.id) : (item.id ? String(item.id) : null));
+    if (targetMatchId && itemMatchId && targetMatchId === itemMatchId) return true;
+
+    const h = (item.match?.homeTeam?.name || item.match?.homeTeam || item.homeTeam || '').toLowerCase().trim();
+    const a = (item.match?.awayTeam?.name || item.match?.awayTeam || item.awayTeam || '').toLowerCase().trim();
+    const itemFixture = h && a ? `${h}-${a}` : null;
+    if (targetFixture && itemFixture && (targetFixture === itemFixture || `${a}-${h}` === targetFixture)) return true;
+
+    return false;
+  });
+}
+
 function getDoctorExampleSelections(sampleType, isOptimized) {
   if (sampleType === 'highrisk') {
     return [
       {
+        matchId: "ex-barca-real",
+        fixtureId: "barcelona-real madrid",
         fixture: "🇪🇸 Barcelona vs Real Madrid",
+        homeTeam: "Barcelona",
+        awayTeam: "Real Madrid",
         league: "La Liga",
         prediction: isOptimized ? "Double Chance 1X (Prescribed)" : "Away Win (2)",
         odds: isOptimized ? 1.38 : 2.45,
@@ -6902,18 +6925,34 @@ function getDoctorExampleSelections(sampleType, isOptimized) {
         isTrap: !isOptimized,
         isWarning: false,
         riskTier: isOptimized ? 'LOWER_RISK' : 'CRITICAL',
+        isPrescribed: isOptimized,
         reason: isOptimized
           ? "Double Chance eliminates away win volatility and covers home ground resilience."
           : "Long away win odds (2.45) in high-intensity rivalry introduce severe variance drag.",
         prescription: {
+          fixtureId: "barcelona-real madrid",
+          matchId: "ex-barca-real",
+          marketId: "doublechance",
+          originalSelectionId: "Away Win (2)",
+          originalMarket: "1X2 Match Winner",
+          originalOdds: 2.45,
+          prescribedSelectionId: "Double Chance 1X",
+          prescribedMarket: "Double Chance",
+          prescribedOdds: 1.38,
           alternativeTip: "Double Chance 1X",
           alternativeOdds: 1.38,
           deltaWinRate: 41,
+          prescriptionType: "replace",
+          reason: "Swapping Away Win to Double Chance 1X stabilizes accumulator durability.",
           rationale: "Swapping Away Win to Double Chance 1X stabilizes accumulator durability."
         }
       },
       {
+        matchId: "ex-bayern-dortmund",
+        fixtureId: "bayern munich-borussia dortmund",
         fixture: "🇩🇪 Bayern Munich vs Borussia Dortmund",
+        homeTeam: "Bayern Munich",
+        awayTeam: "Borussia Dortmund",
         league: "Bundesliga",
         prediction: isOptimized ? "Over 2.5 Goals (Prescribed)" : "Over 3.5 Goals",
         odds: isOptimized ? 1.52 : 2.20,
@@ -6923,18 +6962,34 @@ function getDoctorExampleSelections(sampleType, isOptimized) {
         isTrap: false,
         isWarning: !isOptimized,
         riskTier: isOptimized ? 'LOWER_RISK' : 'WARNING',
+        isPrescribed: isOptimized,
         reason: isOptimized
           ? "Line reduced from 3.5 to 2.5 aligns with historic head-to-head median goals."
           : "Over 3.5 line is statistically inflated; recent head-to-heads averaged 2.4 goals.",
         prescription: {
+          fixtureId: "bayern munich-borussia dortmund",
+          matchId: "ex-bayern-dortmund",
+          marketId: "overunder",
+          originalSelectionId: "Over 3.5 Goals",
+          originalMarket: "Total Goals Over/Under",
+          originalOdds: 2.20,
+          prescribedSelectionId: "Over 2.5 Goals",
+          prescribedMarket: "Over/Under 2.5",
+          prescribedOdds: 1.52,
           alternativeTip: "Over 2.5 Goals",
           alternativeOdds: 1.52,
           deltaWinRate: 30,
+          prescriptionType: "replace",
+          reason: "Lowering total goals to Over 2.5 removes critical variance risk.",
           rationale: "Lowering total goals to Over 2.5 removes critical variance risk."
         }
       },
       {
+        matchId: "ex-arsenal-chelsea",
+        fixtureId: "arsenal-chelsea",
         fixture: "🏴󠁧󠁢󠁥󠁮󠁧󠁿 Arsenal vs Chelsea",
+        homeTeam: "Arsenal",
+        awayTeam: "Chelsea",
         league: "Premier League",
         prediction: "Both Teams to Score (Yes)",
         odds: 1.75,
@@ -6944,11 +6999,16 @@ function getDoctorExampleSelections(sampleType, isOptimized) {
         isTrap: false,
         isWarning: false,
         riskTier: 'LOWER_RISK',
+        isPrescribed: false,
         reason: "Both clubs averaged 2.2 combined goals with strong conversion in recent games.",
         prescription: null
       },
       {
+        matchId: "ex-psg-marseille",
+        fixtureId: "paris saint-germain-marseille",
         fixture: "🇫🇷 Paris Saint-Germain vs Marseille",
+        homeTeam: "Paris Saint-Germain",
+        awayTeam: "Marseille",
         league: "Ligue 1",
         prediction: isOptimized ? "PSG Win (1) (Prescribed)" : "Over 3.5 Goals",
         odds: isOptimized ? 1.44 : 2.30,
@@ -6958,13 +7018,25 @@ function getDoctorExampleSelections(sampleType, isOptimized) {
         isTrap: !isOptimized,
         isWarning: false,
         riskTier: isOptimized ? 'LOWER_RISK' : 'CRITICAL',
+        isPrescribed: isOptimized,
         reason: isOptimized
           ? "PSG straight win leverages dominant home metrics with lower volatility."
           : "Over 3.5 total goals carries low statistical probability (43%) at current odds.",
         prescription: {
+          fixtureId: "paris saint-germain-marseille",
+          matchId: "ex-psg-marseille",
+          marketId: "1x2",
+          originalSelectionId: "Over 3.5 Goals",
+          originalMarket: "Total Goals Over/Under",
+          originalOdds: 2.30,
+          prescribedSelectionId: "PSG Win (1)",
+          prescribedMarket: "1X2 Match Winner",
+          prescribedOdds: 1.44,
           alternativeTip: "PSG Win (1)",
           alternativeOdds: 1.44,
           deltaWinRate: 37,
+          prescriptionType: "replace",
+          reason: "Swapping inflated Over 3.5 market to PSG straight win.",
           rationale: "Swapping inflated Over 3.5 market to PSG straight win."
         }
       }
@@ -6972,7 +7044,11 @@ function getDoctorExampleSelections(sampleType, isOptimized) {
   } else if (sampleType === 'moderate') {
     return [
       {
+        matchId: "ex-arsenal-everton",
+        fixtureId: "arsenal-everton",
         fixture: "🏴󠁧󠁢󠁥󠁮󠁧󠁿 Arsenal vs Everton",
+        homeTeam: "Arsenal",
+        awayTeam: "Everton",
         league: "Premier League",
         prediction: "Arsenal Win (1)",
         odds: 1.42,
@@ -6982,11 +7058,16 @@ function getDoctorExampleSelections(sampleType, isOptimized) {
         isTrap: false,
         isWarning: false,
         riskTier: 'LOWER_RISK',
+        isPrescribed: false,
         reason: "High model confidence (76%) supported by strong home expected goal difference.",
         prescription: null
       },
       {
+        matchId: "ex-realmadrid-atletico",
+        fixtureId: "real madrid-atletico madrid",
         fixture: "🇪🇸 Real Madrid vs Atlético Madrid",
+        homeTeam: "Real Madrid",
+        awayTeam: "Atlético Madrid",
         league: "La Liga",
         prediction: isOptimized ? "Double Chance 1X (Prescribed)" : "Over 2.5 Goals",
         odds: isOptimized ? 1.30 : 1.92,
@@ -6996,18 +7077,34 @@ function getDoctorExampleSelections(sampleType, isOptimized) {
         isTrap: false,
         isWarning: !isOptimized,
         riskTier: isOptimized ? 'LOWER_RISK' : 'WARNING',
+        isPrescribed: isOptimized,
         reason: isOptimized
           ? "Double Chance covers derby stalemate and home defensive stability."
           : "Derby intensity frequently dampens goal volume; line carries moderate variance.",
         prescription: {
+          fixtureId: "real madrid-atletico madrid",
+          matchId: "ex-realmadrid-atletico",
+          marketId: "doublechance",
+          originalSelectionId: "Over 2.5 Goals",
+          originalMarket: "Total Goals Over/Under",
+          originalOdds: 1.92,
+          prescribedSelectionId: "Double Chance 1X",
+          prescribedMarket: "Double Chance",
+          prescribedOdds: 1.30,
           alternativeTip: "Double Chance 1X",
           alternativeOdds: 1.30,
           deltaWinRate: 33,
+          prescriptionType: "replace",
+          reason: "Switching from volatile goal line to defensive double chance.",
           rationale: "Switching from volatile goal line to defensive double chance."
         }
       },
       {
+        matchId: "ex-inter-juventus",
+        fixtureId: "inter milan-juventus",
         fixture: "🇮🇹 Inter Milan vs Juventus",
+        homeTeam: "Inter Milan",
+        awayTeam: "Juventus",
         league: "Serie A",
         prediction: "Under 2.5 Goals",
         odds: 1.68,
@@ -7017,6 +7114,7 @@ function getDoctorExampleSelections(sampleType, isOptimized) {
         isTrap: false,
         isWarning: false,
         riskTier: 'LOWER_RISK',
+        isPrescribed: false,
         reason: "Both clubs rank top-2 in defensive solidity with 0.82 goals conceded per game.",
         prescription: null
       }
@@ -7025,7 +7123,11 @@ function getDoctorExampleSelections(sampleType, isOptimized) {
     // Lower-Risk Example ('safe' / lower risk)
     return [
       {
+        matchId: "ex-mancity-wolves",
+        fixtureId: "manchester city-wolves",
         fixture: "🏴󠁧󠁢󠁥󠁮󠁧󠁿 Manchester City vs Wolves",
+        homeTeam: "Manchester City",
+        awayTeam: "Wolves",
         league: "Premier League",
         prediction: "Manchester City Win (1)",
         odds: 1.25,
@@ -7035,11 +7137,16 @@ function getDoctorExampleSelections(sampleType, isOptimized) {
         isTrap: false,
         isWarning: false,
         riskTier: 'LOWER_RISK',
+        isPrescribed: false,
         reason: "Heavy favorite with 84% implied probability and massive territorial supremacy.",
         prescription: null
       },
       {
+        matchId: "ex-realmadrid-getafe",
+        fixtureId: "real madrid-getafe",
         fixture: "🇪🇸 Real Madrid vs Getafe",
+        homeTeam: "Real Madrid",
+        awayTeam: "Getafe",
         league: "La Liga",
         prediction: "Double Chance 1X",
         odds: 1.15,
@@ -7049,11 +7156,16 @@ function getDoctorExampleSelections(sampleType, isOptimized) {
         isTrap: false,
         isWarning: false,
         riskTier: 'LOWER_RISK',
+        isPrescribed: false,
         reason: "Extremely resilient profile covering 90% of historic home outcomes.",
         prescription: null
       },
       {
+        matchId: "ex-bayern-augsburg",
+        fixtureId: "bayern munich-augsburg",
         fixture: "🇩🇪 Bayern Munich vs Augsburg",
+        homeTeam: "Bayern Munich",
+        awayTeam: "Augsburg",
         league: "Bundesliga",
         prediction: "Over 1.5 Goals",
         odds: 1.18,
@@ -7063,6 +7175,7 @@ function getDoctorExampleSelections(sampleType, isOptimized) {
         isTrap: false,
         isWarning: false,
         riskTier: 'LOWER_RISK',
+        isPrescribed: false,
         reason: "Both teams combine for 3.1 expected goals; Over 1.5 is a durable floor.",
         prescription: null
       }
@@ -7071,16 +7184,22 @@ function getDoctorExampleSelections(sampleType, isOptimized) {
 }
 
 function evaluateDoctorSelection(selection, isOptimized) {
-  const fixture = selection.fixture || `${selection.homeTeam || 'Home'} vs ${selection.awayTeam || 'Away'}`;
-  const league = selection.league || 'Football League';
-  const tip = selection.prediction || selection.tip || 'Match Tip';
-  let odds = parseFloat(selection.odds || selection.sourceOdds || selection.targetOdds) || 1.85;
+  const match = selection.match || null;
+  const hName = selection.homeTeam || match?.homeTeam?.name || match?.homeTeam || 'Home';
+  const aName = selection.awayTeam || match?.awayTeam?.name || match?.awayTeam || 'Away';
+  const fixture = selection.fixture || `${hName} vs ${aName}`;
+  const fixtureId = selection.fixtureId || `${String(hName).toLowerCase().trim()}-${String(aName).toLowerCase().trim()}`;
+  const matchId = String(selection.matchId || match?.id || selection.id || `doc-${fixtureId}`);
+  const league = selection.league || match?.league || 'Football League';
+
+  // Base prediction and odds (preferring original unprescribed values if evaluating baseline)
+  const tip = selection.origPrediction || selection.originalTip || selection.prediction || selection.tip || 'Match Tip';
+  let odds = parseFloat(selection.origOdds || selection.originalOdds || selection.odds || selection.sourceOdds || selection.targetOdds) || 1.85;
   if (odds < 1.05) odds = 1.05;
 
   const impliedProb = Math.min(95, Math.max(8, Math.round(100 / odds)));
 
   let modelProb = impliedProb;
-  const match = selection.match || null;
   if (match && match.predictions) {
     const p = match.predictions;
     if (tip.includes('(1)') || tip.toLowerCase().includes('home')) {
@@ -7101,45 +7220,82 @@ function evaluateDoctorSelection(selection, isOptimized) {
   const isModerateWarning = !isCriticalTrap && (odds > 1.95 || probability < 54 || isHighLine);
 
   let prescription = null;
-  if (isCriticalTrap || isModerateWarning) {
+  if (isCriticalTrap || isModerateWarning || selection.prescription) {
     let altTip = '';
     let altOdds = 1.35;
     let delta = 25;
     let rationale = '';
+    let marketId = 'doublechance';
+    let marketName = 'Double Chance';
 
     if (tip.includes('(2)') || tip.toLowerCase().includes('away')) {
       altTip = 'Double Chance 1X or X2';
       altOdds = parseFloat((odds * 0.58).toFixed(2));
       delta = 32;
       rationale = 'Swapping volatile Away Win to Double Chance drastically improves leg durability.';
+      marketId = 'doublechance';
+      marketName = 'Double Chance';
     } else if (tip.includes('Over 3.5')) {
       altTip = 'Over 2.5 Goals';
       altOdds = parseFloat((odds * 0.68).toFixed(2));
       delta = 26;
       rationale = 'Lowering total goal ceiling to Over 2.5 removes critical variance drag.';
+      marketId = 'overunder';
+      marketName = 'Over/Under 2.5';
     } else if (tip.includes('Over 2.5')) {
       altTip = 'Over 1.5 Goals';
       altOdds = parseFloat((odds * 0.72).toFixed(2));
       delta = 22;
       rationale = 'Lowering line to Over 1.5 delivers a high-floor safety margin.';
+      marketId = 'overunder';
+      marketName = 'Over/Under 1.5';
     } else if (tip.includes('(1)') || tip.toLowerCase().includes('home')) {
       altTip = 'Double Chance 1X';
       altOdds = parseFloat((odds * 0.65).toFixed(2));
       delta = 24;
       rationale = 'Adding draw protection via Double Chance 1X.';
+      marketId = 'doublechance';
+      marketName = 'Double Chance';
     } else {
       altTip = 'Double Chance / Safer Line';
       altOdds = parseFloat((odds * 0.70).toFixed(2));
       delta = 20;
       rationale = 'Adjusting selection to lower market volatility.';
+      marketId = 'doublechance';
+      marketName = 'Double Chance';
     }
-    if (altOdds < 1.10) altOdds = 1.10;
+
+    // Authoritative odds verification: query match market pool
+    if (match) {
+      try {
+        const pool = typeof getMatchMarketPool === 'function' ? getMatchMarketPool(match) : [];
+        if (pool && pool.length > 0) {
+          const matchPick = pool.find(p => p.tip === altTip || p.tip.includes(altTip) || (p.category === marketId && p.odds > 1.0));
+          if (matchPick && typeof matchPick.odds === 'number' && matchPick.odds > 1.0) {
+            altOdds = matchPick.odds;
+          }
+        }
+      } catch (e) {}
+    }
+
+    if (altOdds < 1.05) altOdds = 1.05;
 
     prescription = {
+      fixtureId: fixtureId,
+      matchId: matchId,
+      marketId: marketId,
+      originalSelectionId: tip,
+      originalMarket: tip.includes('Over') ? 'Total Goals' : '1X2 Match Winner',
+      originalOdds: odds,
+      prescribedSelectionId: altTip,
+      prescribedMarket: marketName,
+      prescribedOdds: altOdds,
       alternativeTip: altTip,
       alternativeOdds: altOdds,
+      reason: rationale,
+      rationale: rationale,
       deltaWinRate: delta,
-      rationale: rationale
+      prescriptionType: 'replace'
     };
   }
 
@@ -7150,11 +7306,11 @@ function evaluateDoctorSelection(selection, isOptimized) {
   let reason = '';
 
   if (isOptimized && prescription) {
-    finalTip = `${prescription.alternativeTip} (Prescribed)`;
-    finalOdds = prescription.alternativeOdds;
+    finalTip = `${prescription.prescribedSelectionId} (Prescribed)`;
+    finalOdds = prescription.prescribedOdds;
     finalProb = Math.min(94, probability + prescription.deltaWinRate);
     riskTier = 'LOWER_RISK';
-    reason = prescription.rationale;
+    reason = prescription.reason;
   } else if (isCriticalTrap) {
     reason = `Selection odds (@${odds}) and low model probability (${probability}%) present an extreme variance trap.`;
   } else if (isModerateWarning) {
@@ -7164,7 +7320,11 @@ function evaluateDoctorSelection(selection, isOptimized) {
   }
 
   return {
+    matchId: matchId,
+    fixtureId: fixtureId,
     fixture: fixture,
+    homeTeam: hName,
+    awayTeam: aName,
     league: league,
     prediction: finalTip,
     odds: finalOdds,
@@ -7175,7 +7335,9 @@ function evaluateDoctorSelection(selection, isOptimized) {
     isWarning: !isOptimized && isModerateWarning,
     riskTier: riskTier,
     reason: reason,
-    prescription: prescription
+    prescription: prescription,
+    match: match,
+    isPrescribed: isOptimized && Boolean(prescription)
   };
 }
 
@@ -7199,6 +7361,8 @@ function decodeBookingCodeToDoctorSelections(code, pool, isOptimized) {
     const hName = match.homeTeam?.name || 'Home Club';
     const aName = match.awayTeam?.name || 'Away Club';
     const league = match.league || 'Top League';
+    const matchId = String(match.id || `code-${i + 1}`);
+    const fixtureId = `${String(hName).toLowerCase().trim()}-${String(aName).toLowerCase().trim()}`;
 
     const marketType = (seed + i * 7) % 3;
     let tip = '';
@@ -7233,6 +7397,8 @@ function decodeBookingCodeToDoctorSelections(code, pool, isOptimized) {
     }
 
     const item = evaluateDoctorSelection({
+      matchId: matchId,
+      fixtureId: fixtureId,
       fixture: `${hName} vs ${aName}`,
       homeTeam: hName,
       awayTeam: aName,
@@ -7454,17 +7620,24 @@ function runBetDoctorAudit(showScanAnim = true, explicitSource = null) {
       const match = item.match || {};
       const hName = match.homeTeam?.name || item.homeTeam || 'Home Team';
       const aName = match.awayTeam?.name || item.awayTeam || 'Away Team';
-      const odds = parseFloat(item.odds) || 1.85;
+      const odds = (typeof item.odds !== 'undefined' && item.odds !== null) ? Number(item.odds) : 1.85;
       const tip = item.tip || 'Match Tip';
       const league = match.league || item.league || 'League Match';
+      const matchId = String(item.matchId || item.id || (match && match.id) || `doc-${hName}-${aName}`);
+      const fixtureId = `${String(hName).toLowerCase().trim()}-${String(aName).toLowerCase().trim()}`;
       return evaluateDoctorSelection({
+        matchId: matchId,
+        fixtureId: fixtureId,
         fixture: `${hName} vs ${aName}`,
         homeTeam: hName,
         awayTeam: aName,
         league: league,
         prediction: tip,
         odds: odds,
-        match: match
+        match: match,
+        origPrediction: item.originalTip || tip,
+        origOdds: item.originalOdds || odds,
+        isPrescribed: Boolean(item.isPrescribed)
       }, isOptimized);
     });
   } else if (window.generatedTicketsCache && window.generatedTicketsCache[codeVal] && window.generatedTicketsCache[codeVal].selections?.length > 0) {
@@ -7504,7 +7677,7 @@ function runBetDoctorAudit(showScanAnim = true, explicitSource = null) {
   // Calculate unoptimized vs optimized metrics for point delta
   const unoptSelections = isExample
     ? getDoctorExampleSelections(exampleType || 'moderate', false)
-    : selections.map(s => evaluateDoctorSelection({ ...s, prediction: s.origPrediction, odds: s.origOdds }, false));
+    : selections.map(s => evaluateDoctorSelection({ ...s, prediction: s.origPrediction, odds: s.origOdds, isPrescribed: false }, false));
   const optSelections = isExample
     ? getDoctorExampleSelections(exampleType || 'moderate', true)
     : selections.map(s => evaluateDoctorSelection({ ...s, prediction: s.origPrediction, odds: s.origOdds }, true));
@@ -7570,7 +7743,9 @@ function runBetDoctorAudit(showScanAnim = true, explicitSource = null) {
     // Prescriptions list HTML
     const prescriptionItems = selections.filter(s => s.prescription);
     const prescriptionsHTML = prescriptionItems.map((s, idx) => {
-      return `<div>• <b>Prescription ${idx + 1}:</b> Replace <i>${s.fixture} [${s.origPrediction}]</i> ➡️ <b>[${s.prescription.alternativeTip}]</b> (+${s.prescription.deltaWinRate}% Win Rate)</div>`;
+      const prescTip = s.prescription.prescribedSelectionId || s.prescription.alternativeTip;
+      const prescOdds = s.prescription.prescribedOdds || s.prescription.alternativeOdds;
+      return `<div>• <b>Prescription ${idx + 1}:</b> Replace <i>${s.fixture} [${s.origPrediction}]</i> ➡️ <b>[${prescTip}]</b> @ ${prescOdds} (+${s.prescription.deltaWinRate}% Win Rate)</div>`;
     }).join('');
 
     // Match cards HTML
@@ -7595,22 +7770,52 @@ function runBetDoctorAudit(showScanAnim = true, explicitSource = null) {
         badgeText = `🟡 MODERATE RISK (${s.probability}%)`;
       }
 
+      let prescriptionActionHTML = '';
+      if (!isOptimized && s.prescription) {
+        const altTip = s.prescription.prescribedSelectionId || s.prescription.alternativeTip;
+        const altOdds = s.prescription.prescribedOdds || s.prescription.alternativeOdds;
+        prescriptionActionHTML = `
+          <div style="margin-top: 8px; padding-top: 8px; border-top: 1px dashed rgba(245,158,11,0.3); display: flex; justify-content: space-between; align-items: center; gap: 8px; flex-wrap: wrap;">
+            <div style="font-size: 0.72rem; color: #fbbf24;">
+              💡 <b>Prescription:</b> Replace with <b>[${altTip}]</b> @ ${altOdds} (+${s.prescription.deltaWinRate}% Win Rate)
+            </div>
+            <button type="button" onclick="applyDoctorPrescription('${s.matchId || s.fixtureId}')" class="btn btn-primary" style="background: #f59e0b; color: #000; font-weight: 800; font-size: 0.7rem; padding: 4px 10px; border: none; cursor: pointer; border-radius: 4px;">
+              ⚡ Apply
+            </button>
+          </div>
+        `;
+      } else if (isOptimized && (s.isPrescribed || s.prescription)) {
+        prescriptionActionHTML = `
+          <div style="margin-top: 8px; padding-top: 8px; border-top: 1px solid rgba(16,185,129,0.3); display: flex; justify-content: space-between; align-items: center; gap: 8px; flex-wrap: wrap;">
+            <div style="font-size: 0.72rem; color: #34d399;">
+              ✅ <b>Prescribed:</b> ${s.prediction} @ ${s.odds} <span style="color: var(--text-muted);">(Original: ${s.origPrediction} @ ${s.origOdds})</span>
+            </div>
+            <button type="button" onclick="revertDoctorPrescriptions('${s.matchId || s.fixtureId}')" class="btn btn-outline" style="font-size: 0.68rem; padding: 3px 8px; border: 1px solid rgba(255,255,255,0.2); color: var(--text-secondary); cursor: pointer; border-radius: 4px;">
+              ↩️ Original
+            </button>
+          </div>
+        `;
+      }
+
       return `
-        <div style="background: ${cardBg}; border: 1px solid ${cardBorder}; border-radius: var(--radius-sm); padding: 12px 16px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px;">
-          <div>
-            <div style="font-weight: 800; font-size: 0.88rem; color: #ffffff;">${s.fixture}</div>
-            <div style="font-size: 0.75rem; color: var(--text-secondary); margin-top: 2px;">
-              Selection: <b>${s.prediction}</b> @ ${s.odds} odds &bull; <span style="color: var(--text-muted);">${s.league}</span>
+        <div style="background: ${cardBg}; border: 1px solid ${cardBorder}; border-radius: var(--radius-sm); padding: 12px 16px; display: flex; flex-direction: column; gap: 6px;">
+          <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px;">
+            <div>
+              <div style="font-weight: 800; font-size: 0.88rem; color: #ffffff;">${s.fixture}</div>
+              <div style="font-size: 0.75rem; color: var(--text-secondary); margin-top: 2px;">
+                Selection: <b>${s.prediction}</b> @ ${s.odds} odds &bull; <span style="color: var(--text-muted);">${s.league}</span>
+              </div>
+            </div>
+            <div style="text-align: right;">
+              <span style="background: ${badgeBg}; color: ${badgeColor}; font-weight: 800; font-size: 0.7rem; padding: 4px 8px; border-radius: 4px; display: inline-block;">
+                ${badgeText}
+              </span>
+              <div style="font-size: 0.7rem; color: var(--text-muted); margin-top: 4px; max-width: 320px;">
+                ${s.reason}
+              </div>
             </div>
           </div>
-          <div style="text-align: right;">
-            <span style="background: ${badgeBg}; color: ${badgeColor}; font-weight: 800; font-size: 0.7rem; padding: 4px 8px; border-radius: 4px; display: inline-block;">
-              ${badgeText}
-            </span>
-            <div style="font-size: 0.7rem; color: var(--text-muted); margin-top: 4px; max-width: 320px;">
-              ${s.reason}
-            </div>
-          </div>
+          ${prescriptionActionHTML}
         </div>
       `;
     }).join('');
@@ -7732,23 +7937,289 @@ function runBetDoctorAudit(showScanAnim = true, explicitSource = null) {
   }
 }
 
-function applyDoctorPrescription() {
+/**
+ * Authoritative Betslip Action Dispatcher
+ * Synchronizes Bet Doctor prescriptions with the Active Betslip Builder and recalculates Total Odds
+ */
+function dispatchBetslipAction(action) {
+  if (!action || !action.type) return { success: false, reason: "Invalid action payload" };
+
+  if (!window.appState) window.appState = {};
+  if (!Array.isArray(window.appState.betslip)) window.appState.betslip = [];
+
+  const backupBetslip = JSON.parse(JSON.stringify(window.appState.betslip));
+
+  try {
+    if (action.type === 'APPLY_PRESCRIPTION') {
+      const payload = action.payload || {};
+      const prescriptions = Array.isArray(payload.prescriptions)
+        ? payload.prescriptions
+        : (payload.prescription ? [payload.prescription] : []);
+
+      if (prescriptions.length === 0) {
+        return { success: false, reason: "No valid prescriptions to apply" };
+      }
+
+      // Step 1: Pre-validation of prescribed odds (> 1.0)
+      for (const p of prescriptions) {
+        const pOdds = Number(p.prescribedOdds || p.alternativeOdds);
+        if (isNaN(pOdds) || pOdds <= 1.0) {
+          throw new Error(`Invalid prescribed odds (${pOdds}) for ${p.fixtureId || p.matchId}`);
+        }
+      }
+
+      // Step 2: Synchronize each prescription into window.appState.betslip
+      prescriptions.forEach(p => {
+        const targetMatchId = p.matchId ? String(p.matchId) : null;
+        const targetFixture = p.fixtureId || (p.homeTeam && p.awayTeam ? `${String(p.homeTeam).toLowerCase().trim()}-${String(p.awayTeam).toLowerCase().trim()}` : null);
+
+        const existingIdx = findBetslipIndex({ matchId: targetMatchId, fixtureId: targetFixture, homeTeam: p.homeTeam, awayTeam: p.awayTeam }, window.appState.betslip);
+        const prescribedTip = p.prescribedSelectionId || p.alternativeTip;
+        const prescribedOdds = Number(p.prescribedOdds || p.alternativeOdds);
+
+        if (existingIdx !== -1) {
+          // REPLACEMENT / MODIFICATION: Selection count remains identical
+          const item = window.appState.betslip[existingIdx];
+          if (!item.isPrescribed) {
+            item.originalTip = item.tip;
+            item.originalOdds = (typeof item.odds === 'number' && !isNaN(item.odds)) ? item.odds : (Number(item.odds) || p.originalOdds);
+            item.originalSelectionId = item.tip;
+          }
+          item.tip = prescribedTip;
+          item.odds = prescribedOdds;
+          item.isPrescribed = true;
+          item.prescription = p;
+        } else if (p.prescriptionType === 'add') {
+          // EXPLICIT ADDITION
+          window.appState.betslip.push({
+            matchId: p.matchId || `presc-${Date.now()}`,
+            match: p.match || null,
+            tip: prescribedTip,
+            odds: prescribedOdds,
+            isPrescribed: true,
+            prescription: p
+          });
+        } else if (window.appState.betslip.length === 0) {
+          // Empty betslip: seed betslip from audited selection
+          window.appState.betslip.push({
+            matchId: p.matchId || `presc-${Date.now()}`,
+            match: p.match || null,
+            tip: prescribedTip,
+            odds: prescribedOdds,
+            originalTip: p.originalSelectionId || p.origPrediction,
+            originalOdds: p.originalOdds,
+            isPrescribed: true,
+            prescription: p
+          });
+        }
+      });
+
+      // Step 3: Recalculate Total Odds from updated active selections
+      const oddsCalc = calculateBetslipTotalOdds(window.appState.betslip);
+
+      // Step 4: Synchronously update Active Betslip Builder UI drawer
+      if (typeof renderBetslip === 'function') {
+        renderBetslip();
+      }
+
+      // Step 5: Persist to localStorage
+      try {
+        localStorage.setItem("dp_betslip", JSON.stringify(window.appState.betslip));
+      } catch (e) {}
+
+      // Step 6: Dispatch notification event
+      try {
+        window.dispatchEvent(new CustomEvent('betslip:updated', {
+          detail: { action: 'APPLY_PRESCRIPTION', betslip: window.appState.betslip, oddsCalc: oddsCalc }
+        }));
+      } catch (e) {}
+
+      return { success: true, count: window.appState.betslip.length, totalOdds: oddsCalc.formatted, oddsCalc: oddsCalc };
+
+    } else if (action.type === 'REVERT_PRESCRIPTION') {
+      const payload = action.payload || {};
+      const targetMatchId = payload.matchId ? String(payload.matchId) : null;
+      const targetFixture = payload.fixtureId || null;
+
+      window.appState.betslip.forEach(item => {
+        const itemMatchId = item.matchId ? String(item.matchId) : (item.match && item.match.id ? String(item.match.id) : (item.id ? String(item.id) : null));
+        const h = (item.match?.homeTeam?.name || item.match?.homeTeam || item.homeTeam || '').toLowerCase().trim();
+        const a = (item.match?.awayTeam?.name || item.match?.awayTeam || item.awayTeam || '').toLowerCase().trim();
+        const itemFixture = h && a ? `${h}-${a}` : null;
+
+        const isTarget = (!targetMatchId && !targetFixture) ||
+          (targetMatchId && itemMatchId && targetMatchId === itemMatchId) ||
+          (targetFixture && itemFixture && (targetFixture === itemFixture || `${a}-${h}` === targetFixture));
+
+        if (isTarget && item.isPrescribed) {
+          item.tip = item.originalTip || (item.tip ? item.tip.replace(/\s*\(Prescribed\)/i, '') : 'Match Tip');
+          item.odds = item.originalOdds || item.odds;
+          item.isPrescribed = false;
+          delete item.originalTip;
+          delete item.originalOdds;
+          delete item.originalSelectionId;
+          delete item.prescription;
+        }
+      });
+
+      const oddsCalc = calculateBetslipTotalOdds(window.appState.betslip);
+
+      if (typeof renderBetslip === 'function') {
+        renderBetslip();
+      }
+
+      try {
+        localStorage.setItem("dp_betslip", JSON.stringify(window.appState.betslip));
+      } catch (e) {}
+
+      try {
+        window.dispatchEvent(new CustomEvent('betslip:updated', {
+          detail: { action: 'REVERT_PRESCRIPTION', betslip: window.appState.betslip, oddsCalc: oddsCalc }
+        }));
+      } catch (e) {}
+
+      return { success: true, count: window.appState.betslip.length, totalOdds: oddsCalc.formatted, oddsCalc: oddsCalc };
+    }
+  } catch (err) {
+    // Atomic rollback
+    window.appState.betslip = backupBetslip;
+    if (typeof renderBetslip === 'function') renderBetslip();
+    return { success: false, reason: err.message || "Failed to update betslip state" };
+  }
+
+  return { success: false, reason: "Unhandled action type" };
+}
+
+function applyDoctorPrescription(targetMatchId = null) {
   window.doctorState = window.doctorState || {};
+
+  const audited = Array.isArray(window.doctorState.auditedSelections) ? window.doctorState.auditedSelections : [];
+  let targets = [];
+
+  if (targetMatchId && targetMatchId !== 'all') {
+    targets = audited.filter(s => String(s.matchId) === String(targetMatchId) || s.fixtureId === targetMatchId || (s.match && String(s.match.id) === String(targetMatchId)));
+  } else {
+    targets = audited.filter(s => s.prescription);
+  }
+
+  if (targets.length === 0) {
+    if (typeof showToast === 'function') {
+      showToast("No active prescriptions to apply.", "info");
+    }
+    return;
+  }
+
+  // Build prescriptions list
+  const prescriptionsToApply = targets.map(s => {
+    return {
+      matchId: s.matchId,
+      fixtureId: s.fixtureId,
+      homeTeam: s.homeTeam,
+      awayTeam: s.awayTeam,
+      match: s.match,
+      marketId: s.prescription.marketId,
+      originalSelectionId: s.origPrediction || s.prediction,
+      originalOdds: s.origOdds || s.odds,
+      prescribedSelectionId: s.prescription.prescribedSelectionId || s.prescription.alternativeTip,
+      prescribedMarket: s.prescription.prescribedMarket || 'Alternative Market',
+      prescribedOdds: s.prescription.prescribedOdds || s.prescription.alternativeOdds,
+      reason: s.prescription.reason || s.prescription.rationale,
+      deltaWinRate: s.prescription.deltaWinRate || 20,
+      prescriptionType: s.prescription.prescriptionType || 'replace'
+    };
+  });
+
+  // If active betslip is empty and we are applying an example or external ticket, populate betslip first
+  if (!window.appState || !Array.isArray(window.appState.betslip) || window.appState.betslip.length === 0) {
+    if (!window.appState) window.appState = {};
+    window.appState.betslip = audited.map(s => ({
+      matchId: s.matchId,
+      match: s.match,
+      tip: s.origPrediction || s.prediction,
+      odds: s.origOdds || s.odds,
+      homeTeam: s.homeTeam,
+      awayTeam: s.awayTeam,
+      league: s.league
+    }));
+  }
+
+  // Execute atomic dispatch
+  const result = dispatchBetslipAction({
+    type: 'APPLY_PRESCRIPTION',
+    payload: { prescriptions: prescriptionsToApply }
+  });
+
+  if (!result.success) {
+    if (typeof showToast === 'function') {
+      showToast(`Unable to apply prescription: ${result.reason}`, "error");
+    }
+    return;
+  }
+
+  // Update Bet Doctor state
   window.doctorState.isOptimized = true;
+
+  // If lastAuditCode exists, also update converter cache so converter receives updated prescribed ticket!
+  if (window.doctorState.lastAuditCode && window.generatedTicketsCache) {
+    window.generatedTicketsCache[window.doctorState.lastAuditCode] = {
+      selections: window.appState.betslip.map(item => ({
+        fixture: item.match ? `${item.match.homeTeam?.name || 'Home'} vs ${item.match.awayTeam?.name || 'Away'}` : `${item.homeTeam || 'Home'} vs ${item.awayTeam || 'Away'}`,
+        league: item.match?.league || item.league || 'Football League',
+        market: item.tip,
+        prediction: item.tip,
+        sourceOdds: item.odds,
+        targetOdds: item.odds,
+        odds: item.odds
+      }))
+    };
+  }
+
+  // Re-run audit to refresh Bet Doctor display
   runBetDoctorAudit(false);
+
   const health = window.doctorState.auditedHealth || 88;
   const delta = window.doctorState.healthDelta || 20;
   if (typeof showToast === 'function') {
-    showToast(`🩺 Doctor Prescriptions Applied! Health optimized to ${health}% (+${delta} pts)`, "success");
+    showToast(`🩺 Doctor Prescriptions Applied! Health optimized to ${health}% (+${delta} pts). Active Betslip Total Odds: ${result.totalOdds}`, "success");
   }
 }
 
-function revertDoctorPrescriptions() {
+function revertDoctorPrescriptions(targetMatchId = null) {
   window.doctorState = window.doctorState || {};
-  window.doctorState.isOptimized = false;
+
+  // Execute atomic dispatch to restore original selection(s) in active betslip
+  const result = dispatchBetslipAction({
+    type: 'REVERT_PRESCRIPTION',
+    payload: { matchId: targetMatchId && targetMatchId !== 'all' ? targetMatchId : null }
+  });
+
+  // If reverting all or no more prescribed items left, mark unoptimized
+  const hasRemainingPrescribed = (window.appState && Array.isArray(window.appState.betslip))
+    ? window.appState.betslip.some(item => item.isPrescribed)
+    : false;
+  if (!hasRemainingPrescribed || !targetMatchId || targetMatchId === 'all') {
+    window.doctorState.isOptimized = false;
+  }
+
+  // Update converter cache if present
+  if (window.doctorState.lastAuditCode && window.generatedTicketsCache) {
+    window.generatedTicketsCache[window.doctorState.lastAuditCode] = {
+      selections: window.appState.betslip.map(item => ({
+        fixture: item.match ? `${item.match.homeTeam?.name || 'Home'} vs ${item.match.awayTeam?.name || 'Away'}` : `${item.homeTeam || 'Home'} vs ${item.awayTeam || 'Away'}`,
+        league: item.match?.league || item.league || 'Football League',
+        market: item.tip,
+        prediction: item.tip,
+        sourceOdds: item.odds,
+        targetOdds: item.odds,
+        odds: item.odds
+      }))
+    };
+  }
+
   runBetDoctorAudit(false);
+
   if (typeof showToast === 'function') {
-    showToast("Reverted to original selections", "info");
+    showToast(`↩️ Reverted to original selections. Active Betslip Total Odds: ${result.totalOdds}`, "info");
   }
 }
 
@@ -7759,6 +8230,27 @@ function convertAuditedTicket(code, bookie) {
   }
   const srcInput = document.getElementById("paddi-src-code") || document.getElementById("conv-source-code");
   if (srcInput) srcInput.value = code;
+
+  // Ensure converter cache has the updated active betslip selections!
+  if (code && window.generatedTicketsCache) {
+    const currentSlip = (window.appState && Array.isArray(window.appState.betslip)) ? window.appState.betslip : [];
+    if (currentSlip.length > 0) {
+      window.generatedTicketsCache[code] = {
+        code: code,
+        bookmaker: bookie,
+        selections: currentSlip.map(s => ({
+          fixture: s.match ? `${s.match.homeTeam?.name || 'Home'} vs ${s.match.awayTeam?.name || 'Away'}` : `${s.homeTeam || 'Home'} vs ${s.awayTeam || 'Away'}`,
+          league: s.match?.league || s.league || 'Football League',
+          market: s.tip,
+          prediction: s.tip,
+          sourceOdds: s.odds,
+          targetOdds: s.odds,
+          odds: s.odds
+        }))
+      };
+    }
+  }
+
   if (typeof showToast === 'function') {
     showToast(`Loading Code ${code} into Converter...`, "info");
   }
@@ -7773,10 +8265,14 @@ function enforceConvertButtonLabel() {
   } catch (e) {}
 }
 
+window.findBetslipIndex = findBetslipIndex;
+window.dispatchBetslipAction = dispatchBetslipAction;
 window.loadDoctorSample = loadDoctorSample;
 window.runBetDoctorAudit = runBetDoctorAudit;
 window.auditActiveBetslipInDoctor = auditActiveBetslipInDoctor;
 window.renderBetDoctorEmptyState = renderBetDoctorEmptyState;
+window.evaluateDoctorSelection = evaluateDoctorSelection;
+window.getDoctorExampleSelections = getDoctorExampleSelections;
 window.applyDoctorPrescription = applyDoctorPrescription;
 window.revertDoctorPrescriptions = revertDoctorPrescriptions;
 window.convertAuditedTicket = convertAuditedTicket;
