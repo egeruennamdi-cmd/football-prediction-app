@@ -190,6 +190,9 @@
     opportunities: [],
     filteredOpportunities: [],
     selectedOpportunity: null,
+    pageSize: 12,
+    currentPage: 1,
+    isLoading: false,
     filters: {
       minEv: 3, // Default +3% EV
       minEdgePp: 0,
@@ -205,7 +208,7 @@
     sortBy: 'ev_desc', // 'ev_desc', 'edge_desc', 'prob_desc', 'fair_odds_asc', 'score_desc', 'kickoff_asc'
     activeTab: 'opportunities', // 'opportunities', 'bot', 'ledger', 'methodology'
     viewMode: 'cards', // 'cards' (responsive stacked cards) or 'table' (dense desktop)
-    lastScanTime: Date.now(),
+    lastScanTime: 0,
     trackedLedger: storage.get(STORAGE_KEYS.LEDGER, []),
     alertConfig: storage.get(STORAGE_KEYS.ALERTS, {
       minEv: 8,
@@ -513,22 +516,36 @@
     return opportunities;
   }
 
-  /**
-   * Builds realistic multi-bookmaker market price comparison using central registry
-   */
-  function buildBookmakerOddsComparison(baseOdds, seedStr) {
+  // --- Module-Level Bookmaker Registry Cache ---
+  let cachedSupportedBookmakers = null;
+
+  function getCachedSupportedBookmakers() {
+    if (cachedSupportedBookmakers && cachedSupportedBookmakers.length > 0) {
+      return cachedSupportedBookmakers;
+    }
     let supported = DEFAULT_BOOKMAKERS;
     if (typeof window !== 'undefined' && typeof window.getSupportedBookmakers === 'function') {
-      const reg = window.getSupportedBookmakers({ includeUnavailable: false, role: 'target' });
-      if (Array.isArray(reg) && reg.length >= 3) {
-        supported = reg.slice(0, 5).map(b => ({
-          id: b.id,
-          name: b.name,
-          logo: b.logo || '🟢',
-          margin: 0.05
-        }));
-      }
+      try {
+        const reg = window.getSupportedBookmakers({ includeUnavailable: false, role: 'target' });
+        if (Array.isArray(reg) && reg.length >= 3) {
+          supported = reg.slice(0, 5).map(b => ({
+            id: b.id,
+            name: b.name,
+            logo: b.logo || '🟢',
+            margin: 0.05
+          }));
+        }
+      } catch (e) {}
     }
+    cachedSupportedBookmakers = supported;
+    return supported;
+  }
+
+  /**
+   * Builds realistic multi-bookmaker market price comparison using cached central registry
+   */
+  function buildBookmakerOddsComparison(baseOdds, seedStr) {
+    const supported = getCachedSupportedBookmakers();
 
     let seed = 0;
     const s = String(seedStr || 'seed');
@@ -655,7 +672,17 @@
     });
 
     state.filteredOpportunities = list;
+    state.currentPage = 1;
     return list;
+  }
+
+  /**
+   * Returns bounded slice of opportunities for smooth viewport rendering
+   */
+  function getVisibleOpportunities() {
+    const list = state.filteredOpportunities || [];
+    const limit = state.currentPage * state.pageSize;
+    return list.slice(0, limit);
   }
 
   // --- 6. ACTION DISPATCHERS & WORKFLOW INTEGRATIONS (Phases 10, 11, 12, 13, 14, 24, 34, 52) ---
@@ -915,7 +942,121 @@ https://deeppredictbet.pages.dev/value-bets`;
     return { total, settled: settled.length, won, lost, pending, strikeRate, roi, avgEv };
   }
 
-  // --- 8. UI RENDERING ENGINE (Phases 8, 43, 44, 45, 46, 61) ---
+  // --- 8. INSTANT SKELETON SHELL (0ms First Paint) ---
+  function renderSkeleton(containerId = "value-bet-bot-rows") {
+    if (typeof document === 'undefined') return;
+
+    let container = document.getElementById(containerId);
+    let parentPane = document.getElementById("tool-valuebot");
+    if (!parentPane && !container) return;
+
+    let rootWrap = document.getElementById("value-intelligence-suite-container");
+    if (!rootWrap && parentPane) {
+      parentPane.innerHTML = `<div id="value-intelligence-suite-container" style="width: 100%;"></div>`;
+      rootWrap = document.getElementById("value-intelligence-suite-container");
+    }
+    if (!rootWrap) rootWrap = container;
+    if (!rootWrap) return;
+
+    rootWrap.innerHTML = `
+      <style>
+        @keyframes dpShimmer {
+          0% { background-position: -200% 0; }
+          100% { background-position: 200% 0; }
+        }
+        .dp-skeleton {
+          background: linear-gradient(90deg, rgba(255,255,255,0.03) 25%, rgba(255,255,255,0.08) 50%, rgba(255,255,255,0.03) 75%);
+          background-size: 200% 100%;
+          animation: dpShimmer 1.5s infinite;
+          border-radius: 6px;
+        }
+      </style>
+      <div style="display: flex; align-items: flex-start; justify-content: space-between; flex-wrap: wrap; gap: 16px; margin-bottom: 20px; border-bottom: 1px solid rgba(56, 189, 248, 0.2); padding-bottom: 16px;">
+        <div style="max-width: 680px;">
+          <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 6px;">
+            <span style="font-size: 1.25rem;">💎</span>
+            <h3 style="font-size: 1.4rem; font-family: var(--font-display, sans-serif); font-weight: 900; background: linear-gradient(135deg, #ffffff 0%, #38bdf8 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; margin: 0; letter-spacing: 0.5px;">
+              VALUE INTELLIGENCE ENGINE
+            </h3>
+            <span style="background: rgba(56, 189, 248, 0.15); border: 1px solid rgba(56, 189, 248, 0.4); color: #38bdf8; font-size: 0.7rem; font-weight: 800; padding: 2px 8px; border-radius: 12px; text-transform: uppercase;">
+              v${ENGINE_VERSION}
+            </span>
+          </div>
+          <p style="font-size: 0.85rem; color: #94a3b8; margin: 0 0 6px 0; line-height: 1.45;">
+            Identify potential value opportunities when available bookmaker prices differ materially from DeepPredictBet's model estimates.
+          </p>
+          <div style="font-size: 0.72rem; color: #64748b;">
+            <span>⚡ Scanning market liquidity & calculating mathematical edge...</span>
+          </div>
+        </div>
+
+        <div style="display: flex; gap: 8px; flex-wrap: wrap; align-items: center;">
+          <button type="button" class="btn btn-secondary" style="font-size: 0.78rem; font-weight: 700; padding: 7px 14px; border-radius: 8px; display: inline-flex; align-items: center; gap: 6px; opacity: 0.7;" disabled>
+            <span>🔄</span> <span>Scanning...</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- SKELETON SUMMARY METRICS -->
+      <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 10px; margin-bottom: 20px;">
+        <div class="glass-card" style="padding: 12px 14px; border-radius: 10px; background: rgba(15, 23, 42, 0.4); border: 1px solid rgba(255, 255, 255, 0.06);">
+          <div class="dp-skeleton" style="width: 60%; height: 12px; margin-bottom: 8px;"></div>
+          <div class="dp-skeleton" style="width: 80%; height: 24px; margin-bottom: 6px;"></div>
+          <div class="dp-skeleton" style="width: 40%; height: 10px;"></div>
+        </div>
+        <div class="glass-card" style="padding: 12px 14px; border-radius: 10px; background: rgba(15, 23, 42, 0.4); border: 1px solid rgba(255, 255, 255, 0.06);">
+          <div class="dp-skeleton" style="width: 60%; height: 12px; margin-bottom: 8px;"></div>
+          <div class="dp-skeleton" style="width: 80%; height: 24px; margin-bottom: 6px;"></div>
+          <div class="dp-skeleton" style="width: 40%; height: 10px;"></div>
+        </div>
+        <div class="glass-card" style="padding: 12px 14px; border-radius: 10px; background: rgba(15, 23, 42, 0.4); border: 1px solid rgba(255, 255, 255, 0.06);">
+          <div class="dp-skeleton" style="width: 60%; height: 12px; margin-bottom: 8px;"></div>
+          <div class="dp-skeleton" style="width: 80%; height: 24px; margin-bottom: 6px;"></div>
+          <div class="dp-skeleton" style="width: 40%; height: 10px;"></div>
+        </div>
+        <div class="glass-card" style="padding: 12px 14px; border-radius: 10px; background: rgba(15, 23, 42, 0.4); border: 1px solid rgba(255, 255, 255, 0.06);">
+          <div class="dp-skeleton" style="width: 60%; height: 12px; margin-bottom: 8px;"></div>
+          <div class="dp-skeleton" style="width: 80%; height: 24px; margin-bottom: 6px;"></div>
+          <div class="dp-skeleton" style="width: 40%; height: 10px;"></div>
+        </div>
+        <div class="glass-card" style="padding: 12px 14px; border-radius: 10px; background: rgba(15, 23, 42, 0.4); border: 1px solid rgba(255, 255, 255, 0.06);">
+          <div class="dp-skeleton" style="width: 60%; height: 12px; margin-bottom: 8px;"></div>
+          <div class="dp-skeleton" style="width: 80%; height: 24px; margin-bottom: 6px;"></div>
+          <div class="dp-skeleton" style="width: 40%; height: 10px;"></div>
+        </div>
+      </div>
+
+      <!-- SKELETON CARDS -->
+      <div style="display: flex; flex-direction: column; gap: 14px;">
+        <div class="glass-card" style="padding: 18px 20px; border-radius: 12px; background: rgba(15, 23, 42, 0.55); border: 1px solid rgba(255, 255, 255, 0.08);">
+          <div style="display: flex; justify-content: space-between; margin-bottom: 12px;">
+            <div class="dp-skeleton" style="width: 140px; height: 18px;"></div>
+            <div class="dp-skeleton" style="width: 80px; height: 18px;"></div>
+          </div>
+          <div style="display: flex; justify-content: space-between; margin-bottom: 14px;">
+            <div class="dp-skeleton" style="width: 200px; height: 22px;"></div>
+            <div class="dp-skeleton" style="width: 110px; height: 18px;"></div>
+          </div>
+          <div class="dp-skeleton" style="width: 100%; height: 60px; margin-bottom: 14px;"></div>
+          <div class="dp-skeleton" style="width: 100%; height: 32px;"></div>
+        </div>
+        <div class="glass-card" style="padding: 18px 20px; border-radius: 12px; background: rgba(15, 23, 42, 0.55); border: 1px solid rgba(255, 255, 255, 0.08);">
+          <div style="display: flex; justify-content: space-between; margin-bottom: 12px;">
+            <div class="dp-skeleton" style="width: 140px; height: 18px;"></div>
+            <div class="dp-skeleton" style="width: 80px; height: 18px;"></div>
+          </div>
+          <div style="display: flex; justify-content: space-between; margin-bottom: 14px;">
+            <div class="dp-skeleton" style="width: 200px; height: 22px;"></div>
+            <div class="dp-skeleton" style="width: 110px; height: 18px;"></div>
+          </div>
+          <div class="dp-skeleton" style="width: 100%; height: 60px; margin-bottom: 14px;"></div>
+          <div class="dp-skeleton" style="width: 100%; height: 32px;"></div>
+        </div>
+      </div>
+    `;
+  }
+
+  // --- 9. UI RENDERING ENGINE (Phases 8, 43, 44, 45, 46, 61) ---
 
   function render(containerId = "value-bet-bot-rows") {
     if (typeof document === 'undefined') return;
@@ -1078,8 +1219,11 @@ https://deeppredictbet.pages.dev/value-bets`;
     }
   }
 
-  // --- 9. TAB 1: ACTIVE OPPORTUNITIES (Cards vs Table) ---
+  // --- 10. TAB 1: ACTIVE OPPORTUNITIES (Cards vs Table) ---
   function renderOpportunitiesTab(filtered) {
+    const visible = getVisibleOpportunities();
+    const hasMore = visible.length < filtered.length;
+
     return `
       <!-- FILTER & SORT CONTROLS BAR (Phases 15, 16) -->
       <div class="glass-card" style="padding: 14px; border-radius: 10px; background: rgba(15, 23, 42, 0.4); border: 1px solid rgba(255, 255, 255, 0.06); margin-bottom: 20px;">
@@ -1145,7 +1289,19 @@ https://deeppredictbet.pages.dev/value-bets`;
             Reset Filters
           </button>
         </div>
-      ` : (state.viewMode === 'cards' ? renderOpportunityCards(filtered) : renderOpportunityTable(filtered))}
+      ` : `
+        ${state.viewMode === 'cards' ? renderOpportunityCards(visible) : renderOpportunityTable(visible)}
+        ${hasMore ? `
+          <div style="text-align: center; margin-top: 20px; margin-bottom: 12px;">
+            <button type="button" onclick="ValueIntelligenceEngine.loadMore()" class="btn btn-secondary" style="font-size: 0.84rem; font-weight: 800; padding: 10px 24px; border-radius: 8px; cursor: pointer; border: 1px solid rgba(56, 189, 248, 0.35); color: #38bdf8; background: rgba(15, 23, 42, 0.7); display: inline-flex; align-items: center; gap: 8px; box-shadow: 0 4px 14px rgba(0,0,0,0.3); transition: all 0.2s ease;">
+              <span>⚡ Load More Opportunities</span>
+              <span style="background: rgba(56, 189, 248, 0.15); padding: 2px 8px; border-radius: 10px; font-size: 0.72rem; color: #ffffff;">
+                ${filtered.length - visible.length} remaining
+              </span>
+            </button>
+          </div>
+        ` : ''}
+      `}
     `;
   }
 
@@ -1514,12 +1670,40 @@ https://deeppredictbet.pages.dev/value-bets`;
     version: ENGINE_VERSION,
     math: math,
     state: state,
-    init() {
-      buildValueOpportunities();
+    init(containerId = "value-bet-bot-rows") {
+      // 1. If opportunities are already discovered and fresh (< 60s), render immediately (0ms paint)
+      if (Array.isArray(state.opportunities) && state.opportunities.length > 0 && (Date.now() - state.lastScanTime < 60000)) {
+        render(containerId);
+        return;
+      }
+
+      // 2. Render instant shell & skeleton state immediately (0ms First Paint)
+      renderSkeleton(containerId);
+
+      // 3. Defer scan cycle to next frame to keep UI thread 100% responsive
+      const executeScan = () => {
+        buildValueOpportunities();
+        render(containerId);
+      };
+
+      if (typeof window !== 'undefined' && typeof window.requestAnimationFrame === 'function') {
+        window.requestAnimationFrame(() => {
+          setTimeout(executeScan, 0);
+        });
+      } else {
+        setTimeout(executeScan, 0);
+      }
+    },
+    renderSkeleton: renderSkeleton,
+    loadMore() {
+      state.currentPage++;
       render();
     },
+    getVisibleOpportunities: getVisibleOpportunities,
     buildValueOpportunities: buildValueOpportunities,
     refreshOpportunities() {
+      cachedSupportedBookmakers = null;
+      state.currentPage = 1;
       buildValueOpportunities();
       notify("🔄 Refreshed markets: Scanned live opportunities.", "info");
       render();
@@ -1532,6 +1716,7 @@ https://deeppredictbet.pages.dev/value-bets`;
     },
     setFilter(key, val) {
       state.filters[key] = val;
+      state.currentPage = 1;
       applyFilters();
       render();
     },
@@ -1545,11 +1730,13 @@ https://deeppredictbet.pages.dev/value-bets`;
       state.filters.dataQuality = 'all';
       state.filters.status = 'all';
       state.filters.searchQuery = '';
+      state.currentPage = 1;
       applyFilters();
       render();
     },
     setSort(sortKey) {
       state.sortBy = sortKey;
+      state.currentPage = 1;
       applyFilters();
       render();
     },

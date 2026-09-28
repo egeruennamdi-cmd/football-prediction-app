@@ -3546,8 +3546,26 @@ runOnReady(() => {
   // Sync backtester visibility state
   if (typeof window.syncBacktesterPremiumState === 'function') window.syncBacktesterPremiumState();
   
-  // Render Value Bet Bot listings
-  if (typeof window.renderValueBetBot === 'function') window.renderValueBetBot();
+  // Render Value Intelligence Engine (Progressive Idle Deferral on non-value routes)
+  if (typeof window.renderValueBetBot === 'function') {
+    const isValueRoute = typeof window !== 'undefined' && (
+      (window.location.pathname && window.location.pathname.includes('value-bets')) ||
+      (window.location.hash && window.location.hash.includes('valuebot'))
+    );
+    if (isValueRoute) {
+      window.renderValueBetBot();
+    } else {
+      if (typeof window.requestIdleCallback === 'function') {
+        window.requestIdleCallback(() => {
+          if (typeof window.renderValueBetBot === 'function') window.renderValueBetBot();
+        }, { timeout: 1500 });
+      } else {
+        setTimeout(() => {
+          if (typeof window.renderValueBetBot === 'function') window.renderValueBetBot();
+        }, 400);
+      }
+    }
+  }
 
   // Render Top Tips Tool listings
   if (typeof window.renderTopTipsTool === 'function') window.renderTopTipsTool();
