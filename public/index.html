@@ -376,10 +376,10 @@
                     </div>
                   </a>
                   <a href="/value-bets" class="mega-menu-item nav-dropdown-item">
-                    <span class="mega-menu-icon" style="background: rgba(168, 85, 247, 0.15); color: #c084fc;">💎</span>
+                    <span class="mega-menu-icon" style="background: rgba(56, 189, 248, 0.15); color: #38bdf8;">💎</span>
                     <div class="mega-menu-text">
-                      <span class="mega-menu-title">Value Bets Bot</span>
-                      <span class="mega-menu-desc">Algorithmic positive EV+ picks</span>
+                      <span class="mega-menu-title">Value Intelligence</span>
+                      <span class="mega-menu-desc">Identify market discrepancies &amp; +EV edge</span>
                     </div>
                   </a>
                   <a href="/arbitrage" class="mega-menu-item nav-dropdown-item">
@@ -638,7 +638,7 @@
           </a>
           <a href="/value-bets" onclick="toggleMobileDrawer(); if(typeof navigateTo==='function'){navigateTo('/value-bets'); return false;}"
             style="color: #e2e8f0; font-size: 0.88rem; text-decoration: none; font-weight: 700; padding: 9px 12px; border-radius: 8px; background: rgba(255, 255, 255, 0.03); display: flex; align-items: center; gap: 10px; min-height: 42px; box-sizing: border-box;">
-            <span>💎</span> <span>Value Bets Bot</span>
+            <span>💎</span> <span>Value Intelligence</span>
           </a>
           <a href="/arbitrage" onclick="toggleMobileDrawer(); if(typeof navigateTo==='function'){navigateTo('/arbitrage'); return false;}"
             style="color: #e2e8f0; font-size: 0.88rem; text-decoration: none; font-weight: 700; padding: 9px 12px; border-radius: 8px; background: rgba(255, 255, 255, 0.03); display: flex; align-items: center; gap: 10px; min-height: 42px; box-sizing: border-box;">
@@ -1922,11 +1922,11 @@
               <div class="sec-tool-icon-wrap" style="color: #38bdf8;">
                 <span>💎</span>
               </div>
-              <span class="sec-tool-badge">+EV Opportunities</span>
+              <span class="sec-tool-badge">+EV Intelligence</span>
             </div>
-            <h3 class="sec-tool-title">Value Bet Finder</h3>
+            <h3 class="sec-tool-title">Value Intelligence Engine</h3>
             <p class="sec-tool-desc">
-              Find mispriced bookmaker odds where model probabilities exceed implied lines.
+              Identify potential value opportunities when available bookmaker prices differ materially from DeepPredictBet model estimates.
             </p>
             <button type="button" class="btn-sec-tool-cta" onclick="event.stopPropagation(); if(typeof navigateTo==='function'){navigateTo('/value-bets');}else{window.location.hash='/value-bets';}">
               <span>OPEN</span>
@@ -4129,7 +4129,7 @@
           <button class="tab-btn" id="tool-tab-backtester" onclick="switchTool('backtester', this)">Backtester</button>
           <button class="tab-btn" id="tool-tab-toptips" onclick="switchTool('toptips', this)">Top Tips Tracker</button>
           <button class="tab-btn" id="tool-tab-filters" onclick="switchTool('filters', this)">Advance Filters</button>
-          <button class="tab-btn" id="tool-tab-valuebot" onclick="switchTool('valuebot', this)">Value Bet Bot</button>
+          <button class="tab-btn" id="tool-tab-valuebot" onclick="switchTool('valuebot', this)">Value Intelligence</button>
         </div>
       </div>
 
@@ -5819,42 +5819,13 @@
           </div>
         </div>
 
-        <!-- TOOL 6: VALUE BET BOT -->
+        <!-- TOOL 6: VALUE INTELLIGENCE ENGINE -->
         <div id="tool-valuebot" class="tool-content-pane">
-          <div
-            style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 12px; margin-bottom: 20px; border-bottom: 1px solid rgba(245, 158, 11, 0.3); padding-bottom: 12px;">
-            <div>
-              <h3
-                style="font-size: 1.35rem; font-family: var(--font-display); font-weight: 900; background: linear-gradient(135deg, #ffffff 0%, #f59e0b 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; margin-bottom: 4px;">
-                💰 Algorithmic Value Bet Bot
-              </h3>
-              <p style="font-size: 0.8rem; color: var(--text-secondary); margin: 0;">
-                Detect market mispricings where bookmaker odds significantly exceed the model's calculated real
-                probability.
-              </p>
-            </div>
-            <span
-              style="background: rgba(245, 158, 11, 0.15); border: 1px solid rgba(245, 158, 11, 0.4); color: #fbbf24; font-size: 0.75rem; font-weight: 800; padding: 6px 14px; border-radius: 20px; text-transform: uppercase;">
-              📈 Positive EV Finder
-            </span>
+          <div id="value-intelligence-suite-container" style="width: 100%;">
+            <!-- Populated dynamically by ValueIntelligenceEngine.render() -->
           </div>
-
-          <div class="glass-card"
-            style="border: 1px solid var(--border-color); background: rgba(0, 0, 0, 0.15); overflow-x: auto; width: 100%;">
-            <!-- Table Headers -->
-            <div
-              style="display: grid; grid-template-columns: 1.5fr 1fr 1fr 1fr 1.2fr; min-width: 600px; align-items: center; padding: 12px 16px; border-bottom: 1px solid var(--border-color); font-weight: 700; color: var(--text-secondary); font-size: 0.85rem; background: rgba(255, 255, 255, 0.02);">
-              <span>Match Selection</span>
-              <span>Target Market</span>
-              <span>Bookie Odds</span>
-              <span>Model Odds</span>
-              <span style="text-align: right;">Expected Value (EV)</span>
-            </div>
-            <!-- Body list -->
-            <div id="value-bet-bot-rows">
-              <!-- Populated dynamically by JS -->
-            </div>
-          </div>
+          <!-- Fallback legacy rows container for backward compatibility -->
+          <div id="value-bet-bot-rows" style="display: none;"></div>
         </div>
 
       </div>
@@ -8995,6 +8966,7 @@
   <script defer src="/js/leagueNormalizer.js?v=20260927_league_v1"></script>
   <script defer src="/js/bookmakerRegistry.js?v=20260928_bookmaker_v1"></script>
   <script defer src="/js/paywallManager.js?v=20260927_paywall_v2"></script>
+  <script defer src="/js/valueIntelligenceEngine.js?v=20260928_v1"></script>
   <script defer src="/js/ui.js?v=20260925_mobile_footer_v1"></script>
   <script defer src="/js/pages.js?v=20260924_multipage_v3"></script>
   <script defer src="/js/router.js?v=20260924_multipage_v3"></script>

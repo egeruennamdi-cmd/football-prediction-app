@@ -4397,9 +4397,14 @@ function unlockPremiumPlan() {
   }
 }
 
-// Render Value Bet Bot listings
+// Render Value Intelligence Engine (formerly Value Bet Bot)
 function renderValueBetBot() {
-  const container = document.getElementById("value-bet-bot-rows");
+  if (typeof window !== 'undefined' && window.ValueIntelligenceEngine && typeof window.ValueIntelligenceEngine.init === 'function') {
+    window.ValueIntelligenceEngine.init();
+    return;
+  }
+
+  const container = document.getElementById("value-intelligence-suite-container") || document.getElementById("value-bet-bot-rows");
   if (!container) return;
   container.innerHTML = "";
 
@@ -4441,6 +4446,7 @@ function renderValueBetBot() {
   });
 }
 window.renderValueBetBot = renderValueBetBot;
+window.renderValueIntelligenceEngine = renderValueBetBot;
 
 // Sync Strategy Backtester visibility with premium unlocked state
 function syncBacktesterPremiumState() {
