@@ -1545,13 +1545,17 @@
   };
 
   window.sendTicketToBetDoctor = function (bookingCode) {
-    const code = (bookingCode || 'BC1A7X').trim().toUpperCase();
-    const doctorInput = document.getElementById("bet-doctor-input-code");
+    const code = (bookingCode || '').trim().toUpperCase();
+    const doctorInput = document.getElementById("bet-doctor-input-code") || document.getElementById("bet-doctor-code-input");
     if (doctorInput) doctorInput.value = code;
     window.navigateTo('/bet-doctor');
     setTimeout(() => {
-      if (typeof window.runBetDoctorAudit === 'function') {
+      if (code && typeof window.runBetDoctorAudit === 'function') {
         window.runBetDoctorAudit(false);
+      } else if (!code && window.appState && Array.isArray(window.appState.betslip) && window.appState.betslip.length > 0 && typeof window.auditActiveBetslipInDoctor === 'function') {
+        window.auditActiveBetslipInDoctor();
+      } else if (typeof window.renderBetDoctorEmptyState === 'function') {
+        window.renderBetDoctorEmptyState();
       }
     }, 150);
   };
