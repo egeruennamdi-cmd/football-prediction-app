@@ -5376,6 +5376,44 @@
             </span>
           </div>
 
+          <!-- PRESETS QUICK BAR (Phase 49) -->
+          <div style="margin-bottom: 20px; background: rgba(15, 23, 42, 0.45); border: 1px solid rgba(255, 255, 255, 0.08); border-radius: var(--radius-md); padding: 14px 18px;">
+            <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 8px; margin-bottom: 10px;">
+              <span style="font-size: 0.78rem; font-weight: 800; color: #cbd5e1; text-transform: uppercase; letter-spacing: 0.5px;">
+                ⚡ Statistical Research Presets
+              </span>
+              <span style="font-size: 0.72rem; color: #64748b;">
+                Instant 1-Click Algorithmic Filtering
+              </span>
+            </div>
+            <div style="display: flex; gap: 8px; overflow-x: auto; padding-bottom: 4px; -webkit-overflow-scrolling: touch;">
+              <button type="button" onclick="if(window.AdvancedFiltersEngine) window.AdvancedFiltersEngine.applyPreset('high-over25');" class="btn btn-secondary" style="font-size: 0.78rem; padding: 7px 14px; white-space: nowrap; border-radius: 6px; cursor: pointer; border: 1px solid rgba(255,255,255,0.08);">
+                🔥 High Over 2.5
+              </button>
+              <button type="button" onclick="if(window.AdvancedFiltersEngine) window.AdvancedFiltersEngine.applyPreset('high-btts');" class="btn btn-secondary" style="font-size: 0.78rem; padding: 7px 14px; white-space: nowrap; border-radius: 6px; cursor: pointer; border: 1px solid rgba(255,255,255,0.08);">
+                ⚽ High BTTS
+              </button>
+              <button type="button" onclick="if(window.AdvancedFiltersEngine) window.AdvancedFiltersEngine.applyPreset('home-dominance');" class="btn btn-secondary" style="font-size: 0.78rem; padding: 7px 14px; white-space: nowrap; border-radius: 6px; cursor: pointer; border: 1px solid rgba(255,255,255,0.08);">
+                🏰 Home Dominance
+              </button>
+              <button type="button" onclick="if(window.AdvancedFiltersEngine) window.AdvancedFiltersEngine.applyPreset('away-scoring');" class="btn btn-secondary" style="font-size: 0.78rem; padding: 7px 14px; white-space: nowrap; border-radius: 6px; cursor: pointer; border: 1px solid rgba(255,255,255,0.08);">
+                🚀 Away Scoring
+              </button>
+              <button type="button" onclick="if(window.AdvancedFiltersEngine) window.AdvancedFiltersEngine.applyPreset('high-corners');" class="btn btn-secondary" style="font-size: 0.78rem; padding: 7px 14px; white-space: nowrap; border-radius: 6px; cursor: pointer; border: 1px solid rgba(255,255,255,0.08);">
+                📐 High Corners
+              </button>
+              <button type="button" onclick="if(window.AdvancedFiltersEngine) window.AdvancedFiltersEngine.applyPreset('high-goals-env');" class="btn btn-secondary" style="font-size: 0.78rem; padding: 7px 14px; white-space: nowrap; border-radius: 6px; cursor: pointer; border: 1px solid rgba(255,255,255,0.08);">
+                🎯 High Goals
+              </button>
+              <button type="button" onclick="if(window.AdvancedFiltersEngine) window.AdvancedFiltersEngine.applyPreset('value-research');" class="btn btn-secondary" style="font-size: 0.78rem; padding: 7px 14px; white-space: nowrap; border-radius: 6px; cursor: pointer; border: 1px solid rgba(255,255,255,0.08);">
+                💎 Value Research
+              </button>
+              <button type="button" onclick="if(window.AdvancedFiltersEngine) window.AdvancedFiltersEngine.applyPreset('form-reversal');" class="btn btn-secondary" style="font-size: 0.78rem; padding: 7px 14px; white-space: nowrap; border-radius: 6px; cursor: pointer; border: 1px solid rgba(255,255,255,0.08);">
+                🔄 Form Reversal
+              </button>
+            </div>
+          </div>
+
           <!-- Filter Bar Controls -->
           <div
             style="background: var(--bg-dark-accent); border: 1px solid var(--border-color); border-radius: var(--radius-md); padding: 24px; display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 20px; margin-bottom: 24px;">
@@ -5643,6 +5681,40 @@
               </div>
             </div>
 
+            <!-- Collapsible Advanced Conditions (Phase 6, 7, 8) -->
+            <div style="grid-column: 1 / -1; border-top: 1px solid rgba(255, 255, 255, 0.08); padding-top: 14px;">
+              <details style="cursor: pointer;">
+                <summary style="font-size: 0.8rem; font-weight: 700; color: #60a5fa; outline: none; user-select: none;">
+                  ⚙️ Advanced Statistical Conditions: Home/Away Splits, Windows &amp; Compound Logic
+                </summary>
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px; margin-top: 14px; background: rgba(0, 0, 0, 0.2); padding: 16px; border-radius: 8px;">
+                  <div class="form-group" style="display: flex; flex-direction: column; gap: 4px;">
+                    <label style="font-size: 0.72rem; font-weight: 600; color: var(--text-secondary);">Form Sample Window</label>
+                    <select id="filt-form-window" onchange="if(typeof runAdvancedFilters==='function') runAdvancedFilters();" style="background: var(--bg-dark); border: 1px solid var(--border-color); border-radius: var(--radius-sm); padding: 7px; color: var(--text-primary); font-size: 0.78rem;">
+                      <option value="last5">Last 5 Matches</option>
+                      <option value="last10" selected>Last 10 Matches (Recommended)</option>
+                      <option value="last20">Last 20 Matches</option>
+                      <option value="season">Full Current Season</option>
+                    </select>
+                  </div>
+                  <div class="form-group" style="display: flex; flex-direction: column; gap: 4px;">
+                    <label style="font-size: 0.72rem; font-weight: 600; color: var(--text-secondary);">Condition Logic Operator</label>
+                    <select id="filt-compound-operator" onchange="if(typeof runAdvancedFilters==='function') runAdvancedFilters();" style="background: var(--bg-dark); border: 1px solid var(--border-color); border-radius: var(--radius-sm); padding: 7px; color: var(--text-primary); font-size: 0.78rem;">
+                      <option value="AND" selected>Strict AND (All Criteria Must Pass)</option>
+                      <option value="OR">Compound OR (Any Strong Signal Passes)</option>
+                    </select>
+                  </div>
+                  <div class="form-group" style="display: flex; flex-direction: column; gap: 4px;">
+                    <label style="font-size: 0.72rem; font-weight: 600; color: var(--text-secondary);">Min Home Win % (Splits)</label>
+                    <input type="number" id="filt-home-win-pct" min="0" max="100" value="0" step="5" oninput="if(typeof runAdvancedFilters==='function') runAdvancedFilters();" style="background: var(--bg-dark); border: 1px solid var(--border-color); border-radius: var(--radius-sm); padding: 7px; color: var(--text-primary); font-size: 0.78rem;">
+                  </div>
+                  <div class="form-group" style="display: flex; flex-direction: column; gap: 4px;">
+                    <label style="font-size: 0.72rem; font-weight: 600; color: var(--text-secondary);">Min Away Loss % (Splits)</label>
+                    <input type="number" id="filt-away-loss-pct" min="0" max="100" value="0" step="5" oninput="if(typeof runAdvancedFilters==='function') runAdvancedFilters();" style="background: var(--bg-dark); border: 1px solid var(--border-color); border-radius: var(--radius-sm); padding: 7px; color: var(--text-primary); font-size: 0.78rem;">
+                  </div>
+                </div>
+              </details>
+            </div>
           </div>
 
           <div style="display: flex; justify-content: flex-end; gap: 12px; margin-bottom: 24px; margin-top: -12px;">
@@ -8967,6 +9039,7 @@
   <script defer src="/js/bookmakerRegistry.js?v=20260928_bookmaker_v1"></script>
   <script defer src="/js/paywallManager.js?v=20260927_paywall_v2"></script>
   <script defer src="/js/valueIntelligenceEngine.js?v=20260928_v1"></script>
+  <script defer src="/js/advancedFiltersEngine.js?v=20260929_v1"></script>
   <script defer src="/js/ui.js?v=20260925_mobile_footer_v1"></script>
   <script defer src="/js/pages.js?v=20260924_multipage_v3"></script>
   <script defer src="/js/router.js?v=20260924_multipage_v3"></script>

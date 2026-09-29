@@ -1434,7 +1434,11 @@ window.switchTool = function switchTool(toolId, btn, skipRouterPush) {
     } else if (toolId === 'doctor') {
       if (typeof runBetDoctorAudit === 'function') runBetDoctorAudit();
     } else if (toolId === 'filters') {
-      if (typeof runAdvancedFilters === 'function') runAdvancedFilters();
+      if (typeof window !== 'undefined' && window.AdvancedFiltersEngine && typeof window.AdvancedFiltersEngine.init === 'function') {
+        window.AdvancedFiltersEngine.init();
+      } else if (typeof runAdvancedFilters === 'function') {
+        runAdvancedFilters();
+      }
     }
   }
 
@@ -11752,6 +11756,11 @@ function renderAdvancedFilteredCards(matches, container) {
 }
 
 function runAdvancedFilters() {
+  if (typeof window !== 'undefined' && window.AdvancedFiltersEngine && typeof window.AdvancedFiltersEngine.run === 'function') {
+    window.AdvancedFiltersEngine.run();
+    return;
+  }
+
   const container = document.getElementById("filter-output-container");
   if (!container) return;
 
@@ -11969,6 +11978,11 @@ function runAdvancedFilters() {
 }
 
 function resetAdvancedFilters() {
+  if (typeof window !== 'undefined' && window.AdvancedFiltersEngine && typeof window.AdvancedFiltersEngine.reset === 'function') {
+    window.AdvancedFiltersEngine.reset();
+    return;
+  }
+
   const mSelect = document.getElementById("filt-market-select");
   if (mSelect) mSelect.value = "all";
   if (typeof onFilterMarketChange === 'function') onFilterMarketChange();
