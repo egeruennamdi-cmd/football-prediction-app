@@ -3568,7 +3568,11 @@ runOnReady(() => {
   }
 
   // Render Top Tips Tool listings
-  if (typeof window.renderTopTipsTool === 'function') window.renderTopTipsTool();
+  if (typeof window !== 'undefined' && window.TopTipsTrackerEngine && typeof window.TopTipsTrackerEngine.init === 'function') {
+    window.TopTipsTrackerEngine.init();
+  } else if (typeof window.renderTopTipsTool === 'function') {
+    window.renderTopTipsTool();
+  }
 
   // Render accuracy chart
   if (typeof window.renderAccuracyChart === 'function') window.renderAccuracyChart();

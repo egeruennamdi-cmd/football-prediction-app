@@ -1426,7 +1426,11 @@ window.switchTool = function switchTool(toolId, btn, skipRouterPush) {
     } else if (toolId === 'valuebot') {
       if (typeof renderValueBetBot === 'function') renderValueBetBot();
     } else if (toolId === 'toptips') {
-      if (typeof renderTopTipsTool === 'function') renderTopTipsTool();
+      if (typeof window !== 'undefined' && window.TopTipsTrackerEngine && typeof window.TopTipsTrackerEngine.init === 'function') {
+        window.TopTipsTrackerEngine.init();
+      } else if (typeof renderTopTipsTool === 'function') {
+        renderTopTipsTool();
+      }
     } else if (toolId === 'backtester') {
       if (typeof window !== 'undefined' && window.StrategyBacktestingEngine && typeof window.StrategyBacktestingEngine.init === 'function') {
         window.StrategyBacktestingEngine.init();
@@ -2597,6 +2601,10 @@ function renderH2HHistory() {
 
 // Render Top Tips tracker inside the Betting Suite
 function renderTopTipsTool() {
+  if (typeof window !== 'undefined' && window.TopTipsTrackerEngine && typeof window.TopTipsTrackerEngine.init === 'function') {
+    window.TopTipsTrackerEngine.init();
+    return;
+  }
   const container = document.getElementById("toptips-tool-rows");
   if (!container) return;
   container.innerHTML = "";
@@ -3091,7 +3099,11 @@ function switchTopTipsToolMarket(marketVal, btn) {
     btn.classList.add("selected");
   }
 
-  renderTopTipsTool();
+  if (typeof window !== 'undefined' && window.TopTipsTrackerEngine && typeof window.TopTipsTrackerEngine.setMarketFilter === 'function') {
+    window.TopTipsTrackerEngine.setMarketFilter(marketVal);
+  } else {
+    renderTopTipsTool();
+  }
 }
 window.switchTopTipsToolMarket = switchTopTipsToolMarket;
 
