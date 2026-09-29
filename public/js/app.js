@@ -3507,7 +3507,10 @@ function initAppEngine() {
   // 3. Priority 1 Core DOM Mount (Active View / FCP Critical)
   if (typeof initCommandCenter === 'function') initCommandCenter();
   if (typeof renderDeepPredictBetDateBar === 'function') renderDeepPredictBetDateBar();
-  if (typeof renderMatchCards === 'function') renderMatchCards(typeof MATCH_DATA !== 'undefined' ? MATCH_DATA : (window.MATCH_DATA || []));
+  const initialPath = (window.location.pathname || '').replace(/\/$/, '') || '/';
+  if ((initialPath === '/predictions' || initialPath.startsWith('/predictions/')) && typeof renderMatchCards === 'function') {
+    renderMatchCards(typeof MATCH_DATA !== 'undefined' ? MATCH_DATA : (window.MATCH_DATA || []));
+  }
   if (typeof renderDailyBets === 'function') renderDailyBets();
   if (typeof renderTrends === 'function') renderTrends();
 
@@ -3562,6 +3565,14 @@ function initAppEngine() {
     // Render live scanner
     if (typeof renderLiveScanner === 'function') renderLiveScanner();
     if (typeof window.startLiveAlertsScanner === 'function') window.startLiveAlertsScanner();
+
+    // Idle pre-population of predictions grid if empty
+    const grid = document.getElementById("fixtures-grid");
+    if (grid && (!grid.children || grid.children.length === 0)) {
+      if (typeof renderMatchCards === 'function') {
+        renderMatchCards(typeof MATCH_DATA !== 'undefined' ? MATCH_DATA : (window.MATCH_DATA || []));
+      }
+    }
 
     // Route-aware tool checks
     const currentNormPath = (window.location.pathname || '').replace(/\/$/, '') || '/';
