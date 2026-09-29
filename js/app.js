@@ -4478,6 +4478,11 @@ function syncBacktesterPremiumState() {
   activeModule.style.display = "grid";
 
   // Auto-run simulation output if metrics are not populated yet
+  if (typeof window !== 'undefined' && window.StrategyBacktestingEngine && typeof window.StrategyBacktestingEngine.init === 'function') {
+    window.StrategyBacktestingEngine.init();
+    return;
+  }
+
   const yieldEl = document.getElementById("bt-yield-val");
   const yieldText = (yieldEl ? (yieldEl.textContent || yieldEl.innerText || '') : '').trim();
   if (yieldText === '--' || yieldText === '') {
@@ -4543,6 +4548,10 @@ window.renderBacktestSVGChart = renderBacktestSVGChart;
 
 // Strategy Backtester Run Simulation
 function runBacktestSimulation(instant) {
+  if (typeof window !== 'undefined' && window.StrategyBacktestingEngine && typeof window.StrategyBacktestingEngine.run === 'function') {
+    window.StrategyBacktestingEngine.run(instant);
+    return;
+  }
   const progressWrapper = document.getElementById("bt-progress-wrapper");
   const progressBar = document.getElementById("bt-progress-bar");
   

@@ -1428,7 +1428,11 @@ window.switchTool = function switchTool(toolId, btn, skipRouterPush) {
     } else if (toolId === 'toptips') {
       if (typeof renderTopTipsTool === 'function') renderTopTipsTool();
     } else if (toolId === 'backtester') {
-      if (typeof syncBacktesterPremiumState === 'function') syncBacktesterPremiumState();
+      if (typeof window !== 'undefined' && window.StrategyBacktestingEngine && typeof window.StrategyBacktestingEngine.init === 'function') {
+        window.StrategyBacktestingEngine.init();
+      } else if (typeof syncBacktesterPremiumState === 'function') {
+        syncBacktesterPremiumState();
+      }
     } else if (toolId === 'machine' || toolId === 'generator') {
       if (typeof generateMachineTicket === 'function') generateMachineTicket();
     } else if (toolId === 'doctor') {
@@ -2142,6 +2146,11 @@ window.renderBacktestSVGChart = renderBacktestSVGChart;
 
 // Strategy Backtester Run Simulation
 function runBacktestSimulation(instant) {
+  if (typeof window !== 'undefined' && window.StrategyBacktestingEngine && typeof window.StrategyBacktestingEngine.run === 'function') {
+    window.StrategyBacktestingEngine.run(instant);
+    return;
+  }
+
   const progressWrapper = document.getElementById("bt-progress-wrapper");
   const progressBar = document.getElementById("bt-progress-bar");
   
