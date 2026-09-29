@@ -9978,26 +9978,7 @@ function renderSidebarTopLeagues() {
   }
 }
 
-// old filterSidebarTopLeagues replaced
-
-// Auto-run on load with retries
-if (document.readyState === 'loading') {
-  document.addEventListener('DOMContentLoaded', function() {
-    renderSidebarTopLeagues();
-    setTimeout(renderSidebarTopLeagues, 300);
-    setTimeout(renderSidebarTopLeagues, 1000);
-  });
-} else {
-  renderSidebarTopLeagues();
-  setTimeout(renderSidebarTopLeagues, 300);
-  setTimeout(renderSidebarTopLeagues, 1000);
-}
-
-window.addEventListener('load', function() {
-  renderSidebarTopLeagues();
-});
-
-// Global Exports
+// Global Exports (Invoked once during structured app initialization)
 window.renderSidebarTopLeagues = renderSidebarTopLeagues;
 if (typeof filterSidebarTopLeagues === 'function') window.filterSidebarTopLeagues = filterSidebarTopLeagues;
 
@@ -10190,24 +10171,7 @@ function toggleSidebarCountryAccordion(idx, btn) {
   }
 }
 
-// Auto-run on load with retries
-if (document.readyState === 'loading') {
-  document.addEventListener('DOMContentLoaded', function() {
-    renderSidebarCountries();
-    setTimeout(renderSidebarCountries, 300);
-    setTimeout(renderSidebarCountries, 1000);
-  });
-} else {
-  renderSidebarCountries();
-  setTimeout(renderSidebarCountries, 300);
-  setTimeout(renderSidebarCountries, 1000);
-}
-
-window.addEventListener('load', function() {
-  renderSidebarCountries();
-});
-
-// Global Exports
+// Global Exports (Invoked once during structured app initialization)
 window.renderSidebarCountries = renderSidebarCountries;
 window.filterSidebarCountries = filterSidebarCountries;
 window.toggleSidebarCountryAccordion = toggleSidebarCountryAccordion;
@@ -10361,18 +10325,9 @@ function loadRecentConversion(srcCode) {
   }
 }
 
-// Auto-run on load with retries
-if (document.readyState === 'loading') {
-  document.addEventListener('DOMContentLoaded', function() {
-    renderRecentConvertedSlips();
-    setTimeout(renderRecentConvertedSlips, 300);
-    setTimeout(renderRecentConvertedSlips, 1000);
-  });
-} else {
-  renderRecentConvertedSlips();
-  setTimeout(renderRecentConvertedSlips, 300);
-  setTimeout(renderRecentConvertedSlips, 1000);
-}
+// Global Exports (Invoked on-demand when converter is active)
+window.renderRecentConvertedSlips = renderRecentConvertedSlips;
+window.loadRecentConversion = loadRecentConversion;
 
 function resolveConverterInputs() {
   const mainCodeEl = document.getElementById("betcode-src-code");

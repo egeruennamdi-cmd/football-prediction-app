@@ -3068,9 +3068,10 @@ window.selectDeepPredictBetLive = selectDeepPredictBetLive;
 
 // Dynamic API-Football Real-Time Ingestion Client
 async function syncDynamicSeasonData(showToastNotification = false) {
+  if (typeof document !== 'undefined' && document.hidden) return;
   const backendBaseUrl = (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1')
     ? 'http://localhost:5000'
-    : (window.BACKEND_API_URL || 'http://localhost:5000');
+    : (window.BACKEND_API_URL || 'https://deeppredictbet-backend.onrender.com');
 
   try {
     const controller = new AbortController();
@@ -3470,123 +3471,15 @@ window.handleCommandScoutSubmit = handleCommandScoutSubmit;
 window.executeCommandScoutPrompt = executeCommandScoutPrompt;
 
 function initAppEngine() {
-  // Initialize state
+  if (window.__dpAppInitialized) return;
+  window.__dpAppInitialized = true;
+
+  // 1. Initialize core state
+  window.appState = window.appState || {};
   window.appState.watchlist = window.appState.watchlist || [];
   window.appState.activeScoutMatchId = null;
 
-  // Initialize Command Center
-  if (typeof initCommandCenter === 'function') initCommandCenter();
-
-  // Render initially all matches
-  if (typeof renderMatchCards === 'function') renderMatchCards(MATCH_DATA);
-  
-  // Render country accordion sidebar directory list
-  if (typeof renderSidebarDirectory === 'function') renderSidebarDirectory();
-
-  // Render universal date & live bar
-  if (typeof renderDeepPredictBetDateBar === 'function') renderDeepPredictBetDateBar();
-
-  // Render top leagues sidebar list
-  if (typeof renderSidebarTopLeagues === 'function') renderSidebarTopLeagues();
-
-  // Render live match scanner
-  if (typeof renderLiveScanner === 'function') renderLiveScanner();
-
-  // Render Daily Curated Bets
-  if (typeof renderDailyBets === 'function') renderDailyBets();
-
-  // Initialize standalone Bet Code Converter
-  if (typeof initBetPaddiConverter === 'function') initBetPaddiConverter();
-
-  // Trigger dynamic real-time season sync and set 60s background updater
-  syncDynamicSeasonData(false);
-  setInterval(() => syncDynamicSeasonData(false), 60000);
-}
-
-runOnReady(initAppEngine);
-window.addEventListener("load", initAppEngine);
-
-// Initialize Application on DOM Load
-runOnReady(() => {
-  // Initialize state
-  window.appState.watchlist = [];
-  window.appState.activeScoutMatchId = null;
-
-  // Initialize Command Center
-  if (typeof window.initCommandCenter === 'function') window.initCommandCenter();
-
-  // Render initially all matches
-  if (typeof window.renderMatchCards === 'function') window.renderMatchCards(window.MATCH_DATA || []);
-  
-  // Render country accordion sidebar directory list
-  if (typeof window.renderSidebarDirectory === 'function') window.renderSidebarDirectory();
-
-  // Render universal date & live bar
-  if (typeof window.renderDeepPredictBetDateBar === 'function') window.renderDeepPredictBetDateBar();
-
-  // Render top leagues sidebar list
-  if (typeof window.renderSidebarTopLeagues === 'function') window.renderSidebarTopLeagues();
-
-  // Render live match scanner
-  if (typeof window.renderLiveScanner === 'function') window.renderLiveScanner();
-
-  // Render Daily Curated Bets
-  if (typeof window.renderDailyBets === 'function') window.renderDailyBets();
-
-  // Initialize standalone Bet Code Converter
-  if (typeof window.initBetCodeConverter === 'function') window.initBetCodeConverter();
-  if (typeof window.renderRecentConvertedSlips === 'function') window.renderRecentConvertedSlips();
-
-  // Render Hot Trends Ticker
-  if (typeof window.renderTrends === 'function') window.renderTrends();
-
-  // Render League Stats Ledger
-  if (typeof window.renderLeagueStatsLedger === 'function') window.renderLeagueStatsLedger();
-
-  // Sync backtester visibility state
-  if (typeof window.syncBacktesterPremiumState === 'function') window.syncBacktesterPremiumState();
-  
-  // Render Value Intelligence Engine (Progressive Idle Deferral on non-value routes)
-  if (typeof window.renderValueBetBot === 'function') {
-    const isValueRoute = typeof window !== 'undefined' && (
-      (window.location.pathname && window.location.pathname.includes('value-bets')) ||
-      (window.location.hash && window.location.hash.includes('valuebot'))
-    );
-    if (isValueRoute) {
-      window.renderValueBetBot();
-    } else {
-      if (typeof window.requestIdleCallback === 'function') {
-        window.requestIdleCallback(() => {
-          if (typeof window.renderValueBetBot === 'function') window.renderValueBetBot();
-        }, { timeout: 1500 });
-      } else {
-        setTimeout(() => {
-          if (typeof window.renderValueBetBot === 'function') window.renderValueBetBot();
-        }, 400);
-      }
-    }
-  }
-
-  // Render Top Tips Tool listings
-  if (typeof window !== 'undefined' && window.TopTipsTrackerEngine && typeof window.TopTipsTrackerEngine.init === 'function') {
-    window.TopTipsTrackerEngine.init();
-  } else if (typeof window.renderTopTipsTool === 'function') {
-    window.renderTopTipsTool();
-  }
-
-  // Render accuracy chart
-  if (typeof window.renderAccuracyChart === 'function') window.renderAccuracyChart();
-
-  // Render inline leaderboard challenge sidebar
-  if (typeof window.switchInlineLeadTab === 'function') window.switchInlineLeadTab('monthly');
-
-  // Render inline store shop sidebar
-  if (typeof window.switchInlineStoreTab === 'function') window.switchInlineStoreTab('shop');
-
-  // Render inline user hub sidebar
-  if (typeof window.switchInlineUserTab === 'function') window.switchInlineUserTab('profile');
-
-  // Hydrate betslip and unavailable items from localStorage if available
+  // 2. Hydrate betslip and unavailable items from localStorage
   if (!window.appState.betslip || window.appState.betslip.length === 0) {
     try {
       const savedBetslip = localStorage.getItem("dp_betslip");
@@ -3611,7 +3504,14 @@ runOnReady(() => {
     }
   }
 
-  // Initialize Active Betslip Builder with curated picks if empty, or render hydrated state
+  // 3. Priority 1 Core DOM Mount (Active View / FCP Critical)
+  if (typeof initCommandCenter === 'function') initCommandCenter();
+  if (typeof renderDeepPredictBetDateBar === 'function') renderDeepPredictBetDateBar();
+  if (typeof renderMatchCards === 'function') renderMatchCards(typeof MATCH_DATA !== 'undefined' ? MATCH_DATA : (window.MATCH_DATA || []));
+  if (typeof renderDailyBets === 'function') renderDailyBets();
+  if (typeof renderTrends === 'function') renderTrends();
+
+  // 4. Initialize Active Betslip Builder with curated picks if empty, or render hydrated state
   if (window.appState.betslip && window.appState.betslip.length > 0) {
     if (typeof window.renderBetslip === 'function') window.renderBetslip();
   } else if (typeof window.generateScoutAccumulator === 'function') {
@@ -3620,48 +3520,86 @@ runOnReady(() => {
     window.renderBetslip();
   }
 
-  // Initialize advanced filter sub-markets options
+  // 5. Initialize advanced filter sub-markets options
   if (typeof window.onFilterMarketChange === 'function') window.onFilterMarketChange();
 
-  // Set up parallax glow movement effect on cards
-  const cards = document.querySelectorAll(".glass-card");
+  // 6. Set up parallax glow movement effect on cards (optimized via event delegation on hover only)
   document.addEventListener("mousemove", (e) => {
-    cards.forEach(card => {
+    const card = e.target && e.target.closest ? e.target.closest(".glass-card") : null;
+    if (card) {
       const rect = card.getBoundingClientRect();
       const x = e.clientX - rect.left;
       const y = e.clientY - rect.top;
       card.style.setProperty("--mouse-x", `${x}px`);
       card.style.setProperty("--mouse-y", `${y}px`);
-    });
-  });
+    }
+  }, { passive: true });
 
-  // Start background live in-play scanner notifications check
-  if (typeof window.startLiveAlertsScanner === 'function') window.startLiveAlertsScanner();
+  // 7. Background / Non-Critical Secondary Tasks (Deferred to Idle Callback or next tick)
+  const scheduleDeferredTasks = () => {
+    // Render sidebars once
+    if (typeof renderSidebarDirectory === 'function') renderSidebarDirectory();
+    if (typeof renderSidebarTopLeagues === 'function') renderSidebarTopLeagues();
+    if (typeof renderLeagueStatsLedger === 'function') renderLeagueStatsLedger();
+    if (typeof renderAccuracyChart === 'function') renderAccuracyChart();
 
-  // Initialize the standalone live scanner
-  if (typeof window.renderLiveScanner === 'function') window.renderLiveScanner();
+    // Render inline sidebars
+    if (typeof window.switchInlineLeadTab === 'function') window.switchInlineLeadTab('monthly');
+    if (typeof window.switchInlineStoreTab === 'function') window.switchInlineStoreTab('shop');
+    if (typeof window.switchInlineUserTab === 'function') window.switchInlineUserTab('profile');
 
-  // Programmatically trigger the default active tool tab to ensure layout sync
-  if (typeof switchTool === 'function') {
-    const defaultTab = document.querySelector(`#deeppredictbet-tools .tabs-container > .tab-btn[onclick*="machine"]`);
-    if (defaultTab) {
-      const currentNormPath = (window.location.pathname || '').replace(/\/$/, '') || '/';
-      if (currentNormPath === '/' || currentNormPath === '/predictions' || currentNormPath === '/generator') {
-        switchTool('machine', defaultTab, true);
+    // Standalone Bet Code Converter init
+    if (typeof initBetPaddiConverter === 'function') initBetPaddiConverter();
+    if (typeof window.initBetCodeConverter === 'function') window.initBetCodeConverter();
+
+    // Populate search and calendar selectors
+    if (typeof populateSearchSuggestions === 'function') populateSearchSuggestions();
+    if (typeof populateCalSelectors === 'function') populateCalSelectors();
+
+    // Sync backtester visibility state
+    if (typeof window.syncBacktesterPremiumState === 'function') window.syncBacktesterPremiumState();
+
+    // Render live scanner
+    if (typeof renderLiveScanner === 'function') renderLiveScanner();
+    if (typeof window.startLiveAlertsScanner === 'function') window.startLiveAlertsScanner();
+
+    // Route-aware tool checks
+    const currentNormPath = (window.location.pathname || '').replace(/\/$/, '') || '/';
+    if (currentNormPath.includes('value-bets') || (window.location.hash && window.location.hash.includes('valuebot'))) {
+      if (typeof window.renderValueBetBot === 'function') window.renderValueBetBot();
+    }
+    if (currentNormPath.includes('top-tips') || (window.location.hash && window.location.hash.includes('toptips'))) {
+      if (window.TopTipsTrackerEngine && typeof window.TopTipsTrackerEngine.init === 'function') {
+        window.TopTipsTrackerEngine.init();
+      } else if (typeof window.renderTopTipsTool === 'function') {
+        window.renderTopTipsTool();
       }
     }
-  }
+    if (currentNormPath === '/generator' || document.getElementById('view-generator')?.classList.contains('active')) {
+      if (typeof switchTool === 'function') {
+        const defaultTab = document.querySelector(`#deeppredictbet-tools .tabs-container > .tab-btn[onclick*="machine"]`);
+        if (defaultTab) switchTool('machine', defaultTab, true);
+      }
+    }
 
-  // Populate search suggestions datalist options
-  if (typeof populateSearchSuggestions === 'function') {
-    populateSearchSuggestions();
-  }
+    // Dynamic API-Football Real-Time Ingestion (starts after initial render and non-blocking)
+    syncDynamicSeasonData(false);
+    if (!window.__dpSeasonSyncInterval) {
+      window.__dpSeasonSyncInterval = setInterval(() => {
+        if (typeof document !== 'undefined' && !document.hidden) syncDynamicSeasonData(false);
+      }, 60000);
+    }
+  };
 
-  // Populate calendar selector options
-  if (typeof populateCalSelectors === 'function') {
-    populateCalSelectors();
+  if (typeof window.requestIdleCallback === 'function') {
+    window.requestIdleCallback(scheduleDeferredTasks, { timeout: 1200 });
+  } else {
+    setTimeout(scheduleDeferredTasks, 150);
   }
-});
+}
+
+// Single idempotent invocation on ready
+runOnReady(initAppEngine);
 
 // Filter Matches based on Selected Tab (All, Live, Pro Picks, Upcoming, Watchlist)
 function filterMatches(filterType, btn) {
@@ -4286,11 +4224,17 @@ function renderScannerRules() {
 
 // Background Live Scanner Alerts checker
 function startLiveAlertsScanner() {
+  if (window.__dpLiveAlertsScannerStarted) return;
+  window.__dpLiveAlertsScannerStarted = true;
+
   setInterval(() => {
+    if (typeof document !== 'undefined' && document.hidden) return;
     const rules = window.appState.liveRules || [];
     if (rules.length === 0) return;
 
-    const activeLiveMatches = MATCH_DATA.filter(m => m.isLive);
+    const activeLiveMatches = (typeof MATCH_DATA !== 'undefined' && Array.isArray(MATCH_DATA))
+      ? MATCH_DATA.filter(m => m.isLive)
+      : [];
     if (activeLiveMatches.length === 0) return;
 
     const randomMatch = activeLiveMatches[Math.floor(Math.random() * activeLiveMatches.length)];
@@ -12015,26 +11959,7 @@ function renderSidebarTopLeagues() {
   }
 }
 
-// old filterSidebarTopLeagues replaced
-
-// Auto-run on load with retries
-if (document.readyState === 'loading') {
-  document.addEventListener('DOMContentLoaded', function() {
-    renderSidebarTopLeagues();
-    setTimeout(renderSidebarTopLeagues, 300);
-    setTimeout(renderSidebarTopLeagues, 1000);
-  });
-} else {
-  renderSidebarTopLeagues();
-  setTimeout(renderSidebarTopLeagues, 300);
-  setTimeout(renderSidebarTopLeagues, 1000);
-}
-
-window.addEventListener('load', function() {
-  renderSidebarTopLeagues();
-});
-
-// Global Exports
+// Global Exports (Invoked once during structured app initialization)
 window.renderSidebarTopLeagues = renderSidebarTopLeagues;
 if (typeof filterSidebarTopLeagues === 'function') window.filterSidebarTopLeagues = filterSidebarTopLeagues;
 
@@ -12227,24 +12152,7 @@ function toggleSidebarCountryAccordion(idx, btn) {
   }
 }
 
-// Auto-run on load with retries
-if (document.readyState === 'loading') {
-  document.addEventListener('DOMContentLoaded', function() {
-    renderSidebarCountries();
-    setTimeout(renderSidebarCountries, 300);
-    setTimeout(renderSidebarCountries, 1000);
-  });
-} else {
-  renderSidebarCountries();
-  setTimeout(renderSidebarCountries, 300);
-  setTimeout(renderSidebarCountries, 1000);
-}
-
-window.addEventListener('load', function() {
-  renderSidebarCountries();
-});
-
-// Global Exports
+// Global Exports (Invoked once during structured app initialization)
 window.renderSidebarCountries = renderSidebarCountries;
 window.filterSidebarCountries = filterSidebarCountries;
 window.toggleSidebarCountryAccordion = toggleSidebarCountryAccordion;
@@ -12398,24 +12306,7 @@ function loadRecentConversion(srcCode) {
   }
 }
 
-// Auto-run on load with retries
-if (document.readyState === 'loading') {
-  document.addEventListener('DOMContentLoaded', function() {
-    renderRecentConvertedSlips();
-    setTimeout(renderRecentConvertedSlips, 300);
-    setTimeout(renderRecentConvertedSlips, 1000);
-  });
-} else {
-  renderRecentConvertedSlips();
-  setTimeout(renderRecentConvertedSlips, 300);
-  setTimeout(renderRecentConvertedSlips, 1000);
-}
-
-window.addEventListener('load', function() {
-  renderRecentConvertedSlips();
-});
-
-// Global Exports
+// Global Exports (Invoked on-demand when converter is active)
 window.renderRecentConvertedSlips = renderRecentConvertedSlips;
 window.loadRecentConversion = loadRecentConversion;
 

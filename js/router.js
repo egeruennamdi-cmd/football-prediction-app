@@ -480,6 +480,16 @@
       window.renderWatchlistPage();
     }
 
+    // Ensure match cards grid is populated if navigating to predictions hub and currently unpopulated
+    if (targetViewId === 'view-predictions-hub' || path === '/predictions') {
+      const grid = document.getElementById("fixtures-grid");
+      if (grid && (!grid.children || grid.children.length === 0)) {
+        if (typeof window.renderMatchCards === 'function') {
+          window.renderMatchCards(window.MATCH_DATA || []);
+        }
+      }
+    }
+
     // Handle query param league filtering for /predictions or command center
     if (targetViewId === 'view-predictions-hub' || targetViewId === 'view-command-center' || path === '/' || path === '/predictions') {
       try {
