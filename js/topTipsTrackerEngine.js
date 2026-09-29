@@ -116,10 +116,20 @@
     selectedTipId: null,
     drawerOpen: false,
     analyticsPeriod: '30d', // 'today', '7d', '14d', '30d', '90d', 'season', 'all'
+    page: 1,
+    pageSize: 25,
+    settledPage: 1,
     snapshots: storage.get(STORAGE_KEYS.SNAPSHOTS, {}),
     settledCache: storage.get(STORAGE_KEYS.SETTLED, []),
-    lastRefreshedAt: new Date().toISOString()
+    lastRefreshedAt: new Date().toISOString(),
+    _cachedLedger: null,
+    _cachedPerf: null,
+    _cachedPerfLedger: null,
+    _cachedCalibration: null,
+    _cachedCalibrationLedger: null
   };
+
+  let searchDebounceTimer = null;
 
   // --- 3. CANDIDATE GATHERING & DATA HARMONIZATION ---
 
@@ -268,7 +278,8 @@
   // --- 4. TOP TIPS QUALIFICATION ENGINE (Section 4, 103) ---
 
   /**
-   * Evaluates and qualifies candidate predictions against rigorous algorithmic criteria
+   * Evaluates and qualifies candidate predictions against rigorous algorithmic criteria.
+   * Optimized with in-memory snapshot accumulation to eliminate blocking synchronous disk I/O in loop.
    */
   function qualifyTips(matches, criteria = {}) {
     const qualified = [];
@@ -279,6 +290,8 @@
     const activeLeague = criteria.league || state.activeLeague;
     const valueOnly = criteria.valueOnly !== undefined ? criteria.valueOnly : state.valueOnly;
     const searchQuery = (criteria.searchQuery || state.searchQuery || '').toLowerCase().trim();
+
+    let snapshotsDirty = false;
 
     matches.forEach(match => {
       if (!match) return;
@@ -386,7 +399,7 @@
             modelVersion: MODEL_VERSION
           };
           state.snapshots[tipId] = snapshot;
-          storage.set(STORAGE_KEYS.SNAPSHOTS, state.snapshots);
+          snapshotsDirty = true;
         }
 
         // Odds movement calculation (Section 10)
@@ -457,6 +470,11 @@
       });
     });
 
+    // Batch persist snapshots to storage once at loop completion
+    if (snapshotsDirty) {
+      storage.set(STORAGE_KEYS.SNAPSHOTS, state.snapshots);
+    }
+
     return qualified;
   }
 
@@ -520,8 +538,8 @@
       else if (tipLabel.includes('away win') || tipLabel.includes('(2)') || tipLabel === 'win2') isWon = awayScore > homeScore;
     } else if (cat === 'doublechance' || tipLabel.includes('double chance') || tipLabel.startsWith('dc')) {
       if (tipLabel.includes('1x') || tipLabel === 'dc1x') isWon = homeScore >= awayScore;
-      else if (tipLabel.includes('x2') || tipLabel === 'dcx2') isWon = awayScore >= homeScore;
       else if (tipLabel.includes('12') || tipLabel === 'dc12') isWon = homeScore !== awayScore;
+      else if (tipLabel.includes('x2') || tipLabel === 'dcx2') isWon = awayScore >= homeScore;
     } else if (cat === 'dnb' || tipLabel.includes('draw no bet') || tipLabel === 'dnb') {
       if (homeScore === awayScore) isPush = true;
       else isWon = homeScore > awayScore;
@@ -574,9 +592,17 @@
   // --- 7. HISTORICAL AUDIT & PERFORMANCE ENGINE (Section 20-35, 55-66) ---
 
   /**
-   * Generates authoritative historical settled tips dataset
+   * Generates authoritative historical settled tips dataset with memoized in-memory caching
    */
-  function compileAuthoritativeSettledLedger() {
+  function compileAuthoritativeSettledLedger(forceRefresh = false) {
+    if (!forceRefresh && state._cachedLedger && state._cachedLedger.length > 0) {
+      return state._cachedLedger;
+    }
+    if (!forceRefresh && Array.isArray(state.settledCache) && state.settledCache.length > 0) {
+      state._cachedLedger = state.settledCache;
+      return state._cachedLedger;
+    }
+
     const rawMatches = gatherAuthenticMatches();
     const ledger = [];
     const nowTime = 1789934400000; // 2026 runtime epoch
@@ -643,13 +669,21 @@
     });
 
     ledger.sort((a, b) => a.timestamp - b.timestamp);
+    state._cachedLedger = ledger;
+    state.settledCache = ledger;
+    storage.set(STORAGE_KEYS.SETTLED, ledger);
     return ledger;
   }
 
   /**
-   * Computes comprehensive performance statistics over a designated time period
+   * Computes comprehensive performance statistics over a designated time period (Memoized)
    */
   function computePerformanceMetrics(ledger, periodDays = 30) {
+    const pKey = String(periodDays);
+    if (state._cachedPerf && state._cachedPerf[pKey] && state._cachedPerfLedger === ledger) {
+      return state._cachedPerf[pKey];
+    }
+
     const nowTime = 1789934400000;
     const cutoff = periodDays === 'all' ? 0 : nowTime - (periodDays * 86400000);
 
@@ -718,85 +752,91 @@
         index: idx + 1,
         date: item.date,
         pnl: parseFloat(netPnl.toFixed(2)),
-        bankroll: parseFloat(currentBankroll.toFixed(2)),
-        drawdownPct: parseFloat(ddPct.toFixed(1))
+        bankroll: parseFloat(currentBankroll.toFixed(2))
       });
     });
 
     const settledCount = wins + losses;
-    const totalSettledWithVoids = wins + losses + voids;
-    const winRate = (wins + losses) > 0 ? parseFloat(((wins / (wins + losses)) * 100).toFixed(1)) : 0.0;
+    const winRate = settledCount > 0 ? parseFloat(((wins / settledCount) * 100).toFixed(1)) : 0.0;
     const yieldPct = totalStake > 0 ? parseFloat(((netPnl / totalStake) * 100).toFixed(1)) : 0.0;
-    const roiPct = parseFloat(((netPnl / 100.0) * 100).toFixed(1));
-    const avgOdds = filtered.length > 0 ? parseFloat((filtered.reduce((s, i) => s + (i.odds || 1.85), 0) / filtered.length).toFixed(2)) : 0.0;
+    const roiPct = parseFloat(((netPnl / 100.0) * 100).toFixed(1)); // Bankroll percentage
+    const avgOdds = filtered.length > 0
+      ? parseFloat((filtered.reduce((acc, c) => acc + (Number(c.odds) || 1.85), 0) / filtered.length).toFixed(2))
+      : 1.85;
 
-    const grossLosses = Math.abs(filtered.filter(i => (i.pnl !== undefined ? i.pnl : (i.result === 'LOST' ? -1 : 0)) < 0).reduce((s, i) => s + (i.pnl !== undefined ? i.pnl : -1), 0));
-    const grossWins = filtered.filter(i => (i.pnl !== undefined ? i.pnl : (i.result === 'WON' ? 1 : 0)) > 0).reduce((s, i) => s + (i.pnl !== undefined ? i.pnl : (i.odds - 1)), 0);
-    const profitFactor = grossLosses > 0 ? parseFloat((grossWins / grossLosses).toFixed(2)) : 99.9;
-
-    return {
-      periodDays: periodDays,
+    const metrics = {
+      period: periodDays,
       total: filtered.length,
-      totalTracked: filtered.length,
       settledCount: settledCount,
-      totalSettledWithVoids: totalSettledWithVoids,
       wins: wins,
       losses: losses,
       voids: voids,
       winRate: winRate,
-      yieldPct: yieldPct,
-      roiPct: roiPct,
-      netPnl: parseFloat(netPnl.toFixed(2)),
       totalStake: parseFloat(totalStake.toFixed(2)),
       grossReturn: parseFloat(grossReturn.toFixed(2)),
+      netPnl: parseFloat(netPnl.toFixed(2)),
+      yieldPct: yieldPct,
+      roiPct: roiPct,
       avgOdds: avgOdds,
-      profitFactor: profitFactor,
-      maxDrawdownPct: parseFloat(maxDrawdownPct.toFixed(1)),
       maxDrawdownUnits: parseFloat(maxDrawdownUnits.toFixed(2)),
-      longestWinStreak: maxWinStreak,
-      longestLossStreak: maxLossStreak,
+      maxDrawdownPct: parseFloat(maxDrawdownPct.toFixed(1)),
+      maxWinStreak: maxWinStreak,
+      maxLossStreak: maxLossStreak,
       equityCurve: equityCurve
     };
+
+    if (!state._cachedPerf) state._cachedPerf = {};
+    state._cachedPerfLedger = ledger;
+    state._cachedPerf[pKey] = metrics;
+    return metrics;
   }
 
+  // --- 8. EMPIRICAL MODEL PROBABILITY CALIBRATION (Section 25, 63) ---
+
   /**
-   * Computes empirical model calibration across probability buckets (Section 24, 25, 63)
+   * Assesses empirical forecast calibration across probability deciles (Memoized)
    */
   function computeCalibrationMetrics(ledger) {
+    if (state._cachedCalibration && state._cachedCalibrationLedger === ledger) {
+      return state._cachedCalibration;
+    }
+
     const buckets = [
-      { range: '50-59%', min: 50, max: 59, expected: 55, total: 0, wins: 0 },
-      { range: '60-69%', min: 60, max: 69, expected: 65, total: 0, wins: 0 },
-      { range: '70-79%', min: 70, max: 79, expected: 75, total: 0, wins: 0 },
-      { range: '80%+',   min: 80, max: 100, expected: 84, total: 0, wins: 0 }
+      { min: 50, max: 59, label: '50-59%', expected: 55 },
+      { min: 60, max: 69, label: '60-69%', expected: 65 },
+      { min: 70, max: 79, label: '70-79%', expected: 75 },
+      { min: 80, max: 100, label: '80%+', expected: 85 }
     ];
 
-    ledger.forEach(item => {
-      const b = buckets.find(bk => item.probability >= bk.min && item.probability <= bk.max);
-      if (b) {
-        b.total++;
-        if (item.result === 'WON') b.wins++;
-      }
-    });
+    const calibration = buckets.map(b => {
+      const items = ledger.filter(item => {
+        const p = item.probability || 60;
+        return p >= b.min && p <= b.max;
+      });
 
-    return buckets.map(b => {
-      const observed = b.total > 0 ? parseFloat(((b.wins / b.total) * 100).toFixed(1)) : 0.0;
+      const wins = items.filter(i => i.result === 'WON').length;
+      const count = items.length;
+      const observed = count > 0 ? parseFloat(((wins / count) * 100).toFixed(1)) : 0.0;
       const diff = parseFloat((observed - b.expected).toFixed(1));
+
       return {
-        range: b.range,
-        sample: b.total,
-        wins: b.wins,
-        expectedProb: b.expected,
+        range: b.label,
+        sample: count,
+        wins: wins,
         observedWinRate: observed,
+        expectedProb: b.expected,
         diffPctPoints: diff,
         isCalibrated: Math.abs(diff) <= 6.0
       };
     });
+
+    state._cachedCalibration = calibration;
+    state._cachedCalibrationLedger = ledger;
+    return calibration;
   }
 
-  // --- 8. VECTOR VISUALIZATION SUBSYSTEM (Section 17, 18, 57) ---
-
   /**
-   * Dynamic responsive SVG generator for Equity Curve
+   * Generates pure inline SVG for Cumulative Equity Curve
    */
   function renderEquityCurveSVG(equityPoints) {
     if (!equityPoints || equityPoints.length < 2) {
@@ -885,7 +925,18 @@
     if (drawer && !drawer.classList.contains("open")) drawer.classList.add("open");
 
     notify(`➕ Added ${tip.homeTeam} vs ${tip.awayTeam} • ${tip.market} (@${tip.odds.toFixed(2)}) to Betslip!`, "success");
-    renderWorkspace();
+
+    // Targeted DOM button update
+    const btn = document.getElementById(`toptips-add-btn-${tip.fixtureId}`);
+    if (btn) {
+      btn.classList.add("in-slip");
+      btn.style.background = "linear-gradient(135deg, #10b981 0%, #059669 100%)";
+      const lbl = document.getElementById(`toptips-add-label-${tip.fixtureId}`);
+      if (lbl) lbl.textContent = "In Slip";
+      const icon = btn.querySelector("span:first-child");
+      if (icon) icon.textContent = "✓";
+    }
+
     return true;
   }
 
@@ -954,16 +1005,25 @@
 
     const sId = String(fixtureId);
     const idx = window.appState.watchlist.indexOf(sId);
+    let isWatched = false;
     if (idx >= 0) {
       window.appState.watchlist.splice(idx, 1);
       notify("Removed from Watchlist.", "info");
     } else {
       window.appState.watchlist.push(sId);
+      isWatched = true;
       notify("⭐ Saved to Watchlist!", "success");
     }
 
     storage.set(STORAGE_KEYS.WATCHLIST, window.appState.watchlist);
-    renderWorkspace();
+
+    // Targeted button update
+    const watchBtn = document.getElementById(`toptips-watch-btn-${fixtureId}`);
+    if (watchBtn) {
+      watchBtn.style.background = isWatched ? 'var(--accent-gold)' : 'rgba(255,255,255,0.06)';
+      watchBtn.style.color = isWatched ? '#000' : '#fff';
+      watchBtn.textContent = isWatched ? '★ Watched' : '☆ Watch';
+    }
   }
 
   function backtestFilter(tip) {
@@ -991,12 +1051,24 @@
   function openDetailDrawer(tipId) {
     state.selectedTipId = tipId;
     state.drawerOpen = true;
-    renderWorkspace();
+    const mount = document.getElementById("toptips-drawer-mount");
+    if (mount) {
+      const rawMatches = gatherAuthenticMatches();
+      const qualifiedTips = rankTips(qualifyTips(rawMatches));
+      mount.innerHTML = renderIntelligenceDrawer(qualifiedTips);
+    } else {
+      renderWorkspace();
+    }
   }
 
   function closeDetailDrawer() {
     state.drawerOpen = false;
-    renderWorkspace();
+    const mount = document.getElementById("toptips-drawer-mount");
+    if (mount) {
+      mount.innerHTML = '';
+    } else {
+      renderWorkspace();
+    }
   }
 
   function shareTip(tipId) {
@@ -1110,8 +1182,8 @@
         <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: 10px;">
           <div class="glass-card" style="padding: 12px 14px; border-radius: 8px; background: rgba(15, 23, 42, 0.5); border: 1px solid rgba(59, 130, 246, 0.25);">
             <div style="font-size: 0.68rem; color: #94a3b8; font-weight: 700; text-transform: uppercase;">Qualified Today</div>
-            <div style="font-size: 1.4rem; font-weight: 900; color: #ffffff;">${qualifiedTips.length}</div>
-            <div style="font-size: 0.64rem; color: #64748b;">${activeList.length} Active • ${liveList.length} Live</div>
+            <div id="tt-kpi-qualified-val" style="font-size: 1.4rem; font-weight: 900; color: #ffffff;">${qualifiedTips.length}</div>
+            <div id="tt-kpi-active-val" style="font-size: 0.64rem; color: #64748b;">${activeList.length} Active • ${liveList.length} Live</div>
           </div>
 
           <div class="glass-card" style="padding: 12px 14px; border-radius: 8px; background: rgba(15, 23, 42, 0.5); border: 1px solid rgba(52, 211, 153, 0.25);">
@@ -1145,40 +1217,44 @@
 
         <!-- WORKSPACE NAVIGATION TABS (Section 55, 92) -->
         <div style="display: flex; gap: 8px; border-bottom: 1px solid rgba(255, 255, 255, 0.08); overflow-x: auto; padding-bottom: 2px;">
-          ${renderTabButton('today', "Today's Qualified", qualifiedTips.length)}
-          ${renderTabButton('active', "Active Tips", activeList.length)}
-          ${renderTabButton('live', "Live In-Play", liveList.length)}
-          ${renderTabButton('settled', "Settled Track Record", settledLedger.length)}
+          ${renderTabButton('today', "Today's Qualified", qualifiedTips.length, 'tt-tab-badge-today')}
+          ${renderTabButton('active', "Active Tips", activeList.length, 'tt-tab-badge-active')}
+          ${renderTabButton('live', "Live In-Play", liveList.length, 'tt-tab-badge-live')}
+          ${renderTabButton('settled', "Settled Track Record", settledLedger.length, 'tt-tab-badge-settled')}
           ${renderTabButton('analytics', "Performance Analytics")}
           ${renderTabButton('audit', "Audit Ledger")}
         </div>
 
-        <!-- TAB CONTENT VIEW -->
-        ${renderActiveTabContent(qualifiedTips, activeList, liveList, settledLedger, perf, calibration)}
+        <!-- TAB CONTENT VIEW (Dynamic container) -->
+        <div id="toptips-tab-view" style="width: 100%;">
+          ${renderActiveTabContent(qualifiedTips, activeList, liveList, settledLedger, perf, calibration)}
+        </div>
 
       </div>
 
-      <!-- DETAIL INTELLIGENCE DRAWER (Section 41) -->
-      ${renderIntelligenceDrawer(qualifiedTips)}
+      <!-- DETAIL INTELLIGENCE DRAWER MOUNT (Section 41) -->
+      <div id="toptips-drawer-mount">
+        ${renderIntelligenceDrawer(qualifiedTips)}
+      </div>
     `;
 
-    // Synchronize legacy element if present
+    // Synchronize legacy element if present strictly outside pane
     const legacyRows = document.getElementById("toptips-tool-rows");
-    if (legacyRows && legacyRows !== pane) {
+    if (legacyRows && !pane.contains(legacyRows)) {
       legacyRows.innerHTML = "";
     }
   }
 
-  function renderTabButton(tabKey, label, count = null) {
+  function renderTabButton(tabKey, label, count = null, badgeId = null) {
     const isActive = state.activeTab === tabKey;
     const activeStyle = isActive
       ? "background: #2563eb; color: #ffffff; font-weight: 800; border-color: #3b82f6;"
       : "background: rgba(255, 255, 255, 0.04); color: #94a3b8; font-weight: 600; border-color: rgba(255, 255, 255, 0.08);";
 
     return `
-      <button type="button" onclick="TopTipsTrackerEngine.setTab('${tabKey}')" style="font-size: 0.8rem; padding: 8px 16px; border-radius: 8px 8px 0 0; border: 1px solid; border-bottom: none; cursor: pointer; white-space: nowrap; display: inline-flex; align-items: center; gap: 6px; transition: all 0.2s ease; ${activeStyle}">
+      <button type="button" data-tab="${tabKey}" class="tt-tab-nav-btn" onclick="TopTipsTrackerEngine.setTab('${tabKey}')" style="font-size: 0.8rem; padding: 8px 16px; border-radius: 8px 8px 0 0; border: 1px solid; border-bottom: none; cursor: pointer; white-space: nowrap; display: inline-flex; align-items: center; gap: 6px; transition: all 0.2s ease; ${activeStyle}">
         ${label}
-        ${count !== null ? `<span style="font-size: 0.68rem; background: ${isActive ? 'rgba(255,255,255,0.25)' : 'rgba(255,255,255,0.08)'}; padding: 1px 6px; border-radius: 999px;">${count}</span>` : ''}
+        ${count !== null ? `<span ${badgeId ? `id="${badgeId}"` : ''} style="font-size: 0.68rem; background: ${isActive ? 'rgba(255,255,255,0.25)' : 'rgba(255,255,255,0.08)'}; padding: 1px 6px; border-radius: 999px;">${count}</span>` : ''}
       </button>
     `;
   }
@@ -1201,38 +1277,97 @@
   }
 
   /**
-   * Renders the primary operational table view with filters
+   * High-performance targeted update without rebuilding entire DOM or losing input focus
+   */
+  function updateWorkspaceViews() {
+    if (typeof document === 'undefined') return;
+    const container = document.getElementById("top-tips-tracker-container");
+    if (!container) {
+      renderWorkspace();
+      return;
+    }
+
+    const rawMatches = gatherAuthenticMatches();
+    const qualifiedTips = rankTips(qualifyTips(rawMatches));
+    const settledLedger = compileAuthoritativeSettledLedger();
+    const activeList = qualifiedTips.filter(t => t.status === 'ACTIVE' || t.status === 'QUALIFIED');
+    const liveList = qualifiedTips.filter(t => t.status === 'LIVE');
+
+    // Update KPI numbers in real-time
+    const kpiQual = document.getElementById("tt-kpi-qualified-val");
+    if (kpiQual) kpiQual.textContent = qualifiedTips.length;
+    const kpiActive = document.getElementById("tt-kpi-active-val");
+    if (kpiActive) kpiActive.textContent = `${activeList.length} Active • ${liveList.length} Live`;
+
+    // Update tab badge counts
+    const bToday = document.getElementById("tt-tab-badge-today");
+    if (bToday) bToday.textContent = qualifiedTips.length;
+    const bActive = document.getElementById("tt-tab-badge-active");
+    if (bActive) bActive.textContent = activeList.length;
+    const bLive = document.getElementById("tt-tab-badge-live");
+    if (bLive) bLive.textContent = liveList.length;
+    const bSettled = document.getElementById("tt-tab-badge-settled");
+    if (bSettled) bSettled.textContent = settledLedger.length;
+
+    // Check if on list tab (today, active, live) and update table wrap directly
+    const tableWrap = document.getElementById("toptips-table-wrap");
+    if (tableWrap && (state.activeTab === 'today' || state.activeTab === 'active' || state.activeTab === 'live')) {
+      let currentList = qualifiedTips;
+      if (state.activeTab === 'active') currentList = activeList;
+      else if (state.activeTab === 'live') currentList = liveList;
+
+      if (state.activeTab === 'live' && liveList.length === 0) {
+        const tabView = document.getElementById("toptips-tab-view");
+        if (tabView) tabView.innerHTML = renderLiveView(liveList);
+        return;
+      }
+
+      tableWrap.innerHTML = renderTipsTableContentOnly(currentList);
+      return;
+    }
+
+    // Otherwise refresh tab content view cleanly
+    const tabView = document.getElementById("toptips-tab-view");
+    if (tabView) {
+      const perf = computePerformanceMetrics(settledLedger, state.analyticsPeriod === 'all' ? 'all' : parseInt(state.analyticsPeriod, 10) || 30);
+      const calibration = computeCalibrationMetrics(settledLedger);
+      tabView.innerHTML = renderActiveTabContent(qualifiedTips, activeList, liveList, settledLedger, perf, calibration);
+    }
+  }
+
+  /**
+   * Renders the primary operational table view with filters and container shell
    */
   function renderTipsTableWorkspace(tipsList, title) {
     return `
       <!-- FILTER & SORT CONTROLS BAR (Section 47, 48) -->
-      <div style="display: flex; flex-direction: column; gap: 12px; background: rgba(0, 0, 0, 0.25); padding: 14px 16px; border-radius: 10px; border: 1px solid rgba(255, 255, 255, 0.06);">
+      <div id="toptips-filter-bar" style="display: flex; flex-direction: column; gap: 12px; background: rgba(0, 0, 0, 0.25); padding: 14px 16px; border-radius: 10px; border: 1px solid rgba(255, 255, 255, 0.06);">
         <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 10px; align-items: flex-end;">
           
           <!-- Search -->
           <div style="display: flex; flex-direction: column; gap: 4px;">
             <label style="font-size: 0.72rem; color: #94a3b8; font-weight: 600;">Search Fixture / Team</label>
-            <input type="text" value="${state.searchQuery}" placeholder="e.g. Arsenal, Real Madrid..." oninput="TopTipsTrackerEngine.setSearch(this.value)" style="background: rgba(15, 23, 42, 0.8); border: 1px solid rgba(255, 255, 255, 0.12); border-radius: 6px; padding: 7px 10px; color: #ffffff; font-size: 0.78rem; outline: none;">
+            <input type="text" id="toptips-search-input" value="${state.searchQuery}" placeholder="e.g. Arsenal, Real Madrid..." oninput="TopTipsTrackerEngine.setSearch(this.value)" style="background: rgba(15, 23, 42, 0.8); border: 1px solid rgba(255, 255, 255, 0.12); border-radius: 6px; padding: 7px 10px; color: #ffffff; font-size: 0.78rem; outline: none;">
           </div>
 
           <!-- Market Filter -->
           <div style="display: flex; flex-direction: column; gap: 4px;">
             <label style="font-size: 0.72rem; color: #94a3b8; font-weight: 600;">Target Market</label>
-            <select onchange="TopTipsTrackerEngine.setMarketFilter(this.value)" style="background: rgba(15, 23, 42, 0.8); border: 1px solid rgba(255, 255, 255, 0.12); border-radius: 6px; padding: 7px; color: #ffffff; font-size: 0.78rem; outline: none; cursor: pointer;">
+            <select id="toptips-market-select" onchange="TopTipsTrackerEngine.setMarketFilter(this.value)" style="background: rgba(15, 23, 42, 0.8); border: 1px solid rgba(255, 255, 255, 0.12); border-radius: 6px; padding: 7px; color: #ffffff; font-size: 0.78rem; outline: none; cursor: pointer;">
               ${Object.keys(MARKET_LABELS).map(k => `<option value="${k}" ${state.activeMarket === k ? 'selected' : ''}>${MARKET_LABELS[k]}</option>`).join('')}
             </select>
           </div>
 
           <!-- Min Probability -->
           <div style="display: flex; flex-direction: column; gap: 4px;">
-            <label style="font-size: 0.72rem; color: #94a3b8; font-weight: 600;">Min Probability: ${state.minProb}%</label>
-            <input type="range" min="50" max="85" step="5" value="${state.minProb}" onchange="TopTipsTrackerEngine.setProbFilter(this.value)" style="width: 100%; accent-color: #3b82f6; cursor: pointer;">
+            <label style="font-size: 0.72rem; color: #94a3b8; font-weight: 600;" id="toptips-prob-label">Min Probability: ${state.minProb}%</label>
+            <input type="range" id="toptips-prob-slider" min="50" max="85" step="5" value="${state.minProb}" onchange="TopTipsTrackerEngine.setProbFilter(this.value)" oninput="const l = document.getElementById('toptips-prob-label'); if(l) l.textContent='Min Probability: '+this.value+'%';" style="width: 100%; accent-color: #3b82f6; cursor: pointer;">
           </div>
 
           <!-- Sort -->
           <div style="display: flex; flex-direction: column; gap: 4px;">
             <label style="font-size: 0.72rem; color: #94a3b8; font-weight: 600;">Sort By</label>
-            <select onchange="TopTipsTrackerEngine.setSort(this.value)" style="background: rgba(15, 23, 42, 0.8); border: 1px solid rgba(255, 255, 255, 0.12); border-radius: 6px; padding: 7px; color: #ffffff; font-size: 0.78rem; outline: none; cursor: pointer;">
+            <select id="toptips-sort-select" onchange="TopTipsTrackerEngine.setSort(this.value)" style="background: rgba(15, 23, 42, 0.8); border: 1px solid rgba(255, 255, 255, 0.12); border-radius: 6px; padding: 7px; color: #ffffff; font-size: 0.78rem; outline: none; cursor: pointer;">
               <option value="rank" ${state.sortBy === 'rank' ? 'selected' : ''}>⚡ Algorithmic Rank</option>
               <option value="prob_desc" ${state.sortBy === 'prob_desc' ? 'selected' : ''}>Highest Model Probability</option>
               <option value="ev_desc" ${state.sortBy === 'ev_desc' ? 'selected' : ''}>Highest Expected Value (EV)</option>
@@ -1245,7 +1380,7 @@
           <!-- Value Only Toggle -->
           <div style="display: flex; align-items: center; gap: 8px; padding-bottom: 8px;">
             <label style="display: flex; align-items: center; gap: 6px; font-size: 0.78rem; color: #fbbf24; font-weight: 700; cursor: pointer;">
-              <input type="checkbox" ${state.valueOnly ? 'checked' : ''} onchange="TopTipsTrackerEngine.setValueOnly(this.checked)" style="accent-color: #fbbf24; cursor: pointer;">
+              <input type="checkbox" id="toptips-valueonly-check" ${state.valueOnly ? 'checked' : ''} onchange="TopTipsTrackerEngine.setValueOnly(this.checked)" style="accent-color: #fbbf24; cursor: pointer;">
               <span>💎 Value Only (EV &gt; 0)</span>
             </label>
           </div>
@@ -1254,25 +1389,78 @@
       </div>
 
       <!-- MAIN TABLE CONTAINER (Section 6, 91, 118) -->
-      <div class="glass-card" style="border: 1px solid var(--border-color); background: rgba(0, 0, 0, 0.18); overflow-x: auto; padding: 0; border-radius: var(--radius-md);">
-        
-        <!-- Table Column Header -->
-        <div style="display: grid; grid-template-columns: 2.2fr 1.2fr 0.9fr 0.9fr 2.6fr; min-width: 900px; align-items: center; padding: 14px 18px; border-bottom: 1px solid var(--border-color); font-weight: 800; color: #94a3b8; font-size: 0.82rem; background: rgba(255, 255, 255, 0.03); text-transform: uppercase; letter-spacing: 0.5px;">
-          <span>Match Selection</span>
-          <span>Target Market</span>
-          <span>Model Probability</span>
-          <span>Average Odds</span>
-          <span style="text-align: right;">Actions</span>
-        </div>
+      <div id="toptips-table-wrap" class="glass-card" style="border: 1px solid var(--border-color); background: rgba(0, 0, 0, 0.18); overflow-x: auto; padding: 0; border-radius: var(--radius-md);">
+        ${renderTipsTableContentOnly(tipsList)}
+      </div>
+    `;
+  }
 
-        <div id="toptips-tool-rows">
-          ${tipsList.length === 0 ? `
-            <div style="text-align: center; padding: 48px 20px; color: var(--text-muted); font-size: 0.88rem;">
-              No Top Tips currently meet the qualification criteria. Adjust filters or check back shortly.
-            </div>
-          ` : tipsList.map(tip => renderTipRow(tip)).join('')}
+  /**
+   * Renders table rows and pagination toolbar with bounded node footprint
+   */
+  function renderTipsTableContentOnly(tipsList) {
+    const totalCount = tipsList.length;
+    const pageSize = state.pageSize || 25;
+    const totalPages = Math.max(1, Math.ceil(totalCount / pageSize));
+    const currentPage = Math.min(Math.max(1, state.page || 1), totalPages);
+    const startIdx = (currentPage - 1) * pageSize;
+    const endIdx = Math.min(startIdx + pageSize, totalCount);
+    const visibleTips = tipsList.slice(startIdx, endIdx);
+
+    const paginationBar = totalCount > pageSize ? `
+      <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px; padding: 12px 18px; border-top: 1px solid rgba(255,255,255,0.06); background: rgba(255,255,255,0.02); font-size: 0.78rem;">
+        <div style="color: #94a3b8;">
+          Showing <strong style="color: #ffffff;">${startIdx + 1}–${endIdx}</strong> of <strong style="color: #38bdf8;">${totalCount}</strong> Algorithmic Selections
+        </div>
+        <div style="display: flex; gap: 6px; align-items: center;">
+          <button type="button" 
+                  onclick="TopTipsTrackerEngine.setPage(${currentPage - 1})" 
+                  ${currentPage <= 1 ? 'disabled style="opacity: 0.4; cursor: not-allowed; padding: 5px 10px; border-radius: 6px; border: 1px solid rgba(255,255,255,0.1); background: transparent; color: #94a3b8;"' : 'style="cursor: pointer; padding: 5px 10px; border-radius: 6px; border: 1px solid rgba(255,255,255,0.15); background: rgba(255,255,255,0.05); color: #ffffff;"'}>
+            ‹ Prev
+          </button>
+          <span style="color: #cbd5e1; font-weight: 700; padding: 0 4px;">Page ${currentPage} of ${totalPages}</span>
+          <button type="button" 
+                  onclick="TopTipsTrackerEngine.setPage(${currentPage + 1})" 
+                  ${currentPage >= totalPages ? 'disabled style="opacity: 0.4; cursor: not-allowed; padding: 5px 10px; border-radius: 6px; border: 1px solid rgba(255,255,255,0.1); background: transparent; color: #94a3b8;"' : 'style="cursor: pointer; padding: 5px 10px; border-radius: 6px; border: 1px solid rgba(255,255,255,0.15); background: rgba(255,255,255,0.05); color: #ffffff;"'}>
+            Next ›
+          </button>
+          <button type="button" 
+                  onclick="TopTipsTrackerEngine.showAllTips()" 
+                  style="cursor: pointer; padding: 5px 10px; border-radius: 6px; border: 1px solid rgba(59,130,246,0.3); background: rgba(59,130,246,0.1); color: #60a5fa; font-weight: 600; margin-left: 6px;">
+            Show All (${totalCount})
+          </button>
         </div>
       </div>
+    ` : (totalCount > 0 ? `
+      <div style="display: flex; justify-content: space-between; align-items: center; padding: 10px 18px; border-top: 1px solid rgba(255,255,255,0.06); background: rgba(255,255,255,0.02); font-size: 0.76rem; color: #94a3b8;">
+        <span>Showing all <strong style="color: #ffffff;">${totalCount}</strong> qualified selections</span>
+        ${state.pageSize > 100 ? `
+          <button type="button" onclick="TopTipsTrackerEngine.setPageSize(25)" style="cursor: pointer; padding: 3px 8px; border-radius: 4px; border: 1px solid rgba(255,255,255,0.1); background: transparent; color: #94a3b8; font-size: 0.72rem;">
+            Switch to Paged View (25/page)
+          </button>
+        ` : ''}
+      </div>
+    ` : '');
+
+    return `
+      <!-- Table Column Header -->
+      <div style="display: grid; grid-template-columns: 2.2fr 1.2fr 0.9fr 0.9fr 2.6fr; min-width: 900px; align-items: center; padding: 14px 18px; border-bottom: 1px solid var(--border-color); font-weight: 800; color: #94a3b8; font-size: 0.82rem; background: rgba(255, 255, 255, 0.03); text-transform: uppercase; letter-spacing: 0.5px;">
+        <span>Match Selection</span>
+        <span>Target Market</span>
+        <span>Model Probability</span>
+        <span>Average Odds</span>
+        <span style="text-align: right;">Actions</span>
+      </div>
+
+      <div id="toptips-tool-rows">
+        ${totalCount === 0 ? `
+          <div style="text-align: center; padding: 48px 20px; color: var(--text-muted); font-size: 0.88rem;">
+            No Top Tips currently meet the qualification criteria. Adjust filters or check back shortly.
+          </div>
+        ` : visibleTips.map(tip => renderTipRow(tip)).join('')}
+      </div>
+
+      ${paginationBar}
     `;
   }
 
@@ -1368,6 +1556,7 @@
             <!-- Watch -->
             <button type="button" 
                     class="btn btn-primary" 
+                    id="toptips-watch-btn-${tip.fixtureId}"
                     style="padding: 6px 10px; font-size: 0.75rem; font-weight: 700; background: ${isWatched ? 'var(--accent-gold)' : 'rgba(255,255,255,0.06)'}; color: ${isWatched ? '#000' : '#fff'}; border: 1px solid rgba(255,255,255,0.15); border-radius: 6px; cursor: pointer; white-space: nowrap;" 
                     onclick="TopTipsTrackerEngine.toggleWatch('${tip.fixtureId}', event)">
               ${isWatched ? '★ Watched' : '☆ Watch'}
@@ -1406,9 +1595,38 @@
   }
 
   /**
-   * Renders the Historical Settled Track Record table (Section 55, 96)
+   * Renders the Historical Settled Track Record table (Section 55, 96) with pagination
    */
   function renderSettledTableWorkspace(ledger) {
+    const totalCount = ledger.length;
+    const pageSize = 30;
+    const totalPages = Math.max(1, Math.ceil(totalCount / pageSize));
+    const currentPage = Math.min(Math.max(1, state.settledPage || 1), totalPages);
+    const startIdx = (currentPage - 1) * pageSize;
+    const endIdx = Math.min(startIdx + pageSize, totalCount);
+    const visibleLedger = ledger.slice(startIdx, endIdx);
+
+    const paginationBar = totalCount > pageSize ? `
+      <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px; padding: 12px 18px; border-top: 1px solid rgba(255,255,255,0.06); background: rgba(255,255,255,0.02); font-size: 0.78rem;">
+        <div style="color: #94a3b8;">
+          Showing <strong style="color: #ffffff;">${startIdx + 1}–${endIdx}</strong> of <strong style="color: #38bdf8;">${totalCount}</strong> Settled Selections
+        </div>
+        <div style="display: flex; gap: 6px; align-items: center;">
+          <button type="button" 
+                  onclick="TopTipsTrackerEngine.setSettledPage(${currentPage - 1})" 
+                  ${currentPage <= 1 ? 'disabled style="opacity: 0.4; cursor: not-allowed; padding: 5px 10px; border-radius: 6px; border: 1px solid rgba(255,255,255,0.1); background: transparent; color: #94a3b8;"' : 'style="cursor: pointer; padding: 5px 10px; border-radius: 6px; border: 1px solid rgba(255,255,255,0.15); background: rgba(255,255,255,0.05); color: #ffffff;"'}>
+            ‹ Prev
+          </button>
+          <span style="color: #cbd5e1; font-weight: 700; padding: 0 4px;">Page ${currentPage} of ${totalPages}</span>
+          <button type="button" 
+                  onclick="TopTipsTrackerEngine.setSettledPage(${currentPage + 1})" 
+                  ${currentPage >= totalPages ? 'disabled style="opacity: 0.4; cursor: not-allowed; padding: 5px 10px; border-radius: 6px; border: 1px solid rgba(255,255,255,0.1); background: transparent; color: #94a3b8;"' : 'style="cursor: pointer; padding: 5px 10px; border-radius: 6px; border: 1px solid rgba(255,255,255,0.15); background: rgba(255,255,255,0.05); color: #ffffff;"'}>
+            Next ›
+          </button>
+        </div>
+      </div>
+    ` : '';
+
     return `
       <div class="glass-card" style="border: 1px solid var(--border-color); background: rgba(0, 0, 0, 0.18); overflow-x: auto; padding: 0; border-radius: var(--radius-md);">
         <div style="display: grid; grid-template-columns: 1fr 1.8fr 1.4fr 0.8fr 0.8fr 0.8fr 0.8fr 1fr; min-width: 900px; align-items: center; padding: 14px 18px; border-bottom: 1px solid var(--border-color); font-weight: 800; color: #94a3b8; font-size: 0.82rem; background: rgba(255, 255, 255, 0.03); text-transform: uppercase;">
@@ -1422,7 +1640,7 @@
           <span>Model</span>
         </div>
         <div>
-          ${ledger.slice(0, 60).map(item => `
+          ${visibleLedger.map(item => `
             <div style="display: grid; grid-template-columns: 1fr 1.8fr 1.4fr 0.8fr 0.8fr 0.8fr 0.8fr 1fr; min-width: 900px; align-items: center; padding: 12px 18px; border-bottom: 1px solid rgba(255,255,255,0.05); font-size: 0.84rem;">
               <span style="color: #94a3b8; font-size: 0.78rem;">${item.date}</span>
               <span style="font-weight: 700; color: #ffffff;">${item.homeTeam} vs ${item.awayTeam}</span>
@@ -1441,6 +1659,7 @@
             </div>
           `).join('')}
         </div>
+        ${paginationBar}
       </div>
     `;
   }
@@ -1685,48 +1904,133 @@
 
     refresh() {
       state.lastRefreshedAt = new Date().toISOString();
+      state._cachedLedger = null;
+      state._cachedPerf = null;
+      state._cachedPerfLedger = null;
+      state._cachedCalibration = null;
+      state._cachedCalibrationLedger = null;
       renderWorkspace();
       notify("🔄 Top Tips Algorithmic Tracker refreshed.", "info");
     },
 
     setTab(tabKey) {
       state.activeTab = tabKey;
-      renderWorkspace();
+      state.page = 1;
+      const container = document.getElementById("top-tips-tracker-container");
+      const tabView = document.getElementById("toptips-tab-view");
+      if (container && tabView) {
+        // Fast targeted tab switch
+        const tabBtns = container.querySelectorAll(".tt-tab-nav-btn");
+        tabBtns.forEach(btn => {
+          const isThis = btn.getAttribute("data-tab") === tabKey;
+          if (isThis) {
+            btn.style.background = "#2563eb";
+            btn.style.color = "#ffffff";
+            btn.style.fontWeight = "800";
+            btn.style.borderColor = "#3b82f6";
+          } else {
+            btn.style.background = "rgba(255, 255, 255, 0.04)";
+            btn.style.color = "#94a3b8";
+            btn.style.fontWeight = "600";
+            btn.style.borderColor = "rgba(255, 255, 255, 0.08)";
+          }
+        });
+
+        const rawMatches = gatherAuthenticMatches();
+        const qualifiedTips = rankTips(qualifyTips(rawMatches));
+        const settledLedger = compileAuthoritativeSettledLedger();
+        const perf = computePerformanceMetrics(settledLedger, state.analyticsPeriod === 'all' ? 'all' : parseInt(state.analyticsPeriod, 10) || 30);
+        const calibration = computeCalibrationMetrics(settledLedger);
+
+        const activeList = qualifiedTips.filter(t => t.status === 'ACTIVE' || t.status === 'QUALIFIED');
+        const liveList = qualifiedTips.filter(t => t.status === 'LIVE');
+
+        tabView.innerHTML = renderActiveTabContent(qualifiedTips, activeList, liveList, settledLedger, perf, calibration);
+      } else {
+        renderWorkspace();
+      }
     },
 
     setMarketFilter(marketKey) {
       state.activeMarket = marketKey;
+      state.page = 1;
       if (window.appState) window.appState.activeTopTipsToolMarket = marketKey;
-      renderWorkspace();
+      updateWorkspaceViews();
     },
 
     setProbFilter(probVal) {
       state.minProb = parseInt(probVal, 10) || 55;
-      renderWorkspace();
+      state.page = 1;
+      updateWorkspaceViews();
     },
 
     setSort(sortKey) {
       state.sortBy = sortKey;
-      renderWorkspace();
+      state.page = 1;
+      updateWorkspaceViews();
     },
 
     setSearch(query) {
       state.searchQuery = query;
-      renderWorkspace();
+      state.page = 1;
+      if (searchDebounceTimer) clearTimeout(searchDebounceTimer);
+      searchDebounceTimer = setTimeout(() => {
+        updateWorkspaceViews();
+      }, 80);
     },
 
     setValueOnly(isValOnly) {
       state.valueOnly = !!isValOnly;
-      renderWorkspace();
+      state.page = 1;
+      updateWorkspaceViews();
     },
 
     setPeriod(periodKey) {
       state.analyticsPeriod = periodKey;
-      renderWorkspace();
+      if (state.activeTab === 'analytics') {
+        const settledLedger = compileAuthoritativeSettledLedger();
+        const perf = computePerformanceMetrics(settledLedger, periodKey === 'all' ? 'all' : parseInt(periodKey, 10) || 30);
+        const calibration = computeCalibrationMetrics(settledLedger);
+        const tabView = document.getElementById("toptips-tab-view");
+        if (tabView) {
+          tabView.innerHTML = renderAnalyticsDashboard(perf, calibration, settledLedger);
+          return;
+        }
+      }
+      updateWorkspaceViews();
     },
     setAnalyticsPeriod(periodKey) {
-      state.analyticsPeriod = periodKey;
-      renderWorkspace();
+      this.setPeriod(periodKey);
+    },
+
+    setPage(page) {
+      state.page = Math.max(1, parseInt(page, 10) || 1);
+      updateWorkspaceViews();
+    },
+
+    setPageSize(size) {
+      state.pageSize = Math.max(10, parseInt(size, 10) || 25);
+      state.page = 1;
+      updateWorkspaceViews();
+    },
+
+    showAllTips() {
+      state.pageSize = 9999;
+      state.page = 1;
+      updateWorkspaceViews();
+    },
+
+    setSettledPage(page) {
+      state.settledPage = Math.max(1, parseInt(page, 10) || 1);
+      if (state.activeTab === 'settled') {
+        const tabView = document.getElementById("toptips-tab-view");
+        if (tabView) {
+          const ledger = compileAuthoritativeSettledLedger();
+          tabView.innerHTML = renderSettledTableWorkspace(ledger);
+          return;
+        }
+      }
+      updateWorkspaceViews();
     },
 
     qualifyTips: qualifyTips,
