@@ -123,6 +123,17 @@ export async function onRequestGet(context) {
       });
     }
 
+    const today = new Date().toISOString().split('T')[0];
+    if (!user.dailyUsage || user.dailyUsage.date !== today) {
+      user.dailyUsage = {
+        date: today,
+        conversions: 0,
+        doctorAudits: 0,
+        scoutQueries: 0,
+        generatorRuns: 0
+      };
+    }
+
     return new Response(JSON.stringify({
       success: true,
       activity: {
@@ -133,6 +144,7 @@ export async function onRequestGet(context) {
         coinsLedger: user.coinsLedger || [],
         coinsBalance: user.coinsBalance ?? 500,
         role: user.role || 'USER',
+        dailyUsage: user.dailyUsage,
         lastActiveAt: user.lastActiveAt || user.createdAt
       }
     }), {
@@ -177,6 +189,18 @@ export async function onRequestPost(context) {
     if (body.watchlist !== undefined) user.watchlist = body.watchlist;
     if (body.alerts !== undefined) user.alerts = body.alerts;
 
+    // Daily usage synchronization
+    const today = new Date().toISOString().split('T')[0];
+    if (!user.dailyUsage || user.dailyUsage.date !== today) {
+      user.dailyUsage = { date: today, conversions: 0, doctorAudits: 0, scoutQueries: 0, generatorRuns: 0 };
+    }
+    if (body.dailyUsage && typeof body.dailyUsage === 'object' && body.dailyUsage.date === today) {
+      user.dailyUsage.conversions = Math.max(user.dailyUsage.conversions || 0, body.dailyUsage.conversions || 0);
+      user.dailyUsage.doctorAudits = Math.max(user.dailyUsage.doctorAudits || 0, body.dailyUsage.doctorAudits || 0);
+      user.dailyUsage.scoutQueries = Math.max(user.dailyUsage.scoutQueries || 0, body.dailyUsage.scoutQueries || 0);
+      user.dailyUsage.generatorRuns = Math.max(user.dailyUsage.generatorRuns || 0, body.dailyUsage.generatorRuns || 0);
+    }
+
     // Privileged fields are strictly gated: only admins can update role, coinsBalance, or subscription
     if (isAdmin) {
       if (body.role !== undefined) user.role = body.role;
@@ -201,6 +225,7 @@ export async function onRequestPost(context) {
         coinsLedger: user.coinsLedger || [],
         coinsBalance: user.coinsBalance ?? 500,
         role: user.role || 'USER',
+        dailyUsage: user.dailyUsage,
         lastActiveAt: user.lastActiveAt
       }
     }), {

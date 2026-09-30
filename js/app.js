@@ -3145,18 +3145,41 @@ function initCommandCenter() {
   // 1. Check Authenticated / Returning User Session
   const isLoggedIn = localStorage.getItem("userLoggedIn") === "true";
   const username = localStorage.getItem("currentUsername") || "Punter";
-  const userVip = localStorage.getItem("deeppredictbet_vip");
-  let isVip = false;
-  let vipPlanName = "Free Plan";
-  try {
-    if (userVip) {
-      const parsed = JSON.parse(userVip);
-      if (parsed && (parsed.active || parsed.status === 'active' || parsed.package)) {
-        isVip = true;
-        vipPlanName = parsed.package || parsed.plan || "VIP Member";
+  const userTier = (typeof window !== 'undefined' && window.Entitlements && typeof window.Entitlements.getUserTier === 'function')
+    ? window.Entitlements.getUserTier()
+    : 'FREE';
+  const isVip = userTier === 'VIP' || userTier === 'ADMIN';
+  const isPro = userTier === 'PRO';
+
+  let tierLabel = '⚡ FREE ACCOUNT';
+  let badgeBg = 'rgba(59,130,246,0.15)';
+  let badgeColor = '#60a5fa';
+  let badgeBorder = '#3b82f6';
+
+  if (userTier === 'ADMIN') {
+    tierLabel = '👑 ADMIN PASS';
+    badgeBg = 'rgba(239,68,68,0.2)';
+    badgeColor = '#f87171';
+    badgeBorder = '#ef4444';
+  } else if (isVip) {
+    let vipPlanName = 'VIP Member';
+    try {
+      const userVip = localStorage.getItem("deeppredictbet_vip");
+      if (userVip) {
+        const parsed = JSON.parse(userVip);
+        if (parsed) vipPlanName = parsed.package || parsed.plan || 'VIP Member';
       }
-    }
-  } catch (e) {}
+    } catch (e) {}
+    tierLabel = '👑 ' + vipPlanName.toUpperCase();
+    badgeBg = 'rgba(245,158,11,0.2)';
+    badgeColor = '#fbbf24';
+    badgeBorder = '#f59e0b';
+  } else if (isPro) {
+    tierLabel = '⚡ PRO ANALYST';
+    badgeBg = 'rgba(16,185,129,0.2)';
+    badgeColor = '#34d399';
+    badgeBorder = '#10b981';
+  }
 
   if (isLoggedIn && welcomeEl) {
     welcomeEl.style.display = "block";
@@ -3189,8 +3212,8 @@ function initCommandCenter() {
           <div class="command-center-welcome-sub">Continue where you left off or choose your next intelligence objective.</div>
         </div>
         <div style="display:flex; align-items:center; gap:8px;">
-          <span style="font-size:0.75rem; font-weight:800; padding:4px 10px; border-radius:9999px; background:${isVip ? 'rgba(245,158,11,0.2)' : 'rgba(59,130,246,0.15)'}; color:${isVip ? '#fbbf24' : '#60a5fa'}; border:1px solid ${isVip ? '#f59e0b' : '#3b82f6'};">
-            ${isVip ? '👑 ' + vipPlanName.toUpperCase() : '⚡ FREE ACCOUNT'}
+          <span style="font-size:0.75rem; font-weight:800; padding:4px 10px; border-radius:9999px; background:${badgeBg}; color:${badgeColor}; border:1px solid ${badgeBorder};">
+            ${tierLabel}
           </span>
           <button type="button" class="btn btn-secondary" onclick="if(typeof navigateTo==='function'){navigateTo('/dashboard');}else{window.location.href='/dashboard';}" style="font-size:0.75rem; padding:5px 12px; border-radius:8px; cursor:pointer;">
             My Dashboard →
@@ -4376,12 +4399,31 @@ function unlockPremiumPlan() {
 
 // Render Value Intelligence Engine (formerly Value Bet Bot)
 function renderValueBetBot() {
+  const container = document.getElementById("value-intelligence-suite-container") || document.getElementById("value-bet-bot-rows");
+
+  if (typeof window !== 'undefined' && window.Entitlements) {
+    const hasAccess = typeof window.Entitlements.canAccess === 'function'
+      ? window.Entitlements.canAccess('valuebot')
+      : (typeof window.Entitlements.canAccessFeature === 'function' && window.Entitlements.canAccessFeature('valuebot'));
+
+    if (!hasAccess && container) {
+      if (window.DeepPredictUpgrade && window.DeepPredictUpgrade.LockedCapability) {
+        container.innerHTML = window.DeepPredictUpgrade.LockedCapability.render({
+          featureKey: 'valuebot',
+          title: 'Mathematical Value Bet Bot (+EV Engine)',
+          description: 'Positive mathematical expected value (+EV) picks calculated with Poisson distributions and market discrepancies across 50+ global sportsbooks.',
+          requiredTier: 'PRO'
+        });
+        return;
+      }
+    }
+  }
+
   if (typeof window !== 'undefined' && window.ValueIntelligenceEngine && typeof window.ValueIntelligenceEngine.init === 'function') {
     window.ValueIntelligenceEngine.init();
     return;
   }
 
-  const container = document.getElementById("value-intelligence-suite-container") || document.getElementById("value-bet-bot-rows");
   if (!container) return;
   container.innerHTML = "";
 
@@ -4431,6 +4473,16 @@ function syncBacktesterPremiumState() {
   const activeModule = document.getElementById("backtester-active-module");
   if (!activeModule) return;
 
+  const hasAccess = (typeof window !== 'undefined' && window.Entitlements && typeof window.Entitlements.canAccessFeature === 'function')
+    ? window.Entitlements.canAccessFeature('backtester')
+    : (typeof canAccessFeature === 'function' ? canAccessFeature('backtester') : false);
+
+  if (!hasAccess) {
+    if (overlay) overlay.style.display = "flex";
+    activeModule.style.display = "none";
+    return;
+  }
+
   if (overlay) {
     overlay.style.display = "none";
   }
@@ -4450,63 +4502,15 @@ function syncBacktesterPremiumState() {
 }
 window.syncBacktesterPremiumState = syncBacktesterPremiumState;
 
-// Strategy Backtester SVG ROI Line Graph Chart
-function renderBacktestSVGChart(yieldPercent) {
-  const container = document.getElementById("bt-svg-container");
-  const chartWrapper = document.getElementById("bt-chart-wrapper");
-  if (!container || !chartWrapper) return;
-
-  chartWrapper.style.display = "block";
-  
-  const numYield = parseFloat(yieldPercent) || 14.5;
-  const isPositive = numYield >= 0;
-  
-  const points = [];
-  const steps = 12;
-  const stepWidth = 360 / (steps - 1);
-  
-  for (let i = 0; i < steps; i++) {
-    const x = i * stepWidth;
-    const trend = (numYield / steps) * i * 1.5;
-    const fluctuation = (Math.sin(i * 1.5) * 8) + (Math.cos(i * 0.7) * 4);
-    const yVal = 100 - (trend + fluctuation);
-    points.push({ x, y: yVal });
-  }
-
-  const yVals = points.map(p => p.y);
-  const minY = Math.min(...yVals) - 10;
-  const maxY = Math.max(...yVals) + 10;
-  const yRange = (maxY - minY) || 1;
-  
-  const scaledPoints = points.map(p => {
-    const scaledY = 90 - ((p.y - minY) / yRange) * 80;
-    return `${p.x.toFixed(1)},${scaledY.toFixed(1)}`;
-  });
-  
-  const pathD = `M ${scaledPoints.join(" L ")}`;
-  const strokeColor = isPositive ? "#10b981" : "#ef4444";
-  const fillPathD = `${pathD} L 360,100 L 0,100 Z`;
-
-  container.innerHTML = `
-    <svg viewBox="0 0 360 100" style="width: 100%; height: auto; display: block; overflow: visible;">
-      <defs>
-        <linearGradient id="btGrad" x1="0" y1="0" x2="0" y2="1">
-          <stop offset="0%" stop-color="${strokeColor}" stop-opacity="0.3"/>
-          <stop offset="100%" stop-color="${strokeColor}" stop-opacity="0.0"/>
-        </linearGradient>
-      </defs>
-      <line x1="0" y1="25" x2="360" y2="25" stroke="rgba(255,255,255,0.06)" stroke-dasharray="3,3" stroke-width="0.5" />
-      <line x1="0" y1="50" x2="360" y2="50" stroke="rgba(255,255,255,0.06)" stroke-dasharray="3,3" stroke-width="0.5" />
-      <line x1="0" y1="75" x2="360" y2="75" stroke="rgba(255,255,255,0.06)" stroke-dasharray="3,3" stroke-width="0.5" />
-      <path d="${fillPathD}" fill="url(#btGrad)"/>
-      <path d="${pathD}" fill="none" stroke="${strokeColor}" stroke-width="2.5" stroke-linecap="round"/>
-    </svg>
-  `;
-}
-window.renderBacktestSVGChart = renderBacktestSVGChart;
-
 // Strategy Backtester Run Simulation
 function runBacktestSimulation(instant) {
+  if (typeof window !== 'undefined' && window.Entitlements && typeof window.Entitlements.canAccessFeature === 'function') {
+    if (!window.Entitlements.canAccessFeature('backtester')) {
+      window.Entitlements.showUpgradePrompt('backtester');
+      syncBacktesterPremiumState();
+      return;
+    }
+  }
   if (typeof window !== 'undefined' && window.StrategyBacktestingEngine && typeof window.StrategyBacktestingEngine.run === 'function') {
     window.StrategyBacktestingEngine.run(instant);
     return;
@@ -4584,6 +4588,34 @@ function sendScoutMessage(customText) {
 
   const userText = (customText !== undefined && customText !== null ? String(customText) : (input ? input.value : "")).trim();
   if (userText === "") return;
+
+  // Authoritative Entitlements Check for AI Scout
+  if (typeof window !== 'undefined' && window.Entitlements && typeof window.Entitlements.getFeatureEntitlement === 'function') {
+    const scoutEnt = window.Entitlements.getFeatureEntitlement('scout');
+    if (!scoutEnt.allowed) {
+      if (input) input.value = '';
+      const limitBubble = document.createElement("div");
+      limitBubble.className = "chat-bubble scout";
+      limitBubble.style.cssText = "background: rgba(239, 68, 68, 0.12); border: 1.5px solid rgba(239, 68, 68, 0.35);";
+      limitBubble.innerHTML = `
+        <div style="color: #fca5a5; font-size: 0.88rem; line-height: 1.5;">
+          <b>⚠️ Daily AI Scout Limit Reached</b><br/>
+          You have reached your daily allowance of ${scoutEnt.dailyLimit} inquiry on your ${scoutEnt.tier === 'FREE' ? 'Free Account' : scoutEnt.tier} tier. Upgrade to <b>PRO</b> for 10 inquiries/day or <b>VIP</b> for unlimited intelligence.
+          <div style="margin-top: 10px;">
+            <button type="button" class="btn btn-primary" onclick="if(window.Entitlements)window.Entitlements.showUpgradePrompt('scout');" style="padding: 6px 14px; font-size: 0.82rem; border-radius: 6px; cursor: pointer;">
+              ⚡ Upgrade to PRO / VIP
+            </button>
+          </div>
+        </div>
+      `;
+      chatBody.appendChild(limitBubble);
+      chatBody.scrollTop = chatBody.scrollHeight;
+      if (typeof window.Entitlements.showUpgradePrompt === 'function') {
+        window.Entitlements.showUpgradePrompt('scout');
+      }
+      return;
+    }
+  }
 
   if (input) input.value = "";
 
@@ -4700,6 +4732,14 @@ function sendScoutMessage(customText) {
 
     chatBody.appendChild(responseBubble);
     chatBody.scrollTop = chatBody.scrollHeight;
+
+    // Record feature usage for AI Scout upon successful response
+    if (typeof window !== 'undefined' && window.Entitlements && typeof window.Entitlements.recordFeatureUsage === 'function') {
+      window.Entitlements.recordFeatureUsage('scout');
+      if (typeof window.Entitlements.renderUsageBadge === 'function') {
+        window.Entitlements.renderUsageBadge('scout', 'scout-usage-badge');
+      }
+    }
   }, 1200);
 }
 
@@ -7670,6 +7710,20 @@ function runBetDoctorAudit(showScanAnim = true, explicitSource = null) {
   }
   if (exampleType) isExample = true;
 
+  if (!isExample && typeof window !== 'undefined' && window.Entitlements && typeof window.Entitlements.canAccessFeature === 'function') {
+    const ent = window.Entitlements.getFeatureEntitlement('doctor');
+    if (!ent.allowed) {
+      const msg = ent.tier === 'PUBLIC'
+        ? "Bet Doctor audit preview. Create a free account for 1 daily audit, or upgrade to PRO/VIP for high-volume audits!"
+        : `Daily limit of ${ent.dailyLimit} Bet Doctor audits reached on your ${ent.tier === 'FREE' ? 'Free Account' : ent.tier} tier. Upgrade for more!`;
+      if (typeof showAppNotification === 'function') {
+        showAppNotification(`⚠️ ${msg}`, "warning");
+      }
+      window.Entitlements.showUpgradePrompt('doctor');
+      return;
+    }
+  }
+
   let isOptimized = Boolean(window.doctorState.isOptimized);
   let selections = [];
 
@@ -7803,6 +7857,11 @@ function runBetDoctorAudit(showScanAnim = true, explicitSource = null) {
       trap_matches_detected: metrics.trapCount,
       success: true
     });
+  }
+
+  if (!isExample && typeof window !== 'undefined' && window.Entitlements) {
+    window.Entitlements.recordFeatureUsage('doctor');
+    window.Entitlements.renderUsageBadge('doctor', 'doctor-usage-badge');
   }
 
   const renderAuditHTML = () => {
@@ -8635,6 +8694,16 @@ function filterScannedBookmakersModal(query) {
 }
 
 function runArbitrageScanner(isUserClick = false) {
+  if (isUserClick && typeof window !== 'undefined' && window.Entitlements && typeof window.Entitlements.canAccessFeature === 'function') {
+    if (!window.Entitlements.canAccessFeature('arbitrage')) {
+      if (typeof showAppNotification === 'function') {
+        showAppNotification("👑 Arbitrage Finder (SureBets) is an exclusive VIP Club feature. Upgrade to unlock real-time scans!", "warning");
+      }
+      window.Entitlements.showUpgradePrompt('arbitrage');
+      return;
+    }
+  }
+
   const container = document.getElementById("arbitrage-results-container");
   if (!container) return;
 
@@ -9040,9 +9109,24 @@ window.openBetslipDrawerMobile = openBetslipDrawerMobile;
 
 
 
-function generateMachineTicket() {
+function generateMachineTicket(isUserAction = true) {
   try {
     console.log("generateMachineTicket triggered!");
+
+    // 0. Entitlement & Quota Check
+    if (isUserAction && typeof window !== 'undefined' && window.Entitlements && typeof window.Entitlements.canAccessFeature === 'function') {
+      const ent = window.Entitlements.getFeatureEntitlement('generator');
+      if (!ent.allowed) {
+        const msg = ent.tier === 'PUBLIC'
+          ? "You've viewed your free sample accumulator. Create a free account to generate custom bet slips, or upgrade to PRO/VIP!"
+          : `Daily limit of ${ent.dailyLimit} accumulator generation reached on your ${ent.tier === 'FREE' ? 'Free Account' : ent.tier} tier. Upgrade for more!`;
+        if (typeof showAppNotification === 'function') {
+          showAppNotification(`⚠️ ${msg}`, "warning");
+        }
+        window.Entitlements.showUpgradePrompt('machine');
+        return;
+      }
+    }
     
     // 1. Resolve dataset robustly: strictly future upcoming matches only
     const futurePool = (typeof getStrictlyFutureMatchesPool === 'function')
@@ -9254,6 +9338,11 @@ function generateMachineTicket() {
     if (typeof showAppNotification === 'function') {
       showAppNotification(`⚡ DeepPredict Machine generated a ${matchCount}-Match Ticket (${bookingCode})!`);
     }
+
+    if (isUserAction && typeof window !== 'undefined' && window.Entitlements) {
+      window.Entitlements.recordFeatureUsage('generator');
+      window.Entitlements.renderUsageBadge('generator', 'machine-usage-badge');
+    }
   } catch (err) {
     console.error("Error in generateMachineTicket:", err);
   }
@@ -9398,6 +9487,24 @@ function copyEngineTargetCode() {
 function saveGeneratedTicket() {
   const codeEl = document.getElementById("ticket-booking-code");
   const code = codeEl ? codeEl.innerText.trim() : "DP-TICKET";
+
+  // Check Saved Tickets Capacity
+  if (typeof window !== 'undefined' && window.Entitlements && typeof window.Entitlements.getFeatureEntitlement === 'function') {
+    const ent = window.Entitlements.getFeatureEntitlement('saved_tickets');
+    let currentSaved = [];
+    try {
+      const raw = localStorage.getItem('dp_saved_tickets');
+      if (raw) currentSaved = JSON.parse(raw);
+    } catch (e) {}
+    if (ent.dailyLimit !== Infinity && currentSaved.length >= ent.dailyLimit) {
+      const msg = ent.tier === 'PUBLIC'
+        ? "Create a free account to save up to 3 tickets, or upgrade to PRO (25 slips) / VIP (unlimited)!"
+        : `You have reached your limit of ${ent.dailyLimit} saved tickets on your ${ent.tier === 'FREE' ? 'Free Account' : ent.tier} tier. Upgrade to PRO or VIP for more capacity!`;
+      if (typeof showAppNotification === 'function') showAppNotification(`⚠️ ${msg}`, "warning");
+      window.Entitlements.showUpgradePrompt('default');
+      return;
+    }
+  }
   
   if (!window.appState) window.appState = {};
   if (!window.appState.savedTickets) window.appState.savedTickets = [];
@@ -9668,12 +9775,12 @@ async function handleAuthSignup(e) {
     localStorage.setItem("userLoggedIn", "true");
     localStorage.setItem("currentUsername", username);
     localStorage.setItem("currentUserEmail", email);
-    localStorage.setItem("user_role", "PRO");
+    localStorage.setItem("user_role", "USER");
   } catch(err) {}
 
   if (typeof window.trackEvent === 'function') {
-    window.trackEvent('USER_REGISTERED', { tool: 'auth', plan: 'PRO' });
-    window.trackEvent('USER_LOGIN', { tool: 'auth', plan: 'PRO' });
+    window.trackEvent('USER_REGISTERED', { tool: 'auth', plan: 'FREE' });
+    window.trackEvent('USER_LOGIN', { tool: 'auth', plan: 'FREE' });
   }
 
   if (typeof updateAuthUIState === 'function') updateAuthUIState();
@@ -9910,7 +10017,7 @@ async function handleAuthConfirmPasswordReset(e) {
         email: email,
         username: data.username || email.split('@')[0],
         passwordHash: passHash,
-        role: data.role || 'PRO',
+        role: data.role || 'USER',
         coinsBalance: 500,
         createdAt: new Date().toISOString()
       });
@@ -10454,7 +10561,7 @@ async function handleAuthLogin(e) {
       localStorage.setItem("userLoggedIn", "true");
       localStorage.setItem("currentUsername", loggedInUser.username || loggedInUser.fullName || identifier);
       localStorage.setItem("currentUserEmail", loggedInUser.email || identifier);
-      localStorage.setItem("user_role", isAdminUser ? "ADMIN" : (loggedInUser.role || "PRO"));
+      localStorage.setItem("user_role", isAdminUser ? "ADMIN" : (loggedInUser.role || "USER"));
       if (serverSessionId) {
         localStorage.setItem("dp_session_id", serverSessionId);
       }
@@ -12368,7 +12475,36 @@ async function convertBetCode(code, src, target) {
     return;
   }
 
-  // 1. Open Progress Modal
+  // 0. Entitlement & Daily Quota Check
+  if (typeof window !== 'undefined' && window.Entitlements && typeof window.Entitlements.canAccessFeature === 'function') {
+    const ent = window.Entitlements.getFeatureEntitlement('converter');
+    if (!ent.allowed) {
+      const limitMsg = ent.tier === 'PUBLIC'
+        ? "You've used your 1 free preview conversion. Create a free account for 3 conversions daily, or upgrade to PRO/VIP!"
+        : `Daily limit of ${ent.dailyLimit} conversions reached on your ${ent.tier === 'FREE' ? 'Free Account' : ent.tier} tier. Upgrade to unlock more!`;
+      if (typeof showAppNotification === 'function') {
+        showAppNotification(`⚠️ ${limitMsg}`, "warning");
+      }
+      if (typeof window.Entitlements.renderConverterQuotaState === 'function') {
+        window.Entitlements.renderConverterQuotaState();
+      }
+      window.Entitlements.showUpgradePrompt('converter');
+      return;
+    }
+  }
+
+  // 1. Double-Click & Race Condition Prevention (In-Flight State)
+  const convertBtn = document.getElementById("betcode-convert-btn");
+  const heroBtn = document.getElementById("hero-betcode-convert-btn");
+  const activeButtons = [convertBtn, heroBtn].filter(Boolean);
+  activeButtons.forEach(b => {
+    b.setAttribute('data-in-flight', 'true');
+    b.disabled = true;
+    b.innerText = "Converting Slip...";
+    b.style.cursor = "wait";
+  });
+
+  // 2. Open Progress Modal
   const modal = document.getElementById("conversion-result-modal");
   const progressBar = document.getElementById("conversion-progress-bar");
   const progressText = document.getElementById("conversion-stage-text");
@@ -12386,13 +12522,21 @@ async function convertBetCode(code, src, target) {
     if (progressText) progressText.innerText = `🔄 Parsing slip ${sourceCode} & mapping selections to ${formatBookieLabel(targetBookie)}...`;
     if (percentText) percentText.innerText = "65%";
 
+    const userEmail = (typeof localStorage !== 'undefined' && localStorage.getItem('currentUserEmail') ? localStorage.getItem('currentUserEmail') : '').trim();
+    const idempotencyKey = `conv_${userEmail || 'anon'}_${sourceBookie}_${targetBookie}_${sourceCode}`;
+
     const res = await fetch('/api/convert-code', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: {
+        'Content-Type': 'application/json',
+        'X-User-Email': userEmail,
+        'Idempotency-Key': idempotencyKey
+      },
       body: JSON.stringify({
         code: sourceCode,
         from: sourceBookie,
-        to: targetBookie
+        to: targetBookie,
+        userEmail: userEmail
       })
     });
 
@@ -12401,7 +12545,48 @@ async function convertBetCode(code, src, target) {
     if (progressBar) progressBar.style.width = "100%";
     if (percentText) percentText.innerText = "100%";
 
+    // Handle Rate Limiting & Quota Exhaustion from Edge Server (HTTP 429)
+    if (res.status === 429 || (data && (data.code === 'QUOTA_EXHAUSTED' || data.code === 'RATE_LIMIT_EXCEEDED'))) {
+      if (modal) modal.style.display = "none";
+      activeButtons.forEach(b => b.removeAttribute('data-in-flight'));
+
+      if (data && data.code === 'RATE_LIMIT_EXCEEDED') {
+        const retrySec = data.retryAfter || 60;
+        const limitMsg = data.error || `Rate limit reached. Please wait ${retrySec} seconds before converting another booking code.`;
+        if (typeof showAppNotification === 'function') showAppNotification(`⏱️ ${limitMsg}`, "warning");
+        if (typeof window !== 'undefined' && window.Entitlements && typeof window.Entitlements.renderConverterQuotaState === 'function') {
+          window.Entitlements.renderConverterQuotaState();
+        }
+      } else {
+        const errMsg = data.error || "Today's daily free conversion allowance has been reached.";
+        if (typeof showAppNotification === 'function') showAppNotification(`⚠️ ${errMsg}`, "warning");
+        if (typeof window !== 'undefined' && window.Entitlements) {
+          if (typeof window.Entitlements.renderConverterQuotaState === 'function') {
+            window.Entitlements.renderConverterQuotaState();
+          }
+          window.Entitlements.showUpgradePrompt('converter');
+        }
+      }
+      return;
+    }
+
     if (res.ok && data && data.success && data.data) {
+      // Record successful conversion
+      activeButtons.forEach(b => b.removeAttribute('data-in-flight'));
+      if (typeof window !== 'undefined' && window.Entitlements) {
+        window.Entitlements.recordFeatureUsage('converter');
+        if (data.quota && typeof window.Entitlements.syncDailyUsageFromServer === 'function') {
+          window.Entitlements.syncDailyUsageFromServer({
+            date: data.quota.resetAt ? data.quota.resetAt.split('T')[0] : undefined,
+            conversions: data.quota.used
+          });
+        }
+        if (typeof window.Entitlements.renderConverterQuotaState === 'function') {
+          window.Entitlements.renderConverterQuotaState();
+        }
+        window.Entitlements.renderUsageBadge('converter', 'converter-usage-badge');
+      }
+
       if (progressText) progressText.innerText = "✅ Conversion verified via BetPaddi Live Engine!";
       setTimeout(() => {
         renderConversionResults(sourceCode, sourceBookie, targetBookie, data.data);
@@ -12417,6 +12602,11 @@ async function convertBetCode(code, src, target) {
       }
       }, 400);
     } else {
+      activeButtons.forEach(b => b.removeAttribute('data-in-flight'));
+      if (typeof window !== 'undefined' && window.Entitlements && typeof window.Entitlements.renderConverterQuotaState === 'function') {
+        window.Entitlements.renderConverterQuotaState();
+      }
+
       if (typeof window.trackEvent === 'function') {
         window.trackEvent('CONVERTER_FAILED', {
           tool: 'converter',
@@ -12430,7 +12620,7 @@ async function convertBetCode(code, src, target) {
       if (progressText) progressText.innerText = `⚠️ ${errMsg}`;
       if (typeof showAppNotification === 'function') showAppNotification(`⚠️ ${errMsg}`, "warning");
       
-      // Update result card with clear status
+      // Update result card with clear status (Zero Quota Deducted!)
       const standaloneResultContainer = document.getElementById("standalone-betcode-result-container");
       if (standaloneResultContainer) {
         standaloneResultContainer.style.display = "block";
@@ -12438,15 +12628,24 @@ async function convertBetCode(code, src, target) {
           <div style="background: rgba(15, 23, 42, 0.95); border: 1.5px solid #ef4444; border-radius: 14px; padding: 20px 16px; text-align: center; box-shadow: 0 6px 24px rgba(239, 68, 68, 0.18);">
             <div style="font-size: 0.8rem; color: #f87171; font-weight: 800; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 6px;">CONVERSION NOTICE</div>
             <div style="font-size: 1.1rem; font-weight: 700; color: #ffffff; margin: 8px 0 12px;">⚠️ ${errMsg}</div>
-            <div style="font-size: 0.82rem; color: #94a3b8;">Code: <b>${sourceCode}</b> (${formatBookieLabel(sourceBookie)})</div>
+            <div style="font-size: 0.82rem; color: #94a3b8;">Code: <b>${sourceCode}</b> (${formatBookieLabel(sourceBookie)}) • <em>0 conversions deducted</em></div>
           </div>
         `;
       }
     }
   } catch (err) {
+    activeButtons.forEach(b => b.removeAttribute('data-in-flight'));
+    if (typeof window !== 'undefined' && window.Entitlements && typeof window.Entitlements.renderConverterQuotaState === 'function') {
+      window.Entitlements.renderConverterQuotaState();
+    }
     if (progressBar) progressBar.style.width = "100%";
     if (progressText) progressText.innerText = "⚠️ Network timeout connecting to BetPaddi.";
     if (typeof showAppNotification === 'function') showAppNotification("⚠️ Network error while connecting to BetPaddi.", "error");
+  } finally {
+    activeButtons.forEach(b => b.removeAttribute('data-in-flight'));
+    if (typeof window !== 'undefined' && window.Entitlements && typeof window.Entitlements.renderConverterQuotaState === 'function') {
+      window.Entitlements.renderConverterQuotaState();
+    }
   }
 }
 
@@ -13202,6 +13401,21 @@ function confirmCancelVipSubscription() {
 window.confirmCancelVipSubscription = confirmCancelVipSubscription;
 
 function openVipTipsHub() {
+  if (typeof window !== 'undefined' && window.Entitlements) {
+    const hasAccess = typeof window.Entitlements.canAccess === 'function'
+      ? window.Entitlements.canAccess('viptips')
+      : (typeof window.Entitlements.canAccessFeature === 'function' && window.Entitlements.canAccessFeature('viptips'));
+    if (!hasAccess) {
+      if (typeof showAppNotification === 'function') {
+        showAppNotification("👑 VIP Banker Predictions Hub is an exclusive VIP privilege. Upgrade to unlock verified daily bankers!", "warning");
+      }
+      if (typeof window.Entitlements.showUpgradePrompt === 'function') {
+        window.Entitlements.showUpgradePrompt('viptips');
+      }
+      return;
+    }
+  }
+
   const modal = document.getElementById('vip-tips-hub-modal');
   if (!modal) return;
   modal.classList.add('active');
@@ -13261,7 +13475,9 @@ function copyVipCrypto() {
 window.copyVipCrypto = copyVipCrypto;
 
 function syncVipSubscriptionUI() {
-  const sub = getStoredVipSubscription();
+  const userTier = (typeof window !== 'undefined' && window.Entitlements && typeof window.Entitlements.getUserTier === 'function')
+    ? window.Entitlements.getUserTier()
+    : 'PUBLIC';
   const navVipBtnText = document.getElementById('nav-vip-btn-text');
   const navVipBtn = document.getElementById('nav-vip-btn');
   const footerVipBtnText = document.getElementById('footer-vip-btn-text');
@@ -13269,10 +13485,15 @@ function syncVipSubscriptionUI() {
 
   const updateVipBtnElement = (btn, textEl) => {
     if (!btn) return;
-    if (sub && sub.active) {
+    if (userTier === 'ADMIN' || userTier === 'VIP') {
       if (textEl) textEl.innerText = 'VIP Active';
       btn.style.background = 'linear-gradient(135deg, #10b981 0%, #059669 100%)';
       btn.style.boxShadow = '0 0 15px rgba(16, 185, 129, 0.5)';
+      btn.onclick = () => openVipTipsHub();
+    } else if (userTier === 'PRO') {
+      if (textEl) textEl.innerText = 'PRO Active';
+      btn.style.background = 'linear-gradient(135deg, #3b82f6 0%, #2563eb 100%)';
+      btn.style.boxShadow = '0 0 15px rgba(59, 130, 246, 0.45)';
       btn.onclick = () => openVipTipsHub();
     } else {
       if (textEl) textEl.innerText = 'VIP Club';
@@ -13291,6 +13512,10 @@ window.syncVipSubscriptionUI = syncVipSubscriptionUI;
 
 function renderVipProfileStatus() {
   const sub = getStoredVipSubscription();
+  const userTier = (typeof window !== 'undefined' && window.Entitlements && typeof window.Entitlements.getUserTier === 'function')
+    ? window.Entitlements.getUserTier()
+    : (sub && sub.active ? 'VIP' : 'FREE');
+
   const heading = document.getElementById('prof-vip-status-heading');
   const subText = document.getElementById('prof-vip-status-sub');
   const badgePill = document.getElementById('prof-vip-badge-pill');
@@ -13302,33 +13527,45 @@ function renderVipProfileStatus() {
   const tipsBtn = document.getElementById('prof-vip-tips-btn');
   const cancelBtn = document.getElementById('prof-vip-cancel-btn');
 
-  if (sub && sub.active) {
-    const expStr = sub.expiresAt ? new Date(sub.expiresAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : '1 Year';
-    if (heading) heading.innerText = `👑 ${sub.name || 'VIP Member'}`;
-    if (subText) subText.innerText = sub.status === 'cancelled' ? `Subscription cancelled. Access remains active until ${expStr}.` : `Full unrestricted access to VIP banker picks.`;
+  const isVip = userTier === 'VIP' || userTier === 'ADMIN';
+  const isPro = userTier === 'PRO';
+
+  if (isVip || isPro) {
+    const expStr = sub?.expiresAt ? new Date(sub.expiresAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : 'Active Cycle';
+    if (heading) heading.innerText = isVip ? `👑 ${sub?.name || 'VIP Member'}` : '⚡ Pro Analyst Member';
+    if (subText) subText.innerText = sub?.status === 'cancelled'
+      ? `Subscription cancelled. Access remains active until ${expStr}.`
+      : (isVip ? 'Full unrestricted access to VIP banker picks & analytical engines.' : 'Expanded prediction and analytical model access.');
+
     if (badgePill) {
-      badgePill.innerText = sub.status === 'cancelled' ? 'EXPIRING' : 'VIP ACTIVE';
-      badgePill.style.background = sub.status === 'cancelled' ? 'rgba(239,68,68,0.2)' : 'rgba(16,185,129,0.2)';
-      badgePill.style.color = sub.status === 'cancelled' ? '#f87171' : '#34d399';
+      if (sub?.status === 'cancelled') {
+        badgePill.innerText = 'EXPIRING';
+        badgePill.style.background = 'rgba(239,68,68,0.2)';
+        badgePill.style.color = '#f87171';
+      } else {
+        badgePill.innerText = isVip ? 'VIP ACTIVE' : 'PRO ACTIVE';
+        badgePill.style.background = isVip ? 'rgba(16,185,129,0.2)' : 'rgba(59,130,246,0.2)';
+        badgePill.style.color = isVip ? '#34d399' : '#60a5fa';
+      }
     }
     if (detailsBox) detailsBox.style.display = 'block';
-    if (planName) planName.innerText = sub.name || 'Annual VIP';
+    if (planName) planName.innerText = sub?.name || (isVip ? 'Annual VIP' : 'Monthly Pro');
     if (expiryDate) expiryDate.innerText = expStr;
     if (cancelState) {
-      cancelState.innerText = sub.status === 'cancelled' ? 'Cancelled (No further billing)' : 'Active (Easy to cancel)';
-      cancelState.style.color = sub.status === 'cancelled' ? '#f87171' : '#fbbf24';
+      cancelState.innerText = sub?.status === 'cancelled' ? 'Cancelled (No further billing)' : 'Active (Easy to cancel)';
+      cancelState.style.color = sub?.status === 'cancelled' ? '#f87171' : '#fbbf24';
     }
 
     if (primaryBtn) primaryBtn.style.display = 'none';
     if (tipsBtn) tipsBtn.style.display = 'block';
     if (cancelBtn) {
-      cancelBtn.style.display = sub.status === 'cancelled' ? 'none' : 'block';
+      cancelBtn.style.display = sub?.status === 'cancelled' ? 'none' : 'block';
     }
   } else {
-    if (heading) heading.innerText = '👑 Free Member';
-    if (subText) subText.innerText = 'Upgrade to access high-roller banker tips.';
+    if (heading) heading.innerText = '🛡️ Free Member';
+    if (subText) subText.innerText = 'Upgrade to PRO or VIP to unlock high-roller banker tips and unlimited tools.';
     if (badgePill) {
-      badgePill.innerText = 'BASIC';
+      badgePill.innerText = 'FREE';
       badgePill.style.background = 'rgba(255,255,255,0.08)';
       badgePill.style.color = '#94a3b8';
     }

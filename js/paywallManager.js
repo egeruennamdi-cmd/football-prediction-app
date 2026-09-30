@@ -60,6 +60,28 @@
         'Unlimited daily slip scans & diagnostic history'
       ]
     },
+    converter: {
+      id: 'converter',
+      badge: '🔄 BOOKING CODE CONVERTER',
+      title: 'Need More Conversions?',
+      subtitle: 'Your free daily conversion allowance has been used. Upgrade to PRO or VIP to unlock expanded conversion access and conversion history.',
+      cta: 'Unlock Pro Conversions',
+      previewTitle: 'HIGH-VOLUME CONVERTER ENGINE',
+      previewBadge: 'Pro / VIP Tiers',
+      previewItems: [
+        { label: 'Daily Conversion Allowance', val: 'PRO: 30 / Day · VIP: 100 / Day' },
+        { label: 'Conversion History & Ledgers', val: 'Full historical log of converted slips' },
+        { label: 'Gateway Priority & Speed', val: 'Priority BetPaddi API execution' },
+        { label: 'Fallback Gateway Routing', val: 'Multi-bookmaker instant relays' }
+      ],
+      benefits: [
+        'PRO: 30 daily qualifying conversions (10x free tier)',
+        'VIP: 100 daily conversions with priority gateway routing',
+        'Complete conversion history and decoded betslip tracking',
+        'Instant multi-platform relay fallback if target bookmaker throttles',
+        'Higher usage allowance subject to provider capacity'
+      ]
+    },
     valuebot: {
       id: 'valuebot',
       badge: '🔒 VALUE BET BOT (+EV)',
@@ -212,6 +234,7 @@
       key = (featureInput.id || featureInput.name || '').toLowerCase().trim();
     }
 
+    if (key.includes('convert') || key === 'converter') return PAYWALL_FEATURE_CONTEXTS.converter;
     if (key.includes('doctor') || key === 'doctor') return PAYWALL_FEATURE_CONTEXTS.doctor;
     if (key.includes('value') || key === 'valuebot') return PAYWALL_FEATURE_CONTEXTS.valuebot;
     if (key.includes('backtest') || key === 'backtester') return PAYWALL_FEATURE_CONTEXTS.backtester;

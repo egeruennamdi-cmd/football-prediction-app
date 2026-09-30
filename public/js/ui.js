@@ -833,7 +833,10 @@ function renderMatchCards(fixtures) {
 
   list.forEach(match => {
     if (!match) return;
-    const isLocked = match.isPremium && !(window.appState && window.appState.premiumUnlocked);
+    const hasPredictionAccess = (typeof window !== 'undefined' && window.Entitlements && typeof window.Entitlements.canAccess === 'function')
+      ? (window.Entitlements.canAccess('predictions') || Boolean(window.appState && window.appState.premiumUnlocked))
+      : Boolean(window.appState && window.appState.premiumUnlocked);
+    const isLocked = Boolean(match.isPremium && !hasPredictionAccess);
     const card = document.createElement("div");
     card.className = `match-card ${isLocked ? 'premium-locked' : ''}`;
     card.id = `card-${match.id || Math.random()}`;
@@ -859,7 +862,7 @@ function renderMatchCards(fixtures) {
               <p class="premium-lock-desc">Unlock DeepPredict Pro algorithmic outcomes.</p>
             </div>
           </div>
-          <button type="button" class="btn btn-premium btn-premium-card" onclick="if(typeof openPremiumPaywall==='function'){openPremiumPaywall({feature:'match_intelligence'});}else if(typeof openVipSubscriptionModal==='function'){openVipSubscriptionModal('annual',{id:'predictions',name:'Match Intelligence'});}">Unlock Pro Pick</button>
+          <button type="button" class="btn btn-premium btn-premium-card" onclick="if(typeof window.Entitlements!=='undefined'&&typeof window.Entitlements.showUpgradePrompt==='function'){window.Entitlements.showUpgradePrompt('predictions','monthly');}else if(typeof openPremiumPaywall==='function'){openPremiumPaywall('monthly','predictions');}else if(typeof openVipSubscriptionModal==='function'){openVipSubscriptionModal('monthly',{id:'predictions',name:'Match Intelligence'});}">Unlock Pro Pick</button>
         </div>
       `;
       grid.appendChild(card);
@@ -2024,12 +2027,31 @@ function renderLeagueStatsLedger() {
 
 // Render Value Intelligence Engine (formerly Value Bet Bot)
 function renderValueBetBot() {
+  const container = document.getElementById("value-intelligence-suite-container") || document.getElementById("value-bet-bot-rows");
+
+  if (typeof window !== 'undefined' && window.Entitlements) {
+    const hasAccess = typeof window.Entitlements.canAccess === 'function'
+      ? window.Entitlements.canAccess('valuebot')
+      : (typeof window.Entitlements.canAccessFeature === 'function' && window.Entitlements.canAccessFeature('valuebot'));
+
+    if (!hasAccess && container) {
+      if (window.DeepPredictUpgrade && window.DeepPredictUpgrade.LockedCapability) {
+        container.innerHTML = window.DeepPredictUpgrade.LockedCapability.render({
+          featureKey: 'valuebot',
+          title: 'Mathematical Value Bet Bot (+EV Engine)',
+          description: 'Positive mathematical expected value (+EV) picks calculated with Poisson distributions and market discrepancies across 50+ global sportsbooks.',
+          requiredTier: 'PRO'
+        });
+        return;
+      }
+    }
+  }
+
   if (typeof window !== 'undefined' && window.ValueIntelligenceEngine && typeof window.ValueIntelligenceEngine.init === 'function') {
     window.ValueIntelligenceEngine.init();
     return;
   }
 
-  const container = document.getElementById("value-intelligence-suite-container") || document.getElementById("value-bet-bot-rows");
   if (!container) return;
   container.innerHTML = "";
 
@@ -2078,6 +2100,16 @@ function syncBacktesterPremiumState() {
   const overlay = document.getElementById("backtester-premium-overlay");
   const activeModule = document.getElementById("backtester-active-module");
   if (!activeModule) return;
+
+  const hasAccess = (typeof window !== 'undefined' && window.Entitlements && typeof window.Entitlements.canAccessFeature === 'function')
+    ? window.Entitlements.canAccessFeature('backtester')
+    : (typeof canAccessFeature === 'function' ? canAccessFeature('backtester') : false);
+
+  if (!hasAccess) {
+    if (overlay) overlay.style.display = "flex";
+    activeModule.style.display = "none";
+    return;
+  }
 
   if (overlay) {
     overlay.style.display = "none";
@@ -2150,6 +2182,14 @@ window.renderBacktestSVGChart = renderBacktestSVGChart;
 
 // Strategy Backtester Run Simulation
 function runBacktestSimulation(instant) {
+  if (typeof window !== 'undefined' && window.Entitlements && typeof window.Entitlements.canAccessFeature === 'function') {
+    if (!window.Entitlements.canAccessFeature('backtester')) {
+      window.Entitlements.showUpgradePrompt('backtester');
+      syncBacktesterPremiumState();
+      return;
+    }
+  }
+
   if (typeof window !== 'undefined' && window.StrategyBacktestingEngine && typeof window.StrategyBacktestingEngine.run === 'function') {
     window.StrategyBacktestingEngine.run(instant);
     return;
@@ -7586,9 +7626,24 @@ window.openBetslipDrawerMobile = openBetslipDrawerMobile;
 
 
 
-function generateMachineTicket() {
+function generateMachineTicket(isUserAction = true) {
   try {
     console.log("generateMachineTicket triggered!");
+
+    // 0. Entitlement & Quota Check
+    if (isUserAction && typeof window !== 'undefined' && window.Entitlements && typeof window.Entitlements.canAccessFeature === 'function') {
+      const ent = window.Entitlements.getFeatureEntitlement('generator');
+      if (!ent.allowed) {
+        const msg = ent.tier === 'PUBLIC'
+          ? "You've viewed your free sample accumulator. Create a free account to generate custom bet slips, or upgrade to PRO/VIP!"
+          : `Daily limit of ${ent.dailyLimit} accumulator generation reached on your ${ent.tier === 'FREE' ? 'Free Account' : ent.tier} tier. Upgrade for more!`;
+        if (typeof showAppNotification === 'function') {
+          showAppNotification(`⚠️ ${msg}`, "warning");
+        }
+        window.Entitlements.showUpgradePrompt('machine');
+        return;
+      }
+    }
     
     // 1. Resolve dataset robustly: strictly future upcoming matches only
     const futurePool = (typeof getStrictlyFutureMatchesPool === 'function')
@@ -7791,6 +7846,11 @@ function generateMachineTicket() {
     if (typeof showAppNotification === 'function') {
       showAppNotification(`⚡ DeepPredict Machine generated a ${matchCount}-Match Ticket (${bookingCode})!`);
     }
+
+    if (isUserAction && typeof window !== 'undefined' && window.Entitlements) {
+      window.Entitlements.recordFeatureUsage('generator');
+      window.Entitlements.renderUsageBadge('generator', 'machine-usage-badge');
+    }
   } catch (err) {
     console.error("Error in generateMachineTicket:", err);
   }
@@ -7836,6 +7896,25 @@ function copyGeneratedTicketCode() {
 function saveGeneratedTicket() {
   const codeEl = document.getElementById("ticket-booking-code");
   const code = codeEl ? codeEl.innerText.trim() : "DP-TICKET";
+
+  // Check Saved Tickets Capacity
+  if (typeof window !== 'undefined' && window.Entitlements && typeof window.Entitlements.getFeatureEntitlement === 'function') {
+    const ent = window.Entitlements.getFeatureEntitlement('saved_tickets');
+    let currentSaved = [];
+    try {
+      const raw = localStorage.getItem('dp_saved_tickets');
+      if (raw) currentSaved = JSON.parse(raw);
+    } catch (e) {}
+    if (ent.dailyLimit !== Infinity && currentSaved.length >= ent.dailyLimit) {
+      const msg = ent.tier === 'PUBLIC'
+        ? "Create a free account to save up to 3 tickets, or upgrade to PRO (25 slips) / VIP (unlimited)!"
+        : `You have reached your limit of ${ent.dailyLimit} saved tickets on your ${ent.tier === 'FREE' ? 'Free Account' : ent.tier} tier. Upgrade to PRO or VIP for more capacity!`;
+      if (typeof showAppNotification === 'function') showAppNotification(`⚠️ ${msg}`, "warning");
+      window.Entitlements.showUpgradePrompt('default');
+      return;
+    }
+  }
+
   if (typeof showAppNotification === 'function') {
     showAppNotification(`💾 Ticket '${code}' saved to profile history!`);
   }
@@ -8272,7 +8351,7 @@ async function handleAuthLogin(e) {
       localStorage.setItem("userLoggedIn", "true");
       localStorage.setItem("currentUsername", loggedInUser.username || loggedInUser.fullName || identifier);
       localStorage.setItem("currentUserEmail", loggedInUser.email || identifier);
-      localStorage.setItem("user_role", isAdminUser ? "ADMIN" : (loggedInUser.role || "PRO"));
+      localStorage.setItem("user_role", isAdminUser ? "ADMIN" : (loggedInUser.role || "USER"));
       if (serverSessionId) {
         localStorage.setItem("dp_session_id", serverSessionId);
       }
@@ -8438,12 +8517,12 @@ async function handleAuthSignup(e) {
     localStorage.setItem("userLoggedIn", "true");
     localStorage.setItem("currentUsername", username);
     localStorage.setItem("currentUserEmail", email);
-    localStorage.setItem("user_role", "PRO");
+    localStorage.setItem("user_role", "USER");
   } catch(err) {}
 
   if (typeof window.trackEvent === 'function') {
-    window.trackEvent('USER_REGISTERED', { tool: 'auth', plan: 'PRO' });
-    window.trackEvent('USER_LOGIN', { tool: 'auth', plan: 'PRO' });
+    window.trackEvent('USER_REGISTERED', { tool: 'auth', plan: 'FREE' });
+    window.trackEvent('USER_LOGIN', { tool: 'auth', plan: 'FREE' });
   }
 
   if (typeof updateAuthUIState === 'function') updateAuthUIState();
@@ -8681,7 +8760,7 @@ async function handleAuthConfirmPasswordReset(e) {
         email: email,
         username: data.username || email.split('@')[0],
         passwordHash: passHash,
-        role: data.role || 'PRO',
+        role: data.role || 'USER',
         coinsBalance: 500,
         createdAt: new Date().toISOString()
       });
@@ -10372,7 +10451,36 @@ async function convertBetCode(code, src, target) {
     return;
   }
 
-  // 1. Open Progress Modal
+  // 0. Entitlement & Daily Quota Check
+  if (typeof window !== 'undefined' && window.Entitlements && typeof window.Entitlements.canAccessFeature === 'function') {
+    const ent = window.Entitlements.getFeatureEntitlement('converter');
+    if (!ent.allowed) {
+      const limitMsg = ent.tier === 'PUBLIC'
+        ? "You've used your 1 free preview conversion. Create a free account for 3 conversions daily, or upgrade to PRO/VIP!"
+        : `Daily limit of ${ent.dailyLimit} conversions reached on your ${ent.tier === 'FREE' ? 'Free Account' : ent.tier} tier. Upgrade to unlock more!`;
+      if (typeof showAppNotification === 'function') {
+        showAppNotification(`⚠️ ${limitMsg}`, "warning");
+      }
+      if (typeof window.Entitlements.renderConverterQuotaState === 'function') {
+        window.Entitlements.renderConverterQuotaState();
+      }
+      window.Entitlements.showUpgradePrompt('converter');
+      return;
+    }
+  }
+
+  // 1. Double-Click & Race Condition Prevention (In-Flight State)
+  const convertBtn = document.getElementById("betcode-convert-btn");
+  const heroBtn = document.getElementById("hero-betcode-convert-btn");
+  const activeButtons = [convertBtn, heroBtn].filter(Boolean);
+  activeButtons.forEach(b => {
+    b.setAttribute('data-in-flight', 'true');
+    b.disabled = true;
+    b.innerText = "Converting Slip...";
+    b.style.cursor = "wait";
+  });
+
+  // 2. Open Progress Modal
   const modal = document.getElementById("conversion-result-modal");
   const progressBar = document.getElementById("conversion-progress-bar");
   const progressText = document.getElementById("conversion-stage-text");
@@ -10390,13 +10498,21 @@ async function convertBetCode(code, src, target) {
     if (progressText) progressText.innerText = `🔄 Parsing slip ${sourceCode} & mapping selections to ${formatBookieLabel(targetBookie)}...`;
     if (percentText) percentText.innerText = "65%";
 
+    const userEmail = (typeof localStorage !== 'undefined' && localStorage.getItem('currentUserEmail') ? localStorage.getItem('currentUserEmail') : '').trim();
+    const idempotencyKey = `conv_${userEmail || 'anon'}_${sourceBookie}_${targetBookie}_${sourceCode}`;
+
     const res = await fetch('/api/convert-code', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: {
+        'Content-Type': 'application/json',
+        'X-User-Email': userEmail,
+        'Idempotency-Key': idempotencyKey
+      },
       body: JSON.stringify({
         code: sourceCode,
         from: sourceBookie,
-        to: targetBookie
+        to: targetBookie,
+        userEmail: userEmail
       })
     });
 
@@ -10405,17 +10521,82 @@ async function convertBetCode(code, src, target) {
     if (progressBar) progressBar.style.width = "100%";
     if (percentText) percentText.innerText = "100%";
 
+    // Handle Rate Limiting & Quota Exhaustion from Edge Server (HTTP 429)
+    if (res.status === 429 || (data && (data.code === 'QUOTA_EXHAUSTED' || data.code === 'RATE_LIMIT_EXCEEDED'))) {
+      if (modal) modal.style.display = "none";
+      activeButtons.forEach(b => b.removeAttribute('data-in-flight'));
+
+      if (data && data.code === 'RATE_LIMIT_EXCEEDED') {
+        const retrySec = data.retryAfter || 60;
+        const limitMsg = data.error || `Rate limit reached. Please wait ${retrySec} seconds before converting another booking code.`;
+        if (typeof showAppNotification === 'function') showAppNotification(`⏱️ ${limitMsg}`, "warning");
+        if (typeof window !== 'undefined' && window.Entitlements && typeof window.Entitlements.renderConverterQuotaState === 'function') {
+          window.Entitlements.renderConverterQuotaState();
+        }
+      } else {
+        const errMsg = data.error || "Today's daily free conversion allowance has been reached.";
+        if (typeof showAppNotification === 'function') showAppNotification(`⚠️ ${errMsg}`, "warning");
+        if (typeof window !== 'undefined' && window.Entitlements) {
+          if (typeof window.Entitlements.renderConverterQuotaState === 'function') {
+            window.Entitlements.renderConverterQuotaState();
+          }
+          window.Entitlements.showUpgradePrompt('converter');
+        }
+      }
+      return;
+    }
+
     if (res.ok && data && data.success && data.data) {
+      // Record successful conversion
+      activeButtons.forEach(b => b.removeAttribute('data-in-flight'));
+      if (typeof window !== 'undefined' && window.Entitlements) {
+        window.Entitlements.recordFeatureUsage('converter');
+        if (data.quota && typeof window.Entitlements.syncDailyUsageFromServer === 'function') {
+          window.Entitlements.syncDailyUsageFromServer({
+            date: data.quota.resetAt ? data.quota.resetAt.split('T')[0] : undefined,
+            conversions: data.quota.used
+          });
+        }
+        if (typeof window.Entitlements.renderConverterQuotaState === 'function') {
+          window.Entitlements.renderConverterQuotaState();
+        }
+        window.Entitlements.renderUsageBadge('converter', 'converter-usage-badge');
+      }
+
       if (progressText) progressText.innerText = "✅ Conversion verified via BetPaddi Live Engine!";
       setTimeout(() => {
         renderConversionResults(sourceCode, sourceBookie, targetBookie, data.data);
+      if (typeof window.trackEvent === 'function') {
+        window.trackEvent('CONVERTER_COMPLETED', {
+          tool: 'converter',
+          source_bookmaker: formatBookieLabel(sourceBookie),
+          destination_bookmaker: formatBookieLabel(targetBookie),
+          total_odds: parseFloat(data.data.totalOdds || 0),
+          selection_count: Array.isArray(data.data.matches) ? data.data.matches.length : 4,
+          success: true
+        });
+      }
       }, 400);
     } else {
+      activeButtons.forEach(b => b.removeAttribute('data-in-flight'));
+      if (typeof window !== 'undefined' && window.Entitlements && typeof window.Entitlements.renderConverterQuotaState === 'function') {
+        window.Entitlements.renderConverterQuotaState();
+      }
+
+      if (typeof window.trackEvent === 'function') {
+        window.trackEvent('CONVERTER_FAILED', {
+          tool: 'converter',
+          source_bookmaker: formatBookieLabel(sourceBookie),
+          destination_bookmaker: formatBookieLabel(targetBookie),
+          reason_category: (data.error || data.message || 'Verification failure').substring(0, 60),
+          success: false
+        });
+      }
       const errMsg = data.error || data.message || "Conversion failed. Please verify that this booking code is active and matches have not started yet.";
       if (progressText) progressText.innerText = `⚠️ ${errMsg}`;
       if (typeof showAppNotification === 'function') showAppNotification(`⚠️ ${errMsg}`, "warning");
       
-      // Update result card with clear status
+      // Update result card with clear status (Zero Quota Deducted!)
       const standaloneResultContainer = document.getElementById("standalone-betcode-result-container");
       if (standaloneResultContainer) {
         standaloneResultContainer.style.display = "block";
@@ -10423,15 +10604,24 @@ async function convertBetCode(code, src, target) {
           <div style="background: rgba(15, 23, 42, 0.95); border: 1.5px solid #ef4444; border-radius: 14px; padding: 20px 16px; text-align: center; box-shadow: 0 6px 24px rgba(239, 68, 68, 0.18);">
             <div style="font-size: 0.8rem; color: #f87171; font-weight: 800; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 6px;">CONVERSION NOTICE</div>
             <div style="font-size: 1.1rem; font-weight: 700; color: #ffffff; margin: 8px 0 12px;">⚠️ ${errMsg}</div>
-            <div style="font-size: 0.82rem; color: #94a3b8;">Code: <b>${sourceCode}</b> (${formatBookieLabel(sourceBookie)})</div>
+            <div style="font-size: 0.82rem; color: #94a3b8;">Code: <b>${sourceCode}</b> (${formatBookieLabel(sourceBookie)}) • <em>0 conversions deducted</em></div>
           </div>
         `;
       }
     }
   } catch (err) {
+    activeButtons.forEach(b => b.removeAttribute('data-in-flight'));
+    if (typeof window !== 'undefined' && window.Entitlements && typeof window.Entitlements.renderConverterQuotaState === 'function') {
+      window.Entitlements.renderConverterQuotaState();
+    }
     if (progressBar) progressBar.style.width = "100%";
     if (progressText) progressText.innerText = "⚠️ Network timeout connecting to BetPaddi.";
     if (typeof showAppNotification === 'function') showAppNotification("⚠️ Network error while connecting to BetPaddi.", "error");
+  } finally {
+    activeButtons.forEach(b => b.removeAttribute('data-in-flight'));
+    if (typeof window !== 'undefined' && window.Entitlements && typeof window.Entitlements.renderConverterQuotaState === 'function') {
+      window.Entitlements.renderConverterQuotaState();
+    }
   }
 }
 
@@ -11014,6 +11204,16 @@ function filterScannedBookmakersModal(query) {
 }
 
 function runArbitrageScanner(isUserClick = false) {
+  if (isUserClick && typeof window !== 'undefined' && window.Entitlements && typeof window.Entitlements.canAccessFeature === 'function') {
+    if (!window.Entitlements.canAccessFeature('arbitrage')) {
+      if (typeof showAppNotification === 'function') {
+        showAppNotification("👑 Arbitrage Finder (SureBets) is an exclusive VIP Club feature. Upgrade to unlock real-time scans!", "warning");
+      }
+      window.Entitlements.showUpgradePrompt('arbitrage');
+      return;
+    }
+  }
+
   const container = document.getElementById("arbitrage-results-container");
   if (!container) return;
 
@@ -11504,7 +11704,10 @@ window.onFilterMarketChange = onFilterMarketChange;
 
 function buildMatchCardElement(match) {
   if (!match) return null;
-  const isLocked = match.isPremium && !(window.appState && window.appState.premiumUnlocked);
+  const hasPredictionAccess = (typeof window !== 'undefined' && window.Entitlements && typeof window.Entitlements.canAccess === 'function')
+    ? (window.Entitlements.canAccess('predictions') || Boolean(window.appState && window.appState.premiumUnlocked))
+    : Boolean(window.appState && window.appState.premiumUnlocked);
+  const isLocked = Boolean(match.isPremium && !hasPredictionAccess);
   const card = document.createElement("div");
   card.className = `match-card ${isLocked ? 'premium-locked' : ''}`;
   card.id = `card-${match.id || Math.random()}`;
@@ -11530,7 +11733,7 @@ function buildMatchCardElement(match) {
             <p class="premium-lock-desc">Unlock DeepPredict Pro algorithmic outcomes.</p>
           </div>
         </div>
-        <button type="button" class="btn btn-premium btn-premium-card" onclick="if(typeof openPremiumPaywall==='function'){openPremiumPaywall({feature:'match_intelligence'});}else if(typeof openVipSubscriptionModal==='function'){openVipSubscriptionModal('annual',{id:'predictions',name:'Match Intelligence'});}">Unlock Pro Pick</button>
+        <button type="button" class="btn btn-premium btn-premium-card" onclick="if(typeof window.Entitlements!=='undefined'&&typeof window.Entitlements.showUpgradePrompt==='function'){window.Entitlements.showUpgradePrompt('predictions','monthly');}else if(typeof openPremiumPaywall==='function'){openPremiumPaywall('monthly','predictions');}else if(typeof openVipSubscriptionModal==='function'){openVipSubscriptionModal('monthly',{id:'predictions',name:'Match Intelligence'});}">Unlock Pro Pick</button>
       </div>
     `;
     return card;

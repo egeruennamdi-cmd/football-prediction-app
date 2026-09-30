@@ -140,6 +140,15 @@
       goals: true
     });
 
+    // Telegram Integration State
+    let telegram = getLocalObject('dp_user_telegram', null);
+    try {
+      const storedActiveUser = JSON.parse(localStorage.getItem('deep_active_user') || '{}');
+      if (storedActiveUser && storedActiveUser.telegram) {
+        telegram = storedActiveUser.telegram;
+      }
+    } catch (e) {}
+
     // Doctor History
     const doctorHistory = getLocalArray('dp_doctor_history', []);
 
@@ -164,16 +173,22 @@
       ? (settledTickets.reduce((acc, t) => acc + (parseFloat(t.totalOdds) || 2.0), 0) / settledTickets.length).toFixed(2)
       : (savedTickets.length > 0 ? (savedTickets.reduce((acc, t) => acc + (parseFloat(t.totalOdds) || 2.0), 0) / savedTickets.length).toFixed(2) : null);
 
+    const resolvedUserId = localStorage.getItem("currentUserId") || (function() {
+      try { return JSON.parse(localStorage.getItem('deep_active_user') || '{}').id || ''; } catch(e) { return ''; }
+    })();
+
     return {
       isLoggedIn,
       username,
       email,
+      userId: resolvedUserId,
       role,
       coins,
       sub,
       savedTickets,
       watchlist,
       alerts,
+      telegram,
       doctorHistory,
       coinLedger,
       stats: {
@@ -225,7 +240,11 @@
       return;
     }
 
-    const isVip = data.sub && data.sub.active;
+    const activeTier = (typeof window !== 'undefined' && window.Entitlements && typeof window.Entitlements.getUserTier === 'function')
+      ? window.Entitlements.getUserTier()
+      : (data.sub && data.sub.active ? 'VIP' : (data.role === 'PRO' ? 'PRO' : 'FREE'));
+    const isVip = activeTier === 'VIP' || activeTier === 'ADMIN';
+    const isPro = activeTier === 'PRO';
     const isFounder = typeof window.isAdmin === 'function' ? window.isAdmin() : (function() {
       const username = (localStorage.getItem("currentUsername") || '').trim().toLowerCase();
       const email = (localStorage.getItem("currentUserEmail") || '').trim().toLowerCase();
@@ -233,8 +252,8 @@
       const isAuthAdmin = (email === 'admin@deeppredictbet.com' || email === 'egeruennamdi@gmail.com' || username === 'egeruennamdi78' || username === 'egeruennamdi');
       return isAuthAdmin && role === 'ADMIN';
     })();
-    const tierBadge = isVip ? '👑 VIP PASS ACTIVE' : (data.role === 'PRO' ? '⚡ PRO ANALYST' : '🛡️ FREE PUNTER');
-    const tierColor = isVip ? '#f59e0b' : (data.role === 'PRO' ? '#10b981' : '#60a5fa');
+    const tierBadge = activeTier === 'ADMIN' ? '👑 ADMIN PASS' : (isVip ? '👑 VIP PASS ACTIVE' : (isPro ? '⚡ PRO ANALYST' : '🛡️ FREE PUNTER'));
+    const tierColor = activeTier === 'ADMIN' ? '#ef4444' : (isVip ? '#f59e0b' : (isPro ? '#10b981' : '#60a5fa'));
     const avatarInitial = data.username.charAt(0).toUpperCase();
 
     // Sidebar items definition
@@ -248,7 +267,7 @@
       { id: 'results', label: 'My Results', icon: '⚖️', count: data.stats.settledTickets || null },
       { id: 'performance', label: 'My Performance', icon: '📈' },
       { id: 'alerts', label: 'Alerts', icon: '🔔' },
-      { id: 'subscription', label: 'Subscription', icon: '💎', badge: isVip ? 'VIP' : null },
+      { id: 'subscription', label: 'Subscription', icon: '💎', badge: isVip ? 'VIP' : (isPro ? 'PRO' : null) },
       { id: 'usage', label: 'Usage', icon: '⚡' }
     ];
 
@@ -1303,10 +1322,100 @@
 
           </div>
 
-          <div style="margin-top: 18px; text-align: center;">
+          <div style="margin-top: 18px; text-align: center; border-top: 1px solid rgba(255,255,255,0.06); padding-top: 14px;">
             <a href="https://t.me/deeppredictbet" target="_blank" rel="noopener" style="font-size: 0.82rem; color: #38bdf8; font-weight: 800; text-decoration: none; display: inline-flex; align-items: center; gap: 6px;">
-              🚀 Connect to Official Telegram Channel &rarr;
+              🚀 Join Official Telegram Community Channel &rarr;
             </a>
+          </div>
+        </div>
+
+        <!-- TELEGRAM BOT ACCOUNT LINKING CARD -->
+        <div class="glass-card" style="background: linear-gradient(135deg, rgba(15,23,42,0.95) 0%, rgba(30,58,138,0.22) 100%); border: 1px solid rgba(56,189,248,0.28); border-radius: 16px; padding: 22px; margin-bottom: 20px;">
+          <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 14px; margin-bottom: 16px;">
+            <div style="display: flex; align-items: center; gap: 12px;">
+              <div style="width: 44px; height: 44px; border-radius: 12px; background: rgba(56,189,248,0.15); border: 1px solid rgba(56,189,248,0.3); display: flex; align-items: center; justify-content: center; font-size: 1.5rem;">
+                ✈️
+              </div>
+              <div>
+                <h3 style="margin: 0; font-size: 1.05rem; font-weight: 900; color: #ffffff;">DeepPredictBet Telegram Bot</h3>
+                <p style="margin: 2px 0 0; font-size: 0.76rem; color: #94a3b8;">
+                  Connect your account for instant Banker push alerts, live odds scanner, and bot commands.
+                </p>
+              </div>
+            </div>
+            <div>
+              ${data.telegram && data.telegram.linked ? `
+                <span style="background: rgba(16,185,129,0.15); border: 1px solid #10b981; color: #34d399; font-size: 0.72rem; font-weight: 800; padding: 5px 12px; border-radius: 20px; display: inline-flex; align-items: center; gap: 5px;">
+                  ● LINKED
+                </span>
+              ` : `
+                <span style="background: rgba(148,163,184,0.12); border: 1px solid rgba(148,163,184,0.25); color: #94a3b8; font-size: 0.72rem; font-weight: 700; padding: 5px 12px; border-radius: 20px;">
+                  NOT CONNECTED
+                </span>
+              `}
+            </div>
+          </div>
+
+          ${data.telegram && data.telegram.linked ? `
+            <div style="background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.06); border-radius: 12px; padding: 14px 16px; margin-bottom: 16px;">
+              <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 12px; font-size: 0.78rem;">
+                <div>
+                  <span style="color: #94a3b8;">Telegram User:</span>
+                  <div style="font-weight: 800; color: #38bdf8; margin-top: 2px;">@${data.telegram.username || 'Linked User'}</div>
+                </div>
+                <div>
+                  <span style="color: #94a3b8;">Telegram ID:</span>
+                  <div style="font-weight: 800; color: #ffffff; margin-top: 2px;"><code>${data.telegram.id}</code></div>
+                </div>
+                <div>
+                  <span style="color: #94a3b8;">Linked Since:</span>
+                  <div style="color: #cbd5e1; margin-top: 2px;">${data.telegram.linkedAt ? new Date(data.telegram.linkedAt).toLocaleDateString() : 'Active'}</div>
+                </div>
+              </div>
+            </div>
+
+            <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+              <button onclick="window.testTelegramAlert()" class="btn btn-secondary" style="padding: 8px 16px; font-size: 0.8rem; font-weight: 800; border-radius: 10px;">
+                🔔 Send Test Alert
+              </button>
+              <button onclick="window.checkTelegramLinkStatus('${data.userId}')" class="btn btn-secondary" style="padding: 8px 16px; font-size: 0.8rem; font-weight: 700; border-radius: 10px;">
+                🔄 Sync Status
+              </button>
+              <button onclick="window.unlinkTelegramBot()" class="btn btn-secondary" style="padding: 8px 16px; font-size: 0.8rem; font-weight: 700; color: #f87171; border-color: rgba(248,113,113,0.3); border-radius: 10px;">
+                Disconnect
+              </button>
+            </div>
+          ` : `
+            <p style="font-size: 0.8rem; color: #cbd5e1; line-height: 1.5; margin: 0 0 16px;">
+              Link your Telegram account in 10 seconds. You'll receive high-confidence 89.4% win-rate Banker picks the moment they are generated and can query stats on the go with <code>/predictions</code> and <code>/tips</code>.
+            </p>
+            <div id="tg-connect-action-area" style="display: flex; align-items: center; gap: 12px; flex-wrap: wrap;">
+              <button onclick="window.connectTelegramBot()" id="tg-connect-btn" class="btn btn-primary" style="padding: 10px 20px; font-size: 0.84rem; font-weight: 800; border-radius: 10px; display: inline-flex; align-items: center; gap: 8px; background: linear-gradient(135deg, #0284c7 0%, #0369a1 100%);">
+                ✈️ Connect Telegram Bot
+              </button>
+              <span style="font-size: 0.75rem; color: #94a3b8;">Uses secure single-use token authorization.</span>
+            </div>
+            <div id="tg-token-display-area" style="display: none; margin-top: 14px; background: rgba(0,0,0,0.3); border: 1px dashed rgba(56,189,248,0.4); border-radius: 12px; padding: 14px;">
+            </div>
+          `}
+
+          <!-- COMMANDS CHEATSHEET -->
+          <div style="margin-top: 18px; border-top: 1px solid rgba(255,255,255,0.06); padding-top: 14px;">
+            <div style="font-size: 0.74rem; font-weight: 800; color: #94a3b8; text-transform: uppercase; margin-bottom: 8px; letter-spacing: 0.5px;">
+              Supported Bot Commands:
+            </div>
+            <div style="display: flex; flex-wrap: wrap; gap: 6px;">
+              <span style="background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.08); padding: 3px 8px; border-radius: 6px; font-size: 0.72rem; color: #38bdf8; font-family: monospace;">/start</span>
+              <span style="background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.08); padding: 3px 8px; border-radius: 6px; font-size: 0.72rem; color: #38bdf8; font-family: monospace;">/tips</span>
+              <span style="background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.08); padding: 3px 8px; border-radius: 6px; font-size: 0.72rem; color: #38bdf8; font-family: monospace;">/predictions</span>
+              <span style="background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.08); padding: 3px 8px; border-radius: 6px; font-size: 0.72rem; color: #38bdf8; font-family: monospace;">/scout</span>
+              <span style="background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.08); padding: 3px 8px; border-radius: 6px; font-size: 0.72rem; color: #38bdf8; font-family: monospace;">/value</span>
+              <span style="background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.08); padding: 3px 8px; border-radius: 6px; font-size: 0.72rem; color: #38bdf8; font-family: monospace;">/matches</span>
+              <span style="background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.08); padding: 3px 8px; border-radius: 6px; font-size: 0.72rem; color: #38bdf8; font-family: monospace;">/account</span>
+              <span style="background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.08); padding: 3px 8px; border-radius: 6px; font-size: 0.72rem; color: #38bdf8; font-family: monospace;">/watchlist</span>
+              <span style="background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.08); padding: 3px 8px; border-radius: 6px; font-size: 0.72rem; color: #38bdf8; font-family: monospace;">/vip</span>
+              <span style="background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.08); padding: 3px 8px; border-radius: 6px; font-size: 0.72rem; color: #38bdf8; font-family: monospace;">/help</span>
+            </div>
           </div>
         </div>
       </div>
@@ -1315,12 +1424,43 @@
 
   /* --- 10. SUBSCRIPTION TAB --- */
   function renderCustomerSubscriptionTab(data) {
-    const isVip = data.sub && data.sub.active;
+    const userTier = (typeof window !== 'undefined' && window.Entitlements && typeof window.Entitlements.getUserTier === 'function')
+      ? window.Entitlements.getUserTier()
+      : (data.sub && data.sub.active ? 'VIP' : (data.role === 'PRO' ? 'PRO' : 'FREE'));
+    const isVip = userTier === 'VIP' || userTier === 'ADMIN';
+    const isPro = userTier === 'PRO';
+    const hasPaidPlan = isVip || isPro || (data.sub && data.sub.active);
     const curr = (data.sub?.currency || (typeof window.getAppCurrency === 'function' ? window.getAppCurrency() : 'NGN')).toUpperCase();
     const currMeta = (typeof window.getCurrencyDetails === 'function') ? window.getCurrencyDetails(curr) : { flag: '🇳🇬', symbol: '₦', name: 'Nigerian Naira' };
-    const subPrice = data.sub?.formattedAmount || data.sub?.price || (curr === 'USD' ? '$25.00' : '₦27,000.00');
+    const subPrice = data.sub?.formattedAmount || data.sub?.price || (curr === 'USD' ? (isPro ? '$12.00' : '$25.00') : (isPro ? '₦13,500.00' : '₦27,000.00'));
     const renewalCurr = (data.sub?.renewalCurrency || curr).toUpperCase();
     const renewalDateStr = data.sub?.expiresAt ? new Date(data.sub.expiresAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : 'Active Cycle';
+
+    let membershipTitle = '🛡️ Free Punter Access Tier';
+    let badgeText = 'FREE';
+    let badgeBorder = 'rgba(255,255,255,0.15)';
+    let badgeBg = 'rgba(255,255,255,0.08)';
+    let badgeColor = '#cbd5e1';
+
+    if (userTier === 'ADMIN') {
+      membershipTitle = '👑 Founder / Admin All-Access Pass';
+      badgeText = 'ADMIN';
+      badgeBorder = '#ef4444';
+      badgeBg = 'rgba(239,68,68,0.2)';
+      badgeColor = '#f87171';
+    } else if (isVip) {
+      membershipTitle = `👑 ${data.sub?.name || 'VIP Member Pass'}`;
+      badgeText = `${(data.sub?.tier || 'VIP').toUpperCase()} • ${curr}`;
+      badgeBorder = '#f59e0b';
+      badgeBg = 'rgba(245,158,11,0.2)';
+      badgeColor = '#fbbf24';
+    } else if (isPro) {
+      membershipTitle = '⚡ Pro Analyst Member Pass';
+      badgeText = `PRO • ${curr}`;
+      badgeBorder = '#10b981';
+      badgeBg = 'rgba(16,185,129,0.2)';
+      badgeColor = '#34d399';
+    }
 
     return `
       <div>
@@ -1333,20 +1473,20 @@
           </p>
         </div>
 
-        <div class="glass-card" style="background: #0f172a; border: 1px solid ${isVip ? 'rgba(245,158,11,0.3)' : 'rgba(255,255,255,0.08)'}; border-radius: 18px; padding: 24px; margin-bottom: 20px;">
+        <div class="glass-card" style="background: #0f172a; border: 1px solid ${hasPaidPlan ? badgeBorder : 'rgba(255,255,255,0.08)'}; border-radius: 18px; padding: 24px; margin-bottom: 20px;">
           <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 16px;">
             <div>
-              <span style="font-size: 0.72rem; color: ${isVip ? '#fbbf24' : '#94a3b8'}; font-weight: 800; text-transform: uppercase;">Current Membership</span>
+              <span style="font-size: 0.72rem; color: ${badgeColor}; font-weight: 800; text-transform: uppercase;">Current Membership</span>
               <h3 style="margin: 4px 0 0; font-size: 1.3rem; font-weight: 900; color: #ffffff;">
-                ${isVip ? `👑 ${data.sub.name || 'VIP Member Pass'}` : '🛡️ Free Punter Access Tier'}
+                ${membershipTitle}
               </h3>
             </div>
-            <span style="background: ${isVip ? 'rgba(245,158,11,0.2)' : 'rgba(255,255,255,0.08)'}; border: 1px solid ${isVip ? '#f59e0b' : 'rgba(255,255,255,0.15)'}; color: ${isVip ? '#fbbf24' : '#cbd5e1'}; font-size: 0.72rem; font-weight: 800; padding: 4px 10px; border-radius: 8px;">
-              ${isVip ? `${(data.sub.tier || 'ACTIVE').toUpperCase()} • ${curr}` : 'FREE'}
+            <span style="background: ${badgeBg}; border: 1px solid ${badgeBorder}; color: ${badgeColor}; font-size: 0.72rem; font-weight: 800; padding: 4px 10px; border-radius: 8px;">
+              ${badgeText}
             </span>
           </div>
 
-          ${isVip ? `
+          ${hasPaidPlan ? `
             <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 12px; background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.06); border-radius: 12px; padding: 14px; margin-bottom: 18px;">
               <div>
                 <span style="font-size: 0.68rem; color: #94a3b8; text-transform: uppercase; font-weight: 700;">Billing Currency</span>
@@ -1443,7 +1583,28 @@
 
   /* --- 11. USAGE TAB --- */
   function renderCustomerUsageTab(data) {
-    const isVip = data.sub && data.sub.active;
+    const userTier = (typeof window !== 'undefined' && window.Entitlements && typeof window.Entitlements.getUserTier === 'function')
+      ? window.Entitlements.getUserTier()
+      : (data.sub && data.sub.active ? 'VIP' : 'FREE');
+    const isVip = userTier === 'VIP' || userTier === 'ADMIN';
+
+    const getDailyLimitDisplay = (featureKey) => {
+      if (typeof window !== 'undefined' && window.Entitlements && typeof window.Entitlements.getFeatureEntitlement === 'function') {
+        const ent = window.Entitlements.getFeatureEntitlement(featureKey);
+        if (ent.dailyLimit === Infinity) return 'Unlimited ♾️';
+        return `${ent.dailyLimit} / Day`;
+      }
+      return isVip ? 'Unlimited ♾️' : 'Limited';
+    };
+
+    const getUsedTodayDisplay = (featureKey) => {
+      if (typeof window !== 'undefined' && window.Entitlements && typeof window.Entitlements.getFeatureEntitlement === 'function') {
+        const ent = window.Entitlements.getFeatureEntitlement(featureKey);
+        if (ent.dailyLimit === Infinity) return 'VIP privilege active';
+        return `${ent.usedToday} used / ${ent.remaining} left today`;
+      }
+      return 'Resets at midnight';
+    };
 
     return `
       <div>
@@ -1452,7 +1613,7 @@
             USAGE ALLOWANCES & LIMITS
           </h2>
           <p style="font-size: 0.82rem; color: #94a3b8; margin: 4px 0 0;">
-            Platform resource limits actually enforced by your current access tier.
+            Platform resource limits actually enforced by your current access tier (${userTier}).
           </p>
         </div>
 
@@ -1461,17 +1622,33 @@
           <div class="glass-card" style="padding: 16px; background: rgba(15,23,42,0.8); border: 1px solid rgba(255,255,255,0.08); border-radius: 14px;">
             <div style="font-size: 0.7rem; color: #94a3b8; text-transform: uppercase;">Bet Doctor Audits</div>
             <div style="font-family: var(--font-display); font-size: 1.5rem; font-weight: 900; color: #38bdf8; margin: 4px 0;">
-              ${isVip ? 'Unlimited ♾️' : '3 / Day'}
+              ${getDailyLimitDisplay('doctor')}
             </div>
-            <div style="font-size: 0.72rem; color: #94a3b8;">${isVip ? 'VIP privilege active' : 'Resets at midnight'}</div>
+            <div style="font-size: 0.72rem; color: #94a3b8;">${getUsedTodayDisplay('doctor')}</div>
           </div>
 
           <div class="glass-card" style="padding: 16px; background: rgba(15,23,42,0.8); border: 1px solid rgba(255,255,255,0.08); border-radius: 14px;">
             <div style="font-size: 0.7rem; color: #94a3b8; text-transform: uppercase;">Code Conversions</div>
             <div style="font-family: var(--font-display); font-size: 1.5rem; font-weight: 900; color: #34d399; margin: 4px 0;">
-              ${isVip ? 'Unlimited ♾️' : '5 / Day'}
+              ${getDailyLimitDisplay('converter')}
             </div>
-            <div style="font-size: 0.72rem; color: #94a3b8;">${isVip ? 'VIP privilege active' : 'Cross-bookie slips'}</div>
+            <div style="font-size: 0.72rem; color: #94a3b8;">${getUsedTodayDisplay('converter')}</div>
+          </div>
+
+          <div class="glass-card" style="padding: 16px; background: rgba(15,23,42,0.8); border: 1px solid rgba(255,255,255,0.08); border-radius: 14px;">
+            <div style="font-size: 0.7rem; color: #94a3b8; text-transform: uppercase;">AI Scout Inquiries</div>
+            <div style="font-family: var(--font-display); font-size: 1.5rem; font-weight: 900; color: #a78bfa; margin: 4px 0;">
+              ${getDailyLimitDisplay('scout')}
+            </div>
+            <div style="font-size: 0.72rem; color: #94a3b8;">${getUsedTodayDisplay('scout')}</div>
+          </div>
+
+          <div class="glass-card" style="padding: 16px; background: rgba(15,23,42,0.8); border: 1px solid rgba(255,255,255,0.08); border-radius: 14px;">
+            <div style="font-size: 0.7rem; color: #94a3b8; text-transform: uppercase;">Custom Generations</div>
+            <div style="font-family: var(--font-display); font-size: 1.5rem; font-weight: 900; color: #f472b6; margin: 4px 0;">
+              ${getDailyLimitDisplay('generator')}
+            </div>
+            <div style="font-size: 0.72rem; color: #94a3b8;">${getUsedTodayDisplay('generator')}</div>
           </div>
 
           <div class="glass-card" style="padding: 16px; background: rgba(15,23,42,0.8); border: 1px solid rgba(255,255,255,0.08); border-radius: 14px;">
@@ -1638,6 +1815,155 @@
     showToast(`Notification setting updated: ${key} = ${val ? 'ON' : 'OFF'}`, 'success');
     if (typeof window.trackEvent === 'function') {
       window.trackEvent('ALERT_CREATED', { tool: 'alerts', alert_type: key });
+    }
+  };
+
+  /* --- TELEGRAM BOT INTEGRATION ACTIONS --- */
+  window.connectTelegramBot = async function () {
+    const btn = document.getElementById('tg-connect-btn');
+    if (btn) {
+      btn.disabled = true;
+      btn.innerHTML = '⏳ Generating Token...';
+    }
+
+    try {
+      const activeUser = (typeof window.deepActiveUser !== 'undefined' && window.deepActiveUser) || (function() {
+        try { return JSON.parse(localStorage.getItem('deep_active_user') || '{}'); } catch(e) { return {}; }
+      })();
+      const userId = localStorage.getItem('currentUserId') || activeUser.id || 'usr_adm1';
+      const email = localStorage.getItem('currentUserEmail') || activeUser.email || 'admin@deeppredictbet.com';
+      const username = localStorage.getItem('currentUsername') || activeUser.username || 'Punter';
+
+      const res = await fetch('/api/integrations/telegram/link', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ userId, email, username })
+      });
+
+      const data = await res.json();
+      if (data.success && data.deepLink) {
+        showToast('Opening DeepPredictBet Telegram Bot...', 'info');
+        window.open(data.deepLink, '_blank');
+
+        const displayArea = document.getElementById('tg-token-display-area');
+        if (displayArea) {
+          displayArea.style.display = 'block';
+          displayArea.innerHTML = `
+            <div style="font-size: 0.8rem; color: #cbd5e1; line-height: 1.6;">
+              <b style="color: #38bdf8;">Bot window opened!</b> Click <b>START</b> in Telegram, or send this command to the bot:<br>
+              <code style="display: inline-block; background: #0f172a; padding: 6px 10px; border-radius: 6px; color: #34d399; font-weight: 800; margin: 8px 0; border: 1px solid rgba(52,211,153,0.3);">/start ${data.linkToken}</code>
+              <div style="margin-top: 10px; display: flex; gap: 8px; align-items: center;">
+                <button onclick="window.checkTelegramLinkStatus('${userId}')" class="btn btn-secondary" style="padding: 6px 14px; font-size: 0.76rem; font-weight: 800;">
+                  🔄 Confirm Link Complete
+                </button>
+                <span style="font-size: 0.72rem; color: #94a3b8;">Token valid for 15 minutes.</span>
+              </div>
+            </div>
+          `;
+        }
+      } else {
+        showToast(data.error || 'Failed to generate link token.', 'error');
+      }
+    } catch (err) {
+      showToast('Network error while connecting to Telegram: ' + err.message, 'error');
+    } finally {
+      if (btn) {
+        btn.disabled = false;
+        btn.innerHTML = '✈️ Connect Telegram Bot';
+      }
+    }
+  };
+
+  window.checkTelegramLinkStatus = async function (explicitUserId) {
+    try {
+      const activeUser = (typeof window.deepActiveUser !== 'undefined' && window.deepActiveUser) || (function() {
+        try { return JSON.parse(localStorage.getItem('deep_active_user') || '{}'); } catch(e) { return {}; }
+      })();
+      const userId = explicitUserId || localStorage.getItem('currentUserId') || activeUser.id || '';
+      const email = localStorage.getItem('currentUserEmail') || activeUser.email || '';
+
+      const res = await fetch(`/api/integrations/telegram/link?userId=${encodeURIComponent(userId)}&email=${encodeURIComponent(email)}`);
+      const data = await res.json();
+
+      if (data.success && data.linked && data.telegram) {
+        setLocalObject('dp_user_telegram', { linked: true, ...data.telegram });
+        if (activeUser && activeUser.id) {
+          activeUser.telegram = { linked: true, ...data.telegram };
+          localStorage.setItem('deep_active_user', JSON.stringify(activeUser));
+        }
+        showToast('🎉 Telegram account successfully linked!', 'success');
+        renderCustomerDashboard('alerts');
+      } else {
+        showToast('Account not linked yet. Please send /start in Telegram first.', 'info');
+      }
+    } catch (e) {
+      showToast('Could not verify link status: ' + e.message, 'error');
+    }
+  };
+
+  window.unlinkTelegramBot = async function () {
+    if (!confirm('Are you sure you want to disconnect your Telegram account? You will stop receiving push Banker alerts.')) {
+      return;
+    }
+
+    try {
+      const activeUser = (typeof window.deepActiveUser !== 'undefined' && window.deepActiveUser) || (function() {
+        try { return JSON.parse(localStorage.getItem('deep_active_user') || '{}'); } catch(e) { return {}; }
+      })();
+      const userId = localStorage.getItem('currentUserId') || activeUser.id || '';
+      const email = localStorage.getItem('currentUserEmail') || activeUser.email || '';
+
+      const res = await fetch('/api/integrations/telegram/link', {
+        method: 'DELETE',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ userId, email })
+      });
+
+      const data = await res.json();
+      if (data.success) {
+        localStorage.removeItem('dp_user_telegram');
+        if (activeUser && activeUser.telegram) {
+          delete activeUser.telegram;
+          localStorage.setItem('deep_active_user', JSON.stringify(activeUser));
+        }
+        showToast('Telegram account unlinked.', 'info');
+        renderCustomerDashboard('alerts');
+      } else {
+        showToast(data.error || 'Failed to unlink account.', 'error');
+      }
+    } catch (e) {
+      showToast('Error unlinking Telegram: ' + e.message, 'error');
+    }
+  };
+
+  window.testTelegramAlert = async function () {
+    try {
+      const tg = getLocalObject('dp_user_telegram', null);
+      if (!tg || !tg.id) {
+        showToast('No linked Telegram account found. Please connect your bot first.', 'error');
+        return;
+      }
+      showToast('Sending test notification to your Telegram...', 'info');
+      const res = await fetch('/api/integrations/telegram/publish', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer deep_admin_78_key'
+        },
+        body: JSON.stringify({
+          target: 'user',
+          telegramUserId: tg.id,
+          text: '🔔 <b>DeepPredictBet Push Alert Test</b>\n\nYour Telegram integration is working seamlessly! High-confidence Banker selections will appear here.'
+        })
+      });
+      const data = await res.json();
+      if (data.success) {
+        showToast('✅ Test alert delivered to your Telegram!', 'success');
+      } else {
+        showToast('Could not deliver alert: ' + (data.error || 'Check bot status'), 'error');
+      }
+    } catch (e) {
+      showToast('Test alert failed: ' + e.message, 'error');
     }
   };
 
@@ -2931,13 +3257,16 @@
     }
 
     return users.map(u => {
-      const isVip = (u.role || '').toUpperCase() === 'VIP' || (u.subscription && u.subscription.active);
-      const isAdmin = (u.role || '').toUpperCase() === 'ADMIN' || u.username === 'Egeruennamdi78';
-      const roleBadge = isAdmin
+      const uTier = (typeof window !== 'undefined' && window.Entitlements && typeof window.Entitlements.getUserTier === 'function')
+        ? window.Entitlements.getUserTier(u)
+        : ((u.role || '').toUpperCase());
+      const roleBadge = uTier === 'ADMIN' || (u.role || '').toUpperCase() === 'ADMIN' || u.username === 'Egeruennamdi78'
         ? '<span style="background: #ef4444; color: #ffffff; font-weight: 800; font-size: 0.65rem; padding: 2px 6px; border-radius: 4px;">ADMIN</span>'
-        : (isVip
+        : (uTier === 'VIP' || (u.role || '').toUpperCase() === 'VIP' || (u.subscription && u.subscription.active)
           ? '<span style="background: #f59e0b; color: #022c22; font-weight: 800; font-size: 0.65rem; padding: 2px 6px; border-radius: 4px;">VIP</span>'
-          : '<span style="background: #3b82f6; color: #ffffff; font-weight: 700; font-size: 0.65rem; padding: 2px 6px; border-radius: 4px;">PUNTER</span>');
+          : (uTier === 'PRO' || (u.role || '').toUpperCase() === 'PRO'
+            ? '<span style="background: #10b981; color: #ffffff; font-weight: 800; font-size: 0.65rem; padding: 2px 6px; border-radius: 4px;">PRO</span>'
+            : '<span style="background: #3b82f6; color: #ffffff; font-weight: 700; font-size: 0.65rem; padding: 2px 6px; border-radius: 4px;">PUNTER</span>'));
 
       return `
         <tr style="border-bottom: 1px solid rgba(255,255,255,0.04);">

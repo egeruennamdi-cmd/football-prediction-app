@@ -3472,6 +3472,7 @@
         <button type="button" onclick="if(typeof toggleSupportedBookmakersModal==='function'){toggleSupportedBookmakersModal();}else if(window.toggleSupportedBookmakersModal){window.toggleSupportedBookmakersModal();}" style="background: rgba(30, 41, 59, 0.8); border: 1px solid rgba(255, 255, 255, 0.15); color: #94a3b8; font-size: 0.75rem; font-weight: 700; padding: 5px 12px; border-radius: 20px; cursor: pointer; display: inline-flex; align-items: center; gap: 6px; transition: all 0.2s;">
           <span>📖 View Supported Bookmakers</span>
         </button>
+        <div id="converter-usage-badge" style="display: inline-flex; align-items: center;"></div>
       </div>
     </div>
 
@@ -3507,6 +3508,9 @@
 
         <!-- Main Converter Form Block -->
         <div class="betcode-card-body">
+
+          <!-- Top Converter Quota Banner (Live Allowance & Gating Status) -->
+          <div id="converter-quota-banner" style="margin-bottom: 18px;"></div>
 
           <!-- Code Input -->
           <div class="betcode-form-group">
@@ -4150,6 +4154,7 @@
               <p class="machine-tool-desc">
                 Let the algorithm generate high-probability bet slips tailored to your specific odds and market filters.
               </p>
+              <div id="machine-usage-badge" style="display:inline-flex;align-items:center;margin-top:6px;"></div>
             </div>
             <span class="machine-tool-badge">
               ⚡ Algorithmic Slip Engine
@@ -4868,6 +4873,7 @@
                 Audit booking codes or tickets for hidden trap matches, risk scores, and 1-click AI prescriptions to
                 maximize win rate.
               </p>
+              <div id="doctor-usage-badge" style="display:inline-flex;align-items:center;margin-top:6px;"></div>
             </div>
             <span
               style="background: rgba(37, 99, 235, 0.15); border: 1px solid rgba(59, 130, 246, 0.4); color: #3b82f6; font-size: 0.75rem; font-weight: 800; padding: 6px 14px; border-radius: 20px; text-transform: uppercase;">
@@ -5254,7 +5260,7 @@
               <p style="font-size: 0.8rem; color: var(--text-secondary); max-width: 440px; margin: 0 auto 16px;">Run
                 retroactive simulations on last season's stats (ROI, Win Ratio, Yield) to audit your betting structures.
               </p>
-              <button type="button" class="btn btn-premium" onclick="if(typeof openPremiumPaywall==='function'){openPremiumPaywall({feature:'backtester'});}else if(typeof openVipSubscriptionModal==='function'){openVipSubscriptionModal('annual',{id:'backtester',name:'Strategy Backtester'});}">Unlock Pro Backtesting</button>
+              <button type="button" class="btn btn-premium" onclick="if(window.Entitlements&&typeof window.Entitlements.showUpgradePrompt==='function'){window.Entitlements.showUpgradePrompt('backtester');}else if(typeof openPremiumPaywall==='function'){openPremiumPaywall({feature:'backtester'});}else if(typeof openVipSubscriptionModal==='function'){openVipSubscriptionModal('annual',{id:'backtester',name:'Strategy Backtester'});}">Unlock Pro Backtesting</button>
             </div>
 
             <!-- Active Backtester Pane -->
@@ -7377,6 +7383,11 @@
           <button type="button" class="vip-cancel-guarantee" onclick="openEasyToCancelModal()">
             <span>🛡️</span> Easy to cancel anytime &bull; No lock-in
           </button>
+          <div style="text-align: center; margin-top: 10px;">
+            <a href="javascript:void(0)" id="vip-continue-exploring-link" class="continue-exploring-link" onclick="if(window.DeepPredictUpgrade && window.DeepPredictUpgrade.continueExploring){window.DeepPredictUpgrade.continueExploring('paywall_modal');}else if(typeof closeVipSubscriptionModal==='function'){closeVipSubscriptionModal(null, true);}" style="font-size: 0.82rem; color: #94a3b8; text-decoration: underline; font-weight: 600; cursor: pointer; transition: color 0.15s ease;">
+              Continue exploring DeepPredictBet
+            </a>
+          </div>
         </div>
 
         <!-- Security & Reassurance Row -->
@@ -9038,10 +9049,13 @@
   <script defer src="/js/analytics.js?v=20260924_multipage_v3"></script>
   <script defer src="/js/vipManager.js?v=20260924_multipage_v3"></script>
   <script defer src="/js/authManager.js?v=20260927_rbac_v1"></script>
+  <script defer src="/js/converterConfig.js?v=20260930_converter_v1"></script>
+  <script defer src="/js/entitlements.js?v=20260929_entitlements_v1"></script>
   <script defer src="/js/currencyConfig.js?v=20260927_currency_v1"></script>
   <script defer src="/js/leagueNormalizer.js?v=20260927_league_v1"></script>
   <script defer src="/js/bookmakerRegistry.js?v=20260928_bookmaker_v1"></script>
   <script defer src="/js/paywallManager.js?v=20260927_paywall_v2"></script>
+  <script defer src="/js/upgradeExperience.js?v=20260930_upgrade_v1"></script>
   <script defer src="/js/valueIntelligenceEngine.js?v=20260928_v1"></script>
   <script defer src="/js/advancedFiltersEngine.js?v=20260929_v1"></script>
   <script defer src="/js/strategyBacktestingEngine.js?v=20260929_v1"></script>

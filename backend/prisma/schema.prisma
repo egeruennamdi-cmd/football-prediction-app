@@ -130,12 +130,23 @@ model ConversionLog {
   sourceBookie     String
   targetBookie     String
   sourceCode       String
-  targetCode       String
-  totalOdds        Float
-  affiliateTagUsed String
+  targetCode       String?
+  totalOdds        Float?
+  affiliateTagUsed String?
+  tier             String   @default("PUBLIC")
+  result           String   @default("SUCCESS") // SUCCESS, SUCCESS_RELAY, FAILED
+  quotaConsumed    Boolean  @default(false)
+  failureReason    String?
+  requestId        String?
+  idempotencyKey   String?
+  durationMs       Int?
   userId           String?
   user             User?    @relation(fields: [userId], references: [id])
   createdAt        DateTime @default(now())
+
+  @@index([userId, createdAt])
+  @@index([createdAt])
+  @@index([idempotencyKey])
 }
 
 model AuditedSlip {

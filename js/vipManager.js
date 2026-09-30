@@ -118,6 +118,12 @@ function isFeatureVip(featureId) {
 }
 
 function canAccessFeature(featureId) {
+  if (typeof window !== 'undefined' && window.Entitlements && typeof window.Entitlements.canAccess === 'function') {
+    return window.Entitlements.canAccess(featureId);
+  }
+  if (typeof window !== 'undefined' && window.Entitlements && typeof window.Entitlements.canAccessFeature === 'function') {
+    return window.Entitlements.canAccessFeature(featureId);
+  }
   if (!isFeatureVip(featureId)) {
     return true;
   }
@@ -181,6 +187,19 @@ function resetVipFeaturesToDefault() {
 }
 
 function checkFeatureVipAccess(featureId, customTitle) {
+  if (typeof window !== 'undefined' && window.Entitlements) {
+    const hasAccess = typeof window.Entitlements.canAccess === 'function'
+      ? window.Entitlements.canAccess(featureId)
+      : (typeof window.Entitlements.canAccessFeature === 'function' && window.Entitlements.canAccessFeature(featureId));
+    if (hasAccess) {
+      return true;
+    }
+    if (typeof window.Entitlements.showUpgradePrompt === 'function') {
+      window.Entitlements.showUpgradePrompt(featureId);
+    }
+    return false;
+  }
+
   const config = getVipFeaturesConfig();
   const feat = config[featureId];
   if (!feat || !feat.isVip) {
@@ -224,12 +243,6 @@ function handleVipLinkClick(event, featureId) {
 
 function refreshVipFeatureBadges() {
   const config = getVipFeaturesConfig();
-  let isSubscribed = false;
-  if (typeof getStoredVipSubscription === 'function') {
-    const sub = getStoredVipSubscription();
-    isSubscribed = Boolean(sub && sub.active);
-  }
-
   const tabMapping = {
     machine: 'tool-tab-machine',
     doctor: 'tool-tab-doctor',
@@ -249,14 +262,24 @@ function refreshVipFeatureBadges() {
     if (existingBadge) existingBadge.remove();
 
     const feat = config[featId];
-    if (feat && feat.isVip) {
+    const isVipConfig = Boolean(feat && feat.isVip);
+    const minTier = (typeof window !== 'undefined' && window.Entitlements && window.Entitlements.FEATURE_MIN_TIERS)
+      ? window.Entitlements.FEATURE_MIN_TIERS[featId]
+      : (isVipConfig ? 'VIP' : null);
+
+    const hasAccess = (typeof window !== 'undefined' && window.Entitlements)
+      ? (typeof window.Entitlements.canAccess === 'function' ? window.Entitlements.canAccess(featId) : window.Entitlements.canAccessFeature(featId))
+      : !isVipConfig;
+
+    if (isVipConfig || minTier) {
       const badge = document.createElement('span');
       badge.className = 'vip-feature-badge';
-      if (isSubscribed) {
-        badge.innerHTML = '👑 VIP';
+      const label = minTier === 'PRO' ? 'PRO' : 'VIP';
+      if (hasAccess) {
+        badge.innerHTML = label === 'VIP' ? '👑 VIP' : '⚡ PRO';
         badge.style.cssText = 'background: rgba(16,185,129,0.25); color: #34d399; border: 1px solid #10b981; font-size: 0.62rem; font-weight: 800; padding: 1px 5px; border-radius: 4px; margin-left: 6px; text-transform: uppercase; vertical-align: middle; display: inline-block;';
       } else {
-        badge.innerHTML = '🔒 VIP';
+        badge.innerHTML = label === 'VIP' ? '🔒 VIP' : '🔒 PRO';
         badge.style.cssText = 'background: rgba(234,179,8,0.2); color: #fbbf24; border: 1px solid #eab308; font-size: 0.62rem; font-weight: 800; padding: 1px 5px; border-radius: 4px; margin-left: 6px; text-transform: uppercase; vertical-align: middle; display: inline-block;';
       }
       btn.appendChild(badge);
@@ -267,19 +290,28 @@ function refreshVipFeatureBadges() {
   drawerLinks.forEach(link => {
     const href = link.getAttribute('href') || '';
     const cleanId = href.replace(/^#/, '');
-    if (config[cleanId]) {
+    const feat = config[cleanId];
+    const isVipConfig = Boolean(feat && feat.isVip);
+    const minTier = (typeof window !== 'undefined' && window.Entitlements && window.Entitlements.FEATURE_MIN_TIERS)
+      ? window.Entitlements.FEATURE_MIN_TIERS[cleanId]
+      : (isVipConfig ? 'VIP' : null);
+
+    if (isVipConfig || minTier) {
       const existingBadge = link.querySelector('.vip-drawer-badge');
       if (existingBadge) existingBadge.remove();
 
-      if (config[cleanId].isVip) {
-        const badge = document.createElement('span');
-        badge.className = 'vip-drawer-badge';
-        badge.style.cssText = isSubscribed
-          ? 'background: rgba(16,185,129,0.2); color: #34d399; font-size: 0.65rem; font-weight: 800; padding: 2px 6px; border-radius: 4px; margin-left: auto; border: 1px solid #10b981;'
-          : 'background: rgba(234,179,8,0.15); color: #fbbf24; font-size: 0.65rem; font-weight: 800; padding: 2px 6px; border-radius: 4px; margin-left: auto; border: 1px solid #eab308;';
-        badge.innerText = isSubscribed ? '👑 VIP' : '🔒 VIP';
-        link.appendChild(badge);
-      }
+      const hasAccess = (typeof window !== 'undefined' && window.Entitlements)
+        ? (typeof window.Entitlements.canAccess === 'function' ? window.Entitlements.canAccess(cleanId) : window.Entitlements.canAccessFeature(cleanId))
+        : !isVipConfig;
+
+      const label = minTier === 'PRO' ? 'PRO' : 'VIP';
+      const badge = document.createElement('span');
+      badge.className = 'vip-drawer-badge';
+      badge.style.cssText = hasAccess
+        ? 'background: rgba(16,185,129,0.2); color: #34d399; font-size: 0.65rem; font-weight: 800; padding: 2px 6px; border-radius: 4px; margin-left: auto; border: 1px solid #10b981;'
+        : 'background: rgba(234,179,8,0.15); color: #fbbf24; font-size: 0.65rem; font-weight: 800; padding: 2px 6px; border-radius: 4px; margin-left: auto; border: 1px solid #eab308;';
+      badge.innerText = hasAccess ? (label === 'VIP' ? '👑 VIP' : '⚡ PRO') : (label === 'VIP' ? '🔒 VIP' : '🔒 PRO');
+      link.appendChild(badge);
     }
   });
 }

@@ -709,6 +709,7 @@
         <p style="font-size: 0.82rem; color: var(--text-secondary); margin-top: 4px;">
           Conversational match intelligence. Ask any question about today's fixtures, statistical edges, or tactical matchups.
         </p>
+        <div id="scout-usage-badge" style="display: inline-flex; align-items: center; margin-top: 6px;"></div>
       </div>
 
       <div class="glass-card" style="padding: 24px; border-radius: var(--radius-lg); border: 1px solid rgba(59, 130, 246, 0.3); min-height: 480px; display: flex; flex-direction: column; justify-content: space-between;">
@@ -749,6 +750,10 @@
       </div>
     `;
 
+    if (typeof window !== 'undefined' && window.Entitlements && typeof window.Entitlements.renderUsageBadge === 'function') {
+      window.Entitlements.renderUsageBadge('scout', 'scout-usage-badge');
+    }
+
     try {
       const urlParams = new URLSearchParams(window.location.search);
       const queryParam = urlParams.get('q');
@@ -775,6 +780,35 @@
     if (!input || !history || !input.value.trim()) return;
 
     const userText = input.value.trim();
+
+    // Entitlement Check for AI Scout
+    if (typeof window !== 'undefined' && window.Entitlements && typeof window.Entitlements.canAccessFeature === 'function') {
+      const ent = window.Entitlements.getFeatureEntitlement('scout');
+      if (!ent.allowed) {
+        input.value = '';
+        const botMsg = document.createElement('div');
+        botMsg.style.cssText = 'display: flex; gap: 12px; align-items: flex-start; margin-top: 10px;';
+        botMsg.innerHTML = `
+          <div style="width: 36px; height: 36px; border-radius: 50%; background: linear-gradient(135deg, #f59e0b, #ef4444); display: flex; align-items: center; justify-content: center; font-size: 1.2rem; flex-shrink: 0;">⚠️</div>
+          <div style="background: rgba(239, 68, 68, 0.12); border: 1px solid rgba(239, 68, 68, 0.35); padding: 14px 18px; border-radius: 12px; color: #fca5a5; font-size: 0.9rem; max-width: 80%; line-height: 1.5;">
+            <b>Daily AI Scout Limit Reached</b><br/>
+            You have used your ${ent.dailyLimit} daily AI Scout inquiry on your ${ent.tier === 'FREE' ? 'Free Account' : ent.tier} tier. Upgrade to <b>PRO</b> for 10 inquiries daily, or <b>VIP</b> for unlimited tactical intelligence.
+            <div style="margin-top: 10px;">
+              <button type="button" onclick="if(window.Entitlements)window.Entitlements.showUpgradePrompt('ai_scout')" class="btn btn-primary" style="padding: 6px 14px; font-size: 0.82rem; border-radius: 6px; cursor: pointer;">
+                ⚡ Upgrade to PRO / VIP
+              </button>
+            </div>
+          </div>
+        `;
+        history.appendChild(botMsg);
+        history.scrollTop = history.scrollHeight;
+        if (typeof window.Entitlements.renderUsageBadge === 'function') {
+          window.Entitlements.renderUsageBadge('scout', 'scout-usage-badge');
+        }
+        return;
+      }
+    }
+
     input.value = '';
 
     // Append User message
@@ -879,6 +913,11 @@
       `;
       history.appendChild(botMsg);
       history.scrollTop = history.scrollHeight;
+
+      if (typeof window !== 'undefined' && window.Entitlements) {
+        window.Entitlements.recordFeatureUsage('scout');
+        window.Entitlements.renderUsageBadge('scout', 'scout-usage-badge');
+      }
     }, 500);
   }
 
