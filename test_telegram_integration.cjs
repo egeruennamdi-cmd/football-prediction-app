@@ -44,8 +44,8 @@ global.fetch = async function (url, options = {}) {
   return {
     ok: true,
     status: 200,
-    json: async () => ({ ok: true, result: { message_id: 999, username: 'DeepPredictBetBot' } }),
-    text: async () => JSON.stringify({ ok: true, result: { message_id: 999, username: 'DeepPredictBetBot' } })
+    json: async () => ({ ok: true, result: { message_id: 999, id: 999, username: 'DeepPredictBetBot', status: 'administrator', can_post_messages: true, type: 'channel', title: 'DeepPredict Channel' } }),
+    text: async () => JSON.stringify({ ok: true, result: { message_id: 999, id: 999, username: 'DeepPredictBetBot', status: 'administrator', can_post_messages: true, type: 'channel', title: 'DeepPredict Channel' } })
   };
 };
 

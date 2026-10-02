@@ -191,7 +191,7 @@ export async function editMessage(env, chatId, messageId, text, options = {}) {
  * Broadcasts an intelligence update or banker signal to the Free Community Channel
  */
 export async function publishToFreeChannel(env, text, options = {}) {
-  const channelId = (env && env.TELEGRAM_FREE_CHANNEL_ID) || '@deeppredictbet';
+  const channelId = (env && env.TELEGRAM_FREE_CHANNEL_ID) || '@DeepPredictBetFree';
   return await sendMessage(env, channelId, text, options);
 }
 
@@ -265,7 +265,7 @@ export async function sendUserNotification(env, telegramUserId, message, options
  * Sends a controlled diagnostic test message to verify connectivity
  */
 export async function sendTestMessage(env, destinationChatId) {
-  const target = destinationChatId || (env && env.TELEGRAM_FREE_CHANNEL_ID) || '@deeppredictbet';
+  const target = destinationChatId || (env && env.TELEGRAM_FREE_CHANNEL_ID) || '@DeepPredictBetFree';
   const text = [
     '🔔 <b>DeepPredictBet — Telegram System Diagnostics</b>',
     '',
