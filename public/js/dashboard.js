@@ -1936,14 +1936,41 @@
     }
   };
 
+  let isSendingTelegramTestAlert = false;
   window.testTelegramAlert = async function () {
+    if (isSendingTelegramTestAlert) return;
+
+    let triggerBtn = null;
+    let originalBtnHtml = '';
+    try {
+      if (typeof event !== 'undefined' && event && event.target) {
+        triggerBtn = event.target.closest('button');
+      }
+    } catch (e) {}
+
     try {
       const tg = getLocalObject('dp_user_telegram', null);
-      if (!tg || !tg.id) {
+      const activeUser = (typeof window.deepActiveUser !== 'undefined' && window.deepActiveUser) || (function() {
+        try { return JSON.parse(localStorage.getItem('deep_active_user') || '{}'); } catch(e) { return {}; }
+      })();
+      const userId = localStorage.getItem('currentUserId') || activeUser.id || '';
+      const email = localStorage.getItem('currentUserEmail') || activeUser.email || '';
+
+      const tgRecord = tg || activeUser.telegram;
+      if (!tgRecord || !tgRecord.id) {
         showToast('No linked Telegram account found. Please connect your bot first.', 'error');
         return;
       }
+
+      isSendingTelegramTestAlert = true;
+      if (triggerBtn) {
+        originalBtnHtml = triggerBtn.innerHTML;
+        triggerBtn.disabled = true;
+        triggerBtn.innerHTML = '⏳ Delivering...';
+      }
+
       showToast('Sending test notification to your Telegram...', 'info');
+
       const res = await fetch('/api/integrations/telegram/publish', {
         method: 'POST',
         headers: {
@@ -1952,18 +1979,28 @@
         },
         body: JSON.stringify({
           target: 'user',
-          telegramUserId: tg.id,
+          userId: userId,
+          email: email,
+          telegramUserId: String(tgRecord.id),
           text: '🔔 <b>DeepPredictBet Push Alert Test</b>\n\nYour Telegram integration is working seamlessly! High-confidence Banker selections will appear here.'
         })
       });
-      const data = await res.json();
-      if (data.success) {
+
+      const data = await res.json().catch(() => ({}));
+      if (res.ok && data.success) {
         showToast('✅ Test alert delivered to your Telegram!', 'success');
       } else {
-        showToast('Could not deliver alert: ' + (data.error || 'Check bot status'), 'error');
+        const errorMsg = data && data.error ? data.error : 'Telegram delivery could not be confirmed';
+        showToast('Could not deliver alert: ' + errorMsg, 'error');
       }
     } catch (e) {
-      showToast('Test alert failed: ' + e.message, 'error');
+      showToast('Test alert failed: ' + (e.message || 'Network error'), 'error');
+    } finally {
+      isSendingTelegramTestAlert = false;
+      if (triggerBtn) {
+        triggerBtn.disabled = false;
+        triggerBtn.innerHTML = originalBtnHtml || '🔔 Send Test Alert';
+      }
     }
   };
 

@@ -7,6 +7,7 @@
 
 import { publishToFreeChannel, publishToVipChannel, sendUserNotification, sendPhoto } from './_telegramService.js';
 import { verifyAdminAuthorization, adminCorsHeaders } from './_adminAuth.js';
+import { getMembers } from './_kvHelper.js';
 
 export async function onRequestOptions() {
   return new Response(null, { status: 204, headers: adminCorsHeaders() });
@@ -38,7 +39,10 @@ export async function onRequestPost(context) {
     const target = (body.target || 'free').toLowerCase(); // 'free', 'vip', 'user'
     const text = (body.text || body.message || '').trim();
     const photoUrl = (body.photoUrl || '').trim();
-    const telegramUserId = (body.telegramUserId || body.chatId || '').trim();
+
+    // Safely coerce target ID to string to prevent ".trim is not a function" on numeric IDs
+    const rawTargetId = body.telegramUserId !== undefined ? body.telegramUserId : (body.chatId !== undefined ? body.chatId : '');
+    let telegramUserId = String(rawTargetId || '').trim();
 
     if (!text && !photoUrl) {
       return new Response(JSON.stringify({
@@ -51,18 +55,45 @@ export async function onRequestPost(context) {
     }
 
     let result;
-    if (photoUrl && target === 'user' && telegramUserId) {
-      result = await sendPhoto(env, telegramUserId, photoUrl, text);
-    } else if (target === 'vip') {
-      result = await publishToVipChannel(env, text);
-    } else if (target === 'user') {
+    if (target === 'user') {
+      // Authoritatively resolve from server-side KV account record if userId or email is provided
+      const cleanUserId = (body.userId || '').trim();
+      const cleanEmail = (body.email || '').trim().toLowerCase();
+
+      if (cleanUserId || cleanEmail || telegramUserId) {
+        try {
+          const members = await getMembers(env);
+          const targetUser = members.find(m =>
+            (cleanUserId && m.id === cleanUserId) ||
+            (cleanEmail && (m.email || '').toLowerCase() === cleanEmail) ||
+            (telegramUserId && m.telegram && String(m.telegram.id) === telegramUserId)
+          );
+
+          if (targetUser && targetUser.telegram && targetUser.telegram.id) {
+            telegramUserId = String(targetUser.telegram.id).trim();
+          }
+        } catch (e) {
+          console.warn('[TelegramPublish] Member lookup fallback error:', e.message);
+        }
+      }
+
       if (!telegramUserId) {
-        return new Response(JSON.stringify({ success: false, error: 'telegramUserId is required for user target.' }), {
+        return new Response(JSON.stringify({
+          success: false,
+          error: 'No linked Telegram account found for this user.'
+        }), {
           status: 400,
           headers: adminCorsHeaders()
         });
       }
-      result = await sendUserNotification(env, telegramUserId, text);
+
+      if (photoUrl) {
+        result = await sendPhoto(env, telegramUserId, photoUrl, text);
+      } else {
+        result = await sendUserNotification(env, telegramUserId, text);
+      }
+    } else if (target === 'vip') {
+      result = await publishToVipChannel(env, text);
     } else {
       // Default: Free Channel
       result = await publishToFreeChannel(env, text);

@@ -938,6 +938,121 @@ async function runTests() {
     assert.strictEqual(json.ok, true);
   });
 
+  // ==========================================
+  // SUITE 10: USER TARGET ALERT & NUMERIC ID RESILIENCE
+  // ==========================================
+  console.log('\n--- 10. User Target Alert & Numeric ID Resilience ---');
+
+  const mockKVWithTelegramUser = createMockKV();
+  const linkedMembers = [
+    {
+      id: 'usr_linked_1',
+      fullName: 'Alex Nnamdi',
+      email: 'alex@deeppredictbet.com',
+      username: 'alexnnamdi',
+      role: 'ADMIN',
+      telegram: {
+        linked: true,
+        id: 489343236, // Note: numeric integer ID as saved by Telegram API
+        username: 'alex_tg',
+        firstName: 'Alex',
+        linkedAt: new Date().toISOString(),
+        alertsEnabled: true
+      }
+    },
+    {
+      id: 'usr_unlinked_2',
+      fullName: 'Unlinked Punter',
+      email: 'unlinked@deeppredictbet.com',
+      username: 'unlinked',
+      role: 'USER'
+    }
+  ];
+  await mockKVWithTelegramUser.put('members_list', JSON.stringify(linkedMembers));
+
+  const alertTestEnv = {
+    TELEGRAM_BOT_TOKEN: FAKE_BOT_TOKEN,
+    ADMIN_SECRET_KEY: 'deep_admin_78_key',
+    USERS_KV: mockKVWithTelegramUser
+  };
+
+  await testAsync('User target safely accepts numeric telegramUserId without throwing trim error', async () => {
+    fetchCalls = [];
+    const req = new Request('https://deeppredictbet.com/api/integrations/telegram/publish', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer deep_admin_78_key'
+      },
+      body: JSON.stringify({
+        target: 'user',
+        telegramUserId: 489343236, // Numeric ID from Telegram
+        text: 'Test user push alert'
+      })
+    });
+
+    const res = await publishModule.onRequestPost({ request: req, env: alertTestEnv });
+    assert.strictEqual(res.status, 200);
+    const json = await res.json();
+    assert.strictEqual(json.success, true);
+    assert.strictEqual(json.target, 'user');
+    assert.ok(json.messageId);
+
+    // Verify sendMessage was called with stringified chat_id
+    const sendCall = fetchCalls.find(c => c.url.includes('/sendMessage'));
+    assert.ok(sendCall);
+    const payload = JSON.parse(sendCall.options.body);
+    assert.strictEqual(String(payload.chat_id), '489343236');
+  });
+
+  await testAsync('User target authoritatively derives telegramUserId from KV members_list by email/userId', async () => {
+    fetchCalls = [];
+    // Omit telegramUserId; only provide email
+    const req = new Request('https://deeppredictbet.com/api/integrations/telegram/publish', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer deep_admin_78_key'
+      },
+      body: JSON.stringify({
+        target: 'user',
+        email: 'alex@deeppredictbet.com',
+        text: 'Authoritative account lookup push alert'
+      })
+    });
+
+    const res = await publishModule.onRequestPost({ request: req, env: alertTestEnv });
+    assert.strictEqual(res.status, 200);
+    const json = await res.json();
+    assert.strictEqual(json.success, true);
+
+    const sendCall = fetchCalls.find(c => c.url.includes('/sendMessage'));
+    assert.ok(sendCall);
+    const payload = JSON.parse(sendCall.options.body);
+    assert.strictEqual(String(payload.chat_id), '489343236');
+  });
+
+  await testAsync('User target cleanly rejects request when user has no linked Telegram account with 400', async () => {
+    const req = new Request('https://deeppredictbet.com/api/integrations/telegram/publish', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer deep_admin_78_key'
+      },
+      body: JSON.stringify({
+        target: 'user',
+        email: 'unlinked@deeppredictbet.com',
+        text: 'This should fail cleanly'
+      })
+    });
+
+    const res = await publishModule.onRequestPost({ request: req, env: alertTestEnv });
+    assert.strictEqual(res.status, 400);
+    const json = await res.json();
+    assert.strictEqual(json.success, false);
+    assert.ok(json.error.includes('No linked Telegram account found'));
+  });
+
   console.log(`\n==================================================`);
   console.log(`TELEGRAM INTEGRATION RESULTS: ${passed} passed, ${failed} failed.`);
   console.log(`==================================================\n`);
