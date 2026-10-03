@@ -76,25 +76,20 @@ async function resolveAuthenticatedUser(context, bodyOrParams = {}) {
     }
 
     // Check if token matches user.sessionId in KV
-    const sessionUser = members.find(m => m.sessionId && m.sessionId === token);
-    if (sessionUser) {
-      return { user: sessionUser, isAdmin: false, members };
+    if (token) {
+      const sessionUser = members.find(m => m.sessionId && m.sessionId === token);
+      if (sessionUser) {
+        // Enforce session expiration
+        if (sessionUser.sessionExpiresAt && Number(sessionUser.sessionExpiresAt) < Date.now()) {
+          return { user: null, isExpiredSession: true, isAdmin: false, members };
+        }
+        return { user: sessionUser, isAdmin: false, members };
+      }
     }
   }
 
-  // 3. Fallback to userId / email in payload
-  const userId = (bodyOrParams.userId || '').trim();
-  const email = (bodyOrParams.email || '').trim().toLowerCase();
-
-  if (userId || email) {
-    const user = members.find(m =>
-      (userId && m.id === userId) ||
-      (email && (m.email || '').toLowerCase() === email)
-    );
-    if (user) return { user, isAdmin: false, members };
-  }
-
-  return { user: null, isAdmin: false, members };
+  // NO INSECURE FALLBACK: Reject unauthenticated callers providing raw email/userId without valid session
+  return { user: null, isExpiredSession: false, isAdmin: false, members };
 }
 
 /**
@@ -111,12 +106,12 @@ export async function onRequestGet(context) {
       email: url.searchParams.get('email') || ''
     };
 
-    const { user, members } = await resolveAuthenticatedUser(context, params);
+    const { user, isExpiredSession, members } = await resolveAuthenticatedUser(context, params);
     if (!user) {
       return new Response(JSON.stringify({
         success: false,
-        code: 'UNAUTHENTICATED',
-        error: 'Please log in to your DeepPredictBet account to view VIP access status.'
+        code: isExpiredSession ? 'SESSION_EXPIRED' : 'UNAUTHENTICATED',
+        error: isExpiredSession ? 'Your session has expired. Please log in again.' : 'Please log in to your DeepPredictBet account to view VIP access status.'
       }), { status: 401, headers: corsHeaders() });
     }
 
@@ -223,12 +218,12 @@ export async function onRequestPost(context) {
       body = {};
     }
 
-    const { user, members } = await resolveAuthenticatedUser(context, body);
+    const { user, isExpiredSession, members } = await resolveAuthenticatedUser(context, body);
     if (!user) {
       return new Response(JSON.stringify({
         success: false,
-        code: 'UNAUTHENTICATED',
-        error: 'Authentication required. Please log in before requesting VIP access.'
+        code: isExpiredSession ? 'SESSION_EXPIRED' : 'UNAUTHENTICATED',
+        error: isExpiredSession ? 'Your session has expired. Please log in again.' : 'Authentication required. Please log in before requesting VIP access.'
       }), { status: 401, headers: corsHeaders() });
     }
 
@@ -320,11 +315,12 @@ export async function onRequestPost(context) {
     // 5. Generate or Reuse Controlled Single-Use VIP Invite Link
     const inviteRes = await getOrCreateVipInvite(env, user);
     if (!inviteRes.success) {
+      const statusCode = inviteRes.code === 'INSUFFICIENT_SUBSCRIPTION_TIME' ? 400 : 500;
       return new Response(JSON.stringify({
         success: false,
-        code: 'INVITE_GENERATION_FAILED',
+        code: inviteRes.code || 'INVITE_GENERATION_FAILED',
         error: inviteRes.error || 'VIP access is temporarily unavailable. Please contact support.'
-      }), { status: 500, headers: corsHeaders() });
+      }), { status: statusCode, headers: corsHeaders() });
     }
 
     // Persist updated user state (including cached vipInvite) to KV
@@ -384,12 +380,12 @@ export async function onRequestDelete(context) {
       body = {};
     }
 
-    const { user, isAdmin, members } = await resolveAuthenticatedUser(context, body);
+    const { user, isExpiredSession, isAdmin, members } = await resolveAuthenticatedUser(context, body);
     if (!user) {
       return new Response(JSON.stringify({
         success: false,
-        code: 'UNAUTHENTICATED',
-        error: 'Authentication required.'
+        code: isExpiredSession ? 'SESSION_EXPIRED' : 'UNAUTHENTICATED',
+        error: isExpiredSession ? 'Your session has expired. Please log in again.' : 'Authentication required.'
       }), { status: 401, headers: corsHeaders() });
     }
 

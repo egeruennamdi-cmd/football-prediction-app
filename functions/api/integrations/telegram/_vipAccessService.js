@@ -207,27 +207,72 @@ export async function getVipMembership(env, telegramUserId) {
 
 /**
  * Generates or reuses a single-use private invite link for an entitled user.
- * Prevents unnecessary multiple active link generation (idempotent).
+ * 
+ * SECURITY MANDATES:
+ * - Calculates invite expiration as the earlier of: 24 hours from creation OR subscription expiration.
+ * - Rejects invite creation if insufficient subscription time remains (< 5 minutes).
+ * - Prevents unnecessary multiple active link generation (idempotent deduplication).
  * 
  * @param {object} env - Cloudflare Pages environment
  * @param {object} user - Authoritative user record (must have eligible subscription & linked Telegram)
- * @returns {Promise<{ success: boolean, inviteUrl?: string, expiresAt?: string, reused?: boolean, error?: string }>}
+ * @returns {Promise<{ success: boolean, inviteUrl?: string, expiresAt?: string, reused?: boolean, code?: string, error?: string }>}
  */
 export async function getOrCreateVipInvite(env, user) {
   const vipChannelId = env && env.TELEGRAM_VIP_CHANNEL_ID;
   if (!vipChannelId) {
     return {
       success: false,
+      code: 'VIP_CHANNEL_UNCONFIGURED',
       error: 'VIP channel configuration error: TELEGRAM_VIP_CHANNEL_ID missing.'
     };
   }
 
-  // 1. Deduplication: Check if user already holds a valid, unexpired invite
+  // 1. Authoritative Entitlement & Lifetime Bounding
+  // For each VIP invite, calculate its expiration as the earlier of:
+  // - 24 hours from creation; or
+  // - the authoritative subscription expiration time.
+  const MAX_TTL_SECONDS = 86400; // 24 hours
+  const MIN_USEFUL_TTL_SECONDS = 300; // 5 minutes minimum useful lifetime
+  const nowUnix = Math.floor(Date.now() / 1000);
+  let calculatedTtl = MAX_TTL_SECONDS;
+
+  const email = (user.email || '').toLowerCase().trim();
+  const username = (user.username || '').toLowerCase().trim();
+  const role = (user.role || '').toUpperCase().trim();
+  const isAdmin =
+    role === 'ADMIN' ||
+    ['admin@deeppredictbet.com', 'egeruennamdi@gmail.com'].includes(email) ||
+    ['egeruennamdi78', 'egeruennamdi'].includes(username);
+
+  let subExpiryUnix = null;
+  if (!isAdmin && user.subscription && user.subscription.expiresAt) {
+    const parsedTime = new Date(user.subscription.expiresAt).getTime();
+    if (!isNaN(parsedTime)) {
+      subExpiryUnix = Math.floor(parsedTime / 1000);
+      const remainingSeconds = subExpiryUnix - nowUnix;
+
+      // Reject invite creation if insufficient subscription time remains to create a useful invite
+      if (remainingSeconds < MIN_USEFUL_TTL_SECONDS) {
+        return {
+          success: false,
+          code: 'INSUFFICIENT_SUBSCRIPTION_TIME',
+          error: `Your VIP subscription expires in ${Math.max(0, Math.floor(remainingSeconds / 60))} minutes. A minimum of 5 minutes is required to generate a VIP invite link. Please renew your subscription to access the private VIP channel.`
+        };
+      }
+
+      calculatedTtl = Math.min(MAX_TTL_SECONDS, remainingSeconds);
+    }
+  }
+
+  const expireDateUnix = nowUnix + calculatedTtl;
+  const targetExpiryMs = expireDateUnix * 1000;
+
+  // 2. Deduplication: Check if user already holds a valid, unexpired invite that is properly bounded
   const existing = user.vipInvite;
   if (existing && existing.inviteLink && existing.expiresAt) {
-    const expiresTimestamp = new Date(existing.expiresAt).getTime();
-    // If the existing invite is still valid for at least 5 minutes, reuse it
-    if (expiresTimestamp > Date.now() + 300000) {
+    const existingTimestamp = new Date(existing.expiresAt).getTime();
+    // Reusable if at least 1 minute remains and it does not exceed the allowed subscription expiration window (+5s drift allowance)
+    if (existingTimestamp > Date.now() + 60000 && existingTimestamp <= targetExpiryMs + 5000) {
       await logVipAuditEvent(env, {
         action: 'VIP_INVITE_REUSED',
         userId: user.id,
@@ -241,15 +286,18 @@ export async function getOrCreateVipInvite(env, user) {
       return {
         success: true,
         inviteUrl: existing.inviteLink,
-        expiresAt: new Date(expiresTimestamp).toISOString(),
+        expiresAt: new Date(existingTimestamp).toISOString(),
         reused: true
       };
+    } else if (existing.inviteLink) {
+      // If the old invite was expired or extended past new subscription limits, revoke it
+      try {
+        await revokeInviteLink(env, vipChannelId, existing.inviteLink);
+      } catch (e) {}
     }
   }
 
-  // 2. Generate a new single-use, 24-hour expiring invite link
-  const TTL_SECONDS = 86400; // 24 hours
-  const expireDateUnix = Math.floor(Date.now() / 1000) + TTL_SECONDS;
+  // 3. Generate a new single-use invite link with the earlier of 24h or subscription expiry
   const inviteName = `DP-VIP-${String(user.id || 'usr').substring(0, 16)}`;
 
   const createRes = await createInviteLink(env, vipChannelId, {
@@ -276,7 +324,7 @@ export async function getOrCreateVipInvite(env, user) {
       subscriptionState: user.subscription,
       result: 'SUCCESS',
       reasonCode: 'NEW_INVITE_GENERATED',
-      details: { expiresAt: expiresAtIso, memberLimit: 1 }
+      details: { expiresAt: expiresAtIso, memberLimit: 1, calculatedTtl }
     });
 
     return {
@@ -298,6 +346,7 @@ export async function getOrCreateVipInvite(env, user) {
 
     return {
       success: false,
+      code: 'INVITE_GENERATION_FAILED',
       error: createRes.error || 'Failed to generate VIP channel invite link.'
     };
   }
@@ -305,7 +354,8 @@ export async function getOrCreateVipInvite(env, user) {
 
 /**
  * Server-controlled revocation of VIP Telegram access.
- * Performs real-time subscription entitlement check before taking any destructive action.
+ * Performs real-time subscription entitlement check before taking any destructive action,
+ * while allowing authorized force revocations (admin cancellation, unlinking, account suspension).
  * 
  * @param {object} env - Cloudflare Pages environment
  * @param {object} user - User record
@@ -317,7 +367,15 @@ export async function revokeVipAccess(env, user, reason = 'SUBSCRIPTION_TERMINAT
 
   // SAFETY CHECK: Verify entitlement immediately prior to destructive action
   const entitlement = isVipEligible(user);
-  if (entitlement.eligible) {
+  const isForceRevocation = [
+    'TELEGRAM_UNLINKED',
+    'ADMIN_CANCELLATION',
+    'ADMIN_REVOCATION',
+    'TELEGRAM_CHANGED',
+    'ACCOUNT_SUSPENDED'
+  ].includes(reason);
+
+  if (entitlement.eligible && !isForceRevocation) {
     return {
       success: false,
       error: 'Safety guard: Cannot revoke VIP access for an actively entitled subscriber.'

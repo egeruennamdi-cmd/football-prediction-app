@@ -222,17 +222,24 @@ export async function onRequestPost(context) {
       user.passwordUpdatedAt = new Date().toISOString();
     }
 
+    // Create cryptographically secure session metadata
+    let randomPart = '';
+    if (typeof crypto !== 'undefined' && typeof crypto.randomUUID === 'function') {
+      randomPart = crypto.randomUUID().replace(/-/g, '');
+    } else {
+      randomPart = Math.random().toString(36).substring(2, 10) + Date.now().toString(36);
+    }
+    const sessionId = `dp_sess_${randomPart}`;
+    const sessionExpiresAt = Date.now() + (30 * 24 * 60 * 60 * 1000); // 30 days
+
+    user.sessionId = sessionId;
+    user.sessionExpiresAt = sessionExpiresAt;
     user.lastActiveAt = new Date().toISOString();
     user.lastLoginAt = new Date().toISOString();
     members[userIndex] = user;
 
-    // Persist session update to KV in background
-    saveMembers(context, members).catch(() => {});
-
-    // Create secure session metadata
-    const randomPart = Math.random().toString(36).substring(2, 10);
-    const timePart = Date.now().toString(36);
-    const sessionId = `dp_sess_${randomPart}${timePart}`;
+    // Persist session update authoritatively to KV
+    await saveMembers(context, members);
 
     const safeUser = { ...user };
     delete safeUser.passwordHash;
@@ -244,7 +251,7 @@ export async function onRequestPost(context) {
       message: 'Login successful',
       user: safeUser,
       sessionId: sessionId,
-      sessionExpiresAt: Date.now() + (30 * 24 * 60 * 60 * 1000) // 30 days
+      sessionExpiresAt: sessionExpiresAt
     }), {
       status: 200,
       headers: corsHeaders()

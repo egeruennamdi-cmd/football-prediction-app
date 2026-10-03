@@ -9,8 +9,9 @@
  * - DELETE: Safely unlinks a Telegram account from DeepPredictBet
  */
 
-import { getMembers, saveMembers, setLinkToken } from './_kvHelper.js';
-import { getBotInfo } from './_telegramService.js';
+import { getMembers, saveMembers, setLinkToken, logVipAuditEvent } from './_kvHelper.js';
+import { getBotInfo, revokeInviteLink, removeChatMember, getChatMember } from './_telegramService.js';
+import { verifyAdminAuthorization } from './_adminAuth.js';
 
 function corsHeaders() {
   return {
@@ -204,45 +205,115 @@ export async function onRequestDelete(context) {
       body = {};
     }
 
-    const userId = (body.userId || '').trim();
-    const email = (body.email || '').trim().toLowerCase();
-
-    if (!userId && !email) {
-      return new Response(JSON.stringify({
-        success: false,
-        error: 'userId or email is required to unlink account.'
-      }), {
-        status: 400,
-        headers: corsHeaders()
-      });
+    const authHeader = request.headers.get('Authorization') || '';
+    let token = '';
+    if (authHeader.startsWith('Bearer ')) {
+      token = authHeader.substring(7).trim();
+    } else if (authHeader) {
+      token = authHeader.trim();
     }
 
     const members = await getMembers(env);
-    const userIndex = members.findIndex(m =>
-      (userId && m.id === userId) ||
-      (email && (m.email || '').toLowerCase() === email)
-    );
+    let userIndex = -1;
+
+    // 1. Session or admin token resolution
+    if (token) {
+      const adminCheck = await verifyAdminAuthorization(context);
+      if (adminCheck.authorized) {
+        const targetId = (body.userId || '').trim();
+        const targetEmail = (body.email || '').trim().toLowerCase();
+        userIndex = members.findIndex(m =>
+          (targetId && m.id === targetId) ||
+          (targetEmail && (m.email || '').toLowerCase() === targetEmail)
+        );
+      } else {
+        userIndex = members.findIndex(m => m.sessionId === token);
+      }
+    }
+
+    // 2. Fallback to userId/email
+    if (userIndex < 0) {
+      const userId = (body.userId || '').trim();
+      const email = (body.email || '').trim().toLowerCase();
+      if (userId || email) {
+        userIndex = members.findIndex(m =>
+          (userId && m.id === userId) ||
+          (email && (m.email || '').toLowerCase() === email)
+        );
+      }
+    }
 
     if (userIndex < 0) {
       return new Response(JSON.stringify({
         success: false,
-        error: 'User not found'
+        error: 'User account not found.'
       }), {
         status: 404,
         headers: corsHeaders()
       });
     }
 
-    delete members[userIndex].telegram;
-    if (members[userIndex].alerts) {
-      members[userIndex].alerts.telegram = false;
+    const user = members[userIndex];
+    // Authoritative Telegram ID strictly from KV; never trust client
+    const linkedTgId = user.telegram && user.telegram.id ? user.telegram.id : null;
+    const vipChannelId = env && env.TELEGRAM_VIP_CHANNEL_ID;
+
+    let inviteRevoked = false;
+    let channelMemberRemoved = false;
+
+    // 3. Revoke any pending VIP invite link
+    if (user.vipInvite && user.vipInvite.inviteLink && vipChannelId) {
+      try {
+        await revokeInviteLink(env, vipChannelId, user.vipInvite.inviteLink);
+        inviteRevoked = true;
+      } catch (e) {
+        console.warn('[TelegramUnlink] Failed to revoke invite link:', e.message);
+      }
+      delete user.vipInvite;
     }
+
+    // 4. Apply Access Policy: If user is inside the VIP channel, evict them upon unlinking
+    // (An unlinked Telegram account cannot remain in the private VIP channel)
+    if (linkedTgId && vipChannelId) {
+      try {
+        const memberCheck = await getChatMember(env, vipChannelId, linkedTgId);
+        if (memberCheck.success && memberCheck.result) {
+          const status = (memberCheck.result.status || '').toLowerCase();
+          if (['member', 'restricted'].includes(status)) {
+            const kickRes = await removeChatMember(env, vipChannelId, linkedTgId);
+            if (kickRes.success) {
+              channelMemberRemoved = true;
+            }
+          }
+        }
+      } catch (e) {
+        console.warn('[TelegramUnlink] Member eviction error (non-blocking):', e.message);
+      }
+    }
+
+    // 5. Authoritatively remove Telegram connection from KV
+    delete user.telegram;
+    if (user.alerts) {
+      user.alerts.telegram = false;
+    }
+    members[userIndex] = user;
 
     await saveMembers(env, members);
 
+    await logVipAuditEvent(env, {
+      action: 'TELEGRAM_UNLINKED',
+      userId: user.id,
+      telegramUserId: linkedTgId,
+      result: 'SUCCESS',
+      details: { inviteRevoked, channelMemberRemoved }
+    });
+
     return new Response(JSON.stringify({
       success: true,
-      message: 'Telegram account unlinked successfully.'
+      unlinked: true,
+      message: 'Telegram account unlinked successfully.',
+      inviteRevoked,
+      channelMemberRemoved
     }), {
       status: 200,
       headers: corsHeaders()

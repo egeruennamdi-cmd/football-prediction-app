@@ -88,6 +88,9 @@ async function runTests() {
   const testModule = await import('./functions/api/integrations/telegram/test.js');
   const vipAccessService = await import('./functions/api/integrations/telegram/_vipAccessService.js');
   const vipAccessModule = await import('./functions/api/integrations/telegram/vip-access.js');
+  const sweepModule = await import('./functions/api/integrations/telegram/sweep.js');
+  const loginModule = await import('./functions/api/login.js');
+  const logoutModule = await import('./functions/api/logout.js');
 
   const FAKE_BOT_TOKEN = '123456789:ABCdefGHIjklMNOpqrsTUVwxyz';
   const FAKE_WEBHOOK_SECRET = 'deep_sec_token_999';
@@ -1075,6 +1078,8 @@ async function runTests() {
       email: 'admin@deeppredictbet.com',
       username: 'egeruennamdi78',
       role: 'ADMIN',
+      sessionId: 'dp_sess_admin_test_1',
+      sessionExpiresAt: Date.now() + 30 * 86400000,
       subscription: { active: false, tier: 'none' },
       telegram: { linked: true, id: 111111, username: 'admin_tg' }
     },
@@ -1084,6 +1089,8 @@ async function runTests() {
       email: 'vip_annual@deeppredictbet.com',
       username: 'vip_annual',
       role: 'VIP',
+      sessionId: 'dp_sess_annual_test_1',
+      sessionExpiresAt: Date.now() + 30 * 86400000,
       subscription: {
         active: true,
         tier: 'annual',
@@ -1098,6 +1105,8 @@ async function runTests() {
       email: 'vip_monthly@deeppredictbet.com',
       username: 'vip_monthly',
       role: 'PRO',
+      sessionId: 'dp_sess_monthly_test_1',
+      sessionExpiresAt: Date.now() + 15 * 86400000,
       subscription: {
         active: true,
         tier: 'monthly',
@@ -1112,6 +1121,8 @@ async function runTests() {
       email: 'vip_weekly@deeppredictbet.com',
       username: 'vip_weekly',
       role: 'PRO',
+      sessionId: 'dp_sess_weekly_test_1',
+      sessionExpiresAt: Date.now() + 4 * 86400000,
       subscription: {
         active: true,
         tier: 'weekly',
@@ -1126,6 +1137,8 @@ async function runTests() {
       email: 'expired@deeppredictbet.com',
       username: 'expired_user',
       role: 'VIP',
+      sessionId: 'dp_sess_expired_test_1',
+      sessionExpiresAt: Date.now() + 30 * 86400000,
       subscription: {
         active: true,
         tier: 'annual',
@@ -1140,6 +1153,8 @@ async function runTests() {
       email: 'inactive@deeppredictbet.com',
       username: 'inactive_user',
       role: 'USER',
+      sessionId: 'dp_sess_inactive_test_1',
+      sessionExpiresAt: Date.now() + 30 * 86400000,
       subscription: {
         active: false,
         tier: 'monthly',
@@ -1153,6 +1168,8 @@ async function runTests() {
       email: 'unlinked_vip@deeppredictbet.com',
       username: 'unlinked_vip',
       role: 'VIP',
+      sessionId: 'dp_sess_unlinked_test_1',
+      sessionExpiresAt: Date.now() + 30 * 86400000,
       subscription: {
         active: true,
         tier: 'annual',
@@ -1167,6 +1184,8 @@ async function runTests() {
       email: 'free@deeppredictbet.com',
       username: 'free_punter',
       role: 'USER',
+      sessionId: 'dp_sess_free_test_1',
+      sessionExpiresAt: Date.now() + 30 * 86400000,
       subscription: { active: false, tier: 'none' },
       telegram: { linked: true, id: 777777, username: 'free_tg' }
     },
@@ -1176,6 +1195,8 @@ async function runTests() {
       email: 'suspended@deeppredictbet.com',
       username: 'suspended_user',
       role: 'VIP',
+      sessionId: 'dp_sess_suspended_test_1',
+      sessionExpiresAt: Date.now() + 30 * 86400000,
       status: 'suspended',
       subscription: {
         active: true,
@@ -1184,6 +1205,54 @@ async function runTests() {
         expiresAt: new Date(Date.now() + 30 * 86400000).toISOString()
       },
       telegram: { linked: true, id: 888888, username: 'suspended_tg' }
+    },
+    {
+      id: 'usr_short_vip',
+      fullName: 'Short VIP User',
+      email: 'short_vip@deeppredictbet.com',
+      username: 'short_vip',
+      role: 'VIP',
+      sessionId: 'dp_sess_short_test_1',
+      sessionExpiresAt: Date.now() + 30 * 86400000,
+      subscription: {
+        active: true,
+        tier: 'weekly',
+        status: 'ACTIVE',
+        expiresAt: new Date(Date.now() + 6 * 3600 * 1000).toISOString() // 6 hours remaining
+      },
+      telegram: { linked: true, id: 999111, username: 'short_tg' }
+    },
+    {
+      id: 'usr_edge_vip',
+      fullName: 'Edge VIP User',
+      email: 'edge_vip@deeppredictbet.com',
+      username: 'edge_vip',
+      role: 'VIP',
+      sessionId: 'dp_sess_edge_test_1',
+      sessionExpiresAt: Date.now() + 30 * 86400000,
+      subscription: {
+        active: true,
+        tier: 'weekly',
+        status: 'ACTIVE',
+        expiresAt: new Date(Date.now() + 120 * 1000).toISOString() // 2 minutes remaining (< 5 mins)
+      },
+      telegram: { linked: true, id: 999222, username: 'edge_tg' }
+    },
+    {
+      id: 'usr_expired_session',
+      fullName: 'Expired Session User',
+      email: 'expired_sess@deeppredictbet.com',
+      username: 'expired_sess',
+      role: 'VIP',
+      sessionId: 'dp_sess_expired_sess_1',
+      sessionExpiresAt: Date.now() - 3600000, // Session expired 1 hour ago
+      subscription: {
+        active: true,
+        tier: 'annual',
+        status: 'ACTIVE',
+        expiresAt: new Date(Date.now() + 30 * 86400000).toISOString()
+      },
+      telegram: { linked: true, id: 999333, username: 'expired_sess_tg' }
     }
   ];
 
@@ -1317,12 +1386,47 @@ async function runTests() {
     assert.strictEqual(json.code, 'UNAUTHENTICATED');
   });
 
-  await testAsync('POST /vip-access: SERVER-AUTHORITATIVE: Rejects client-supplied isVip=true on free account with 403', async () => {
+  await testAsync('POST /vip-access: ANTI-SPOOFING: Rejects raw email in request body without session token with 401', async () => {
     const req = new Request('https://deeppredictbet.com/api/integrations/telegram/vip-access', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
-        email: 'free@deeppredictbet.com',
+        email: 'vip_annual@deeppredictbet.com'
+      })
+    });
+
+    const res = await vipAccessModule.onRequestPost({ request: req, env: vipTestEnv });
+    assert.strictEqual(res.status, 401);
+    const json = await res.json();
+    assert.strictEqual(json.success, false);
+    assert.strictEqual(json.code, 'UNAUTHENTICATED');
+  });
+
+  await testAsync('POST /vip-access: Rejects expired session token with 401 SESSION_EXPIRED', async () => {
+    const req = new Request('https://deeppredictbet.com/api/integrations/telegram/vip-access', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer dp_sess_expired_sess_1'
+      },
+      body: JSON.stringify({})
+    });
+
+    const res = await vipAccessModule.onRequestPost({ request: req, env: vipTestEnv });
+    assert.strictEqual(res.status, 401);
+    const json = await res.json();
+    assert.strictEqual(json.success, false);
+    assert.strictEqual(json.code, 'SESSION_EXPIRED');
+  });
+
+  await testAsync('POST /vip-access: SERVER-AUTHORITATIVE: Rejects client-supplied isVip=true on free account with 403', async () => {
+    const req = new Request('https://deeppredictbet.com/api/integrations/telegram/vip-access', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer dp_sess_free_test_1'
+      },
+      body: JSON.stringify({
         isVip: true, // Malicious client attempt to bypass paywall
         plan: 'annual',
         eligible: true
@@ -1340,10 +1444,11 @@ async function runTests() {
   await testAsync('POST /vip-access: Rejects active VIP subscriber whose Telegram is not connected with 400', async () => {
     const req = new Request('https://deeppredictbet.com/api/integrations/telegram/vip-access', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        email: 'unlinked_vip@deeppredictbet.com'
-      })
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer dp_sess_unlinked_test_1'
+      },
+      body: JSON.stringify({})
     });
 
     const res = await vipAccessModule.onRequestPost({ request: req, env: vipTestEnv });
@@ -1358,10 +1463,11 @@ async function runTests() {
   await testAsync('POST /vip-access: Generates controlled single-use 24h VIP invite link for eligible linked user', async () => {
     const req = new Request('https://deeppredictbet.com/api/integrations/telegram/vip-access', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        email: 'vip_annual@deeppredictbet.com'
-      })
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer dp_sess_annual_test_1'
+      },
+      body: JSON.stringify({})
     });
 
     const res = await vipAccessModule.onRequestPost({ request: req, env: vipTestEnv });
@@ -1387,10 +1493,11 @@ async function runTests() {
     fetchCalls = [];
     const req = new Request('https://deeppredictbet.com/api/integrations/telegram/vip-access', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        email: 'vip_annual@deeppredictbet.com'
-      })
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer dp_sess_annual_test_1'
+      },
+      body: JSON.stringify({})
     });
 
     const res = await vipAccessModule.onRequestPost({ request: req, env: vipTestEnv });
@@ -1409,10 +1516,11 @@ async function runTests() {
     fetchCalls = [];
     const req = new Request('https://deeppredictbet.com/api/integrations/telegram/vip-access', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        email: 'admin@deeppredictbet.com'
-      })
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer dp_sess_admin_test_1'
+      },
+      body: JSON.stringify({})
     });
 
     const res = await vipAccessModule.onRequestPost({ request: req, env: vipTestEnv });
@@ -1425,9 +1533,56 @@ async function runTests() {
     assert.ok(json.access.message.includes('already active'));
   });
 
+  await testAsync('POST /vip-access: BOUNDED EXPIRY: Caps invite expiry to subscription end date when subscription has < 24h remaining', async () => {
+    fetchCalls = [];
+    const req = new Request('https://deeppredictbet.com/api/integrations/telegram/vip-access', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer dp_sess_short_test_1'
+      },
+      body: JSON.stringify({})
+    });
+
+    const res = await vipAccessModule.onRequestPost({ request: req, env: vipTestEnv });
+    assert.strictEqual(res.status, 200);
+    const json = await res.json();
+    assert.strictEqual(json.success, true);
+    assert.strictEqual(json.access.inviteAvailable, true);
+
+    const inviteCall = fetchCalls.find(c => c.url.includes('/createChatInviteLink'));
+    assert.ok(inviteCall);
+    const payload = JSON.parse(inviteCall.options.body);
+    const nowUnix = Math.floor(Date.now() / 1000);
+    // Subscription expires in 6 hours (~21600 seconds)
+    // Expiry date must be close to nowUnix + 21600, significantly less than 86400 (24h)
+    const ttlSeconds = payload.expire_date - nowUnix;
+    assert.ok(ttlSeconds <= 21605 && ttlSeconds >= 21500, `Expected TTL around 21600s, got ${ttlSeconds}s`);
+  });
+
+  await testAsync('POST /vip-access: REJECTION ON < 5 MINS REMAINING: Rejects invite generation with INSUFFICIENT_SUBSCRIPTION_TIME', async () => {
+    const req = new Request('https://deeppredictbet.com/api/integrations/telegram/vip-access', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer dp_sess_edge_test_1'
+      },
+      body: JSON.stringify({})
+    });
+
+    const res = await vipAccessModule.onRequestPost({ request: req, env: vipTestEnv });
+    assert.strictEqual(res.status, 400);
+    const json = await res.json();
+    assert.strictEqual(json.success, false);
+    assert.strictEqual(json.code, 'INSUFFICIENT_SUBSCRIPTION_TIME');
+    assert.ok(json.error.includes('minimum of 5 minutes'));
+  });
+
   // 3. VIP Access Endpoint (GET) status tests
   await testAsync('GET /vip-access: Returns normalized State A (Active VIP + Linked + Not Member)', async () => {
-    const req = new Request('https://deeppredictbet.com/api/integrations/telegram/vip-access?email=vip_monthly@deeppredictbet.com');
+    const req = new Request('https://deeppredictbet.com/api/integrations/telegram/vip-access', {
+      headers: { 'Authorization': 'Bearer dp_sess_monthly_test_1' }
+    });
     const res = await vipAccessModule.onRequestGet({ request: req, env: vipTestEnv });
     assert.strictEqual(res.status, 200);
     const json = await res.json();
@@ -1439,7 +1594,9 @@ async function runTests() {
   });
 
   await testAsync('GET /vip-access: Returns normalized State B (Active VIP + Unlinked)', async () => {
-    const req = new Request('https://deeppredictbet.com/api/integrations/telegram/vip-access?email=unlinked_vip@deeppredictbet.com');
+    const req = new Request('https://deeppredictbet.com/api/integrations/telegram/vip-access', {
+      headers: { 'Authorization': 'Bearer dp_sess_unlinked_test_1' }
+    });
     const res = await vipAccessModule.onRequestGet({ request: req, env: vipTestEnv });
     assert.strictEqual(res.status, 200);
     const json = await res.json();
@@ -1451,7 +1608,9 @@ async function runTests() {
   });
 
   await testAsync('GET /vip-access: Returns normalized State C (No Active VIP)', async () => {
-    const req = new Request('https://deeppredictbet.com/api/integrations/telegram/vip-access?email=free@deeppredictbet.com');
+    const req = new Request('https://deeppredictbet.com/api/integrations/telegram/vip-access', {
+      headers: { 'Authorization': 'Bearer dp_sess_free_test_1' }
+    });
     const res = await vipAccessModule.onRequestGet({ request: req, env: vipTestEnv });
     assert.strictEqual(res.status, 200);
     const json = await res.json();
@@ -1461,7 +1620,9 @@ async function runTests() {
   });
 
   await testAsync('GET /vip-access: Returns normalized State D (Active VIP + Already Member)', async () => {
-    const req = new Request('https://deeppredictbet.com/api/integrations/telegram/vip-access?email=admin@deeppredictbet.com');
+    const req = new Request('https://deeppredictbet.com/api/integrations/telegram/vip-access', {
+      headers: { 'Authorization': 'Bearer dp_sess_admin_test_1' }
+    });
     const res = await vipAccessModule.onRequestGet({ request: req, env: vipTestEnv });
     assert.strictEqual(res.status, 200);
     const json = await res.json();
@@ -1473,7 +1634,9 @@ async function runTests() {
   });
 
   await testAsync('GET /vip-access: Returns normalized State E (Subscription Expired)', async () => {
-    const req = new Request('https://deeppredictbet.com/api/integrations/telegram/vip-access?email=expired@deeppredictbet.com');
+    const req = new Request('https://deeppredictbet.com/api/integrations/telegram/vip-access', {
+      headers: { 'Authorization': 'Bearer dp_sess_expired_test_1' }
+    });
     const res = await vipAccessModule.onRequestGet({ request: req, env: vipTestEnv });
     assert.strictEqual(res.status, 200);
     const json = await res.json();
@@ -1517,6 +1680,220 @@ async function runTests() {
     assert.strictEqual(json.success, true);
     assert.ok(json.message.includes('revoked successfully'));
   });
+
+  // ==========================================
+  // SUITE 12: TELEGRAM UNLINKING & VIP EVICTION
+  // ==========================================
+  console.log('\n--- 12. Telegram Unlinking & Automated VIP Eviction ---');
+
+  await testAsync('DELETE /api/integrations/telegram/link: Revokes outstanding invite and evicts unlinked user from channel', async () => {
+    fetchCalls = [];
+    // Setup a user with active invite and active member status
+    const unlinkingUser = {
+      id: 'usr_to_unlink',
+      email: 'unlink_me@deeppredictbet.com',
+      username: 'unlink_me',
+      role: 'VIP',
+      sessionId: 'dp_sess_unlink_me_1',
+      sessionExpiresAt: Date.now() + 30 * 86400000,
+      subscription: { active: true, tier: 'annual', status: 'ACTIVE' },
+      telegram: { linked: true, id: 999888, username: 'unlink_tg' },
+      vipInvite: { inviteLink: 'https://t.me/+pending_invite_unlink', createdAt: new Date().toISOString() }
+    };
+
+    const members = await kvHelper.getMembers(vipTestEnv);
+    members.push(unlinkingUser);
+    await kvHelper.saveMembers(vipTestEnv, members);
+
+    // Mock fetch to simulate user 999888 as a current channel 'member'
+    const prevMock = mockFetchHandler;
+    mockFetchHandler = async (url, options = {}) => {
+      if (url.includes('/getChatMember')) {
+        return {
+          ok: true,
+          status: 200,
+          json: async () => ({ ok: true, result: { status: 'member', user: { id: 999888 } } })
+        };
+      }
+      return await prevMock(url, options);
+    };
+
+    const req = new Request('https://deeppredictbet.com/api/integrations/telegram/link', {
+      method: 'DELETE',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer dp_sess_unlink_me_1'
+      },
+      body: JSON.stringify({})
+    });
+
+    const res = await linkModule.onRequestDelete({ request: req, env: vipTestEnv });
+    assert.strictEqual(res.status, 200);
+    const json = await res.json();
+    assert.strictEqual(json.success, true);
+    assert.strictEqual(json.unlinked, true);
+
+    // Verify Telegram API calls:
+    // 1. Revoked the outstanding invite
+    const revokeCall = fetchCalls.find(c => c.url.includes('/revokeChatInviteLink'));
+    assert.ok(revokeCall, 'Expected revokeChatInviteLink to be called');
+    const revokePayload = JSON.parse(revokeCall.options.body);
+    assert.strictEqual(revokePayload.invite_link, 'https://t.me/+pending_invite_unlink');
+
+    // 2. Evicted from VIP channel via banChatMember + unbanChatMember
+    const banCall = fetchCalls.find(c => c.url.includes('/banChatMember'));
+    assert.ok(banCall, 'Expected banChatMember to be called');
+    const banPayload = JSON.parse(banCall.options.body);
+    assert.strictEqual(Number(banPayload.user_id), 999888);
+
+    // 3. User record in KV updated
+    const updatedMembers = await kvHelper.getMembers(vipTestEnv);
+    const updatedUser = updatedMembers.find(m => m.id === 'usr_to_unlink');
+    assert.strictEqual(updatedUser.telegram, undefined);
+    assert.strictEqual(updatedUser.vipInvite, undefined);
+
+    mockFetchHandler = prevMock;
+  });
+
+  // ==========================================
+  // SUITE 13: VIP SCHEDULED SWEEPER & LOCKING
+  // ==========================================
+  console.log('\n--- 13. VIP Scheduled Sweeper & Distributed Locking ---');
+
+  await testAsync('POST /sweep: Rejects unauthenticated caller with 401/403', async () => {
+    const req = new Request('https://deeppredictbet.com/api/integrations/telegram/sweep', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({})
+    });
+
+    const res = await sweepModule.onRequestPost({ request: req, env: vipTestEnv });
+    assert.ok(res.status === 401 || res.status === 403);
+    const json = await res.json();
+    assert.strictEqual(json.success, false);
+    assert.strictEqual(json.code, 'UNAUTHORIZED');
+  });
+
+  await testAsync('POST /sweep: Rejects caller passing admin key in query parameter with 400', async () => {
+    const req = new Request('https://deeppredictbet.com/api/integrations/telegram/sweep?adminKey=deep_admin_78_key', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({})
+    });
+
+    const res = await sweepModule.onRequestPost({ request: req, env: vipTestEnv });
+    assert.strictEqual(res.status, 400);
+    const json = await res.json();
+    assert.strictEqual(json.success, false);
+  });
+
+  await testAsync('POST /sweep: Successfully executes batch, revokes ineligible invites, evicts expired members, preserves active subscribers', async () => {
+    fetchCalls = [];
+    const req = new Request('https://deeppredictbet.com/api/integrations/telegram/sweep', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer deep_admin_78_key'
+      },
+      body: JSON.stringify({ batchSize: 50 })
+    });
+
+    const res = await sweepModule.onRequestPost({ request: req, env: vipTestEnv });
+    assert.strictEqual(res.status, 200);
+    const json = await res.json();
+    assert.strictEqual(json.success, true);
+    assert.ok(json.summary);
+    assert.ok(json.summary.processedCount > 0);
+
+    // Active subscribers must NEVER be banned or evicted
+    const banCalls = fetchCalls.filter(c => c.url.includes('/banChatMember'));
+    const bannedUserIds = banCalls.map(c => Number(JSON.parse(c.options.body).user_id));
+    assert.strictEqual(bannedUserIds.includes(111111), false, 'Admin must not be banned');
+    assert.strictEqual(bannedUserIds.includes(222222), false, 'Active annual VIP must not be banned');
+    assert.strictEqual(bannedUserIds.includes(333333), false, 'Active monthly VIP must not be banned');
+    assert.strictEqual(bannedUserIds.includes(444444), false, 'Active weekly VIP must not be banned');
+  });
+
+  await testAsync('POST /sweep: Prevents concurrent execution via distributed KV lock (409 SWEEP_IN_PROGRESS)', async () => {
+    // Inject active lock
+    await vipTestEnv.USERS_KV.put('vip_sweep_lock', JSON.stringify({
+      timestamp: Date.now(),
+      runId: 'active_lock_test'
+    }), { expirationTtl: 300 });
+
+    const req = new Request('https://deeppredictbet.com/api/integrations/telegram/sweep', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer deep_admin_78_key'
+      },
+      body: JSON.stringify({})
+    });
+
+    const res = await sweepModule.onRequestPost({ request: req, env: vipTestEnv });
+    assert.strictEqual(res.status, 409);
+    const json = await res.json();
+    assert.strictEqual(json.success, false);
+    assert.strictEqual(json.code, 'SWEEP_IN_PROGRESS');
+
+    // Clean up lock
+    await vipTestEnv.USERS_KV.delete('vip_sweep_lock');
+  });
+
+  // ==========================================
+  // SUITE 14: SERVER SESSION LIFECYCLE
+  // ==========================================
+  console.log('\n--- 14. Server Session Persistence & Revocation ---');
+
+  let activeSessionId = '';
+  await testAsync('POST /login: Generates secure session and persists sessionId and sessionExpiresAt to KV', async () => {
+    const loginReq = new Request('https://deeppredictbet.com/api/login', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        email: 'admin@deeppredictbet.com',
+        password: 'Egeruennamdi78'
+      })
+    });
+
+    const loginRes = await loginModule.onRequestPost({ request: loginReq, env: vipTestEnv });
+    assert.strictEqual(loginRes.status, 200);
+    const json = await loginRes.json();
+    assert.strictEqual(json.success, true);
+    assert.ok(json.sessionId && json.sessionId.startsWith('dp_sess_'));
+    assert.ok(json.sessionExpiresAt > Date.now());
+    activeSessionId = json.sessionId;
+
+    // Verify persisted to members_list in KV
+    const storedMembers = JSON.parse(await vipTestEnv.USERS_KV.get('members_list'));
+    const adminMember = storedMembers.find(m => m.email === 'admin@deeppredictbet.com');
+    assert.strictEqual(adminMember.sessionId, json.sessionId);
+    assert.strictEqual(adminMember.sessionExpiresAt, json.sessionExpiresAt);
+  });
+
+  await testAsync('POST /logout: Revokes sessionId and sessionExpiresAt from KV members_list', async () => {
+    const logoutReq = new Request('https://deeppredictbet.com/api/logout', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${activeSessionId}`
+      },
+      body: JSON.stringify({})
+    });
+
+    const logoutRes = await logoutModule.onRequestPost({ request: logoutReq, env: vipTestEnv });
+    assert.strictEqual(logoutRes.status, 200);
+    const json = await logoutRes.json();
+    assert.strictEqual(json.success, true);
+
+    // Verify revoked in KV
+    const storedMembers = JSON.parse(await vipTestEnv.USERS_KV.get('members_list'));
+    const adminMember = storedMembers.find(m => m.email === 'admin@deeppredictbet.com');
+    assert.strictEqual(adminMember.sessionId, undefined);
+    assert.strictEqual(adminMember.sessionExpiresAt, undefined);
+  });
+
+  console.log('\n--- 15. Audit Logging & Zero Leakage ---');
 
   // 5. Audit Logging tests
   await testAsync('Audit Logging: Structured VIP audit events recorded in KV without sensitive secrets', async () => {

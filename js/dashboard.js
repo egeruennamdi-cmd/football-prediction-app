@@ -1867,11 +1867,13 @@
       })();
       const userId = localStorage.getItem('currentUserId') || activeUser.id || 'usr_adm1';
       const email = localStorage.getItem('currentUserEmail') || activeUser.email || 'admin@deeppredictbet.com';
-      const username = localStorage.getItem('currentUsername') || activeUser.username || 'Punter';
+      const sessionId = localStorage.getItem('dp_session_id') || '';
+      const headers = { 'Content-Type': 'application/json' };
+      if (sessionId) headers['Authorization'] = `Bearer ${sessionId}`;
 
       const res = await fetch('/api/integrations/telegram/link', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers,
         body: JSON.stringify({ userId, email, username })
       });
 
@@ -1945,12 +1947,13 @@
       const activeUser = (typeof window.deepActiveUser !== 'undefined' && window.deepActiveUser) || (function() {
         try { return JSON.parse(localStorage.getItem('deep_active_user') || '{}'); } catch(e) { return {}; }
       })();
-      const userId = localStorage.getItem('currentUserId') || activeUser.id || '';
-      const email = localStorage.getItem('currentUserEmail') || activeUser.email || '';
+      const sessionId = localStorage.getItem('dp_session_id') || '';
+      const headers = { 'Content-Type': 'application/json' };
+      if (sessionId) headers['Authorization'] = `Bearer ${sessionId}`;
 
       const res = await fetch('/api/integrations/telegram/link', {
         method: 'DELETE',
-        headers: { 'Content-Type': 'application/json' },
+        headers,
         body: JSON.stringify({ userId, email })
       });
 
@@ -2049,10 +2052,15 @@
       const activeUser = (typeof window.deepActiveUser !== 'undefined' && window.deepActiveUser) || (function() {
         try { return JSON.parse(localStorage.getItem('deep_active_user') || '{}'); } catch(e) { return {}; }
       })();
-      const userId = localStorage.getItem('currentUserId') || activeUser.id || '';
-      const email = localStorage.getItem('currentUserEmail') || activeUser.email || '';
+      const sessionId = localStorage.getItem('dp_session_id') || '';
+      const headers = {};
+      if (sessionId) {
+        headers['Authorization'] = `Bearer ${sessionId}`;
+      }
 
-      const res = await fetch(`/api/integrations/telegram/vip-access?userId=${encodeURIComponent(userId)}&email=${encodeURIComponent(email)}`);
+      const res = await fetch('/api/integrations/telegram/vip-access', {
+        headers
+      });
       const data = await res.json();
 
       if (!data.success) {
@@ -2217,13 +2225,16 @@
       const activeUser = (typeof window.deepActiveUser !== 'undefined' && window.deepActiveUser) || (function() {
         try { return JSON.parse(localStorage.getItem('deep_active_user') || '{}'); } catch(e) { return {}; }
       })();
-      const userId = localStorage.getItem('currentUserId') || activeUser.id || '';
-      const email = localStorage.getItem('currentUserEmail') || activeUser.email || '';
+      const sessionId = localStorage.getItem('dp_session_id') || '';
+      const headers = { 'Content-Type': 'application/json' };
+      if (sessionId) {
+        headers['Authorization'] = `Bearer ${sessionId}`;
+      }
 
       const res = await fetch('/api/integrations/telegram/vip-access', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ userId, email })
+        headers,
+        body: JSON.stringify({})
       });
 
       const data = await res.json();
