@@ -254,6 +254,30 @@ export async function getChatMember(env, chatId, userId) {
 }
 
 /**
+ * Removes a member from a channel (bans then immediately unbans so they are kicked without permanent block)
+ */
+export async function removeChatMember(env, chatId, userId) {
+  const targetChatId = chatId || (env && env.TELEGRAM_VIP_CHANNEL_ID);
+  if (!targetChatId || !userId) return { success: false, error: 'Chat ID and userId required.' };
+
+  const banRes = await callTelegramApi(env, 'banChatMember', {
+    chat_id: targetChatId,
+    user_id: userId
+  });
+
+  if (banRes.success) {
+    // Unban so user can rejoin if they resubscribe later
+    await callTelegramApi(env, 'unbanChatMember', {
+      chat_id: targetChatId,
+      user_id: userId,
+      only_if_banned: true
+    });
+  }
+
+  return banRes;
+}
+
+/**
  * Sends a direct notification to a linked DeepPredictBet user
  */
 export async function sendUserNotification(env, telegramUserId, message, options = {}) {

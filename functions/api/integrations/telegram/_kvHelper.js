@@ -213,3 +213,119 @@ export async function deleteLinkToken(env, token) {
     return false;
   }
 }
+
+/**
+ * Appends a structured audit event to the VIP access audit log in KV.
+ * Keeps the most recent 200 events (capped to prevent KV size bloat).
+ * Strictly sanitizes: NO tokens, secrets, passwords, or full credentials are ever logged.
+ */
+export async function logVipAuditEvent(env, eventData) {
+  const timestamp = new Date().toISOString();
+  const entry = {
+    id: `aud_${Date.now().toString(36)}_${Math.random().toString(36).substring(2, 6)}`,
+    timestamp,
+    action: eventData.action || eventData.event || 'VIP_EVENT',
+    userId: eventData.userId || null,
+    telegramUserId: eventData.telegramUserId || null,
+    subscriptionState: eventData.subscriptionState ? {
+      active: !!eventData.subscriptionState.active,
+      status: eventData.subscriptionState.status || null,
+      tier: eventData.subscriptionState.tier || null,
+      expiresAt: eventData.subscriptionState.expiresAt || null
+    } : null,
+    result: eventData.result || 'SUCCESS',
+    reasonCode: eventData.reasonCode || eventData.reason || null,
+    details: eventData.details || null
+  };
+
+  const key = 'vip_audit_log';
+  let logs = [];
+
+  // Read existing logs
+  if (env && env.USERS_KV) {
+    try {
+      const stored = await env.USERS_KV.get(key);
+      if (stored) logs = JSON.parse(stored);
+    } catch (e) {
+      console.warn('[TelegramKV] Failed native KV read audit logs:', e.message);
+    }
+  } else {
+    const apiToken = (env && env.CF_API_TOKEN) || FALLBACK_CF_API_TOKEN;
+    const accountId = (env && env.CF_ACCOUNT_ID) || CF_ACCOUNT_ID;
+    const nsId = (env && env.CF_KV_NAMESPACE_ID) || CF_KV_NAMESPACE_ID;
+    try {
+      const res = await fetch(`https://api.cloudflare.com/client/v4/accounts/${accountId}/storage/kv/namespaces/${nsId}/values/${key}`, {
+        headers: { 'Authorization': `Bearer ${apiToken}` }
+      });
+      if (res.ok) {
+        const data = await res.json();
+        if (Array.isArray(data)) logs = data;
+      }
+    } catch (e) {
+      console.warn('[TelegramKV] Failed REST KV read audit logs:', e.message);
+    }
+  }
+
+  if (!Array.isArray(logs)) logs = [];
+  logs.unshift(entry);
+  if (logs.length > 200) logs = logs.slice(0, 200);
+
+  // Write updated logs
+  if (env && env.USERS_KV) {
+    try {
+      await env.USERS_KV.put(key, JSON.stringify(logs));
+      return entry;
+    } catch (e) {
+      console.warn('[TelegramKV] Failed native KV write audit logs:', e.message);
+    }
+  } else {
+    const apiToken = (env && env.CF_API_TOKEN) || FALLBACK_CF_API_TOKEN;
+    const accountId = (env && env.CF_ACCOUNT_ID) || CF_ACCOUNT_ID;
+    const nsId = (env && env.CF_KV_NAMESPACE_ID) || CF_KV_NAMESPACE_ID;
+    try {
+      await fetch(`https://api.cloudflare.com/client/v4/accounts/${accountId}/storage/kv/namespaces/${nsId}/values/${key}`, {
+        method: 'PUT',
+        headers: {
+          'Authorization': `Bearer ${apiToken}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(logs)
+      });
+    } catch (e) {
+      console.warn('[TelegramKV] Failed REST KV write audit logs:', e.message);
+    }
+  }
+
+  return entry;
+}
+
+/**
+ * Retrieves recent VIP access audit logs
+ */
+export async function getVipAuditLogs(env, limit = 50) {
+  const key = 'vip_audit_log';
+  let logs = [];
+
+  if (env && env.USERS_KV) {
+    try {
+      const stored = await env.USERS_KV.get(key);
+      if (stored) logs = JSON.parse(stored);
+    } catch (e) {}
+  } else {
+    const apiToken = (env && env.CF_API_TOKEN) || FALLBACK_CF_API_TOKEN;
+    const accountId = (env && env.CF_ACCOUNT_ID) || CF_ACCOUNT_ID;
+    const nsId = (env && env.CF_KV_NAMESPACE_ID) || CF_KV_NAMESPACE_ID;
+    try {
+      const res = await fetch(`https://api.cloudflare.com/client/v4/accounts/${accountId}/storage/kv/namespaces/${nsId}/values/${key}`, {
+        headers: { 'Authorization': `Bearer ${apiToken}` }
+      });
+      if (res.ok) {
+        const data = await res.json();
+        if (Array.isArray(data)) logs = data;
+      }
+    } catch (e) {}
+  }
+
+  if (!Array.isArray(logs)) return [];
+  return logs.slice(0, Math.min(limit, 200));
+}

@@ -13,6 +13,7 @@
 
 import { sendMessage, getBotInfo } from './_telegramService.js';
 import { getMembers, saveMembers, getLinkToken, deleteLinkToken } from './_kvHelper.js';
+import { isVipEligible } from './_vipAccessService.js';
 
 function corsHeaders() {
   return {
@@ -343,8 +344,8 @@ async function handleAccountCommand(env, chatId, telegramUserId) {
     return;
   }
 
-  const isVip = (user.subscription && user.subscription.active) || user.role === 'ADMIN';
-  const tier = isVip ? '👑 VIP Member' : (user.role === 'PRO' ? '⚡ Pro Member' : '🛡️ Free Punter');
+  const entitlement = isVipEligible(user);
+  const tier = entitlement.eligible ? '👑 VIP Member' : (user.role === 'PRO' ? '⚡ Pro Member' : '🛡️ Free Punter');
   const coins = user.coinsBalance !== undefined ? user.coinsBalance : 500;
   const linkedDate = user.telegram.linkedAt ? new Date(user.telegram.linkedAt).toLocaleDateString() : 'Active';
 
@@ -420,13 +421,14 @@ async function handleAlertsCommand(env, chatId, telegramUserId) {
 async function handleVipCommand(env, chatId, telegramUserId) {
   const members = await getMembers(env);
   const user = members.find(m => m.telegram && String(m.telegram.id) === String(telegramUserId));
-  const isVip = user && ((user.subscription && user.subscription.active) || user.role === 'ADMIN');
+  const entitlement = user ? isVipEligible(user) : { eligible: false };
+  const isVip = entitlement.eligible;
 
   if (isVip) {
     let inviteInfo = '';
     const vipChannel = env && env.TELEGRAM_VIP_CHANNEL_ID;
     if (vipChannel) {
-      inviteInfo = `\n👉 <b>Private VIP Channel:</b> <a href="https://t.me/deeppredictbet_vip">Join VIP Signals Channel</a>`;
+      inviteInfo = `\n👉 <b>Private VIP Channel Access:</b> Visit <a href="https://deeppredictbet.com/#dashboard">My DeepPredict → Telegram VIP</a> to activate your secure access pass.`;
     }
 
     await sendMessage(env, chatId, [

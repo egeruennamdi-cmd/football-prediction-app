@@ -479,6 +479,14 @@
 
       </div>
     `;
+
+    if (currentCustomerTab === 'alerts' || currentCustomerTab === 'subscription') {
+      setTimeout(() => {
+        if (typeof window.loadTelegramVipAccessStatus === 'function') {
+          window.loadTelegramVipAccessStatus();
+        }
+      }, 60);
+    }
   }
 
   /* --- GUEST PREVIEW SCREEN (WHEN NOT LOGGED IN) --- */
@@ -1418,6 +1426,33 @@
             </div>
           </div>
         </div>
+
+        <!-- TELEGRAM VIP ACCESS CARD -->
+        <div class="glass-card" style="background: linear-gradient(135deg, rgba(15,23,42,0.95) 0%, rgba(88,28,135,0.22) 100%); border: 1px solid rgba(168,85,247,0.35); border-radius: 16px; padding: 22px; margin-bottom: 20px;">
+          <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 14px; margin-bottom: 16px;">
+            <div style="display: flex; align-items: center; gap: 12px;">
+              <div style="width: 44px; height: 44px; border-radius: 12px; background: rgba(168,85,247,0.15); border: 1px solid rgba(168,85,247,0.3); display: flex; align-items: center; justify-content: center; font-size: 1.5rem;">
+                👑
+              </div>
+              <div>
+                <h3 style="margin: 0; font-size: 1.05rem; font-weight: 900; color: #ffffff;">TELEGRAM VIP ACCESS</h3>
+                <p style="margin: 2px 0 0; font-size: 0.76rem; color: #94a3b8;">
+                  Exclusive institutional intelligence, instant 89.4% win-rate Banker push notifications, and private VIP channel access.
+                </p>
+              </div>
+            </div>
+            <div id="tg-vip-status-badge">
+              <span style="background: rgba(148,163,184,0.15); border: 1px solid rgba(148,163,184,0.3); color: #cbd5e1; font-size: 0.72rem; font-weight: 800; padding: 5px 12px; border-radius: 20px;">
+                ⏳ CHECKING STATUS...
+              </span>
+            </div>
+          </div>
+
+          <div id="tg-vip-access-body">
+            <div style="font-size: 0.8rem; color: #94a3b8;">Loading authoritative VIP entitlement from server...</div>
+          </div>
+        </div>
+
       </div>
     `;
   }
@@ -2000,6 +2035,223 @@
       if (triggerBtn) {
         triggerBtn.disabled = false;
         triggerBtn.innerHTML = originalBtnHtml || '🔔 Send Test Alert';
+      }
+    }
+  };
+
+  /* --- TELEGRAM VIP ACCESS ACTIONS --- */
+  window.loadTelegramVipAccessStatus = async function () {
+    const badgeEl = document.getElementById('tg-vip-status-badge');
+    const bodyEl = document.getElementById('tg-vip-access-body');
+    if (!bodyEl) return;
+
+    try {
+      const activeUser = (typeof window.deepActiveUser !== 'undefined' && window.deepActiveUser) || (function() {
+        try { return JSON.parse(localStorage.getItem('deep_active_user') || '{}'); } catch(e) { return {}; }
+      })();
+      const userId = localStorage.getItem('currentUserId') || activeUser.id || '';
+      const email = localStorage.getItem('currentUserEmail') || activeUser.email || '';
+
+      const res = await fetch(`/api/integrations/telegram/vip-access?userId=${encodeURIComponent(userId)}&email=${encodeURIComponent(email)}`);
+      const data = await res.json();
+
+      if (!data.success) {
+        if (bodyEl) {
+          bodyEl.innerHTML = `
+            <div style="font-size: 0.8rem; color: #f87171; line-height: 1.5;">
+              ${data.error || 'Unable to load VIP access status at this time.'}
+            </div>
+          `;
+        }
+        return;
+      }
+
+      const { eligible, subscription, telegram, access } = data;
+      const isLinked = telegram && telegram.linked;
+      const channelJoined = access && access.channelJoined;
+      const isExpired = subscription && (subscription.status === 'EXPIRED' || subscription.status === 'expired');
+
+      // Update Status Badge
+      if (badgeEl) {
+        if (channelJoined) {
+          badgeEl.innerHTML = `<span style="background: rgba(16,185,129,0.15); border: 1px solid #10b981; color: #34d399; font-size: 0.72rem; font-weight: 800; padding: 5px 12px; border-radius: 20px;">● VIP MEMBER</span>`;
+        } else if (eligible && isLinked) {
+          badgeEl.innerHTML = `<span style="background: rgba(168,85,247,0.2); border: 1px solid #c084fc; color: #c084fc; font-size: 0.72rem; font-weight: 800; padding: 5px 12px; border-radius: 20px;">👑 ELIGIBLE</span>`;
+        } else if (eligible && !isLinked) {
+          badgeEl.innerHTML = `<span style="background: rgba(245,158,11,0.2); border: 1px solid #f59e0b; color: #fbbf24; font-size: 0.72rem; font-weight: 800; padding: 5px 12px; border-radius: 20px;">LINK TELEGRAM</span>`;
+        } else if (isExpired) {
+          badgeEl.innerHTML = `<span style="background: rgba(239,68,68,0.2); border: 1px solid #ef4444; color: #f87171; font-size: 0.72rem; font-weight: 800; padding: 5px 12px; border-radius: 20px;">EXPIRED</span>`;
+        } else {
+          badgeEl.innerHTML = `<span style="background: rgba(148,163,184,0.15); border: 1px solid rgba(148,163,184,0.3); color: #94a3b8; font-size: 0.72rem; font-weight: 800; padding: 5px 12px; border-radius: 20px;">SUBSCRIBE</span>`;
+        }
+      }
+
+      // STATE D: Active VIP + Already Member
+      if (channelJoined) {
+        bodyEl.innerHTML = `
+          <div style="background: rgba(16,185,129,0.06); border: 1px solid rgba(16,185,129,0.25); border-radius: 12px; padding: 16px; margin-bottom: 14px;">
+            <div style="font-size: 0.92rem; font-weight: 800; color: #34d399; margin-bottom: 4px;">
+              Your Telegram VIP access is active.
+            </div>
+            <div style="font-size: 0.78rem; color: #cbd5e1; line-height: 1.5;">
+              You are verified as an active member in the private VIP channel. You will receive real-time Banker signals directly to Telegram.
+            </div>
+          </div>
+          <div style="display: flex; gap: 10px; flex-wrap: wrap; align-items: center;">
+            <a href="https://t.me/DeepPredictBetBot" target="_blank" class="btn btn-primary" style="padding: 9px 18px; font-size: 0.82rem; font-weight: 800; border-radius: 10px; display: inline-flex; align-items: center; gap: 8px; background: linear-gradient(135deg, #10b981 0%, #059669 100%);">
+              ✈️ OPEN VIP BOT & CHANNEL
+            </a>
+            <button onclick="window.loadTelegramVipAccessStatus()" class="btn btn-secondary" style="padding: 9px 14px; font-size: 0.8rem; font-weight: 700; border-radius: 10px;">
+              🔄 Sync Status
+            </button>
+          </div>
+        `;
+        return;
+      }
+
+      // STATE A: Active VIP + Telegram Linked + Not a member
+      if (eligible && isLinked) {
+        const existingInvite = access && access.inviteUrl;
+        bodyEl.innerHTML = `
+          <div style="background: rgba(168,85,247,0.08); border: 1px solid rgba(168,85,247,0.3); border-radius: 12px; padding: 16px; margin-bottom: 14px;">
+            <div style="font-size: 0.92rem; font-weight: 800; color: #ffffff; margin-bottom: 4px;">
+              Your VIP subscription is active.
+            </div>
+            <div style="font-size: 0.78rem; color: #cbd5e1; line-height: 1.5;">
+              Connect to the DeepPredictBet VIP Telegram channel to activate your private signal delivery.
+            </div>
+          </div>
+          ${existingInvite ? `
+            <div style="background: rgba(0,0,0,0.3); border: 1px dashed rgba(168,85,247,0.5); border-radius: 12px; padding: 14px; margin-bottom: 14px;">
+              <div style="font-size: 0.78rem; color: #cbd5e1; line-height: 1.5; margin-bottom: 8px;">
+                <b>Your single-use VIP Invite Pass is ready:</b>
+              </div>
+              <a href="${existingInvite}" target="_blank" class="btn btn-primary" style="padding: 10px 20px; font-size: 0.85rem; font-weight: 900; background: linear-gradient(135deg, #9333ea 0%, #7e22ce 100%); border-radius: 10px; display: inline-flex; align-items: center; gap: 8px; color: #ffffff; text-decoration: none;">
+                👑 JOIN PRIVATE VIP CHANNEL &rarr;
+              </a>
+              <div style="font-size: 0.7rem; color: #94a3b8; margin-top: 8px;">
+                Single-use link generated specifically for your account. Valid for 24 hours.
+              </div>
+            </div>
+          ` : `
+            <div style="display: flex; gap: 10px; flex-wrap: wrap; align-items: center;">
+              <button onclick="window.requestTelegramVipAccess()" id="tg-vip-request-btn" class="btn btn-primary" style="padding: 10px 20px; font-size: 0.85rem; font-weight: 900; border-radius: 10px; background: linear-gradient(135deg, #9333ea 0%, #7e22ce 100%); display: inline-flex; align-items: center; gap: 8px;">
+                👑 GET VIP ACCESS
+              </button>
+              <span style="font-size: 0.74rem; color: #94a3b8;">Single-use private invite link generated on demand.</span>
+            </div>
+          `}
+        `;
+        return;
+      }
+
+      // STATE B: Active VIP + Telegram Not Linked
+      if (eligible && !isLinked) {
+        bodyEl.innerHTML = `
+          <div style="background: rgba(245,158,11,0.08); border: 1px solid rgba(245,158,11,0.3); border-radius: 12px; padding: 16px; margin-bottom: 14px;">
+            <div style="font-size: 0.92rem; font-weight: 800; color: #fbbf24; margin-bottom: 4px;">
+              Your VIP subscription is active, but Telegram is not connected.
+            </div>
+            <div style="font-size: 0.78rem; color: #cbd5e1; line-height: 1.5;">
+              To receive private VIP Telegram access, you must first connect your Telegram identity to your DeepPredictBet profile.
+            </div>
+          </div>
+          <div style="display: flex; gap: 10px; flex-wrap: wrap; align-items: center;">
+            <button onclick="window.connectTelegramBot()" class="btn btn-primary" style="padding: 10px 20px; font-size: 0.84rem; font-weight: 800; border-radius: 10px; background: linear-gradient(135deg, #0284c7 0%, #0369a1 100%);">
+              ✈️ CONNECT TELEGRAM
+            </button>
+            <span style="font-size: 0.74rem; color: #94a3b8;">Takes 10 seconds via our automated linking bot.</span>
+          </div>
+        `;
+        return;
+      }
+
+      // STATE E: Subscription Expired
+      if (isExpired) {
+        bodyEl.innerHTML = `
+          <div style="background: rgba(239,68,68,0.08); border: 1px solid rgba(239,68,68,0.3); border-radius: 12px; padding: 16px; margin-bottom: 14px;">
+            <div style="font-size: 0.92rem; font-weight: 800; color: #f87171; margin-bottom: 4px;">
+              Your VIP subscription has expired.
+            </div>
+            <div style="font-size: 0.78rem; color: #cbd5e1; line-height: 1.5;">
+              Renew your subscription to regain access to the private VIP Telegram channel and uninterrupted Banker push notifications.
+            </div>
+          </div>
+          <button onclick="if(typeof openVipSubscriptionModal==='function') openVipSubscriptionModal('annual');" class="btn btn-primary" style="padding: 10px 20px; font-size: 0.84rem; font-weight: 800; border-radius: 10px; background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);">
+            ⚡ RENEW SUBSCRIPTION
+          </button>
+        `;
+        return;
+      }
+
+      // STATE C: No Active VIP Subscription
+      bodyEl.innerHTML = `
+        <div style="background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.08); border-radius: 12px; padding: 16px; margin-bottom: 14px;">
+          <div style="font-size: 0.92rem; font-weight: 800; color: #ffffff; margin-bottom: 4px;">
+            VIP Telegram access is available to eligible subscribers.
+          </div>
+          <div style="font-size: 0.78rem; color: #cbd5e1; line-height: 1.5;">
+            Join the exclusive DeepPredictBet VIP Club to receive daily 89.4% win-rate Banker push notifications, high-yield arbitrage discrepancies, and private channel access.
+          </div>
+        </div>
+        <button onclick="if(typeof openVipSubscriptionModal==='function') openVipSubscriptionModal('annual');" class="btn btn-primary" style="padding: 10px 20px; font-size: 0.84rem; font-weight: 800; border-radius: 10px; background: linear-gradient(135deg, #9333ea 0%, #7e22ce 100%);">
+          👑 VIEW PLANS
+        </button>
+      `;
+
+    } catch (err) {
+      if (bodyEl) {
+        bodyEl.innerHTML = `<div style="font-size: 0.8rem; color: #f87171;">Error checking VIP access: ${err.message}</div>`;
+      }
+    }
+  };
+
+  window.requestTelegramVipAccess = async function () {
+    const btn = document.getElementById('tg-vip-request-btn');
+    if (btn) {
+      btn.disabled = true;
+      btn.innerHTML = '⏳ Generating VIP Pass...';
+    }
+
+    try {
+      const activeUser = (typeof window.deepActiveUser !== 'undefined' && window.deepActiveUser) || (function() {
+        try { return JSON.parse(localStorage.getItem('deep_active_user') || '{}'); } catch(e) { return {}; }
+      })();
+      const userId = localStorage.getItem('currentUserId') || activeUser.id || '';
+      const email = localStorage.getItem('currentUserEmail') || activeUser.email || '';
+
+      const res = await fetch('/api/integrations/telegram/vip-access', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ userId, email })
+      });
+
+      const data = await res.json();
+      if (data.success && data.access) {
+        if (data.access.channelJoined) {
+          showToast('🎉 Your Telegram VIP access is already active!', 'success');
+          window.loadTelegramVipAccessStatus();
+          return;
+        }
+
+        if (data.access.inviteUrl) {
+          showToast('🎉 VIP Invite Pass generated! Opening Telegram...', 'success');
+          window.open(data.access.inviteUrl, '_blank');
+          window.loadTelegramVipAccessStatus();
+          return;
+        }
+      } else {
+        showToast(data.error || 'Failed to request VIP access.', 'error');
+        if (btn) {
+          btn.disabled = false;
+          btn.innerHTML = '👑 GET VIP ACCESS';
+        }
+      }
+    } catch (err) {
+      showToast('Network error while requesting VIP access: ' + err.message, 'error');
+      if (btn) {
+        btn.disabled = false;
+        btn.innerHTML = '👑 GET VIP ACCESS';
       }
     }
   };
