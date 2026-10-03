@@ -49,8 +49,10 @@ async function resolveAuthenticatedUser(context, bodyOrParams = {}) {
     token = authHeader.trim();
   }
 
+  const adminKeyHeader = request.headers.get('X-Admin-Key') || '';
+
   // 2. Check if caller is an authorized administrator
-  if (token) {
+  if (token || adminKeyHeader) {
     const adminCheck = await verifyAdminAuthorization(context);
     if (adminCheck.authorized) {
       // If admin specified a target user in payload, locate that user; otherwise resolve admin profile
