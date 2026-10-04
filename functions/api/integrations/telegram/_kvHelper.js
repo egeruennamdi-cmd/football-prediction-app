@@ -329,3 +329,158 @@ export async function getVipAuditLogs(env, limit = 50) {
   if (!Array.isArray(logs)) return [];
   return logs.slice(0, Math.min(limit, 200));
 }
+
+/**
+ * Computes deterministic SHA-256 fingerprint for content deduplication
+ */
+export async function computeContentFingerprint(target, text, photoUrl = '') {
+  const normalized = `${(target || '').toLowerCase().trim()}|${(text || '').trim().replace(/\s+/g, ' ')}|${(photoUrl || '').trim()}`;
+  try {
+    if (typeof crypto !== 'undefined' && crypto.subtle && typeof crypto.subtle.digest === 'function') {
+      const encoder = new TextEncoder();
+      const data = encoder.encode(normalized);
+      const hashBuffer = await crypto.subtle.digest('SHA-256', data);
+      const hashArray = Array.from(new Uint8Array(hashBuffer));
+      return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+    }
+  } catch (e) {}
+
+  // Fallback deterministic string hash
+  let hash = 0;
+  for (let i = 0; i < normalized.length; i++) {
+    hash = ((hash << 5) - hash) + normalized.charCodeAt(i);
+    hash |= 0;
+  }
+  return 'fp_' + Math.abs(hash).toString(16);
+}
+
+/**
+ * Saves a Telegram publication event to KV history (telegram_publish_history)
+ * Retains the latest 100 publications.
+ */
+export async function savePublishHistory(env, entryData) {
+  const timestamp = new Date().toISOString();
+  const entry = {
+    id: entryData.id || `pub_${Date.now().toString(36)}_${Math.random().toString(36).substring(2, 6)}`,
+    dispatchedAt: entryData.dispatchedAt || timestamp,
+    target: entryData.target || 'free',
+    postType: entryData.postType || 'Custom Post',
+    status: entryData.status || 'SUCCESS',
+    telegramMessageId: entryData.telegramMessageId !== undefined ? entryData.telegramMessageId : null,
+    textSnippet: (entryData.text || entryData.message || '').slice(0, 140),
+    fullText: entryData.text || entryData.message || '',
+    photoUrl: entryData.photoUrl || null,
+    buttons: entryData.buttons || null,
+    recipient: entryData.recipient || null,
+    author: entryData.author || 'Admin',
+    fingerprint: entryData.fingerprint || null
+  };
+
+  const key = 'telegram_publish_history';
+  let history = [];
+
+  if (env && env.USERS_KV) {
+    try {
+      const stored = await env.USERS_KV.get(key);
+      if (stored) history = JSON.parse(stored);
+    } catch (e) {
+      console.warn('[TelegramKV] Failed native KV read publish history:', e.message);
+    }
+  } else {
+    const apiToken = (env && env.CF_API_TOKEN) || FALLBACK_CF_API_TOKEN;
+    const accountId = (env && env.CF_ACCOUNT_ID) || CF_ACCOUNT_ID;
+    const nsId = (env && env.CF_KV_NAMESPACE_ID) || CF_KV_NAMESPACE_ID;
+    try {
+      const res = await fetch(`https://api.cloudflare.com/client/v4/accounts/${accountId}/storage/kv/namespaces/${nsId}/values/${key}`, {
+        headers: { 'Authorization': `Bearer ${apiToken}` }
+      });
+      if (res.ok) {
+        const data = await res.json();
+        if (Array.isArray(data)) history = data;
+      }
+    } catch (e) {
+      console.warn('[TelegramKV] Failed REST KV read publish history:', e.message);
+    }
+  }
+
+  if (!Array.isArray(history)) history = [];
+  history.unshift(entry);
+  if (history.length > 100) history = history.slice(0, 100);
+
+  if (env && env.USERS_KV) {
+    try {
+      await env.USERS_KV.put(key, JSON.stringify(history));
+      return entry;
+    } catch (e) {
+      console.warn('[TelegramKV] Failed native KV write publish history:', e.message);
+    }
+  } else {
+    const apiToken = (env && env.CF_API_TOKEN) || FALLBACK_CF_API_TOKEN;
+    const accountId = (env && env.CF_ACCOUNT_ID) || CF_ACCOUNT_ID;
+    const nsId = (env && env.CF_KV_NAMESPACE_ID) || CF_KV_NAMESPACE_ID;
+    try {
+      await fetch(`https://api.cloudflare.com/client/v4/accounts/${accountId}/storage/kv/namespaces/${nsId}/values/${key}`, {
+        method: 'PUT',
+        headers: {
+          'Authorization': `Bearer ${apiToken}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(history)
+      });
+    } catch (e) {
+      console.warn('[TelegramKV] Failed REST KV write publish history:', e.message);
+    }
+  }
+
+  return entry;
+}
+
+/**
+ * Retrieves recent Telegram publication records
+ */
+export async function getPublishHistory(env, limit = 50) {
+  const key = 'telegram_publish_history';
+  let history = [];
+
+  if (env && env.USERS_KV) {
+    try {
+      const stored = await env.USERS_KV.get(key);
+      if (stored) history = JSON.parse(stored);
+    } catch (e) {}
+  } else {
+    const apiToken = (env && env.CF_API_TOKEN) || FALLBACK_CF_API_TOKEN;
+    const accountId = (env && env.CF_ACCOUNT_ID) || CF_ACCOUNT_ID;
+    const nsId = (env && env.CF_KV_NAMESPACE_ID) || CF_KV_NAMESPACE_ID;
+    try {
+      const res = await fetch(`https://api.cloudflare.com/client/v4/accounts/${accountId}/storage/kv/namespaces/${nsId}/values/${key}`, {
+        headers: { 'Authorization': `Bearer ${apiToken}` }
+      });
+      if (res.ok) {
+        const data = await res.json();
+        if (Array.isArray(data)) history = data;
+      }
+    } catch (e) {}
+  }
+
+  if (!Array.isArray(history)) return [];
+  return history.slice(0, Math.min(limit, 100));
+}
+
+/**
+ * Checks if identical content was published recently to the same target
+ */
+export async function checkDuplicatePublish(env, fingerprint, windowMs = 24 * 60 * 60 * 1000) {
+  if (!fingerprint) return null;
+  const history = await getPublishHistory(env, 50);
+  const now = Date.now();
+  for (const item of history) {
+    if (item.fingerprint === fingerprint && item.status === 'SUCCESS') {
+      const dispatchedTime = new Date(item.dispatchedAt).getTime();
+      if (!isNaN(dispatchedTime) && (now - dispatchedTime) < windowMs) {
+        return item;
+      }
+    }
+  }
+  return null;
+}
+

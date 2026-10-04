@@ -7,10 +7,65 @@
 
 import { publishToFreeChannel, publishToVipChannel, sendUserNotification, sendPhoto } from './_telegramService.js';
 import { verifyAdminAuthorization, adminCorsHeaders } from './_adminAuth.js';
-import { getMembers } from './_kvHelper.js';
+import { getMembers, savePublishHistory, getPublishHistory, checkDuplicatePublish, computeContentFingerprint } from './_kvHelper.js';
 
 export async function onRequestOptions() {
   return new Response(null, { status: 204, headers: adminCorsHeaders() });
+}
+
+/**
+ * GET /api/integrations/telegram/publish
+ * Returns recent publication history & list of linked Telegram users for admin composer
+ */
+export async function onRequestGet(context) {
+  const { env } = context;
+
+  // Authoritative Admin Privilege Gate
+  const auth = await verifyAdminAuthorization(context);
+  if (!auth.authorized) {
+    return new Response(JSON.stringify({
+      success: false,
+      error: auth.error || 'Forbidden: Administrator privileges required.'
+    }), {
+      status: auth.statusCode || 403,
+      headers: adminCorsHeaders()
+    });
+  }
+
+  try {
+    const history = await getPublishHistory(env, 50);
+    const members = await getMembers(env);
+
+    const linkedUsers = (members || [])
+      .filter(m => m && m.telegram && m.telegram.id)
+      .map(m => ({
+        id: m.id,
+        email: m.email || '',
+        username: m.username || '',
+        fullName: m.fullName || '',
+        telegramId: m.telegram.id,
+        telegramUsername: m.telegram.username || '',
+        tier: m.role === 'ADMIN' ? 'ADMIN' : ((m.subscription && m.subscription.active) ? 'VIP' : (m.role || 'USER'))
+      }));
+
+    return new Response(JSON.stringify({
+      success: true,
+      history,
+      linkedUsers,
+      totalLinked: linkedUsers.length
+    }), {
+      status: 200,
+      headers: adminCorsHeaders()
+    });
+  } catch (err) {
+    return new Response(JSON.stringify({
+      success: false,
+      error: err.message
+    }), {
+      status: 500,
+      headers: adminCorsHeaders()
+    });
+  }
 }
 
 export async function onRequestPost(context) {
@@ -39,6 +94,8 @@ export async function onRequestPost(context) {
     const target = (body.target || 'free').toLowerCase(); // 'free', 'vip', 'user'
     const text = (body.text || body.message || '').trim();
     const photoUrl = (body.photoUrl || '').trim();
+    const postType = (body.postType || 'Custom Post').trim();
+    const forceDuplicate = !!body.forceDuplicate;
 
     // Safely coerce target ID to string to prevent ".trim is not a function" on numeric IDs
     const rawTargetId = body.telegramUserId !== undefined ? body.telegramUserId : (body.chatId !== undefined ? body.chatId : '');
@@ -52,6 +109,44 @@ export async function onRequestPost(context) {
         status: 400,
         headers: adminCorsHeaders()
       });
+    }
+
+    // 2. Duplicate Publication Detection
+    const fingerprint = await computeContentFingerprint(target, text, photoUrl);
+    if (!forceDuplicate) {
+      const duplicate = await checkDuplicatePublish(env, fingerprint, 24 * 60 * 60 * 1000);
+      if (duplicate) {
+        return new Response(JSON.stringify({
+          success: false,
+          duplicateDetected: true,
+          previousPublishedAt: duplicate.dispatchedAt,
+          previousMessageId: duplicate.telegramMessageId,
+          message: `Duplicate content detected: This exact message was already published to ${target.toUpperCase()} on ${new Date(duplicate.dispatchedAt).toLocaleString()}.`
+        }), {
+          status: 409,
+          headers: adminCorsHeaders()
+        });
+      }
+    }
+
+    // 3. Prepare Rich Message Options
+    const options = {
+      parseMode: 'HTML',
+      photoUrl: photoUrl || undefined
+    };
+
+    if (Array.isArray(body.buttons) && body.buttons.length > 0) {
+      const validButtons = body.buttons.filter(b => b && b.text && b.url).map(b => ({
+        text: String(b.text).trim(),
+        url: String(b.url).trim()
+      }));
+      if (validButtons.length > 0) {
+        options.replyMarkup = {
+          inline_keyboard: [validButtons]
+        };
+      }
+    } else if (body.replyMarkup) {
+      options.replyMarkup = body.replyMarkup;
     }
 
     let result;
@@ -88,28 +183,68 @@ export async function onRequestPost(context) {
       }
 
       if (photoUrl) {
-        result = await sendPhoto(env, telegramUserId, photoUrl, text);
+        result = await sendPhoto(env, telegramUserId, photoUrl, text, options);
       } else {
-        result = await sendUserNotification(env, telegramUserId, text);
+        result = await sendUserNotification(env, telegramUserId, text, options);
       }
     } else if (target === 'vip') {
-      result = await publishToVipChannel(env, text);
+      result = await publishToVipChannel(env, text, options);
     } else {
       // Default: Free Channel
-      result = await publishToFreeChannel(env, text);
+      result = await publishToFreeChannel(env, text, options);
     }
 
+    const adminAuthor = (auth.user && (auth.user.username || auth.user.email)) || 'Admin';
+
     if (result.success) {
+      const messageId = result.result ? result.result.message_id : null;
+      const dispatchedAt = new Date().toISOString();
+
+      // Record in KV Publish History
+      try {
+        await savePublishHistory(env, {
+          target,
+          postType,
+          text,
+          photoUrl: photoUrl || null,
+          buttons: options.replyMarkup ? options.replyMarkup.inline_keyboard : null,
+          telegramMessageId: messageId,
+          status: 'SUCCESS',
+          recipient: target === 'user' ? telegramUserId : null,
+          author: adminAuthor,
+          fingerprint,
+          dispatchedAt
+        });
+      } catch (histErr) {
+        console.warn('[TelegramPublish] History record write error:', histErr.message);
+      }
+
       return new Response(JSON.stringify({
         success: true,
         target,
-        messageId: result.result ? result.result.message_id : null,
-        dispatchedAt: new Date().toISOString()
+        postType,
+        messageId,
+        dispatchedAt
       }), {
         status: 200,
         headers: adminCorsHeaders()
       });
     } else {
+      // Record failed publication in KV history for operational tracking
+      try {
+        await savePublishHistory(env, {
+          target,
+          postType,
+          text,
+          photoUrl: photoUrl || null,
+          buttons: options.replyMarkup ? options.replyMarkup.inline_keyboard : null,
+          status: 'FAILED',
+          recipient: target === 'user' ? telegramUserId : null,
+          author: adminAuthor,
+          fingerprint
+        });
+      } catch (e) {}
+
       return new Response(JSON.stringify({
         success: false,
         target,

@@ -1367,7 +1367,7 @@ async function runTests() {
     return {
       ok: true,
       status: 200,
-      json: async () => ({ ok: true, result: {} })
+      json: async () => ({ ok: true, result: { message_id: 9999, id: 9999 } })
     };
   };
 
@@ -1911,6 +1911,134 @@ async function runTests() {
     assert.strictEqual(logStr.includes(FAKE_BOT_TOKEN), false);
     assert.strictEqual(logStr.includes('deep_admin_78_key'), false);
     assert.strictEqual(logStr.includes('Egeruennamdi78'), false);
+  });
+
+  console.log('\n--- 16. Telegram Content Publisher & Deduplication Engine ---');
+
+  await testAsync('GET /api/integrations/telegram/publish: Blocks unauthenticated caller with 401', async () => {
+    const req = new Request('https://deeppredictbet.com/api/integrations/telegram/publish', {
+      method: 'GET'
+    });
+    const res = await publishModule.onRequestGet({ request: req, env: vipTestEnv });
+    assert.strictEqual(res.status, 401);
+  });
+
+  await testAsync('GET /api/integrations/telegram/publish: Authorizes admin, returns history and linked users', async () => {
+    const req = new Request('https://deeppredictbet.com/api/integrations/telegram/publish', {
+      method: 'GET',
+      headers: {
+        'Authorization': 'Bearer deep_admin_78_key'
+      }
+    });
+    const res = await publishModule.onRequestGet({ request: req, env: vipTestEnv });
+    assert.strictEqual(res.status, 200);
+    const data = await res.json();
+    assert.strictEqual(data.success, true);
+    assert.ok(Array.isArray(data.history));
+    assert.ok(Array.isArray(data.linkedUsers));
+  });
+
+  const uniquePostText = `⚽ <b>MATCH INTELLIGENCE: Arsenal vs Chelsea</b>\n🎯 Pick: Over 2.5 Goals\n📊 Confidence: 87%`;
+
+  await testAsync('POST /api/integrations/telegram/publish: Publishes to Free Channel with inline CTA buttons', async () => {
+    const req = new Request('https://deeppredictbet.com/api/integrations/telegram/publish', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer deep_admin_78_key'
+      },
+      body: JSON.stringify({
+        target: 'free',
+        postType: 'Match Intelligence',
+        text: uniquePostText,
+        buttons: [
+          { text: '🔎 View Match Breakdown', url: 'https://deeppredictbet.com/#match-101' }
+        ]
+      })
+    });
+    const res = await publishModule.onRequestPost({ request: req, env: vipTestEnv });
+    assert.strictEqual(res.status, 200);
+    const data = await res.json();
+    assert.strictEqual(data.success, true);
+    assert.strictEqual(data.target, 'free');
+    assert.strictEqual(data.postType, 'Match Intelligence');
+    assert.ok(data.messageId);
+  });
+
+  await testAsync('POST /api/integrations/telegram/publish: Detects duplicate publication within 24h and rejects with 409', async () => {
+    const req = new Request('https://deeppredictbet.com/api/integrations/telegram/publish', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer deep_admin_78_key'
+      },
+      body: JSON.stringify({
+        target: 'free',
+        postType: 'Match Intelligence',
+        text: uniquePostText
+      })
+    });
+    const res = await publishModule.onRequestPost({ request: req, env: vipTestEnv });
+    assert.strictEqual(res.status, 409);
+    const data = await res.json();
+    assert.strictEqual(data.success, false);
+    assert.strictEqual(data.duplicateDetected, true);
+    assert.ok(data.previousPublishedAt);
+  });
+
+  await testAsync('POST /api/integrations/telegram/publish: Overrides duplicate block when forceDuplicate: true is set', async () => {
+    const req = new Request('https://deeppredictbet.com/api/integrations/telegram/publish', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer deep_admin_78_key'
+      },
+      body: JSON.stringify({
+        target: 'free',
+        postType: 'Match Intelligence',
+        text: uniquePostText,
+        forceDuplicate: true
+      })
+    });
+    const res = await publishModule.onRequestPost({ request: req, env: vipTestEnv });
+    assert.strictEqual(res.status, 200);
+    const data = await res.json();
+    assert.strictEqual(data.success, true);
+  });
+
+  await testAsync('POST /api/integrations/telegram/publish: Publishes to VIP Channel with photo and inline buttons', async () => {
+    const vipPostText = `🔒 <b>VIP BANKER SIGNAL</b>\n⚽ Real Madrid vs Barcelona\n🏆 Pick: Real Madrid Win & BTTS\n💰 Odds: 2.35`;
+    const req = new Request('https://deeppredictbet.com/api/integrations/telegram/publish', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer deep_admin_78_key'
+      },
+      body: JSON.stringify({
+        target: 'vip',
+        postType: 'Value Intelligence',
+        text: vipPostText,
+        photoUrl: 'https://images.unsplash.com/photo-1508098682722-e99c43a406b2',
+        buttons: [
+          { text: '👑 View VIP Analysis', url: 'https://deeppredictbet.com/#match-202' }
+        ]
+      })
+    });
+    const res = await publishModule.onRequestPost({ request: req, env: vipTestEnv });
+    assert.strictEqual(res.status, 200);
+    const data = await res.json();
+    assert.strictEqual(data.success, true);
+    assert.strictEqual(data.target, 'vip');
+  });
+
+  await testAsync('Publish History: Confirms published records are logged and retrievable via getPublishHistory', async () => {
+    const history = await kvHelper.getPublishHistory(vipTestEnv, 10);
+    assert.ok(Array.isArray(history));
+    assert.ok(history.length >= 3);
+    const latest = history[0];
+    assert.ok(latest.id.startsWith('pub_'));
+    assert.strictEqual(latest.status, 'SUCCESS');
+    assert.ok(latest.fingerprint);
   });
 
   console.log(`\n==================================================`);

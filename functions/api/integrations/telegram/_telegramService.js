@@ -166,6 +166,10 @@ export async function sendPhoto(env, chatId, photoUrl, caption = '', options = {
     ...options.extra
   };
 
+  if (options.replyMarkup) {
+    payload.reply_markup = options.replyMarkup;
+  }
+
   return await callTelegramApi(env, 'sendPhoto', payload);
 }
 
@@ -192,6 +196,9 @@ export async function editMessage(env, chatId, messageId, text, options = {}) {
  */
 export async function publishToFreeChannel(env, text, options = {}) {
   const channelId = (env && env.TELEGRAM_FREE_CHANNEL_ID) || '@DeepPredictBetFree';
+  if (options && options.photoUrl) {
+    return await sendPhoto(env, channelId, options.photoUrl, text, options);
+  }
   return await sendMessage(env, channelId, text, options);
 }
 
@@ -205,6 +212,9 @@ export async function publishToVipChannel(env, text, options = {}) {
       success: false,
       error: 'TELEGRAM_VIP_CHANNEL_ID is not configured in Cloudflare Pages environment.'
     };
+  }
+  if (options && options.photoUrl) {
+    return await sendPhoto(env, channelId, options.photoUrl, text, options);
   }
   return await sendMessage(env, channelId, text, options);
 }

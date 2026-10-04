@@ -2732,6 +2732,11 @@
               </div>
 
               <!-- Action Buttons -->
+              <button type="button" id="founder-tg-publisher-btn" onclick="window.scrollToTelegramPublisher ? window.scrollToTelegramPublisher() : (window.TelegramPublisher && window.TelegramPublisher.openModal())" class="btn btn-secondary founder-tg-publisher-btn"
+                style="font-size: 0.78rem; padding: 8px 16px; font-weight: 800; display: flex; align-items: center; gap: 6px; background: rgba(56,189,248,0.18); border: 1.5px solid rgba(56,189,248,0.55); color: #38bdf8; border-radius: 20px; cursor: pointer; box-shadow: 0 2px 12px rgba(56,189,248,0.25); transition: all 0.2s ease;"
+                title="Compose and broadcast signals to Telegram Free & VIP channels">
+                <span style="font-size: 0.9rem;">📢</span> <span>Telegram Publisher</span>
+              </button>
               <button type="button" id="founder-vip-manage-btn" onclick="window.openVipFeatureManager()" class="btn btn-secondary founder-vip-manage-btn"
                 style="font-size: 0.78rem; padding: 8px 16px; font-weight: 800; display: flex; align-items: center; gap: 6px; background: rgba(168,85,247,0.18); border: 1.5px solid rgba(168,85,247,0.55); color: #d8b4fe; border-radius: 20px; cursor: pointer; box-shadow: 0 2px 12px rgba(168,85,247,0.25); transition: all 0.2s ease;"
                 title="Configure VIP-Protected Features & Access Gating">
@@ -3542,12 +3547,28 @@
           </div>
         </div>
 
+        <!-- SECTION 14: 📢 TELEGRAM CONTENT PUBLISHER -->
+        <div id="founder-telegram-publisher-container"></div>
+
       </div>
     `;
 
     // Immediately populate the VIP features in Founder Console
     if (typeof window.renderFounderVipSection === 'function') {
       window.renderFounderVipSection();
+    }
+
+    // Immediately render Telegram Publisher in Founder Console
+    if (window.TelegramPublisher && typeof window.TelegramPublisher.render === 'function') {
+      window.TelegramPublisher.render(document.getElementById('founder-telegram-publisher-container'));
+    }
+
+    if (window.location.hash && window.location.hash.toLowerCase().includes('publisher')) {
+      setTimeout(() => {
+        if (typeof window.scrollToTelegramPublisher === 'function') {
+          window.scrollToTelegramPublisher();
+        }
+      }, 150);
     }
   }
 
@@ -3644,7 +3665,7 @@
     const path = window.location.pathname.toLowerCase();
     const hash = window.location.hash.toLowerCase();
 
-    if (path === '/admin' || path === '/admin/analytics' || hash === '#admin' || hash === '#admin/analytics') {
+    if (path === '/admin' || path === '/admin/analytics' || path === '/admin/telegram-publisher' || hash === '#admin' || hash === '#admin/analytics' || hash === '#admin/telegram-publisher' || hash === '#admin/publisher') {
       renderFounderDashboard();
     } else if (path === '/dashboard' || path === '/my-deeppredict' || hash === '#dashboard' || hash === '#my-deeppredict') {
       const hashSub = window.location.hash ? window.location.hash.slice(1) : 'overview';
