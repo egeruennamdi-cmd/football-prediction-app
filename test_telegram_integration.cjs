@@ -91,6 +91,8 @@ async function runTests() {
   const sweepModule = await import('./functions/api/integrations/telegram/sweep.js');
   const loginModule = await import('./functions/api/login.js');
   const logoutModule = await import('./functions/api/logout.js');
+  await import('./js/telegramPublisher.js');
+  const telegramPublisher = globalThis.TelegramPublisher;
 
   const FAKE_BOT_TOKEN = '123456789:ABCdefGHIjklMNOpqrsTUVwxyz';
   const FAKE_WEBHOOK_SECRET = 'deep_sec_token_999';
@@ -2039,6 +2041,460 @@ async function runTests() {
     assert.ok(latest.id.startsWith('pub_'));
     assert.strictEqual(latest.status, 'SUCCESS');
     assert.ok(latest.fingerprint);
+  });
+
+  // ==========================================
+  // SUITE 17: INTELLIGENCE HUB, DATE VALIDATION & CONTENT ORCHESTRATION
+  // ==========================================
+  console.log('\n--- 17. Telegram Intelligence Hub, Date Validation & Content Orchestration ---');
+
+  const SIMULATED_NOW_MS = new Date('2026-10-04T12:00:00Z').getTime();
+
+  test('Authoritative Timestamp: Correctly resolves rawDate, dateSlot, timestamp and formatted time strings', () => {
+    // 1. rawDate ISO string
+    const m1 = { rawDate: '2026-10-04T16:30:00Z' };
+    assert.strictEqual(telegramPublisher.getAuthoritativeTimestamp(m1), new Date('2026-10-04T16:30:00Z').getTime());
+
+    // 2. dateSlot format: YYYY-MM-DD-HHMM
+    const m2 = { dateSlot: '2026-10-05-1830' };
+    assert.strictEqual(telegramPublisher.getAuthoritativeTimestamp(m2), Date.UTC(2026, 9, 5, 18, 30, 0));
+
+    // 3. fixture.timestamp in epoch seconds
+    const m3 = { fixture: { timestamp: 1789933500 } };
+    assert.strictEqual(telegramPublisher.getAuthoritativeTimestamp(m3), 1789933500000);
+
+    // 4. Formatted time string
+    const m4 = { time: '4th, October 2026, 17:30' };
+    const ts4 = telegramPublisher.getAuthoritativeTimestamp(m4);
+    assert.ok(ts4 !== null);
+    assert.strictEqual(new Date(ts4).getUTCFullYear(), 2026);
+    assert.strictEqual(new Date(ts4).getUTCMonth(), 9); // October
+    assert.strictEqual(new Date(ts4).getUTCDate(), 4);
+
+    // 5. Finished time string (e.g. FT · 20 Sep 2026)
+    const m5 = { time: 'FT · 20 Sep 2026' };
+    const ts5 = telegramPublisher.getAuthoritativeTimestamp(m5);
+    assert.ok(ts5 !== null);
+    assert.strictEqual(new Date(ts5).getUTCFullYear(), 2026);
+    assert.strictEqual(new Date(ts5).getUTCMonth(), 8); // September
+    assert.strictEqual(new Date(ts5).getUTCDate(), 20);
+  });
+
+  test('Authoritative Kickoff Timezone: Formats time with both Nigerian WAT (UTC+1) and UTC', () => {
+    // 2026-10-04 16:30 UTC -> 17:30 WAT
+    const ts = Date.UTC(2026, 9, 4, 16, 30, 0);
+    const formatted = telegramPublisher.formatAuthoritativeKickoff(ts, true);
+    assert.ok(formatted.includes('WAT'), 'Must include WAT indicator');
+    assert.ok(formatted.includes('UTC'), 'Must include UTC indicator');
+    assert.ok(formatted.includes('17:30 WAT'), `Expected 17:30 WAT, got: ${formatted}`);
+    assert.ok(formatted.includes('16:30 UTC'), `Expected 16:30 UTC, got: ${formatted}`);
+  });
+
+  test('Authoritative Event Status Resolution: Accurately classifies UPCOMING, LIVE, FINISHED, POSTPONED, and CANCELLED', () => {
+    // Finished via FT flag
+    const mFT = { isFT: true, status: 'FT', scores: { home: 2, away: 1 } };
+    const sFT = telegramPublisher.resolveMatchStatus(mFT, SIMULATED_NOW_MS);
+    assert.strictEqual(sFT.status, 'FINISHED');
+    assert.strictEqual(sFT.isUpcoming, false);
+    assert.strictEqual(sFT.isFinished, true);
+
+    // Postponed
+    const mPost = { status: 'POSTPONED' };
+    const sPost = telegramPublisher.resolveMatchStatus(mPost, SIMULATED_NOW_MS);
+    assert.strictEqual(sPost.status, 'POSTPONED');
+    assert.strictEqual(sPost.isUpcoming, false);
+
+    // Cancelled
+    const mCanc = { status: 'CANCELLED' };
+    const sCanc = telegramPublisher.resolveMatchStatus(mCanc, SIMULATED_NOW_MS);
+    assert.strictEqual(sCanc.status, 'CANCELLED');
+    assert.strictEqual(sCanc.isUpcoming, false);
+
+    // Live match
+    const mLive = { isLive: true, status: '2H', rawDate: '2026-10-04T11:45:00Z' };
+    const sLive = telegramPublisher.resolveMatchStatus(mLive, SIMULATED_NOW_MS);
+    assert.strictEqual(sLive.status, 'LIVE');
+    assert.strictEqual(sLive.isLive, true);
+    assert.strictEqual(sLive.isUpcoming, false);
+
+    // Past kickoff
+    const mPast = { rawDate: '2026-10-04T10:00:00Z' }; // 2 hours before simulated now
+    const sPast = telegramPublisher.resolveMatchStatus(mPast, SIMULATED_NOW_MS);
+    assert.strictEqual(sPast.status, 'FINISHED');
+    assert.strictEqual(sPast.isUpcoming, false);
+
+    // Strictly future kickoff
+    const mFuture = { rawDate: '2026-10-04T16:30:00Z' }; // 4.5 hours after simulated now
+    const sFuture = telegramPublisher.resolveMatchStatus(mFuture, SIMULATED_NOW_MS);
+    assert.strictEqual(sFuture.status, 'UPCOMING');
+    assert.strictEqual(sFuture.isUpcoming, true);
+    assert.strictEqual(sFuture.isFinished, false);
+  });
+
+  test('CRITICAL REGRESSION TEST: Napoli vs Parma (20 Sep 2026, FT) is strictly excluded from upcoming predictions', () => {
+    // Exact representation of match-13 from js/data.js
+    const napoliVsParma = {
+      id: 'match-13',
+      date: 'yesterday',
+      isYesterday: true,
+      league: 'Serie A',
+      leagueEmoji: '🇮🇹',
+      rawDate: 1789933500000,
+      time: 'FT · 20 Sep 2026',
+      isLive: false,
+      status: 'FT',
+      statusShort: 'FT',
+      isFT: true,
+      homeTeam: { name: 'Napoli', logo: '🔵👑' },
+      awayTeam: { name: 'Parma', logo: '🟡🔵' },
+      scores: { home: 2, away: 1 },
+      predictions: { home: 65, draw: 20, away: 15 },
+      confidence: 'high',
+      confidenceVal: 87, // High confidence that previously made it rank #1!
+      insight: "Conte's Napoli secured a thrilling 2-1 comeback victory in stoppage time.",
+      aiAnalysis: 'High intensity pressing in the final 20 minutes overwhelmed Parma down the flanks.'
+    };
+
+    // 1. Direct status check
+    const status = telegramPublisher.resolveMatchStatus(napoliVsParma, SIMULATED_NOW_MS);
+    assert.strictEqual(status.status, 'FINISHED');
+    assert.strictEqual(status.isUpcoming, false);
+    assert.strictEqual(status.isFinished, true);
+
+    const isEligible = telegramPublisher.isMatchUpcomingEligible(napoliVsParma, SIMULATED_NOW_MS);
+    assert.strictEqual(isEligible, false, 'Napoli vs Parma must NEVER be marked upcoming eligible');
+
+    // 2. Pool filtering test: Pool contains finished Napoli vs Parma AND authentic upcoming matches
+    const mixedPool = [
+      napoliVsParma,
+      {
+        id: 'match-101',
+        league: 'Premier League',
+        rawDate: '2026-10-04T16:30:00Z',
+        homeTeam: { name: 'Arsenal' },
+        awayTeam: { name: 'Chelsea' },
+        predictions: { home: 55, draw: 25, away: 20 },
+        confidenceVal: 82
+      },
+      {
+        id: 'match-102',
+        league: 'La Liga',
+        rawDate: '2026-10-04T19:00:00Z',
+        homeTeam: { name: 'Real Madrid' },
+        awayTeam: { name: 'Villarreal' },
+        predictions: { home: 68, draw: 18, away: 14 },
+        confidenceVal: 85
+      }
+    ];
+
+    const filtered = telegramPublisher.filterAndSortMatches(mixedPool, {
+      statusFilter: 'UPCOMING',
+      dateRange: 'all_upcoming',
+      sortBy: 'toptips_rank',
+      rangeLimit: 10
+    }, SIMULATED_NOW_MS);
+
+    // Verify Napoli vs Parma is strictly purged from eligible list
+    assert.strictEqual(filtered.totalEligible, 2);
+    assert.strictEqual(filtered.matches.length, 2);
+    const foundNapoli = filtered.matches.find(m => m.id === 'match-13');
+    assert.strictEqual(foundNapoli, undefined, 'Finished Napoli fixture must NOT be in filtered results');
+
+    // 3. Top Tip Generation: Must select an authentic upcoming match, never Napoli
+    const topTipPost = telegramPublisher.composeTelegramPost({
+      matches: [filtered.matches[0]],
+      target: 'free',
+      postType: 'Top Tip of the Day',
+      selectedSources: { topTipsTracker: true, aiScout: true }
+    });
+
+    assert.ok(!topTipPost.text.includes('Napoli'), 'Post must NOT contain Napoli');
+    assert.ok(!topTipPost.text.includes('Parma'), 'Post must NOT contain Parma');
+    assert.ok(!topTipPost.text.includes('FT · 20 Sep 2026'), 'Post must NOT contain FT timestamp');
+    assert.ok(topTipPost.text.includes('TOP TIP OF THE DAY'), 'Must generate valid Top Tip format');
+    assert.ok(topTipPost.text.includes('Real Madrid') || topTipPost.text.includes('Arsenal'), 'Must select authentic upcoming match');
+  });
+
+  test('Strict Match Range Slicing & Anti-Backfill Rule: Never pads or backfills with old/fake matches', () => {
+    // Scenario A: Only 4 eligible upcoming matches exist in pool
+    const smallPool = [
+      { id: 'm-1', rawDate: '2026-10-04T15:00:00Z', homeTeam: { name: 'A' }, awayTeam: { name: 'B' } },
+      { id: 'm-2', rawDate: '2026-10-04T16:00:00Z', homeTeam: { name: 'C' }, awayTeam: { name: 'D' } },
+      { id: 'm-3', rawDate: '2026-10-04T17:00:00Z', homeTeam: { name: 'E' }, awayTeam: { name: 'F' } },
+      { id: 'm-4', rawDate: '2026-10-04T18:00:00Z', homeTeam: { name: 'G' }, awayTeam: { name: 'H' } }
+    ];
+
+    // Request range 1–10 (limit = 10)
+    const result10 = telegramPublisher.filterAndSortMatches(smallPool, {
+      statusFilter: 'UPCOMING',
+      rangeLimit: 10,
+      rangeFrom: 1,
+      rangeTo: 10
+    }, SIMULATED_NOW_MS);
+
+    // CRITICAL REQUIREMENT: Must return exactly 4 matches, NOT 10!
+    assert.strictEqual(result10.totalEligible, 4);
+    assert.strictEqual(result10.matches.length, 4, 'Strict Rule: If 4 matches exist, return 4; never backfill to 10');
+    assert.strictEqual(result10.rangeTo, 4);
+
+    // Scenario B: Large pool with 25 eligible matches
+    const largePool = [];
+    for (let i = 1; i <= 25; i++) {
+      largePool.push({
+        id: `match-big-${i}`,
+        rawDate: new Date(SIMULATED_NOW_MS + i * 3600 * 1000).toISOString(),
+        homeTeam: { name: `Team ${i}A` },
+        awayTeam: { name: `Team ${i}B` },
+        confidenceVal: 70 + (i % 20)
+      });
+    }
+
+    // Range 1–10
+    const res1to10 = telegramPublisher.filterAndSortMatches(largePool, {
+      statusFilter: 'UPCOMING',
+      rangeLimit: 10,
+      rangeFrom: 1,
+      rangeTo: 10
+    }, SIMULATED_NOW_MS);
+    assert.strictEqual(res1to10.totalEligible, 25);
+    assert.strictEqual(res1to10.matches.length, 10);
+    assert.strictEqual(res1to10.isTruncated, true);
+
+    // Range 1–20
+    const res1to20 = telegramPublisher.filterAndSortMatches(largePool, {
+      statusFilter: 'UPCOMING',
+      rangeLimit: 20,
+      rangeFrom: 1,
+      rangeTo: 20
+    }, SIMULATED_NOW_MS);
+    assert.strictEqual(res1to20.matches.length, 20);
+
+    // Custom Range 6–15 (10 matches)
+    const res6to15 = telegramPublisher.filterAndSortMatches(largePool, {
+      statusFilter: 'UPCOMING',
+      rangeFrom: 6,
+      rangeTo: 15
+    }, SIMULATED_NOW_MS);
+    assert.strictEqual(res6to15.matches.length, 10);
+    assert.strictEqual(res6to15.matches[0].id, 'match-big-6');
+    assert.strictEqual(res6to15.matches[9].id, 'match-big-15');
+  });
+
+  test('Date Range Filters: Accurately isolates today, tomorrow, next 24h, next 48h, and next 7d', () => {
+    // Current test anchor: 2026-10-04T12:00:00Z
+    const testPool = [
+      { id: 'f-today', rawDate: '2026-10-04T18:00:00Z', homeTeam: { name: 'T1' }, awayTeam: { name: 'T2' } },
+      { id: 'f-tomorrow', rawDate: '2026-10-05T15:00:00Z', homeTeam: { name: 'T3' }, awayTeam: { name: 'T4' } },
+      { id: 'f-2d', rawDate: '2026-10-06T15:00:00Z', homeTeam: { name: 'T5' }, awayTeam: { name: 'T6' } },
+      { id: 'f-5d', rawDate: '2026-10-09T15:00:00Z', homeTeam: { name: 'T7' }, awayTeam: { name: 'T8' } },
+      { id: 'f-10d', rawDate: '2026-10-14T15:00:00Z', homeTeam: { name: 'T9' }, awayTeam: { name: 'T10' } }
+    ];
+
+    // Filter 'today'
+    const todayRes = telegramPublisher.filterAndSortMatches(testPool, { dateRange: 'today', statusFilter: 'UPCOMING' }, SIMULATED_NOW_MS);
+    assert.strictEqual(todayRes.matches.length, 1);
+    assert.strictEqual(todayRes.matches[0].id, 'f-today');
+
+    // Filter 'tomorrow'
+    const tomorrowRes = telegramPublisher.filterAndSortMatches(testPool, { dateRange: 'tomorrow', statusFilter: 'UPCOMING' }, SIMULATED_NOW_MS);
+    assert.strictEqual(tomorrowRes.matches.length, 1);
+    assert.strictEqual(tomorrowRes.matches[0].id, 'f-tomorrow');
+
+    // Filter 'next_24h' (includes today and part of tomorrow within 24h)
+    const next24hRes = telegramPublisher.filterAndSortMatches(testPool, { dateRange: 'next_24h', statusFilter: 'UPCOMING' }, SIMULATED_NOW_MS);
+    assert.strictEqual(next24hRes.matches.length, 1); // 18:00 is +6h; 15:00 tomorrow is +27h (outside 24h)
+
+    // Filter 'next_48h'
+    const next48hRes = telegramPublisher.filterAndSortMatches(testPool, { dateRange: 'next_48h', statusFilter: 'UPCOMING' }, SIMULATED_NOW_MS);
+    assert.strictEqual(next48hRes.matches.length, 2); // f-today (+6h) and f-tomorrow (+27h)
+
+    // Filter 'next_7d'
+    const next7dRes = telegramPublisher.filterAndSortMatches(testPool, { dateRange: 'next_7d', statusFilter: 'UPCOMING' }, SIMULATED_NOW_MS);
+    assert.strictEqual(next7dRes.matches.length, 4); // f-today, f-tomorrow, f-2d, f-5d (excludes f-10d)
+  });
+
+  test('Multi-Feature Extraction: Pulls and unifies intelligence across all engines by MATCH ID', () => {
+    const fixture = {
+      id: 'match-301',
+      league: 'Champions League',
+      rawDate: '2026-10-04T19:45:00Z',
+      homeTeam: { name: 'Bayern Munich', form: ['W', 'W', 'W', 'W', 'D'] },
+      awayTeam: { name: 'Inter Milan', form: ['W', 'D', 'W', 'L', 'W'] },
+      predictions: { home: 62, draw: 22, away: 16 },
+      confidenceVal: 89,
+      aiAnalysis: 'Bayern vertical progression through Musiala creates defensive overloads.',
+      insight: 'Inter defensive compactness tested by wide rotations.',
+      topTips: ['uo25', 'win1']
+    };
+
+    const intel = telegramPublisher.extractIntelligenceForMatch(fixture, {
+      predictions: true,
+      topTipsTracker: true,
+      aiScout: true,
+      betDoctor: true,
+      valueIntelligence: true,
+      betGenerator: true
+    });
+
+    // Check backbone synchronization
+    assert.strictEqual(intel.matchId, 'match-301');
+    assert.strictEqual(intel.homeTeam, 'Bayern Munich');
+    assert.strictEqual(intel.awayTeam, 'Inter Milan');
+    assert.strictEqual(intel.league, 'Champions League');
+
+    // Check predictions source
+    assert.ok(intel.sources.predictions);
+    assert.strictEqual(intel.sources.predictions.homeProb, 62);
+    assert.strictEqual(intel.sources.predictions.confidenceVal, 89);
+
+    // Check Top Tips source
+    assert.ok(intel.sources.toptips);
+    assert.strictEqual(intel.sources.toptips.modelVersion, 'DP-v3.4');
+    assert.ok(intel.sources.toptips.market);
+
+    // Check AI Scout source
+    assert.ok(intel.sources.scout);
+    assert.ok(intel.sources.scout.summary.includes('Musiala'));
+    assert.ok(intel.sources.scout.keyFactors.length >= 3);
+
+    // Check Bet Doctor source
+    assert.ok(intel.sources.doctor);
+    assert.ok(intel.sources.doctor.riskTier);
+
+    // Check Value Intelligence source
+    assert.ok(intel.sources.value);
+    assert.ok(intel.sources.value.marketOdds > 0);
+    assert.ok(intel.sources.value.expectedValue);
+
+    // Check Generator Leg source
+    assert.ok(intel.sources.generator);
+    assert.ok(intel.sources.generator.selection);
+  });
+
+  test('Cross-Feature Consistency & Finished Match Guard: Rejects finished fixtures and malformed matches', () => {
+    const validUpcoming = {
+      id: 'match-301',
+      rawDate: '2026-10-04T19:45:00Z',
+      homeTeam: { name: 'Bayern Munich' },
+      awayTeam: { name: 'Inter Milan' }
+    };
+
+    // Valid check
+    const validCheck = telegramPublisher.validateIntelligenceConsistency([validUpcoming], SIMULATED_NOW_MS);
+    assert.strictEqual(validCheck.valid, true);
+
+    // Empty array rejection
+    const emptyCheck = telegramPublisher.validateIntelligenceConsistency([], SIMULATED_NOW_MS);
+    assert.strictEqual(emptyCheck.valid, false);
+    assert.strictEqual(emptyCheck.error, 'No matches selected for publication.');
+
+    // Missing Match ID rejection
+    const missingId = { rawDate: '2026-10-04T19:45:00Z', homeTeam: { name: 'A' }, awayTeam: { name: 'B' } };
+    const missingIdCheck = telegramPublisher.validateIntelligenceConsistency([missingId], SIMULATED_NOW_MS);
+    assert.strictEqual(missingIdCheck.valid, false);
+    assert.ok(missingIdCheck.error.includes('missing a valid Match ID'));
+
+    // Finished match rejection (Napoli vs Parma)
+    const finishedMatch = {
+      id: 'match-13',
+      time: 'FT · 20 Sep 2026',
+      status: 'FT',
+      isFT: true,
+      homeTeam: { name: 'Napoli' },
+      awayTeam: { name: 'Parma' }
+    };
+    const finishedCheck = telegramPublisher.validateIntelligenceConsistency([finishedMatch], SIMULATED_NOW_MS);
+    assert.strictEqual(finishedCheck.valid, false);
+    assert.ok(finishedCheck.error.includes('Cannot publish finished match "Napoli vs Parma"'));
+  });
+
+  test('Free vs VIP Channel Content Differentiation & Traceable Lineage', () => {
+    const fixture = {
+      id: 'match-401',
+      league: 'Premier League',
+      rawDate: '2026-10-04T16:30:00Z',
+      homeTeam: { name: 'Liverpool' },
+      awayTeam: { name: 'Manchester United' },
+      predictions: { home: 60, draw: 22, away: 18 },
+      confidenceVal: 88,
+      aiAnalysis: 'Liverpool counter-pressing traps United early in build-up phase.',
+      insight: 'High tempo battle anticipated at Anfield.'
+    };
+
+    // Free Channel Composition
+    const freePost = telegramPublisher.composeTelegramPost({
+      matches: [fixture],
+      target: 'free',
+      postType: 'Top Tip of the Day',
+      selectedSources: { toptips: true, scout: true }
+    });
+
+    assert.ok(freePost.text.includes('TOP TIP OF THE DAY'));
+    assert.ok(freePost.text.includes('Liverpool'));
+    assert.ok(freePost.text.includes('https://deeppredictbet.com/#pricing'), 'Free post must include upgrade CTA');
+    assert.ok(!freePost.text.includes('RECOMMENDED STAKE'), 'Free post must not expose stake sizing');
+
+    // VIP Channel Composition
+    const vipPost = telegramPublisher.composeTelegramPost({
+      matches: [fixture],
+      target: 'vip',
+      postType: 'Match Intelligence',
+      selectedSources: { predictions: true, toptips: true, scout: true, doctor: true, value: true }
+    });
+
+    assert.ok(vipPost.text.includes('VIP INTELLIGENCE DOSSIER'));
+    assert.ok(vipPost.text.includes('VIP BANKER PICK'));
+    assert.ok(vipPost.text.includes('AI SCOUT TACTICAL DEEP-DIVE'));
+    assert.ok(vipPost.text.includes('AI BET DOCTOR AUDIT'));
+    assert.ok(vipPost.text.includes('VALUE INTELLIGENCE ENGINE'));
+    assert.ok(vipPost.text.includes('RECOMMENDED STAKE') && vipPost.text.includes('2.5 Units'), 'VIP post must include recommended stake');
+    assert.ok(vipPost.text.includes('Confidential VIP intelligence'), 'VIP post must include confidentiality notice');
+
+    // Lineage Audit Trail
+    assert.ok(vipPost.lineage);
+    assert.deepStrictEqual(vipPost.lineage.matchIds, ['match-401']);
+    assert.strictEqual(vipPost.lineage.destination, 'vip');
+    assert.strictEqual(vipPost.lineage.modelVersion, 'DP-v3.4');
+    assert.strictEqual(vipPost.lineage.status, 'UPCOMING');
+    assert.ok(vipPost.lineage.generatedAt);
+  });
+
+  test('Multi-Match Accumulator Post Composition: Correctly formats combined slip with odds', () => {
+    const slipMatches = [
+      {
+        id: 'acc-1',
+        league: 'Premier League',
+        rawDate: '2026-10-04T15:00:00Z',
+        homeTeam: { name: 'Arsenal' },
+        awayTeam: { name: 'Bournemouth' },
+        predictions: { home: 72, draw: 18, away: 10 },
+        confidenceVal: 86
+      },
+      {
+        id: 'acc-2',
+        league: 'La Liga',
+        rawDate: '2026-10-04T17:30:00Z',
+        homeTeam: { name: 'Barcelona' },
+        awayTeam: { name: 'Getafe' },
+        predictions: { home: 75, draw: 15, away: 10 },
+        confidenceVal: 88
+      }
+    ];
+
+    const accPost = telegramPublisher.composeTelegramPost({
+      matches: slipMatches,
+      target: 'free',
+      postType: 'Multi-Match Slip',
+      selectedSources: { toptips: true }
+    });
+
+    assert.ok(accPost.text.includes('UPCOMING ACCUMULATOR'), 'Must include accumulator header');
+    assert.ok(accPost.text.includes('Arsenal vs Bournemouth'));
+    assert.ok(accPost.text.includes('Barcelona vs Getafe'));
+    assert.ok(accPost.text.includes('Total Combined Odds:'));
+    assert.ok(accPost.text.includes('Verified Matches:') && accPost.text.includes('2 Upcoming Fixtures'));
+    assert.strictEqual(accPost.lineage.matchIds.length, 2);
+    assert.strictEqual(accPost.lineage.postType, 'Multi-Match Accumulator');
   });
 
   console.log(`\n==================================================`);
