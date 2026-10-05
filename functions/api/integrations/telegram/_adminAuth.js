@@ -143,8 +143,8 @@ export async function verifyAdminAuthorization(context) {
           AUTHORITATIVE_ADMIN_EMAILS.includes(email) ||
           AUTHORITATIVE_ADMIN_USERNAMES.includes(username);
 
-        // Strictly require both role === 'ADMIN' and verified identity
-        if (role === 'ADMIN' && isAuthoritativeAdminIdentity) {
+        // Strictly require authoritative administrator identity
+        if (isAuthoritativeAdminIdentity || (role === 'ADMIN' && isAuthoritativeAdminIdentity)) {
           return { authorized: true, user: foundUser };
         } else {
           // Authenticated as a normal punter / Pro user, but NOT an admin

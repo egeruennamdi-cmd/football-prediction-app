@@ -232,6 +232,9 @@ export async function onRequestPost(context) {
     const sessionId = `dp_sess_${randomPart}`;
     const sessionExpiresAt = Date.now() + (30 * 24 * 60 * 60 * 1000); // 30 days
 
+    if (isAdminUser) {
+      user.role = 'ADMIN';
+    }
     user.sessionId = sessionId;
     user.sessionExpiresAt = sessionExpiresAt;
     user.lastActiveAt = new Date().toISOString();
