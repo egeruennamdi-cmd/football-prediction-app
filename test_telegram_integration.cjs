@@ -2497,6 +2497,462 @@ async function runTests() {
     assert.strictEqual(accPost.lineage.postType, 'Multi-Match Accumulator');
   });
 
+  // ==========================================
+  // SUITE 18: TELEGRAM COMMAND CENTER, TAXONOMY, WORKSPACE & PERSISTENCE
+  // ==========================================
+  console.log('\n--- 18. Telegram Command Center, Multi-Tier Taxonomy & Production Automation ---');
+
+  // 1. Taxonomy & Regional Classification
+  test('Football Taxonomy: Accurately classifies domestic, continental, and international competitions', () => {
+    // Domestic League
+    const pl = telegramPublisher.classifyCompetition('Premier League');
+    assert.strictEqual(pl.type, 'Domestic League');
+    assert.strictEqual(pl.region, 'Europe');
+    assert.strictEqual(pl.participantType, 'club');
+
+    // Continental Club
+    const ucl = telegramPublisher.classifyCompetition('UEFA Champions League');
+    assert.strictEqual(ucl.type, 'Continental Club');
+    assert.strictEqual(ucl.region, 'Europe');
+    assert.strictEqual(ucl.participantType, 'club');
+
+    const lib = telegramPublisher.classifyCompetition('Copa Libertadores');
+    assert.strictEqual(lib.type, 'Continental Club');
+    assert.strictEqual(lib.region, 'South America');
+
+    // National Team Tournament
+    const wc = telegramPublisher.classifyCompetition('World Cup 2026');
+    assert.strictEqual(wc.type, 'World Cup');
+    assert.strictEqual(wc.participantType, 'national_team');
+
+    const wcq = telegramPublisher.classifyCompetition('World Cup Qualifiers');
+    assert.strictEqual(wcq.type, 'World Cup Qualifier');
+    assert.strictEqual(wcq.participantType, 'national_team');
+
+    const afcon = telegramPublisher.classifyCompetition('AFCON 2025');
+    assert.strictEqual(afcon.type, 'Continental Championship');
+    assert.strictEqual(afcon.region, 'Africa');
+    assert.strictEqual(afcon.participantType, 'national_team');
+
+    const npfl = telegramPublisher.classifyCompetition('Nigeria NPFL');
+    assert.strictEqual(npfl.type, 'Domestic League');
+    assert.strictEqual(npfl.region, 'Africa');
+
+    // Taxonomy Regions & Competition Types Integrity
+    assert.ok(telegramPublisher.TAXONOMY_REGIONS['Africa']);
+    assert.ok(telegramPublisher.TAXONOMY_REGIONS['Europe']);
+    assert.ok(telegramPublisher.TAXONOMY_REGIONS['South America']);
+    assert.ok(telegramPublisher.TAXONOMY_REGIONS['Africa'].countries.includes('Nigeria'));
+    assert.ok(telegramPublisher.COMPETITION_TYPES.includes('Domestic League'));
+    assert.ok(telegramPublisher.COMPETITION_TYPES.includes('Continental Club'));
+    assert.ok(telegramPublisher.COMPETITION_TYPES.includes('National Team'));
+  });
+
+  test('National Team Match Validation: Authorizes valid participant types across competitions', () => {
+    const clubMatch = { league: 'Premier League', homeTeam: { name: 'Arsenal' }, awayTeam: { name: 'Chelsea' } };
+    assert.strictEqual(telegramPublisher.validateNationalTeamMatch(clubMatch).valid, true);
+
+    const intlMatch = { league: 'World Cup', homeTeam: { name: 'Nigeria' }, awayTeam: { name: 'Brazil' } };
+    assert.strictEqual(telegramPublisher.validateNationalTeamMatch(intlMatch).valid, true);
+  });
+
+  // 2. Consensus Engine
+  test('Consensus Engine: Measures cross-engine agreement ratio and percentage', () => {
+    const highConsensusFixture = {
+      predictions: { home: 65, draw: 20, away: 15 },
+      confidenceVal: 88,
+      topTips: ['uo25', 'win1'],
+      homeTeam: { name: 'Real Madrid', form: ['W', 'W', 'W', 'W', 'D'] },
+      awayTeam: { name: 'Sevilla', form: ['L', 'D', 'L', 'W', 'L'] },
+      aiAnalysis: 'Tactical dominance in half spaces creates sustained offensive threat.'
+    };
+    const cHigh = telegramPublisher.calculateIntelligenceConsensus(highConsensusFixture);
+    assert.ok(cHigh.count >= 4, `Expected count >= 4, got ${cHigh.count}`);
+    assert.strictEqual(cHigh.total, 5);
+    assert.ok(cHigh.percentage >= 80);
+    assert.ok(cHigh.agreement.includes('Strong Consensus'));
+
+    const lowConsensusFixture = {
+      predictions: { home: 34, draw: 33, away: 33 },
+      confidenceVal: 55,
+      topTips: [],
+      homeTeam: { name: 'Team A', form: ['L', 'L', 'D'] },
+      awayTeam: { name: 'Team B', form: ['D', 'D', 'L'] },
+      aiAnalysis: ''
+    };
+    const cLow = telegramPublisher.calculateIntelligenceConsensus(lowConsensusFixture);
+    assert.ok(cLow.count <= 1, `Expected count <= 1, got ${cLow.count}`);
+    assert.ok(cLow.percentage <= 20);
+    assert.strictEqual(cLow.agreement, 'Low Consensus');
+  });
+
+  // 3. Data Integrity Gate & Publishability Scorer
+  test('Data Integrity Gate: Evaluates quality checklist, blocks finished matches & awards high scores to upcoming fixtures', () => {
+    // 1. High-quality upcoming match
+    const validUpcoming = {
+      id: 'match-audit-upcoming-1',
+      league: 'Premier League',
+      rawDate: new Date(Date.now() + 4 * 3600000).toISOString(),
+      homeTeam: { name: 'Arsenal' },
+      awayTeam: { name: 'Chelsea' },
+      predictions: { home: 58, draw: 22, away: 20 },
+      confidenceVal: 84
+    };
+    const evalValid = telegramPublisher.evaluatePublishability([validUpcoming], { target: 'free' });
+    assert.strictEqual(evalValid.ready, true);
+    assert.ok(evalValid.score >= 80, `Expected score >= 80, got ${evalValid.score}`);
+    assert.ok(evalValid.status === 'READY' || evalValid.status === 'WARNING');
+    assert.strictEqual(evalValid.reasons.length, 0);
+
+    // 2. Finished fixture (Napoli vs Parma FT regression immunity)
+    const finishedNapoli = {
+      id: 'match-13',
+      league: 'Serie A',
+      status: 'FT',
+      isFT: true,
+      time: 'FT · 20 Sep 2026',
+      homeTeam: { name: 'Napoli' },
+      awayTeam: { name: 'Parma' },
+      predictions: { home: 65, draw: 20, away: 15 },
+      confidenceVal: 87
+    };
+    const evalFinished = telegramPublisher.evaluatePublishability([finishedNapoli], { target: 'free' });
+    assert.strictEqual(evalFinished.ready, false);
+    assert.strictEqual(evalFinished.status, 'BLOCKED');
+    const upcomingCheck = evalFinished.checks.find(c => c.label === 'Upcoming Match Validation');
+    assert.ok(upcomingCheck && !upcomingCheck.passed, 'Upcoming check must fail on finished match');
+    assert.ok(evalFinished.reasons.some(r => r.includes('FINISHED')));
+
+    // 3. Missing Match ID
+    const noIdMatch = {
+      rawDate: new Date(Date.now() + 4 * 3600000).toISOString(),
+      homeTeam: { name: 'Team X' },
+      awayTeam: { name: 'Team Y' }
+    };
+    const evalNoId = telegramPublisher.evaluatePublishability([noIdMatch], { target: 'free' });
+    assert.strictEqual(evalNoId.ready, false);
+    const idCheck = evalNoId.checks.find(c => c.label === 'Match ID Synchronization');
+    assert.ok(idCheck && !idCheck.passed, 'Must fail on missing match ID');
+  });
+
+  // 4. Content Discovery Multi-Tier Filtering & Anti-Backfill
+  test('Content Discovery: Filters by Region, Competition Type, Country, and Consensus without backfilling', () => {
+    const discoveryPool = [
+      { id: 'disc-1', league: 'Nigeria NPFL', rawDate: '2026-10-06T15:00:00Z', homeTeam: { name: 'Enyimba' }, awayTeam: { name: 'Rangers' }, confidenceVal: 85, predictions: { home: 60, draw: 25, away: 15 }, topTips: ['win1'] },
+      { id: 'disc-2', league: 'UEFA Champions League', rawDate: '2026-10-06T19:45:00Z', homeTeam: { name: 'Real Madrid' }, awayTeam: { name: 'Bayern Munich' }, confidenceVal: 88, predictions: { home: 52, draw: 26, away: 22 }, topTips: ['uo25'] },
+      { id: 'disc-3', league: 'Premier League', rawDate: '2026-10-06T16:30:00Z', homeTeam: { name: 'Man City' }, awayTeam: { name: 'Liverpool' }, confidenceVal: 86, predictions: { home: 50, draw: 28, away: 22 }, topTips: ['uo25'] },
+      { id: 'disc-4', league: 'Copa Libertadores', rawDate: '2026-10-06T23:00:00Z', homeTeam: { name: 'Flamengo' }, awayTeam: { name: 'River Plate' }, confidenceVal: 80, predictions: { home: 48, draw: 27, away: 25 } }
+    ];
+
+    // Filter by Region: Africa
+    const africaRes = telegramPublisher.filterAndSortMatches(discoveryPool, { regionFilter: 'Africa' }, SIMULATED_NOW_MS);
+    assert.strictEqual(africaRes.matches.length, 1);
+    assert.strictEqual(africaRes.matches[0].id, 'disc-1');
+
+    // Filter by Competition Type: Continental Club
+    const contClubRes = telegramPublisher.filterAndSortMatches(discoveryPool, { compTypeFilter: 'Continental Club' }, SIMULATED_NOW_MS);
+    assert.strictEqual(contClubRes.matches.length, 2);
+    assert.ok(contClubRes.matches.some(m => m.id === 'disc-2'));
+    assert.ok(contClubRes.matches.some(m => m.id === 'disc-4'));
+
+    // Filter by Country: Nigeria
+    const nigeriaRes = telegramPublisher.filterAndSortMatches(discoveryPool, { countryFilter: 'Nigeria' }, SIMULATED_NOW_MS);
+    assert.strictEqual(nigeriaRes.matches.length, 1);
+    assert.strictEqual(nigeriaRes.matches[0].id, 'disc-1');
+
+    // Filter by Min Consensus: 4+
+    const highConsensusRes = telegramPublisher.filterAndSortMatches(discoveryPool, { minConsensus: 4 }, SIMULATED_NOW_MS);
+    assert.ok(highConsensusRes.matches.length >= 1);
+    assert.ok(highConsensusRes.matches.every(m => telegramPublisher.calculateIntelligenceConsensus(m).count >= 4));
+
+    // Anti-backfill rule: Requesting 10 when 4 exist returns exactly 4
+    const antiBackfillRes = telegramPublisher.filterAndSortMatches(discoveryPool, { rangeLimit: 10, rangeFrom: 1, rangeTo: 10 }, SIMULATED_NOW_MS);
+    assert.strictEqual(antiBackfillRes.matches.length, 4);
+    assert.strictEqual(antiBackfillRes.rangeTo, 4);
+    assert.strictEqual(antiBackfillRes.totalEligible, 4);
+  });
+
+  // 5. Content Recipes & Reusable Blocks
+  test('Content Recipes: Validates 7 built-in recipes and recipe metadata structure', () => {
+    const recipes = telegramPublisher.BUILT_IN_RECIPES;
+    assert.ok(Array.isArray(recipes));
+    assert.strictEqual(recipes.length, 7);
+
+    const expectedRecipeIds = [
+      'rcp_daily_toptips',
+      'rcp_vip_dossier',
+      'rcp_value_alert',
+      'rcp_nigeria_digest',
+      'rcp_europe_intel',
+      'rcp_tournament_digest',
+      'rcp_weekend_accumulator'
+    ];
+    expectedRecipeIds.forEach(id => {
+      const found = recipes.find(r => r.id === id);
+      assert.ok(found, `Expected built-in recipe ${id} to exist`);
+      assert.ok(found.name);
+      assert.ok(found.destination);
+      assert.ok(found.postType);
+      assert.ok(found.sources);
+    });
+
+    const vipDossier = recipes.find(r => r.id === 'rcp_vip_dossier');
+    assert.strictEqual(vipDossier.destination, 'vip');
+    assert.strictEqual(vipDossier.sources.doctor, true);
+    assert.strictEqual(vipDossier.sources.value, true);
+
+    const weekendAcc = recipes.find(r => r.id === 'rcp_weekend_accumulator');
+    assert.strictEqual(weekendAcc.destination, 'free');
+    assert.strictEqual(weekendAcc.sources.generator, true);
+  });
+
+  // 6. Draft Management via API
+  let testDraftId = '';
+  await testAsync('POST /api/integrations/telegram/publish (action: draft): Saves draft to KV and retrieves via GET', async () => {
+    const saveReq = new Request('https://deeppredictbet.com/api/integrations/telegram/publish', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer deep_admin_78_key'
+      },
+      body: JSON.stringify({
+        action: 'draft',
+        draft: {
+          target: 'free',
+          postType: 'Top Tip of the Day',
+          text: '📝 Draft Message for Weekend Fixture',
+          buttons: [{ text: 'DeepLink', url: 'https://deeppredictbet.com/#match-1' }]
+        }
+      })
+    });
+
+    const saveRes = await publishModule.onRequestPost({ request: saveReq, env: vipTestEnv });
+    assert.strictEqual(saveRes.status, 200);
+    const saveJson = await saveRes.json();
+    assert.strictEqual(saveJson.success, true);
+    assert.ok(saveJson.draft.id.startsWith('drf_'));
+    testDraftId = saveJson.draft.id;
+
+    // Verify draft appears in GET /publish response
+    const getReq = new Request('https://deeppredictbet.com/api/integrations/telegram/publish', {
+      method: 'GET',
+      headers: { 'Authorization': 'Bearer deep_admin_78_key' }
+    });
+    const getRes = await publishModule.onRequestGet({ request: getReq, env: vipTestEnv });
+    assert.strictEqual(getRes.status, 200);
+    const getJson = await getRes.json();
+    assert.ok(Array.isArray(getJson.drafts));
+    const foundDraft = getJson.drafts.find(d => d.id === testDraftId);
+    assert.ok(foundDraft, 'Draft must be present in drafts list');
+    assert.strictEqual(foundDraft.text, '📝 Draft Message for Weekend Fixture');
+  });
+
+  await testAsync('POST /api/integrations/telegram/publish (action: delete_draft): Deletes draft from KV', async () => {
+    const delReq = new Request('https://deeppredictbet.com/api/integrations/telegram/publish', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer deep_admin_78_key'
+      },
+      body: JSON.stringify({
+        action: 'delete_draft',
+        draftId: testDraftId
+      })
+    });
+
+    const delRes = await publishModule.onRequestPost({ request: delReq, env: vipTestEnv });
+    assert.strictEqual(delRes.status, 200);
+    const delJson = await delRes.json();
+    assert.strictEqual(delJson.success, true);
+
+    // Verify draft is removed
+    const storedDrafts = await kvHelper.getDrafts(vipTestEnv);
+    assert.strictEqual(storedDrafts.some(d => d.id === testDraftId), false);
+  });
+
+  // 7. Scheduling & Past Date Guard via API
+  let testScheduleId = '';
+  await testAsync('POST /api/integrations/telegram/publish (action: schedule): Rejects past schedule date with 400', async () => {
+    const pastReq = new Request('https://deeppredictbet.com/api/integrations/telegram/publish', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer deep_admin_78_key'
+      },
+      body: JSON.stringify({
+        action: 'schedule',
+        scheduledAt: '2020-01-01T12:00:00Z',
+        text: 'This should be rejected'
+      })
+    });
+
+    const pastRes = await publishModule.onRequestPost({ request: pastReq, env: vipTestEnv });
+    assert.strictEqual(pastRes.status, 400);
+    const pastJson = await pastRes.json();
+    assert.strictEqual(pastJson.success, false);
+    assert.ok(pastJson.error.includes('Scheduled time must be in the future'));
+  });
+
+  await testAsync('POST /api/integrations/telegram/publish (action: schedule): Accepts future schedule and saves to KV', async () => {
+    const futureDate = new Date(Date.now() + 4 * 3600000).toISOString();
+    const schedReq = new Request('https://deeppredictbet.com/api/integrations/telegram/publish', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer deep_admin_78_key'
+      },
+      body: JSON.stringify({
+        action: 'schedule',
+        scheduledAt: futureDate,
+        target: 'free',
+        postType: 'Scheduled Preview',
+        text: '⚽ Upcoming Match Countdown Preview'
+      })
+    });
+
+    const schedRes = await publishModule.onRequestPost({ request: schedReq, env: vipTestEnv });
+    assert.strictEqual(schedRes.status, 200);
+    const schedJson = await schedRes.json();
+    assert.strictEqual(schedJson.success, true);
+    assert.ok(schedJson.schedule.id.startsWith('sch_'));
+    testScheduleId = schedJson.schedule.id;
+
+    // Verify schedule appears in KV
+    const schedules = await kvHelper.getSchedules(vipTestEnv);
+    const foundSched = schedules.find(s => s.id === testScheduleId);
+    assert.ok(foundSched);
+    assert.strictEqual(foundSched.scheduledAt, futureDate);
+  });
+
+  await testAsync('POST /api/integrations/telegram/publish (action: cancel_schedule): Successfully cancels schedule', async () => {
+    const cancelReq = new Request('https://deeppredictbet.com/api/integrations/telegram/publish', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer deep_admin_78_key'
+      },
+      body: JSON.stringify({
+        action: 'cancel_schedule',
+        scheduleId: testScheduleId
+      })
+    });
+
+    const cancelRes = await publishModule.onRequestPost({ request: cancelReq, env: vipTestEnv });
+    assert.strictEqual(cancelRes.status, 200);
+    const cancelJson = await cancelRes.json();
+    assert.strictEqual(cancelJson.success, true);
+
+    const storedSchedules = await kvHelper.getSchedules(vipTestEnv);
+    assert.strictEqual(storedSchedules.some(s => s.id === testScheduleId), false);
+  });
+
+  // 8. Custom Recipes, Rules & Dry-Run Simulation Mode
+  await testAsync('POST /api/integrations/telegram/publish (action: save_recipe & save_automation_rule): Persists custom recipe and automation rule', async () => {
+    // Save recipe
+    const recReq = new Request('https://deeppredictbet.com/api/integrations/telegram/publish', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer deep_admin_78_key'
+      },
+      body: JSON.stringify({
+        action: 'save_recipe',
+        recipe: {
+          name: 'Custom High-Confidence Banker',
+          destination: 'vip',
+          postType: 'VIP Banker',
+          sources: { predictions: true, toptips: true, scout: true }
+        }
+      })
+    });
+    const recRes = await publishModule.onRequestPost({ request: recReq, env: vipTestEnv });
+    assert.strictEqual(recRes.status, 200);
+    const recJson = await recRes.json();
+    assert.strictEqual(recJson.success, true);
+    assert.ok(recJson.recipe.id.startsWith('rcp_'));
+
+    // Save automation rule
+    const ruleReq = new Request('https://deeppredictbet.com/api/integrations/telegram/publish', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer deep_admin_78_key'
+      },
+      body: JSON.stringify({
+        action: 'save_automation_rule',
+        rule: {
+          name: 'Auto-Post 85%+ Confidence Bankers',
+          trigger: 'high_confidence',
+          threshold: 85,
+          minConsensus: 4,
+          destination: 'vip',
+          enabled: false // Strictly default OFF
+        }
+      })
+    });
+    const ruleRes = await publishModule.onRequestPost({ request: ruleReq, env: vipTestEnv });
+    assert.strictEqual(ruleRes.status, 200);
+    const ruleJson = await ruleRes.json();
+    assert.strictEqual(ruleJson.success, true);
+    assert.ok(ruleJson.rule.id.startsWith('aut_'));
+  });
+
+  await testAsync('POST /api/integrations/telegram/publish (action: simulate_automation): Dry-run simulation executes with ZERO live dispatches', async () => {
+    fetchCalls = []; // Clear any existing mock calls
+
+    const simReq = new Request('https://deeppredictbet.com/api/integrations/telegram/publish', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer deep_admin_78_key'
+      },
+      body: JSON.stringify({
+        action: 'simulate_automation',
+        rule: {
+          name: 'Weekend Banker Auto-Trigger',
+          threshold: 82,
+          minConsensus: 3,
+          destination: 'vip'
+        },
+        matches: [
+          { id: 'm-sim-1', home: 'Arsenal', away: 'Chelsea', confidenceVal: 87, league: 'Premier League' },
+          { id: 'm-sim-2', home: 'Fulham', away: 'Everton', confidenceVal: 74, league: 'Premier League' },
+          { id: 'm-sim-3', home: 'Real Madrid', away: 'Getafe', confidenceVal: 89, league: 'La Liga' }
+        ]
+      })
+    });
+
+    const simRes = await publishModule.onRequestPost({ request: simReq, env: vipTestEnv });
+    assert.strictEqual(simRes.status, 200);
+    const simJson = await simRes.json();
+    assert.strictEqual(simJson.success, true);
+    assert.strictEqual(simJson.simulation.evaluatedCount, 3);
+    assert.strictEqual(simJson.simulation.qualifyingCount, 2); // 87 and 89 >= 82
+    assert.strictEqual(simJson.simulation.wouldPublish, true);
+    assert.strictEqual(simJson.simulation.simulatedDestination, 'vip');
+
+    // CRITICAL: Absolutely ZERO live Telegram messages must have been dispatched
+    assert.strictEqual(fetchCalls.length, 0, 'Simulation mode must never dispatch live messages to Telegram');
+  });
+
+  // 9. CTA Deep-Link Tracking URL Builder
+  test('Tracking CTA Deep-Link Builder: Formats attribution links with UTM parameters', () => {
+    const matchUrl = telegramPublisher.buildCtaUrl('match_centre', 'match-501', 'TP-TEST-01');
+    assert.strictEqual(matchUrl, 'https://deeppredictbet.com/#match-501?source=telegram&post=TP-TEST-01');
+
+    const pricingUrl = telegramPublisher.buildCtaUrl('pricing', '', 'TP-TEST-01');
+    assert.strictEqual(pricingUrl, 'https://deeppredictbet.com/#pricing?source=telegram&post=TP-TEST-01');
+
+    const tipsUrl = telegramPublisher.buildCtaUrl('daily_tips', '', 'TP-TEST-01');
+    assert.strictEqual(tipsUrl, 'https://deeppredictbet.com/#daily-tips?source=telegram&post=TP-TEST-01');
+
+    const valueUrl = telegramPublisher.buildCtaUrl('value_bets', '', 'TP-TEST-01');
+    assert.strictEqual(valueUrl, 'https://deeppredictbet.com/#value-bets?source=telegram&post=TP-TEST-01');
+
+    const genUrl = telegramPublisher.buildCtaUrl('bet_generator', '', 'TP-TEST-01');
+    assert.strictEqual(genUrl, 'https://deeppredictbet.com/#bet-generator?source=telegram&post=TP-TEST-01');
+  });
+
   console.log(`\n==================================================`);
   console.log(`TELEGRAM INTEGRATION RESULTS: ${passed} passed, ${failed} failed.`);
   console.log(`==================================================\n`);

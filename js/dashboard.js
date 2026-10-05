@@ -2734,8 +2734,8 @@
               <!-- Action Buttons -->
               <button type="button" id="founder-tg-publisher-btn" onclick="window.scrollToTelegramPublisher ? window.scrollToTelegramPublisher() : (window.TelegramPublisher && window.TelegramPublisher.openModal())" class="btn btn-secondary founder-tg-publisher-btn"
                 style="font-size: 0.78rem; padding: 8px 16px; font-weight: 800; display: flex; align-items: center; gap: 6px; background: rgba(56,189,248,0.18); border: 1.5px solid rgba(56,189,248,0.55); color: #38bdf8; border-radius: 20px; cursor: pointer; box-shadow: 0 2px 12px rgba(56,189,248,0.25); transition: all 0.2s ease;"
-                title="Compose and broadcast signals to Telegram Free & VIP channels">
-                <span style="font-size: 0.9rem;">📢</span> <span>Telegram Publisher</span>
+                title="Telegram Command Center: Intelligence discovery, studio, calendar & automation">
+                <span style="font-size: 0.9rem;">📢</span> <span>Telegram Command Center</span>
               </button>
               <button type="button" id="founder-vip-manage-btn" onclick="window.openVipFeatureManager()" class="btn btn-secondary founder-vip-manage-btn"
                 style="font-size: 0.78rem; padding: 8px 16px; font-weight: 800; display: flex; align-items: center; gap: 6px; background: rgba(168,85,247,0.18); border: 1.5px solid rgba(168,85,247,0.55); color: #d8b4fe; border-radius: 20px; cursor: pointer; box-shadow: 0 2px 12px rgba(168,85,247,0.25); transition: all 0.2s ease;"

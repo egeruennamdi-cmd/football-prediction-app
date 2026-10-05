@@ -484,3 +484,181 @@ export async function checkDuplicatePublish(env, fingerprint, windowMs = 24 * 60
   return null;
 }
 
+// ============================================================================
+// COMMAND CENTER: DRAFTS, SCHEDULES, RECIPES & AUTOMATION PERSISTENCE
+// ============================================================================
+
+async function readKVJson(env, key, fallback = []) {
+  if (env && env.USERS_KV) {
+    try {
+      const stored = await env.USERS_KV.get(key);
+      if (stored) return JSON.parse(stored);
+    } catch (e) {}
+  } else {
+    const apiToken = (env && env.CF_API_TOKEN) || FALLBACK_CF_API_TOKEN;
+    const accountId = (env && env.CF_ACCOUNT_ID) || CF_ACCOUNT_ID;
+    const nsId = (env && env.CF_KV_NAMESPACE_ID) || CF_KV_NAMESPACE_ID;
+    try {
+      const res = await fetch(`https://api.cloudflare.com/client/v4/accounts/${accountId}/storage/kv/namespaces/${nsId}/values/${key}`, {
+        headers: { 'Authorization': `Bearer ${apiToken}` }
+      });
+      if (res.ok) {
+        const data = await res.json();
+        if (data) return data;
+      }
+    } catch (e) {}
+  }
+  return fallback;
+}
+
+async function writeKVJson(env, key, value) {
+  if (env && env.USERS_KV) {
+    try {
+      await env.USERS_KV.put(key, JSON.stringify(value));
+      return true;
+    } catch (e) {}
+  } else {
+    const apiToken = (env && env.CF_API_TOKEN) || FALLBACK_CF_API_TOKEN;
+    const accountId = (env && env.CF_ACCOUNT_ID) || CF_ACCOUNT_ID;
+    const nsId = (env && env.CF_KV_NAMESPACE_ID) || CF_KV_NAMESPACE_ID;
+    try {
+      const res = await fetch(`https://api.cloudflare.com/client/v4/accounts/${accountId}/storage/kv/namespaces/${nsId}/values/${key}`, {
+        method: 'PUT',
+        headers: {
+          'Authorization': `Bearer ${apiToken}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(value)
+      });
+      return res.ok;
+    } catch (e) {}
+  }
+  return false;
+}
+
+// Drafts
+export async function getDrafts(env) {
+  const drafts = await readKVJson(env, 'telegram_drafts', []);
+  return Array.isArray(drafts) ? drafts : [];
+}
+
+export async function saveDraft(env, draftData) {
+  let drafts = await getDrafts(env);
+  const now = new Date().toISOString();
+  const id = draftData.id || `drf_${Date.now().toString(36)}_${Math.random().toString(36).substring(2, 6)}`;
+  const idx = drafts.findIndex(d => d.id === id);
+  const entry = {
+    ...draftData,
+    id,
+    updatedAt: now,
+    createdAt: (idx >= 0 && drafts[idx].createdAt) || now
+  };
+  if (idx >= 0) {
+    drafts[idx] = entry;
+  } else {
+    drafts.unshift(entry);
+  }
+  if (drafts.length > 50) drafts = drafts.slice(0, 50);
+  await writeKVJson(env, 'telegram_drafts', drafts);
+  return entry;
+}
+
+export async function deleteDraft(env, draftId) {
+  let drafts = await getDrafts(env);
+  drafts = drafts.filter(d => d.id !== draftId);
+  await writeKVJson(env, 'telegram_drafts', drafts);
+  return true;
+}
+
+// Schedules
+export async function getSchedules(env) {
+  const schedules = await readKVJson(env, 'telegram_schedules', []);
+  return Array.isArray(schedules) ? schedules : [];
+}
+
+export async function saveSchedule(env, scheduleData) {
+  let schedules = await getSchedules(env);
+  const now = new Date().toISOString();
+  const id = scheduleData.id || `sch_${Date.now().toString(36)}_${Math.random().toString(36).substring(2, 6)}`;
+  const idx = schedules.findIndex(s => s.id === id);
+  const entry = {
+    ...scheduleData,
+    id,
+    status: scheduleData.status || 'SCHEDULED',
+    createdAt: (idx >= 0 && schedules[idx].createdAt) || now,
+    updatedAt: now
+  };
+  if (idx >= 0) {
+    schedules[idx] = entry;
+  } else {
+    schedules.unshift(entry);
+  }
+  if (schedules.length > 50) schedules = schedules.slice(0, 50);
+  await writeKVJson(env, 'telegram_schedules', schedules);
+  return entry;
+}
+
+export async function deleteSchedule(env, scheduleId) {
+  let schedules = await getSchedules(env);
+  schedules = schedules.filter(s => s.id !== scheduleId);
+  await writeKVJson(env, 'telegram_schedules', schedules);
+  return true;
+}
+
+// Recipes
+export async function getRecipes(env) {
+  const recipes = await readKVJson(env, 'telegram_recipes', []);
+  return Array.isArray(recipes) ? recipes : [];
+}
+
+export async function saveRecipe(env, recipeData) {
+  let recipes = await getRecipes(env);
+  const id = recipeData.id || `rcp_${Date.now().toString(36)}_${Math.random().toString(36).substring(2, 6)}`;
+  const idx = recipes.findIndex(r => r.id === id);
+  const entry = {
+    ...recipeData,
+    id,
+    updatedAt: new Date().toISOString()
+  };
+  if (idx >= 0) {
+    recipes[idx] = entry;
+  } else {
+    recipes.unshift(entry);
+  }
+  await writeKVJson(env, 'telegram_recipes', recipes);
+  return entry;
+}
+
+export async function deleteRecipe(env, recipeId) {
+  let recipes = await getRecipes(env);
+  recipes = recipes.filter(r => r.id !== recipeId);
+  await writeKVJson(env, 'telegram_recipes', recipes);
+  return true;
+}
+
+// Automation Rules
+export async function getAutomationRules(env) {
+  const rules = await readKVJson(env, 'telegram_automation_rules', []);
+  return Array.isArray(rules) ? rules : [];
+}
+
+export async function saveAutomationRule(env, ruleData) {
+  let rules = await getAutomationRules(env);
+  const id = ruleData.id || `aut_${Date.now().toString(36)}_${Math.random().toString(36).substring(2, 6)}`;
+  const idx = rules.findIndex(r => r.id === id);
+  const entry = {
+    ...ruleData,
+    id,
+    enabled: !!ruleData.enabled, // Default false/off
+    updatedAt: new Date().toISOString()
+  };
+  if (idx >= 0) {
+    rules[idx] = entry;
+  } else {
+    rules.unshift(entry);
+  }
+  await writeKVJson(env, 'telegram_automation_rules', rules);
+  return entry;
+}
+
+
