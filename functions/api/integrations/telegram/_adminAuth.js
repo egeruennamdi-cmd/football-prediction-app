@@ -121,6 +121,20 @@ export async function verifyAdminAuthorization(context) {
       );
 
       if (foundUser) {
+        // Expiration check
+        if (foundUser.sessionExpiresAt) {
+          const expMs = typeof foundUser.sessionExpiresAt === 'number'
+            ? foundUser.sessionExpiresAt
+            : new Date(foundUser.sessionExpiresAt).getTime();
+          if (!isNaN(expMs) && Date.now() > expMs) {
+            return {
+              authorized: false,
+              statusCode: 401,
+              error: 'Unauthorized: Session has expired. Please sign in again.'
+            };
+          }
+        }
+
         const role = (foundUser.role || '').toUpperCase().trim();
         const email = (foundUser.email || '').toLowerCase().trim();
         const username = (foundUser.username || '').toLowerCase().trim();
@@ -144,6 +158,15 @@ export async function verifyAdminAuthorization(context) {
     }
   } catch (e) {
     console.warn('[AdminAuth] KV lookup error:', e.message);
+  }
+
+  // If candidate token has the format of a session token but was not found in KV (expired/invalid)
+  if (candidateToken.startsWith('dp_sess_')) {
+    return {
+      authorized: false,
+      statusCode: 401,
+      error: 'Unauthorized: Session has expired or is invalid. Please sign in again.'
+    };
   }
 
   // Token did not match any authorized admin record

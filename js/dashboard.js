@@ -2326,6 +2326,26 @@
       localStorage.setItem("currentUsername", "Egeruennamdi78");
       localStorage.setItem("currentUserEmail", "admin@deeppredictbet.com");
       localStorage.setItem("user_role", "ADMIN");
+
+      // Authoritatively acquire or refresh server session token
+      try {
+        fetch('/api/login', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ identifier: 'admin@deeppredictbet.com', password: pass })
+        }).then(r => r.json()).then(data => {
+          if (data && data.success && data.sessionId) {
+            localStorage.setItem('dp_session_id', data.sessionId);
+            sessionStorage.setItem('dp_session_id', data.sessionId);
+            if (data.user) {
+              localStorage.setItem('deep_active_user', JSON.stringify(data.user));
+            }
+          }
+        }).catch(err => {
+          console.warn('[FounderAuth] Session synchronization warning:', err.message);
+        });
+      } catch (err) {}
+
       showToast('👑 Founder Access Verified! Welcome Alex Nnamdi.', 'success');
       if (typeof updateAuthUIState === 'function') updateAuthUIState();
       renderFounderDashboard();

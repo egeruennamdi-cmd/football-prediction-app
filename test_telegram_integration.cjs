@@ -2953,6 +2953,241 @@ async function runTests() {
     assert.strictEqual(genUrl, 'https://deeppredictbet.com/#bet-generator?source=telegram&post=TP-TEST-01');
   });
 
+  // ============================================================================
+  // 19. ADMIN AUTHENTICATION HANDOFF & SESSION AUTHORIZATION AUDIT
+  // ============================================================================
+  console.log('\n--- 19. Admin Authentication Handoff & Session Authorization Audit ---');
+
+  function createMockStorage() {
+    let store = {};
+    return {
+      getItem: (k) => (k in store ? store[k] : null),
+      setItem: (k, v) => { store[k] = String(v); },
+      removeItem: (k) => { delete store[k]; },
+      clear: () => { store = {}; }
+    };
+  }
+
+  const originalLocalStorage = global.localStorage;
+  const originalSessionStorage = global.sessionStorage;
+
+  test('getAdminSessionToken: Resolves dp_session_id from localStorage', () => {
+    global.localStorage = createMockStorage();
+    global.sessionStorage = createMockStorage();
+    global.localStorage.setItem('dp_session_id', 'dp_sess_storage_token_123');
+    const token = telegramPublisher.getAdminSessionToken();
+    assert.strictEqual(token, 'dp_sess_storage_token_123');
+  });
+
+  test('getAdminSessionToken: Resolves dp_session_id from sessionStorage fallback', () => {
+    global.localStorage = createMockStorage();
+    global.sessionStorage = createMockStorage();
+    global.sessionStorage.setItem('dp_session_id', 'dp_sess_session_token_456');
+    const token = telegramPublisher.getAdminSessionToken();
+    assert.strictEqual(token, 'dp_sess_session_token_456');
+  });
+
+  test('getAdminSessionToken: Resolves sessionId from deep_active_user object', () => {
+    global.localStorage = createMockStorage();
+    global.sessionStorage = createMockStorage();
+    global.localStorage.setItem('deep_active_user', JSON.stringify({
+      id: 'usr_adm1',
+      email: 'admin@deeppredictbet.com',
+      sessionId: 'dp_sess_active_user_789'
+    }));
+    const token = telegramPublisher.getAdminSessionToken();
+    assert.strictEqual(token, 'dp_sess_active_user_789');
+  });
+
+  test('getAdminSessionToken: Returns empty string when no session is present', () => {
+    global.localStorage = createMockStorage();
+    global.sessionStorage = createMockStorage();
+    const token = telegramPublisher.getAdminSessionToken();
+    assert.strictEqual(token, '');
+  });
+
+  await testAsync('adminFetch: Attaches Authorization header automatically from dp_session_id', async () => {
+    global.localStorage = createMockStorage();
+    global.localStorage.setItem('dp_session_id', 'dp_sess_test_auth_header');
+    fetchCalls = [];
+
+    await telegramPublisher.adminFetch('https://deeppredictbet.com/api/test-endpoint');
+    assert.strictEqual(fetchCalls.length, 1);
+    const lastCall = fetchCalls[0];
+    assert.strictEqual(lastCall.options.headers['Authorization'], 'Bearer dp_sess_test_auth_header');
+  });
+
+  // Setup test environment with KV members for session testing
+  const authTestKV = createMockKV();
+  const authAdminSession = 'dp_sess_valid_admin_session_999';
+  const authExpiredAdminSession = 'dp_sess_expired_admin_session_888';
+  const authPunterSession = 'dp_sess_punter_session_777';
+
+  const authMembers = [
+    {
+      id: 'usr_adm1',
+      fullName: 'Alex Nnamdi (Admin)',
+      email: 'admin@deeppredictbet.com',
+      username: 'Egeruennamdi78',
+      role: 'ADMIN',
+      sessionId: authAdminSession,
+      sessionExpiresAt: Date.now() + 86400000 // Valid 24h
+    },
+    {
+      id: 'usr_adm_exp',
+      fullName: 'Expired Admin',
+      email: 'egeruennamdi@gmail.com',
+      username: 'egeruennamdi',
+      role: 'ADMIN',
+      sessionId: authExpiredAdminSession,
+      sessionExpiresAt: Date.now() - 3600000 // Expired 1h ago
+    },
+    {
+      id: 'usr_punter1',
+      fullName: 'Regular Punter',
+      email: 'punter@example.com',
+      username: 'punter123',
+      role: 'USER',
+      sessionId: authPunterSession,
+      sessionExpiresAt: Date.now() + 86400000
+    }
+  ];
+
+  await authTestKV.put('members_list', JSON.stringify(authMembers));
+  const authTestEnv = {
+    TELEGRAM_BOT_TOKEN: FAKE_BOT_TOKEN,
+    TELEGRAM_FREE_CHANNEL_ID: '-1001234567890',
+    TELEGRAM_VIP_CHANNEL_ID: '-1009876543210',
+    USERS_KV: authTestKV
+  };
+
+  await testAsync('POST /publish: Authorizes valid dp_session_id header for admin user', async () => {
+    const req = new Request('https://deeppredictbet.com/api/integrations/telegram/publish', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${authAdminSession}`
+      },
+      body: JSON.stringify({
+        target: 'free',
+        postType: 'Match Intelligence',
+        text: '⚽ Test Post with Valid dp_session_id',
+        forceDuplicate: true
+      })
+    });
+    const res = await publishModule.onRequestPost({ request: req, env: authTestEnv });
+    assert.strictEqual(res.status, 200);
+    const data = await res.json();
+    assert.strictEqual(data.success, true);
+  });
+
+  await testAsync('POST /publish: Rejects expired dp_session_id with 401 Session Expired', async () => {
+    const req = new Request('https://deeppredictbet.com/api/integrations/telegram/publish', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${authExpiredAdminSession}`
+      },
+      body: JSON.stringify({
+        target: 'free',
+        postType: 'Match Intelligence',
+        text: '⚽ Test Post with Expired Session',
+        forceDuplicate: true
+      })
+    });
+    const res = await publishModule.onRequestPost({ request: req, env: authTestEnv });
+    assert.strictEqual(res.status, 401);
+    const data = await res.json();
+    assert.strictEqual(data.success, false);
+    assert.ok(data.error.includes('expired'));
+  });
+
+  await testAsync('POST /publish: Rejects unrecognized dp_session_id with 401 Session Invalid', async () => {
+    const req = new Request('https://deeppredictbet.com/api/integrations/telegram/publish', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer dp_sess_unknown_nonexistent'
+      },
+      body: JSON.stringify({
+        target: 'free',
+        postType: 'Match Intelligence',
+        text: '⚽ Test Post with Invalid Session',
+        forceDuplicate: true
+      })
+    });
+    const res = await publishModule.onRequestPost({ request: req, env: authTestEnv });
+    assert.strictEqual(res.status, 401);
+    const data = await res.json();
+    assert.strictEqual(data.success, false);
+    assert.ok(data.error.includes('expired') || data.error.includes('invalid'));
+  });
+
+  await testAsync('POST /publish: Rejects non-admin user session with 403 Forbidden', async () => {
+    const req = new Request('https://deeppredictbet.com/api/integrations/telegram/publish', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${authPunterSession}`
+      },
+      body: JSON.stringify({
+        target: 'free',
+        postType: 'Match Intelligence',
+        text: '⚽ Punter publish attempt',
+        forceDuplicate: true
+      })
+    });
+    const res = await publishModule.onRequestPost({ request: req, env: authTestEnv });
+    assert.strictEqual(res.status, 403);
+    const data = await res.json();
+    assert.strictEqual(data.success, false);
+    assert.ok(data.error.includes('privileges'));
+  });
+
+  await testAsync('POST /publish: Rejects missing Authorization header with 401 Missing Header', async () => {
+    const req = new Request('https://deeppredictbet.com/api/integrations/telegram/publish', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        target: 'free',
+        postType: 'Match Intelligence',
+        text: '⚽ Missing auth header test',
+        forceDuplicate: true
+      })
+    });
+    const res = await publishModule.onRequestPost({ request: req, env: authTestEnv });
+    assert.strictEqual(res.status, 401);
+    const data = await res.json();
+    assert.strictEqual(data.success, false);
+    assert.ok(data.error.includes('Missing Authorization header'));
+  });
+
+  await testAsync('POST /publish: Rejects credential in URL query parameter with 400 Bad Request', async () => {
+    const req = new Request(`https://deeppredictbet.com/api/integrations/telegram/publish?token=${authAdminSession}`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        target: 'free',
+        postType: 'Match Intelligence',
+        text: '⚽ Query param security test',
+        forceDuplicate: true
+      })
+    });
+    const res = await publishModule.onRequestPost({ request: req, env: authTestEnv });
+    assert.strictEqual(res.status, 400);
+    const data = await res.json();
+    assert.strictEqual(data.success, false);
+    assert.ok(data.error.includes('Insecure Authentication'));
+  });
+
+  // Restore globals
+  global.localStorage = originalLocalStorage;
+  global.sessionStorage = originalSessionStorage;
+
   console.log(`\n==================================================`);
   console.log(`TELEGRAM INTEGRATION RESULTS: ${passed} passed, ${failed} failed.`);
   console.log(`==================================================\n`);

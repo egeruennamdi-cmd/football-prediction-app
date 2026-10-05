@@ -1215,15 +1215,70 @@
   };
 
   /**
+   * Retrieves active administrator session token from authoritative client storage.
+   * Prioritizes:
+   * 1. localStorage.getItem('dp_session_id')
+   * 2. sessionStorage.getItem('dp_session_id')
+   * 3. localStorage.getItem('deep_active_user')?.sessionId
+   * 4. window.deepActiveUser?.sessionId or window.dp_session_id
+   * 5. Legacy session storage key ('deep_admin_session')
+   */
+  function getAdminSessionToken() {
+    if (typeof localStorage !== 'undefined') {
+      const dpSession = localStorage.getItem('dp_session_id');
+      if (dpSession && typeof dpSession === 'string' && dpSession.trim()) {
+        return dpSession.trim();
+      }
+
+      try {
+        const rawActive = localStorage.getItem('deep_active_user');
+        if (rawActive) {
+          const activeUser = JSON.parse(rawActive);
+          if (activeUser && activeUser.sessionId && typeof activeUser.sessionId === 'string' && activeUser.sessionId.trim()) {
+            return activeUser.sessionId.trim();
+          }
+        }
+      } catch (e) {}
+
+      const legacySession = localStorage.getItem('deep_admin_session');
+      if (legacySession && typeof legacySession === 'string' && legacySession.trim()) {
+        return legacySession.trim();
+      }
+    }
+
+    if (typeof sessionStorage !== 'undefined') {
+      const dpSession = sessionStorage.getItem('dp_session_id');
+      if (dpSession && typeof dpSession === 'string' && dpSession.trim()) {
+        return dpSession.trim();
+      }
+      const legacySession = sessionStorage.getItem('deep_admin_session');
+      if (legacySession && typeof legacySession === 'string' && legacySession.trim()) {
+        return legacySession.trim();
+      }
+    }
+
+    if (typeof window !== 'undefined') {
+      if (window.deepActiveUser && window.deepActiveUser.sessionId && typeof window.deepActiveUser.sessionId === 'string') {
+        return window.deepActiveUser.sessionId.trim();
+      }
+      if (window.dp_session_id && typeof window.dp_session_id === 'string') {
+        return window.dp_session_id.trim();
+      }
+    }
+
+    return '';
+  }
+
+  /**
    * Safe fetch with admin session token
    */
   async function adminFetch(endpoint, options = {}) {
-    const adminSessionToken = (typeof localStorage !== 'undefined' && localStorage.getItem('deep_admin_session')) || '';
+    const adminSessionToken = getAdminSessionToken();
     const headers = {
       'Content-Type': 'application/json',
       ...(options.headers || {})
     };
-    if (adminSessionToken) {
+    if (adminSessionToken && !headers['Authorization']) {
       headers['Authorization'] = `Bearer ${adminSessionToken}`;
     }
     return fetch(endpoint, { ...options, headers });
@@ -1233,6 +1288,10 @@
   async function fetchPublishData() {
     try {
       const res = await adminFetch('/api/integrations/telegram/publish');
+      if (res.status === 401 || res.status === 403) {
+        console.warn(`[TelegramCommandCenter] Telemetry fetch unauthorized (status ${res.status}): session expired or missing.`);
+        return;
+      }
       if (res.ok) {
         const data = await res.json();
         if (data.success) {
@@ -1257,6 +1316,10 @@
   async function fetchTelegramHealth() {
     try {
       const res = await adminFetch('/api/integrations/telegram/health');
+      if (res.status === 401 || res.status === 403) {
+        console.warn(`[TelegramCommandCenter] Health fetch unauthorized (status ${res.status}): session expired or missing.`);
+        return;
+      }
       if (res.ok) {
         const data = await res.json();
         state.health = data;
@@ -2450,6 +2513,12 @@
       return;
     }
 
+    const token = getAdminSessionToken();
+    if (!token) {
+      showAlert('Your admin session has expired. Please sign in again.');
+      return;
+    }
+
     try {
       const res = await adminFetch('/api/integrations/telegram/publish', {
         method: 'POST',
@@ -2462,6 +2531,15 @@
           forceDuplicate
         })
       });
+
+      if (res.status === 401) {
+        showAlert('Your admin session has expired. Please sign in again.');
+        return;
+      }
+      if (res.status === 403) {
+        showAlert('Administrator authorization failed.');
+        return;
+      }
 
       const data = await res.json();
       if (res.status === 409 && data.duplicateDetected) {
@@ -2490,6 +2568,11 @@
       showAlert('Draft text cannot be empty.');
       return;
     }
+    const token = getAdminSessionToken();
+    if (!token) {
+      showAlert('Your admin session has expired. Please sign in again.');
+      return;
+    }
     try {
       const res = await adminFetch('/api/integrations/telegram/publish', {
         method: 'POST',
@@ -2504,10 +2587,20 @@
           }
         })
       });
+      if (res.status === 401) {
+        showAlert('Your admin session has expired. Please sign in again.');
+        return;
+      }
+      if (res.status === 403) {
+        showAlert('Administrator authorization failed.');
+        return;
+      }
       const data = await res.json();
       if (data.success) {
         showAlert('💾 Draft saved successfully.');
         fetchPublishData();
+      } else {
+        showAlert(`Failed to save draft: ${data.error || 'Unknown error'}`);
       }
     } catch (e) {
       showAlert(`Failed to save draft: ${e.message}`);
@@ -2629,6 +2722,9 @@
     },
     openReviewModal: openApprovalReviewModal,
     closeReviewModal: closeApprovalReviewModal,
+    openScheduleModal() {
+      switchTab('calendar');
+    },
     toggleConfirm(chk) {
       const btn = document.getElementById('tg-pub-modal-publish-btn');
       if (btn) btn.disabled = !chk;
@@ -2641,6 +2737,8 @@
     simulateRule,
     refreshHealth: fetchTelegramHealth,
     refreshData: fetchPublishData,
+    getAdminSessionToken,
+    adminFetch,
     openModal() {
       const el = document.getElementById('telegram-command-center-section') || document.getElementById('telegram-publisher-section');
       if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
