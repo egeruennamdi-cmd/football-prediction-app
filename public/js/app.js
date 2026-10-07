@@ -7992,6 +7992,9 @@ function runBetDoctorAudit(showScanAnim = true, explicitSource = null) {
           <button id="doctor-convert-bookies-btn" onclick="convertAuditedTicket('${displayCode}', '${bookieVal}')" class="btn btn-secondary" style="font-weight: 700; font-size: 0.78rem; padding: 10px 16px; border: 1px solid var(--brand-royal-blue); cursor: pointer;">
             📲 Convert to Bookies
           </button>
+          <button id="doctor-send-telegram-btn" onclick="sendBetDoctorToTelegram()" class="btn btn-secondary" style="font-weight: 700; font-size: 0.78rem; padding: 10px 16px; border: 1px solid rgba(56,189,248,0.4); background: rgba(56,189,248,0.12); color: #38bdf8; cursor: pointer; display: inline-flex; align-items: center; gap: 6px;">
+            📢 Send to Telegram
+          </button>
         </div>
       </div>
 
@@ -9548,6 +9551,83 @@ window.runEngineConversion = runEngineConversion;
 window.copyEngineSourceCode = copyEngineSourceCode;
 window.copyEngineTargetCode = copyEngineTargetCode;
 window.saveGeneratedTicket = saveGeneratedTicket;
+
+function sendBetGeneratorToTelegram() {
+  const codeEl = document.getElementById("ticket-booking-code");
+  const code = codeEl ? codeEl.innerText.trim() : "DP-TICKET";
+  const legs = (window.appState && window.appState.betslip) ? window.appState.betslip : [];
+
+  if (!legs || legs.length === 0) {
+    if (typeof showAppNotification === 'function') {
+      showAppNotification("⚠️ Please generate a ticket first before sending to Telegram.", "warning");
+    }
+    return;
+  }
+
+  const ticketData = {
+    bookingCode: code,
+    legs: legs,
+    odds: document.getElementById("ticket-total-odds")?.innerText?.trim() || null,
+    potentialReturn: document.getElementById("ticket-total-return")?.innerText?.trim() || null
+  };
+
+  if (typeof window !== 'undefined' && window.TelegramPublisher && typeof window.TelegramPublisher.importFromBetGenerator === 'function') {
+    window.TelegramPublisher.importFromBetGenerator(ticketData);
+    if (typeof window.switchTool === 'function') {
+      window.switchTool('telegram-publisher');
+    } else if (typeof window.navigateTo === 'function') {
+      window.navigateTo('/telegram-publisher');
+    }
+    if (typeof showAppNotification === 'function') {
+      showAppNotification(`📢 Ticket [${code}] sent to Telegram Command Center!`, "success");
+    }
+  } else {
+    if (typeof showAppNotification === 'function') {
+      showAppNotification("⚠️ Telegram Command Center is not available.", "warning");
+    }
+  }
+}
+
+function sendBetDoctorToTelegram() {
+  const doctor = window.doctorState || {};
+  const legs = (window.appState && window.appState.betslip && window.appState.betslip.length > 0)
+    ? window.appState.betslip
+    : (doctor.auditedSelections || doctor.originalSelections || []);
+
+  if (!legs || legs.length === 0) {
+    if (typeof showAppNotification === 'function') {
+      showAppNotification("⚠️ No audited ticket found to send to Telegram.", "warning");
+    }
+    return;
+  }
+
+  const doctorData = {
+    sourceType: doctor.sourceType || 'betslip',
+    healthScore: doctor.auditedHealth || 85,
+    prescriptionsApplied: !!(doctor.prescriptionState && doctor.prescriptionState.applied),
+    legs: legs,
+    metrics: doctor.metrics || null
+  };
+
+  if (typeof window !== 'undefined' && window.TelegramPublisher && typeof window.TelegramPublisher.importFromBetDoctor === 'function') {
+    window.TelegramPublisher.importFromBetDoctor(doctorData);
+    if (typeof window.switchTool === 'function') {
+      window.switchTool('telegram-publisher');
+    } else if (typeof window.navigateTo === 'function') {
+      window.navigateTo('/telegram-publisher');
+    }
+    if (typeof showAppNotification === 'function') {
+      showAppNotification("📢 Audited ticket sent to Telegram Command Center!", "success");
+    }
+  } else {
+    if (typeof showAppNotification === 'function') {
+      showAppNotification("⚠️ Telegram Command Center is not available.", "warning");
+    }
+  }
+}
+
+window.sendBetGeneratorToTelegram = sendBetGeneratorToTelegram;
+window.sendBetDoctorToTelegram = sendBetDoctorToTelegram;
 
 
 /* --- DEEPPREDICTBET CONVERTER ENGINE HELPERS --- */

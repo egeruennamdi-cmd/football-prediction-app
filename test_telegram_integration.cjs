@@ -3184,6 +3184,358 @@ async function runTests() {
     assert.ok(data.error.includes('Insecure Authentication'));
   });
 
+  // ==========================================
+  // SUITE 20: AUTHORITATIVE INTELLIGENCE SYNCHRONIZATION & COMMAND CENTER (SECTION 58 CRITERIA)
+  // ==========================================
+  console.log('\n--- 20. Authoritative Intelligence Synchronization & Command Center (Section 58) ---');
+
+  // Req 1 & 3: Top Leagues Catalog
+  test('Section 58.1 & 58.3: Top Leagues Catalog contains 96 canonical competitions with stable identities', () => {
+    const leagues = telegramPublisher.getAuthoritativeTopLeagues();
+    assert.ok(Array.isArray(leagues), 'Top leagues must be an array');
+    assert.strictEqual(leagues.length, 96, 'Must contain exactly 96 canonical top competitions');
+    leagues.forEach(l => {
+      assert.ok(l.leagueId, `League ${l.name} must have stable leagueId`);
+      assert.ok(l.name, 'League must have name');
+      assert.ok(l.countryId, `League ${l.name} must have countryId`);
+      assert.ok(l.tier, `League ${l.name} must have tier classification`);
+    });
+  });
+
+  // Req 2: Dynamic Top Leagues Discovery
+  test('Section 58.2: Dynamic discovery of newly added top leagues at runtime without code changes', () => {
+    const initialCount = telegramPublisher.getAuthoritativeTopLeagues().length;
+    globalThis.TOP_LEAGUES_DATA = [
+      { leagueId: 'custom_league_dyn1', name: 'Super Dynamic League', countryId: 'nga', countryName: 'Nigeria', tier: 1 }
+    ];
+    const updatedLeagues = telegramPublisher.getAuthoritativeTopLeagues();
+    assert.strictEqual(updatedLeagues.length, initialCount + 1);
+    assert.ok(updatedLeagues.some(l => l.leagueId === 'custom_league_dyn1'));
+    delete globalThis.TOP_LEAGUES_DATA;
+    assert.strictEqual(telegramPublisher.getAuthoritativeTopLeagues().length, initialCount);
+  });
+
+  // Req 4 & 5: Country Directory A-Z
+  test('Section 58.4 & 58.5: Country Directory Catalog contains 150 countries strictly sorted A-Z', () => {
+    const countries = telegramPublisher.getAuthoritativeCountryDirectory();
+    assert.ok(Array.isArray(countries), 'Countries must be an array');
+    assert.strictEqual(countries.length, 150, 'Must contain exactly 150 countries');
+    for (let i = 1; i < countries.length; i++) {
+      assert.ok(
+        countries[i].name.localeCompare(countries[i - 1].name) >= 0,
+        `Country Directory must be alphabetically sorted: ${countries[i - 1].name} vs ${countries[i].name}`
+      );
+    }
+  });
+
+  // Req 6: Dynamic Country Directory Discovery
+  test('Section 58.6: Dynamic discovery of newly registered countries at runtime', () => {
+    const initialCount = telegramPublisher.getAuthoritativeCountryDirectory().length;
+    globalThis.COUNTRY_LEAGUES_DATA = {
+      'dyn_country': { name: 'Z-Fictional Island', flag: '🏝️', leagues: [] }
+    };
+    const updatedCountries = telegramPublisher.getAuthoritativeCountryDirectory();
+    assert.strictEqual(updatedCountries.length, initialCount + 1);
+    assert.ok(updatedCountries.some(c => c.name === 'Z-Fictional Island'));
+    delete globalThis.COUNTRY_LEAGUES_DATA;
+  });
+
+  // Req 7, 8 & 9: Canonical Market Registry
+  test('Section 58.7, 58.8 & 58.9: Canonical Market Registry contains 78 markets across 16 categories with dynamic extensibility', () => {
+    const markets = telegramPublisher.getAuthoritativeMarketRegistry();
+    assert.ok(Array.isArray(markets), 'Markets must be an array');
+    assert.strictEqual(markets.length, 78, 'Must contain exactly 78 canonical betting markets');
+
+    const categories = new Set(markets.map(m => m.category));
+    assert.strictEqual(categories.size, 16, 'Must span exactly 16 betting market categories');
+
+    markets.forEach(m => {
+      assert.ok(m.key, 'Market must have key');
+      assert.ok(m.name, 'Market must have name');
+      assert.ok(m.category, 'Market must have category');
+      assert.ok(m.shortCode, 'Market must have shortCode');
+    });
+
+    // Dynamic addition test
+    globalThis.DYNAMIC_CUSTOM_MARKETS = [
+      { key: 'mkt_custom_corners_race', name: 'Race to 7 Corners', category: 'Corners', shortCode: 'R7C' }
+    ];
+    const withCustom = telegramPublisher.getAuthoritativeMarketRegistry();
+    assert.strictEqual(withCustom.length, 79);
+    assert.ok(withCustom.some(m => m.key === 'mkt_custom_corners_race'));
+    delete globalThis.DYNAMIC_CUSTOM_MARKETS;
+  });
+
+  // Req 10 & 11: Bet Generator Integration
+  test('Section 58.10 & 58.11: Bet Generator import preserves booking code, odds, potential return and legs', () => {
+    const sampleTicket = {
+      bookingCode: 'BG-99214',
+      odds: '4.85',
+      potentialReturn: '$48.50',
+      legs: [
+        { match: 'Arsenal vs Chelsea', selection: 'Arsenal Win', odds: 1.85, league: 'Premier League' },
+        { match: 'Real Madrid vs Sevilla', selection: 'Over 2.5 Goals', odds: 1.62, league: 'La Liga' },
+        { match: 'Inter Milan vs Milan', selection: 'BTTS Yes', odds: 1.70, league: 'Serie A' }
+      ]
+    };
+    const res = telegramPublisher.importFromBetGenerator(sampleTicket);
+    assert.strictEqual(res.success, true);
+    assert.strictEqual(res.count, 3);
+    assert.ok(res.postText.includes('BG-99214'));
+    assert.ok(res.postText.includes('4.85'));
+    assert.ok(res.postText.includes('Arsenal vs Chelsea'));
+    assert.ok(res.postText.includes('Real Madrid vs Sevilla'));
+  });
+
+  // Req 12 & 13: AI Bet Doctor Integration & Authoritative Prescriptions Rule
+  test('Section 58.12 & 58.13: Bet Doctor import respects authoritative prescriptions rule and health score', () => {
+    const auditedSlip = {
+      sourceType: 'betslip',
+      healthScore: 94,
+      prescriptionsApplied: true,
+      legs: [
+        {
+          match: 'Bayern Munich vs Dortmund',
+          selection: 'Over 3.5 Goals',
+          odds: 1.95,
+          originalSelection: 'Bayern Win (-1.5)',
+          originalOdds: 2.30,
+          status: 'PRESCRIPTION_APPLIED'
+        }
+      ]
+    };
+    const res = telegramPublisher.importFromBetDoctor(auditedSlip);
+    assert.strictEqual(res.success, true);
+    assert.strictEqual(res.count, 1);
+    assert.ok(res.postText.includes('94/100'));
+    assert.ok(res.postText.includes('Over 3.5 Goals'));
+    assert.ok(res.postText.includes('Prescriptions Applied'));
+  });
+
+  // Req 14 & 15: Top Tips Tracker Integration & Finished Match Gate
+  test('Section 58.14 & 58.15: Top Tips Tracker import prioritizes ranked tips and strictly filters finished matches', () => {
+    const rawTips = {
+      qualifyingTips: [
+        { matchId: 'tt-1', homeTeam: 'Napoli', awayTeam: 'Roma', league: 'Serie A', tip: 'Home Win', odds: 1.75, probability: 82, rank: 1, status: 'UPCOMING' },
+        { matchId: 'tt-2', homeTeam: 'PSG', awayTeam: 'Lyon', league: 'Ligue 1', tip: 'Over 2.5', odds: 1.55, probability: 88, rank: 2, status: 'FINISHED' }
+      ]
+    };
+    const res = telegramPublisher.importFromTopTipsTracker(rawTips);
+    assert.strictEqual(res.success, true);
+    assert.strictEqual(res.count, 1, 'Finished match tt-2 must be excluded');
+    assert.ok(res.postText.includes('Napoli vs Roma'));
+    assert.ok(!res.postText.includes('PSG vs Lyon'));
+  });
+
+  // Req 16: AI Scout Integration
+  test('Section 58.16: AI Scout import captures tactical breakdown and key intelligence factors', () => {
+    const res = telegramPublisher.importFromAiScout();
+    assert.strictEqual(res.success, true);
+    assert.ok(res.postText.includes('AI SCOUT TACTICAL DOSSIER'));
+    assert.ok(res.postText.includes('Tactical Breakdown'));
+  });
+
+  // Req 17: Value Intelligence Engine Integration
+  test('Section 58.17: Value Intelligence import preserves EV%, fair odds, bookmaker price and edge', () => {
+    const opps = [
+      {
+        opportunityId: 'opp-101',
+        match: 'Liverpool vs Everton',
+        homeTeam: 'Liverpool',
+        awayTeam: 'Everton',
+        league: 'Premier League',
+        selectionName: 'Over 2.5 Goals',
+        marketName: 'Over/Under',
+        decimalOdds: 1.95,
+        fairOdds: 1.72,
+        modelProbability: 0.58,
+        impliedProbability: 0.51,
+        expectedValue: '13.4%',
+        valueEdge: '+6.8pp',
+        bookmakerName: 'Bet365'
+      }
+    ];
+    const res = telegramPublisher.importFromValueIntelligence(opps);
+    assert.strictEqual(res.success, true);
+    assert.strictEqual(res.count, 1);
+    assert.ok(res.postText.includes('Liverpool vs Everton'));
+    assert.ok(res.postText.includes('Over 2.5 Goals'));
+    assert.ok(res.postText.includes('+13.4% EV'));
+    assert.ok(res.postText.includes('@1.95'));
+  });
+
+  // Req 18: Unified Multi-Source Chaining
+  test('Section 58.18: importFromSource allows dynamic routing across all intelligence engines', () => {
+    const genRes = telegramPublisher.importFromSource('generator', { bookingCode: 'T-123', legs: [{ match: 'A vs B', selection: 'A', odds: 1.5 }] });
+    assert.strictEqual(genRes.success, true);
+    const docRes = telegramPublisher.importFromSource('doctor', { legs: [{ match: 'C vs D', selection: 'C', odds: 1.6 }] });
+    assert.strictEqual(docRes.success, true);
+    const tipRes = telegramPublisher.importFromSource('toptips', { qualifyingTips: [] });
+    assert.strictEqual(tipRes.success, true);
+  });
+
+  // Req 19 & 20: Unlimited Match & Selection Pagination Controls
+  test('Section 58.19 & 58.20: Pagination controls allow navigating unlimited match catalogs without caps', () => {
+    telegramPublisher.setMatchPageSize(50);
+    assert.strictEqual(telegramPublisher.getState().matchPageSize, 50);
+
+    telegramPublisher.setMatchPage(3);
+    assert.strictEqual(telegramPublisher.getState().matchPage, 3);
+
+    telegramPublisher.nextMatchPage();
+    assert.strictEqual(telegramPublisher.getState().matchPage, 4);
+
+    telegramPublisher.prevMatchPage();
+    assert.strictEqual(telegramPublisher.getState().matchPage, 3);
+  });
+
+  // Req 21, 22, 23 & 24: Match x Market Matrix Operations
+  test('Section 58.21, 58.22, 58.23 & 58.24: Match x Market Matrix provides granular market selection, bulk apply, and reset', () => {
+    // Individual selection
+    const selRes = telegramPublisher.selectMarketForMatch('test-m-1', 'mkt_1x2_home', { active: true, odds: 2.10 });
+    assert.strictEqual(selRes.success, true);
+    assert.strictEqual(selRes.active, true);
+
+    const mktList = telegramPublisher.getMarketsForMatch('test-m-1');
+    assert.deepStrictEqual(mktList, ['mkt_1x2_home']);
+
+    // Bulk apply
+    const bulkRes = telegramPublisher.bulkApplyMarketsToMatches(['test-m-2', 'test-m-3'], ['mkt_ou_25_over', 'mkt_btts_yes']);
+    assert.strictEqual(bulkRes.success, true);
+    assert.strictEqual(bulkRes.matchCount, 2);
+    assert.strictEqual(bulkRes.marketCount, 2);
+    assert.strictEqual(telegramPublisher.getMarketsForMatch('test-m-2').length, 2);
+    assert.strictEqual(telegramPublisher.getMarketsForMatch('test-m-3').length, 2);
+
+    // Clear
+    telegramPublisher.clearMatchMarketMatrix('test-m-1');
+    assert.strictEqual(telegramPublisher.getMarketsForMatch('test-m-1').length, 0);
+  });
+
+  // Req 25: Manual Composition Mode
+  test('Section 58.25: Manual composition mode operates independently', () => {
+    telegramPublisher.setCompositionMode('manual');
+    assert.strictEqual(telegramPublisher.getState().compositionMode, 'manual');
+  });
+
+  // Req 26 & 27: Dynamic Discovery Mode & Finished Match Filtering
+  test('Section 58.26 & 58.27: Dynamic discovery applies rule-based filtering and excludes completed fixtures', () => {
+    telegramPublisher.setDynamicRules({ minConfidence: 80, minEv: 5 });
+    const discovered = telegramPublisher.runDynamicDiscovery({ minConfidence: 80 });
+    assert.ok(Array.isArray(discovered));
+    discovered.forEach(m => {
+      assert.strictEqual(m._origin, 'dynamic');
+      assert.notStrictEqual(m.status, 'FINISHED');
+      assert.notStrictEqual(m.matchStatus, 'FT');
+    });
+  });
+
+  // Req 28: Hybrid Composition Mode
+  test('Section 58.28: Hybrid mode merges manual selections and dynamic discoveries without duplication', () => {
+    telegramPublisher.setCompositionMode('hybrid');
+    assert.strictEqual(telegramPublisher.getState().compositionMode, 'hybrid');
+
+    const manualList = [
+      { id: 'match-shared-1', homeTeam: { name: 'Alpha' }, awayTeam: { name: 'Beta' } },
+      { id: 'match-manual-only', homeTeam: { name: 'Gamma' }, awayTeam: { name: 'Delta' } }
+    ];
+    const combined = telegramPublisher.combineManualAndDynamic(manualList, { minConfidence: 70 });
+    assert.ok(combined.combinedMatches.length >= 2);
+    assert.strictEqual(combined.manualCount, 2);
+
+    const ids = combined.combinedMatches.map(m => m.id);
+    const uniqueIds = new Set(ids);
+    assert.strictEqual(ids.length, uniqueIds.size, 'Hybrid composition must never contain duplicate match IDs');
+  });
+
+  // Req 29 & 30: 14 Content Recipes & Legacy Backward Compatibility
+  test('Section 58.29 & 58.30: All 14 content recipes are accessible while preserving 7 built-in recipes for legacy tests', () => {
+    assert.strictEqual(telegramPublisher.BUILT_IN_RECIPES.length, 7, 'BUILT_IN_RECIPES must retain 7 legacy recipes');
+    const allRecipes = telegramPublisher.getAvailableRecipes();
+    assert.strictEqual(allRecipes.length, 14, 'getAvailableRecipes() must expose all 14 platform recipes');
+
+    const expectedIds = [
+      'rcp_daily_toptips', 'rcp_vip_dossier', 'rcp_value_alert', 'rcp_nigeria_digest',
+      'rcp_europe_intel', 'rcp_tournament_digest', 'rcp_weekend_accumulator',
+      'rcp_both_teams_score', 'rcp_goals_over_under', 'rcp_draw_no_bet',
+      'rcp_high_confidence_acc', 'rcp_doctor_prescribed_special', 'rcp_scout_deep_tactical',
+      'rcp_underdog_value_hunter'
+    ];
+    expectedIds.forEach(id => {
+      assert.ok(allRecipes.some(r => r.id === id), `Recipe ${id} must be registered in 14-recipe catalog`);
+    });
+  });
+
+  // Req 31 & 32: Telegram Message Batching (>3800 chars) & Batch IDs
+  test('Section 58.31 & 58.32: Telegram batching engine partitions oversized posts without truncation and stamps standard batch IDs', () => {
+    const longText = '⚽ Match Intelligence Dossier: Analyzing comprehensive tactical setup, form guide, expected value.\n'.repeat(50);
+    assert.ok(longText.length > 3800, 'Test payload must exceed 3800 characters');
+
+    const batches = telegramPublisher.batchTelegramPost(longText, {
+      destination: 'free',
+      postType: 'Weekend Intelligence Dossier'
+    });
+
+    assert.ok(batches.length > 1, 'Long message must be split into multiple batch parts');
+    const batchIdRegex = /^TG-BATCH-\d{8}-[A-Z0-9]{4}$/;
+
+    batches.forEach((b, idx) => {
+      assert.strictEqual(b.partNumber, idx + 1);
+      assert.strictEqual(b.totalParts, batches.length);
+      assert.ok(batchIdRegex.test(b.batchId), `Batch ID ${b.batchId} must match TG-BATCH-YYYYMMDD-XXXX format`);
+      assert.ok(b.text.includes(`Part ${idx + 1} of ${batches.length}`));
+      assert.ok(b.text.includes(`Batch: ${b.batchId}`));
+      assert.ok(b.text.length <= 4096, `Part ${idx + 1} must not exceed Telegram 4096 limit`);
+    });
+
+    const shortBatches = telegramPublisher.batchTelegramPost('Short message under limit', { destination: 'free' });
+    assert.strictEqual(shortBatches.length, 1);
+    assert.strictEqual(shortBatches[0].partNumber, 1);
+    assert.strictEqual(shortBatches[0].totalParts, 1);
+  });
+
+  // Req 33: Freshness & Anti-Backfill Safeguard
+  test('Section 58.33: Anti-backfill rule and freshness check strictly prohibit finished fixture backfilling', () => {
+    const finishedMatch = {
+      id: 'fin-match-99',
+      league: 'Premier League',
+      status: 'FINISHED',
+      matchStatus: 'FT',
+      rawDate: '2026-10-05T15:00:00Z',
+      homeTeam: { name: 'Past Home' },
+      awayTeam: { name: 'Past Away' }
+    };
+    const isEligible = telegramPublisher.isMatchUpcomingEligible(finishedMatch, SIMULATED_NOW_MS);
+    assert.strictEqual(isEligible, false, 'Completed fixture must not be eligible for upcoming publication');
+
+    const evalResult = telegramPublisher.evaluatePublishability(finishedMatch, SIMULATED_NOW_MS);
+    assert.strictEqual(evalResult.eligible, false, 'Publishability scorer must reject completed fixture');
+  });
+
+  // Req 34: Zero Credential Leakage & Security Verification
+  test('Section 58.34: Frontend bundle contains zero hardcoded admin secrets, bot tokens, or webhook secrets', () => {
+    const fs = require('fs');
+    const publisherJs = fs.readFileSync('js/telegramPublisher.js', 'utf8');
+    const appJs = fs.readFileSync('js/app.js', 'utf8');
+    const indexHtml = fs.readFileSync('index.html', 'utf8');
+
+    const forbiddenPatterns = [
+      /ADMIN_SECRET_KEY\s*=\s*['"`][^'"`]+['"`]/,
+      /TELEGRAM_BOT_TOKEN\s*=\s*['"`]\d+:[A-Za-z0-9_-]+['"`]/,
+      /TELEGRAM_WEBHOOK_SECRET\s*=\s*['"`][^'"`]{8,}['"`]/,
+      /bot\d+:[A-Za-z0-9_-]{20,}/
+    ];
+
+    [publisherJs, appJs, indexHtml].forEach((fileContent, idx) => {
+      forbiddenPatterns.forEach(pattern => {
+        assert.ok(
+          !pattern.test(fileContent),
+          `Security violation: Pattern ${pattern} detected in client bundle (file index ${idx})`
+        );
+      });
+    });
+  });
+
   // Restore globals
   global.localStorage = originalLocalStorage;
   global.sessionStorage = originalSessionStorage;

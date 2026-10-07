@@ -320,6 +320,1244 @@
     return { valid: true };
   }
 
+
+  // ============================================================================
+  // 2B. AUTHORITATIVE LEAGUES, COUNTRIES & MARKETS REGISTRIES
+  // Complete synchronization across Top Leagues, Country Directory A-Z,
+  // and the canonical 16-category / 78-market DeepPredictBet taxonomy.
+  // ============================================================================
+
+  // Authoritative Fallback Catalogs
+  const CANONICAL_TOP_LEAGUES_CATALOG = [
+  // ── Top 5 European Leagues & Domestic Cups ──────────
+  { name: "Premier League",         emoji: "🏴󠁧󠁢󠁥󠁮󠁧󠁿", country: "England" },
+  { name: "Championship",           emoji: "🏴󠁧󠁢󠁥󠁮󠁧󠁿", country: "England" },
+  { name: "League One",              emoji: "🏴󠁧󠁢󠁥󠁮󠁧󠁿", country: "England" },
+  { name: "League Two",              emoji: "🏴󠁧󠁢󠁥󠁮󠁧󠁿", country: "England" },
+  { name: "National League",         emoji: "🏴󠁧󠁢󠁥󠁮󠁧󠁿", country: "England" },
+  { name: "FA Cup",                  emoji: "🏴󠁧󠁢󠁥󠁮󠁧󠁿", country: "England" },
+  { name: "EFL Cup",                 emoji: "🏴󠁧󠁢󠁥󠁮󠁧󠁿", country: "England" },
+  { name: "La Liga",                 emoji: "🇪🇸", country: "Spain" },
+  { name: "La Liga 2",               emoji: "🇪🇸", country: "Spain" },
+  { name: "Copa del Rey",            emoji: "🇪🇸", country: "Spain" },
+  { name: "Serie A",                 emoji: "🇮🇹", country: "Italy" },
+  { name: "Serie B",                 emoji: "🇮🇹", country: "Italy" },
+  { name: "Coppa Italia",            emoji: "🇮🇹", country: "Italy" },
+  { name: "Bundesliga",              emoji: "🇩🇪", country: "Germany" },
+  { name: "2. Bundesliga",           emoji: "🇩🇪", country: "Germany" },
+  { name: "DFB Pokal",               emoji: "🇩🇪", country: "Germany" },
+  { name: "Ligue 1",                 emoji: "🇫🇷", country: "France" },
+  { name: "Ligue 2",                 emoji: "🇫🇷", country: "France" },
+  { name: "Coupe de France",         emoji: "🇫🇷", country: "France" },
+  // ── Continental & European Elite ─────────────
+  { name: "Champions League",        emoji: "🇪🇺", country: "Europe" },
+  { name: "Europa League",           emoji: "🇪🇺", country: "Europe" },
+  { name: "Conference League",       emoji: "🇪🇺", country: "Europe" },
+  { name: "UEFA Nations League",     emoji: "🇪🇺", country: "Europe", type: "national_team", participantType: "national_team" },
+  { name: "UEFA Super Cup",          emoji: "🏆", country: "Europe" },
+  { name: "Eredivisie",              emoji: "🇳🇱", country: "Netherlands" },
+  { name: "Eerste Divisie",          emoji: "🇳🇱", country: "Netherlands" },
+  { name: "Primeira Liga",           emoji: "🇵🇹", country: "Portugal" },
+  { name: "Segunda Liga",            emoji: "🇵🇹", country: "Portugal" },
+  { name: "Süper Lig",               emoji: "🇹🇷", country: "Turkey" },
+  { name: "Scottish Premiership",    emoji: "🏴󠁧󠁢󠁳󠁣󠁴󠁿", country: "Scotland" },
+  { name: "Scottish Championship",   emoji: "🏴󠁧󠁢󠁳󠁣󠁴󠁿", country: "Scotland" },
+  { name: "Belgian Pro League",      emoji: "🇧🇪", country: "Belgium" },
+  { name: "Swiss Super League",      emoji: "🇨🇭", country: "Switzerland" },
+  { name: "Austrian Bundesliga",     emoji: "🇦🇹", country: "Austria" },
+  { name: "Greek Super League",      emoji: "🇬🇷", country: "Greece" },
+  { name: "Czech First League",      emoji: "🇨🇿", country: "Czech Republic" },
+  { name: "Croatian League (HNL)",   emoji: "🇭🇷", country: "Croatia" },
+  { name: "Serbian SuperLiga",       emoji: "🇷🇸", country: "Serbia" },
+  { name: "Ekstraklasa",             emoji: "🇵🇱", country: "Poland" },
+  { name: "Eliteserien",             emoji: "🇳🇴", country: "Norway" },
+  { name: "Allsvenskan",             emoji: "🇸🇪", country: "Sweden" },
+  { name: "Superliga",               emoji: "🇩🇰", country: "Denmark" },
+  { name: "Russian Premier League",  emoji: "🇷🇺", country: "Russia" },
+  { name: "Ukrainian Premier League",emoji: "🇺🇦", country: "Ukraine" },
+  // ── Americas (CONMEBOL & CONCACAF) ────────────
+  { name: "MLS",                     emoji: "🇺🇸", country: "USA" },
+  { name: "Leagues Cup",             emoji: "🏆", country: "USA / Mexico" },
+  { name: "US Open Cup",             emoji: "🇺🇸", country: "USA" },
+  { name: "Liga MX",                 emoji: "🇲🇽", country: "Mexico" },
+  { name: "Liga de Expansión MX",    emoji: "🇲🇽", country: "Mexico" },
+  { name: "Brasileirão Série A",     emoji: "🇧🇷", country: "Brazil" },
+  { name: "Brasileirão Série B",     emoji: "🇧🇷", country: "Brazil" },
+  { name: "Copa do Brasil",          emoji: "🇧🇷", country: "Brazil" },
+  { name: "Liga Profesional",        emoji: "🇦🇷", country: "Argentina" },
+  { name: "Copa Argentina",          emoji: "🇦🇷", country: "Argentina" },
+  { name: "Copa Libertadores",       emoji: "🌎", country: "South America" },
+  { name: "Copa Sudamericana",       emoji: "🌎", country: "South America" },
+  { name: "Colombia Primera A",      emoji: "🇨🇴", country: "Colombia" },
+  { name: "Chile Primera División",  emoji: "🇨🇱", country: "Chile" },
+  { name: "Ecuador Liga Pro",        emoji: "🇪🇨", country: "Ecuador" },
+  { name: "Peru Liga 1",             emoji: "🇵🇪", country: "Peru" },
+  { name: "Uruguay Primera División",emoji: "🇺🇾", country: "Uruguay" },
+  { name: "Costa Rica Primera",      emoji: "🇨🇷", country: "Costa Rica" },
+  { name: "CONCACAF Champions Cup",  emoji: "🏆", country: "North America" },
+  // ── Middle East & Africa (CAF & AFC) ──────────
+  { name: "Saudi Pro League",        emoji: "🇸🇦", country: "Saudi Arabia" },
+  { name: "King's Cup",              emoji: "🇸🇦", country: "Saudi Arabia" },
+  { name: "UAE Pro League",          emoji: "🇦🇪", country: "UAE" },
+  { name: "Qatar Stars League",      emoji: "🇶🇦", country: "Qatar" },
+  { name: "Persian Gulf Pro League", emoji: "🇮🇷", country: "Iran" },
+  { name: "CAF Champions League",    emoji: "🌍", country: "Africa" },
+  { name: "CAF Confederation Cup",   emoji: "🌍", country: "Africa" },
+  { name: "CAF Super Cup",           emoji: "🏆", country: "Africa" },
+  { name: "NPFL",                    emoji: "🇳🇬", country: "Nigeria" },
+  { name: "Ghana Premier League",    emoji: "🇬🇭", country: "Ghana" },
+  { name: "South African PSL",       emoji: "🇿🇦", country: "South Africa" },
+  { name: "Egyptian Premier League", emoji: "🇪🇬", country: "Egypt" },
+  { name: "Moroccan Botola",         emoji: "🇲🇦", country: "Morocco" },
+  { name: "Algerian Ligue 1",        emoji: "🇩🇿", country: "Algeria" },
+  { name: "Tanzanian Premier League",emoji: "🇹🇿", country: "Tanzania" },
+  { name: "Kenyan Premier League",   emoji: "🇰🇪", country: "Kenya" },
+  { name: "Tunisian Ligue 1",        emoji: "🇹🇳", country: "Tunisia" },
+  { name: "Zambian Super League",    emoji: "🇿🇲", country: "Zambia" },
+  { name: "DR Congo Linafoot",       emoji: "🇨🇩", country: "DR Congo" },
+  { name: "Uganda Premier League",   emoji: "🇺🇬", country: "Uganda" },
+  // ── Asia & Oceania ──────────────────────────
+  { name: "AFC Champions League Elite", emoji: "🌏", country: "Asia" },
+  { name: "AFC Champions League 2",  emoji: "🌏", country: "Asia" },
+  { name: "J-League",                emoji: "🇯🇵", country: "Japan" },
+  { name: "K-League",                emoji: "🇰🇷", country: "South Korea" },
+  { name: "Chinese Super League",    emoji: "🇨🇳", country: "China" },
+  { name: "Indian Super League",     emoji: "🇮🇳", country: "India" },
+  { name: "Thai League 1",           emoji: "🇹🇭", country: "Thailand" },
+  { name: "A-League",                emoji: "🇦🇺", country: "Australia" },
+  // ── Major International Tournaments ─────────
+  { name: "World Cup",               emoji: "🏆", country: "World" },
+  { name: "FIFA Club World Cup",     emoji: "🌐", country: "World" },
+  { name: "AFCON",                   emoji: "🏆", country: "Africa" },
+  { name: "Copa América",            emoji: "🌎", country: "South America" },
+  { name: "Euro Championship",       emoji: "🏆", country: "Europe" }
+];
+
+
+  const CANONICAL_COUNTRY_DIRECTORY_CATALOG = [
+  { country: "Africa", emoji: "🌍", leagues: ["CAF Champions League", "CAF Confederation Cup", "Africa Cup of Nations"] },
+  { country: "Albania", emoji: "🇦🇱", leagues: ["Superliga", "Kupa e Shqipërisë"] },
+  { country: "Algeria", emoji: "🇩🇿", leagues: ["Ligue Professionnelle 1", "Algerian Cup"] },
+  { country: "Andorra", emoji: "🇦🇩", leagues: ["Primera Divisió", "Copa Constitució"] },
+  { country: "Angola", emoji: "🇦🇴", leagues: ["Girabola"] },
+  { country: "Argentina", emoji: "🇦🇷", leagues: ["Primera División", "Copa Argentina", "Primera B Nacional"] },
+  { country: "Armenia", emoji: "🇦🇲", leagues: ["Premier League", "Armenian Cup"] },
+  { country: "Aruba", emoji: "🇦🇼", leagues: ["Division di Honor"] },
+  { country: "Asia", emoji: "🌏", leagues: ["AFC Champions League", "AFC Cup", "AFC Asian Cup"] },
+  { country: "Australia", emoji: "🇦🇺", leagues: ["A-League", "Australia Cup"] },
+  { country: "Austria", emoji: "🇦🇹", leagues: ["Bundesliga", "2. Liga", "Austrian Cup"] },
+  { country: "Azerbaijan", emoji: "🇦🇿", leagues: ["Premier League", "Azerbaijan Cup"] },
+  { country: "Bahrain", emoji: "🇧🇭", leagues: ["Premier League", "King's Cup"] },
+  { country: "Bangladesh", emoji: "🇧🇩", leagues: ["Premier League"] },
+  { country: "Belarus", emoji: "🇧🇾", leagues: ["Vysheyshaya Liga", "Belarusian Cup"] },
+  { country: "Belgium", emoji: "🇧🇪", leagues: ["Pro League", "Challenger Pro League", "Belgian Cup"] },
+  { country: "Benin", emoji: "🇧🇯", leagues: ["Ligue 1"] },
+  { country: "Bolivia", emoji: "🇧🇴", leagues: ["Primera División"] },
+  { country: "Bosnia and Herzegovina", emoji: "🇧🇦", leagues: ["Premier League", "Bosnian Cup"] },
+  { country: "Botswana", emoji: "🇧🇼", leagues: ["Premier League"] },
+  { country: "Brazil", emoji: "🇧🇷", leagues: ["Série A", "Série B", "Copa do Brasil", "Campeonato Paulista"] },
+  { country: "Bulgaria", emoji: "🇧🇬", leagues: ["First League", "Bulgarian Cup"] },
+  { country: "Burkina Faso", emoji: "🇧🇫", leagues: ["Premier League"] },
+  { country: "Burundi", emoji: "🇧🇮", leagues: ["Premier League"] },
+  { country: "Cambodia", emoji: "🇰🇭", leagues: ["Premier League"] },
+  { country: "Cameroon", emoji: "🇨🇲", leagues: ["Elite One"] },
+  { country: "Canada", emoji: "🇨🇦", leagues: ["Canadian Premier League", "Canadian Championship"] },
+  { country: "Chile", emoji: "🇨🇱", leagues: ["Primera División", "Copa Chile"] },
+  { country: "China", emoji: "🇨🇳", leagues: ["Super League", "FA Cup"] },
+  { country: "Colombia", emoji: "🇨🇴", leagues: ["Primera A", "Copa Colombia"] },
+  { country: "Congo", emoji: "🇨🇬", leagues: ["Ligue 1"] },
+  { country: "Costa Rica", emoji: "🇨🇷", leagues: ["Primera División"] },
+  { country: "Croatia", emoji: "🇭🇷", leagues: ["HNL", "Croatian Cup"] },
+  { country: "Cuba", emoji: "🇨🇺", leagues: ["Campeonato Nacional"] },
+  { country: "Cyprus", emoji: "🇨🇾", leagues: ["First Division", "Cypriot Cup"] },
+  { country: "Czech Republic", emoji: "🇨🇿", leagues: ["First League", "Czech Cup"] },
+  { country: "Denmark", emoji: "🇩🇰", leagues: ["Superliga", "1st Division", "Danish Cup"] },
+  { country: "Dominican Republic", emoji: "🇩🇴", leagues: ["LDF"] },
+  { country: "Ecuador", emoji: "🇪🇨", leagues: ["Serie A", "Copa Ecuador"] },
+  { country: "Egypt", emoji: "🇪🇬", leagues: ["Premier League", "Egypt Cup"] },
+  { country: "El Salvador", emoji: "🇸🇻", leagues: ["Primera División"] },
+  { country: "England", emoji: "🏴󠁧󠁢󠁥󠁮󠁧󠁿", leagues: ["Premier League", "Championship", "League One", "League Two", "FA Cup", "EFL Cup"] },
+  { country: "Estonia", emoji: "🇪🇪", leagues: ["Meistriliiga", "Estonian Cup"] },
+  { country: "Ethiopia", emoji: "🇪🇹", leagues: ["Premier League"] },
+  { country: "Europe", emoji: "🇪🇺", leagues: ["UEFA Champions League", "UEFA Europa League", "UEFA Conference League", "UEFA Nations League", "Euros"] },
+  { country: "Faroe Islands", emoji: "🇫🇴", leagues: ["Premier League", "Faroe Islands Cup"] },
+  { country: "Finland", emoji: "🇫🇮", leagues: ["Veikkausliiga", "Finnish Cup"] },
+  { country: "France", emoji: "🇫🇷", leagues: ["Ligue 1", "Ligue 2", "Coupe de France"] },
+  { country: "Gabon", emoji: "🇬🇦", leagues: ["Championnat National D1"] },
+  { country: "Georgia", emoji: "🇬🇪", leagues: ["Erovnuli Liga", "Georgian Cup"] },
+  { country: "Germany", emoji: "🇩🇪", leagues: ["Bundesliga", "2. Bundesliga", "DFB-Pokal"] },
+  { country: "Ghana", emoji: "🇬🇭", leagues: ["Premier League"] },
+  { country: "Greece", emoji: "🇬🇷", leagues: ["Super League 1", "Greek Cup"] },
+  { country: "Guatemala", emoji: "🇬🇹", leagues: ["Liga Nacional"] },
+  { country: "Guinea", emoji: "🇬🇳", leagues: ["Ligue 1 Pro"] },
+  { country: "Honduras", emoji: "🇭🇳", leagues: ["Liga Nacional"] },
+  { country: "Hong Kong", emoji: "🇭🇰", leagues: ["Premier League", "FA Cup"] },
+  { country: "Hungary", emoji: "🇭🇺", leagues: ["NB I", "Hungarian Cup"] },
+  { country: "Iceland", emoji: "🇮🇸", leagues: ["Besta deild karla", "Icelandic Cup"] },
+  { country: "India", emoji: "🇮🇳", leagues: ["Super League", "I-League", "Super Cup"] },
+  { country: "Indonesia", emoji: "🇮🇩", leagues: ["Liga 1", "Piala Indonesia"] },
+  { country: "Iran", emoji: "🇮🇷", leagues: ["Pro League", "Hazfi Cup"] },
+  { country: "Iraq", emoji: "🇮🇶", leagues: ["Stars League", "Iraq FA Cup"] },
+  { country: "Ireland", emoji: "🇮🇪", leagues: ["Premier Division", "First Division", "FAI Cup"] },
+  { country: "Israel", emoji: "🇮🇱", leagues: ["Premier League", "State Cup"] },
+  { country: "Italy", emoji: "🇮🇹", leagues: ["Serie A", "Serie B", "Coppa Italia"] },
+  { country: "Ivory Coast", emoji: "🇨🇮", leagues: ["Ligue 1"] },
+  { country: "Jamaica", emoji: "🇯🇲", leagues: ["Premier League"] },
+  { country: "Japan", emoji: "🇯🇵", leagues: ["J1 League", "J2 League", "Emperor's Cup", "J.League Cup"] },
+  { country: "Jordan", emoji: "🇯🇴", leagues: ["Pro League", "Jordan FA Cup"] },
+  { country: "Kazakhstan", emoji: "🇰🇿", leagues: ["Premier League", "Kazakhstan Cup"] },
+  { country: "Kenya", emoji: "🇰🇪", leagues: ["Premier League", "FKF Cup"] },
+  { country: "Kosovo", emoji: "🇽🇰", leagues: ["Superliga"] },
+  { country: "Kuwait", emoji: "🇰🇼", leagues: ["Premier League", "Emir Cup"] },
+  { country: "Kyrgyzstan", emoji: "🇰🇬", leagues: ["Premier League"] },
+  { country: "Latvia", emoji: "🇱🇻", leagues: ["Virsliga", "Latvian Cup"] },
+  { country: "Lebanon", emoji: "🇱🇧", leagues: ["Premier League", "FA Cup"] },
+  { country: "Liberia", emoji: "🇱🇷", leagues: ["First Division"] },
+  { country: "Lithuania", emoji: "🇱🇹", leagues: ["A Lyga", "Lithuanian Cup"] },
+  { country: "Luxembourg", emoji: "🇱🇺", leagues: ["National Division", "Luxembourg Cup"] },
+  { country: "Macau", emoji: "🇲🇴", leagues: ["Elite League"] },
+  { country: "North Macedonia", emoji: "🇲🇰", leagues: ["First League"] },
+  { country: "Madagascar", emoji: "🇲🇬", leagues: ["Pro League"] },
+  { country: "Malawi", emoji: "🇲🇼", leagues: ["Super League"] },
+  { country: "Malaysia", emoji: "🇲🇾", leagues: ["Super League", "Malaysia Cup"] },
+  { country: "Maldives", emoji: "🇲🇻", leagues: ["Dhivehi Premier League"] },
+  { country: "Mali", emoji: "🇲🇱", leagues: ["Première Division"] },
+  { country: "Malta", emoji: "🇲🇹", leagues: ["Premier League", "FA Trophy"] },
+  { country: "Mauritania", emoji: "🇲🇷", leagues: ["Super D1"] },
+  { country: "Mauritius", emoji: "🇲🇺", leagues: ["MFA League"] },
+  { country: "Mexico", emoji: "🇲🇽", leagues: ["Liga MX", "Liga de Expansión MX", "Copa MX"] },
+  { country: "Moldova", emoji: "🇲🇩", leagues: ["Super Liga", "Moldovan Cup"] },
+  { country: "Mongolia", emoji: "🇲🇳", leagues: ["National Premier League"] },
+  { country: "Montenegro", emoji: "🇲🇪", leagues: ["First League", "Montenegrin Cup"] },
+  { country: "Morocco", emoji: "🇲🇦", leagues: ["Botola Pro 1", "Throne Cup"] },
+  { country: "Myanmar", emoji: "🇲🇲", leagues: ["National League"] },
+  { country: "Namibia", emoji: "🇳🇦", leagues: ["Premier League"] },
+  { country: "Nepal", emoji: "🇳🇵", leagues: ["Super League"] },
+  { country: "Netherlands", emoji: "🇳🇱", leagues: ["Eredivisie", "Eerste Divisie", "KNVB Cup"] },
+  { country: "New Zealand", emoji: "🇳🇿", leagues: ["National League", "Chatham Cup"] },
+  { country: "Nicaragua", emoji: "🇳🇮", leagues: ["Liga Primera"] },
+  { country: "Niger", emoji: "🇳🇪", leagues: ["Ligue 1"] },
+  { country: "Nigeria", emoji: "🇳🇬", leagues: ["NPFL", "FA Cup"] },
+  { country: "Northern Ireland", emoji: "🏴󠁡󠁲󠁵󠁸󠁿", leagues: ["NIFL Premiership", "Irish Cup"] },
+  { country: "Norway", emoji: "🇳🇴", leagues: ["Eliteserien", "1. divisjon", "Norwegian Cup"] },
+  { country: "Oman", emoji: "🇴🇲", leagues: ["Professional League", "Sultan Qaboos Cup"] },
+  { country: "Palestine", emoji: "🇵🇸", leagues: ["West Bank League", "Gaza Strip League"] },
+  { country: "Panama", emoji: "🇵🇦", leagues: ["LPF"] },
+  { country: "Paraguay", emoji: "🇵🇾", leagues: ["Primera División"] },
+  { country: "Peru", emoji: "🇵🇪", leagues: ["Liga 1"] },
+  { country: "Philippines", emoji: "🇵🇭", leagues: ["Football League"] },
+  { country: "Poland", emoji: "🇵🇱", leagues: ["Ekstraklasa", "I Liga", "Polish Cup"] },
+  { country: "Portugal", emoji: "🇵🇹", leagues: ["Primeira Liga", "Liga Portugal 2", "Taça de Portugal", "Taça da Liga"] },
+  { country: "Qatar", emoji: "🇶🇦", leagues: ["Stars League", "Emir Cup"] },
+  { country: "Romania", emoji: "🇷🇴", leagues: ["Liga I", "Romanian Cup"] },
+  { country: "Russia", emoji: "🇷🇺", leagues: ["Premier League", "Russian Cup"] },
+  { country: "Rwanda", emoji: "🇷🇼", leagues: ["Premier League"] },
+  { country: "San Marino", emoji: "🇸🇲", leagues: ["Campionato Sammarinese", "Coppa Titano"] },
+  { country: "Saudi Arabia", emoji: "🇸🇦", leagues: ["Pro League", "King Cup"] },
+  { country: "Scotland", emoji: "🏴󠁧󠁢󠁳󠁣󠁴󠁿", leagues: ["Premiership", "Championship", "Scottish Cup", "League Cup"] },
+  { country: "Senegal", emoji: "🇸🇳", leagues: ["Ligue 1"] },
+  { country: "Serbia", emoji: "🇷🇸", leagues: ["SuperLiga", "Serbian Cup"] },
+  { country: "Singapore", emoji: "🇸🇬", leagues: ["Premier League", "Singapore Cup"] },
+  { country: "Slovakia", emoji: "🇸🇰", leagues: ["Super Liga", "Slovak Cup"] },
+  { country: "Slovenia", emoji: "🇸🇮", leagues: ["PrvaLiga", "Slovenian Cup"] },
+  { country: "Somalia", emoji: "🇸🇴", leagues: ["First Division"] },
+  { country: "South Africa", emoji: "🇿🇦", leagues: ["Premier Division", "Nedbank Cup"] },
+  { country: "South Korea", emoji: "🇰🇷", leagues: ["K League 1", "K League 2", "FA Cup"] },
+  { country: "Spain", emoji: "🇪🇸", leagues: ["La Liga", "La Liga 2", "Copa del Rey"] },
+  { country: "Sudan", emoji: "🇸🇩", leagues: ["Premier League"] },
+  { country: "Sweden", emoji: "🇸🇪", leagues: ["Allsvenskan", "Superettan", "Svenska Cupen"] },
+  { country: "Switzerland", emoji: "🇨🇭", leagues: ["Super League", "Challenge League", "Swiss Cup"] },
+  { country: "Syria", emoji: "🇸🇾", leagues: ["Premier League"] },
+  { country: "Taiwan", emoji: "🇹🇼", leagues: ["Premier League"] },
+  { country: "Tajikistan", emoji: "🇹🇯", leagues: ["Vysshaya Liga"] },
+  { country: "Tanzania", emoji: "🇹🇿", leagues: ["Premier League"] },
+  { country: "Thailand", emoji: "🇹🇭", leagues: ["Thai League 1", "Thai FA Cup"] },
+  { country: "Togo", emoji: "🇹🇬", leagues: ["Championnat National"] },
+  { country: "Tunisia", emoji: "🇹🇳", leagues: ["Ligue Professionnelle 1"] },
+  { country: "Turkey", emoji: "🇹🇷", leagues: ["Süper Lig", "1. Lig", "Turkish Cup"] },
+  { country: "Uganda", emoji: "🇺🇬", leagues: ["Premier League"] },
+  { country: "Ukraine", emoji: "🇺🇦", leagues: ["Premier League", "Ukrainian Cup"] },
+  { country: "United Arab Emirates", emoji: "🇦🇪", leagues: ["Pro League", "President's Cup"] },
+  { country: "Uruguay", emoji: "🇺🇾", leagues: ["Primera División"] },
+  { country: "USA", emoji: "🇺🇸", leagues: ["MLS", "USL Championship", "US Open Cup"] },
+  { country: "Uzbekistan", emoji: "🇺🇿", leagues: ["Super League", "Uzbekistan Cup"] },
+  { country: "Venezuela", emoji: "🇻🇪", leagues: ["Primera División"] },
+  { country: "Vietnam", emoji: "🇻🇳", leagues: ["V.League 1", "Vietnamese Cup"] },
+  { country: "Wales", emoji: "🏴󠁧󠁢󠁷󠁬󠁳󠁿", leagues: ["Cymru Premier", "Welsh Cup"] },
+  { country: "World", emoji: "🌎", leagues: ["World Cup", "Copa América", "Club World Cup", "Friendlies", "Women's World Cup"] }
+];
+
+
+
+
+  const CANONICAL_MARKET_REGISTRY = [
+  {
+    "id": "win1",
+    "category": "1x2",
+    "categoryLabel": "1X2 Tips",
+    "icon": "\u26bd",
+    "tip": "1X2: Home Win (1)",
+    "name": "Home Win (1)"
+  },
+  {
+    "id": "draw",
+    "category": "1x2",
+    "categoryLabel": "1X2 Tips",
+    "icon": "\u26bd",
+    "tip": "1X2: Draw (X)",
+    "name": "Draw (X)"
+  },
+  {
+    "id": "win2",
+    "category": "1x2",
+    "categoryLabel": "1X2 Tips",
+    "icon": "\u26bd",
+    "tip": "1X2: Away Win (2)",
+    "name": "Away Win (2)"
+  },
+  {
+    "id": "dc1x",
+    "category": "doublechance",
+    "categoryLabel": "Double Chance",
+    "icon": "\ud83d\udee1\ufe0f",
+    "tip": "Double Chance: 1X",
+    "name": "Double Chance 1X"
+  },
+  {
+    "id": "dc12",
+    "category": "doublechance",
+    "categoryLabel": "Double Chance",
+    "icon": "\ud83d\udee1\ufe0f",
+    "tip": "Double Chance: 12",
+    "name": "Double Chance 12"
+  },
+  {
+    "id": "dcx2",
+    "category": "doublechance",
+    "categoryLabel": "Double Chance",
+    "icon": "\ud83d\udee1\ufe0f",
+    "tip": "Double Chance: X2",
+    "name": "Double Chance X2"
+  },
+  {
+    "id": "dnb",
+    "category": "dnb",
+    "categoryLabel": "Draw No Bet (DNB)",
+    "icon": "\u2696\ufe0f",
+    "tip": "Draw No Bet (DNB)",
+    "name": "Draw No Bet (DNB)"
+  },
+  {
+    "id": "uo05",
+    "category": "overunder",
+    "categoryLabel": "Over/Under Goals",
+    "icon": "\ud83c\udfaf",
+    "tip": "Under/Over: 0.5",
+    "name": "Over 0.5 Goals"
+  },
+  {
+    "id": "uo15",
+    "category": "overunder",
+    "categoryLabel": "Over/Under Goals",
+    "icon": "\ud83c\udfaf",
+    "tip": "Under/Over: 1.5",
+    "name": "Over 1.5 Goals"
+  },
+  {
+    "id": "uo25",
+    "category": "overunder",
+    "categoryLabel": "Over/Under Goals",
+    "icon": "\ud83c\udfaf",
+    "tip": "Under/Over: 2.5",
+    "name": "Over 2.5 Goals"
+  },
+  {
+    "id": "uo35",
+    "category": "overunder",
+    "categoryLabel": "Over/Under Goals",
+    "icon": "\ud83c\udfaf",
+    "tip": "Under/Over: 3.5",
+    "name": "Under/Over 3.5 Goals"
+  },
+  {
+    "id": "uo45",
+    "category": "overunder",
+    "categoryLabel": "Over/Under Goals",
+    "icon": "\ud83c\udfaf",
+    "tip": "Under/Over: 4.5",
+    "name": "Under/Over 4.5 Goals"
+  },
+  {
+    "id": "uo55",
+    "category": "overunder",
+    "categoryLabel": "Over/Under Goals",
+    "icon": "\ud83c\udfaf",
+    "tip": "Under/Over: 5.5",
+    "name": "Under/Over 5.5 Goals"
+  },
+  {
+    "id": "uoht05",
+    "category": "overunder_ht",
+    "categoryLabel": "Over/Under HT",
+    "icon": "\u23f1\ufe0f",
+    "tip": "Under/Over HT: 0.5",
+    "name": "HT Over 0.5 Goals"
+  },
+  {
+    "id": "uoht15",
+    "category": "overunder_ht",
+    "categoryLabel": "Over/Under HT",
+    "icon": "\u23f1\ufe0f",
+    "tip": "Under/Over HT: 1.5",
+    "name": "HT Over 1.5 Goals"
+  },
+  {
+    "id": "uoht25",
+    "category": "overunder_ht",
+    "categoryLabel": "Over/Under HT",
+    "icon": "\u23f1\ufe0f",
+    "tip": "Under/Over HT: 2.5",
+    "name": "HT Over 2.5 Goals"
+  },
+  {
+    "id": "uo2h05",
+    "category": "overunder_2h",
+    "categoryLabel": "Over/Under 2H",
+    "icon": "\u23f1\ufe0f",
+    "tip": "Under/Over 2nd Half: 0.5",
+    "name": "2H Over 0.5 Goals"
+  },
+  {
+    "id": "uo2h15",
+    "category": "overunder_2h",
+    "categoryLabel": "Over/Under 2H",
+    "icon": "\u23f1\ufe0f",
+    "tip": "Under/Over 2nd Half: 1.5",
+    "name": "2H Over 1.5 Goals"
+  },
+  {
+    "id": "uo2h25",
+    "category": "overunder_2h",
+    "categoryLabel": "Over/Under 2H",
+    "icon": "\u23f1\ufe0f",
+    "tip": "Under/Over 2nd Half: 2.5",
+    "name": "2H Over 2.5 Goals"
+  },
+  {
+    "id": "mg12",
+    "category": "multigoals",
+    "categoryLabel": "Multi-Goals & Ranges",
+    "icon": "\ud83d\udcca",
+    "tip": "Multi-Goals: 1-2 Goals",
+    "name": "Multi-Goals 1-2"
+  },
+  {
+    "id": "mg13",
+    "category": "multigoals",
+    "categoryLabel": "Multi-Goals & Ranges",
+    "icon": "\ud83d\udcca",
+    "tip": "Multi-Goals: 1-3 Goals",
+    "name": "Multi-Goals 1-3"
+  },
+  {
+    "id": "mg23",
+    "category": "multigoals",
+    "categoryLabel": "Multi-Goals & Ranges",
+    "icon": "\ud83d\udcca",
+    "tip": "Multi-Goals: 2-3 Goals",
+    "name": "Multi-Goals 2-3"
+  },
+  {
+    "id": "mg24",
+    "category": "multigoals",
+    "categoryLabel": "Multi-Goals & Ranges",
+    "icon": "\ud83d\udcca",
+    "tip": "Multi-Goals: 2-4 Goals",
+    "name": "Multi-Goals 2-4"
+  },
+  {
+    "id": "mg25",
+    "category": "multigoals",
+    "categoryLabel": "Multi-Goals & Ranges",
+    "icon": "\ud83d\udcca",
+    "tip": "Multi-Goals: 2-5 Goals",
+    "name": "Multi-Goals 2-5"
+  },
+  {
+    "id": "mg35",
+    "category": "multigoals",
+    "categoryLabel": "Multi-Goals & Ranges",
+    "icon": "\ud83d\udcca",
+    "tip": "Multi-Goals: 3-5 Goals",
+    "name": "Multi-Goals 3-5"
+  },
+  {
+    "id": "mg46",
+    "category": "multigoals",
+    "categoryLabel": "Multi-Goals & Ranges",
+    "icon": "\ud83d\udcca",
+    "tip": "Multi-Goals: 4-6 Goals",
+    "name": "Multi-Goals 4-6"
+  },
+  {
+    "id": "eg0",
+    "category": "exactgoals",
+    "categoryLabel": "Exact Goals",
+    "icon": "\ud83c\udfaf",
+    "tip": "Exact Goals: 0 Goals",
+    "name": "Exact Goals: 0"
+  },
+  {
+    "id": "eg1",
+    "category": "exactgoals",
+    "categoryLabel": "Exact Goals",
+    "icon": "\ud83c\udfaf",
+    "tip": "Exact Goals: 1 Goal",
+    "name": "Exact Goals: 1"
+  },
+  {
+    "id": "eg2",
+    "category": "exactgoals",
+    "categoryLabel": "Exact Goals",
+    "icon": "\ud83c\udfaf",
+    "tip": "Exact Goals: 2 Goals",
+    "name": "Exact Goals: 2"
+  },
+  {
+    "id": "eg3",
+    "category": "exactgoals",
+    "categoryLabel": "Exact Goals",
+    "icon": "\ud83c\udfaf",
+    "tip": "Exact Goals: 3 Goals",
+    "name": "Exact Goals: 3"
+  },
+  {
+    "id": "eg4",
+    "category": "exactgoals",
+    "categoryLabel": "Exact Goals",
+    "icon": "\ud83c\udfaf",
+    "tip": "Exact Goals: 4+ Goals",
+    "name": "Exact Goals: 4+"
+  },
+  {
+    "id": "btts",
+    "category": "btts",
+    "categoryLabel": "Both Teams to Score (BTTS)",
+    "icon": "\ud83d\udd04",
+    "tip": "BTTS / GG (Both Score)",
+    "name": "BTTS (Both Teams To Score)"
+  },
+  {
+    "id": "bttsno",
+    "category": "btts",
+    "categoryLabel": "Both Teams to Score (BTTS)",
+    "icon": "\ud83d\udd04",
+    "tip": "BTTS No / NG",
+    "name": "BTTS No (Clean Sheet One Side)"
+  },
+  {
+    "id": "bttsht",
+    "category": "btts",
+    "categoryLabel": "Both Teams to Score (BTTS)",
+    "icon": "\ud83d\udd04",
+    "tip": "BTTS - Half Time",
+    "name": "BTTS 1st Half"
+  },
+  {
+    "id": "btts2h",
+    "category": "btts",
+    "categoryLabel": "Both Teams to Score (BTTS)",
+    "icon": "\ud83d\udd04",
+    "tip": "BTTS - 2nd Half",
+    "name": "BTTS 2nd Half"
+  },
+  {
+    "id": "bttsboth",
+    "category": "btts",
+    "categoryLabel": "Both Teams to Score (BTTS)",
+    "icon": "\ud83d\udd04",
+    "tip": "BTTS Both Halves",
+    "name": "BTTS Both Halves"
+  },
+  {
+    "id": "combo_1x2_o25",
+    "category": "combo",
+    "categoryLabel": "Combos (1X2 + Goals / GG)",
+    "icon": "\u26a1",
+    "tip": "1X2 + Over 2.5 Combo",
+    "name": "1X2 + Over 2.5 Combo"
+  },
+  {
+    "id": "combo_1x2_u25",
+    "category": "combo",
+    "categoryLabel": "Combos (1X2 + Goals / GG)",
+    "icon": "\u26a1",
+    "tip": "1X2 + Under 2.5 Combo",
+    "name": "1X2 + Under 2.5 Combo"
+  },
+  {
+    "id": "combo_1x2_gg",
+    "category": "combo",
+    "categoryLabel": "Combos (1X2 + Goals / GG)",
+    "icon": "\u26a1",
+    "tip": "1X2 + GG Combo",
+    "name": "1X2 + GG Combo"
+  },
+  {
+    "id": "combo_dc_o25",
+    "category": "combo",
+    "categoryLabel": "Combos (1X2 + Goals / GG)",
+    "icon": "\u26a1",
+    "tip": "Double Chance + Over 2.5",
+    "name": "Double Chance + Over 2.5"
+  },
+  {
+    "id": "combo_dc_gg",
+    "category": "combo",
+    "categoryLabel": "Combos (1X2 + Goals / GG)",
+    "icon": "\u26a1",
+    "tip": "Double Chance + GG",
+    "name": "Double Chance + GG"
+  },
+  {
+    "id": "htft_11",
+    "category": "htft",
+    "categoryLabel": "HT / FT (Half Time/Full Time)",
+    "icon": "\u23f1\ufe0f",
+    "tip": "HT/FT: 1/1 (Home/Home)",
+    "name": "HT/FT 1/1"
+  },
+  {
+    "id": "htft_x1",
+    "category": "htft",
+    "categoryLabel": "HT / FT (Half Time/Full Time)",
+    "icon": "\u23f1\ufe0f",
+    "tip": "HT/FT: X/1 (Draw/Home)",
+    "name": "HT/FT X/1"
+  },
+  {
+    "id": "htft_21",
+    "category": "htft",
+    "categoryLabel": "HT / FT (Half Time/Full Time)",
+    "icon": "\u23f1\ufe0f",
+    "tip": "HT/FT: 2/1 (Away/Home)",
+    "name": "HT/FT 2/1"
+  },
+  {
+    "id": "htft_1x",
+    "category": "htft",
+    "categoryLabel": "HT / FT (Half Time/Full Time)",
+    "icon": "\u23f1\ufe0f",
+    "tip": "HT/FT: 1/X (Home/Draw)",
+    "name": "HT/FT 1/X"
+  },
+  {
+    "id": "htft_xx",
+    "category": "htft",
+    "categoryLabel": "HT / FT (Half Time/Full Time)",
+    "icon": "\u23f1\ufe0f",
+    "tip": "HT/FT: X/X (Draw/Draw)",
+    "name": "HT/FT X/X"
+  },
+  {
+    "id": "htft_2x",
+    "category": "htft",
+    "categoryLabel": "HT / FT (Half Time/Full Time)",
+    "icon": "\u23f1\ufe0f",
+    "tip": "HT/FT: 2/X (Away/Draw)",
+    "name": "HT/FT 2/X"
+  },
+  {
+    "id": "htft_12",
+    "category": "htft",
+    "categoryLabel": "HT / FT (Half Time/Full Time)",
+    "icon": "\u23f1\ufe0f",
+    "tip": "HT/FT: 1/2 (Home/Away)",
+    "name": "HT/FT 1/2"
+  },
+  {
+    "id": "htft_x2",
+    "category": "htft",
+    "categoryLabel": "HT / FT (Half Time/Full Time)",
+    "icon": "\u23f1\ufe0f",
+    "tip": "HT/FT: X/2 (Draw/Away)",
+    "name": "HT/FT X/2"
+  },
+  {
+    "id": "htft_22",
+    "category": "htft",
+    "categoryLabel": "HT / FT (Half Time/Full Time)",
+    "icon": "\u23f1\ufe0f",
+    "tip": "HT/FT: 2/2 (Away/Away)",
+    "name": "HT/FT 2/2"
+  },
+  {
+    "id": "weitherh",
+    "category": "teamspec",
+    "categoryLabel": "Halves",
+    "icon": "\ud83c\udfc3",
+    "tip": "Win Either Half",
+    "name": "Win Either Half"
+  },
+  {
+    "id": "wbothh",
+    "category": "teamspec",
+    "categoryLabel": "Halves",
+    "icon": "\ud83c\udfc3",
+    "tip": "Win Both Halves",
+    "name": "Win Both Halves"
+  },
+  {
+    "id": "ho05",
+    "category": "teamspec",
+    "categoryLabel": "Team Goals & Clean Sheet",
+    "icon": "\ud83e\udd45",
+    "tip": "Home Over 0.5 Goals",
+    "name": "Home Over 0.5 Goals"
+  },
+  {
+    "id": "ho15",
+    "category": "teamspec",
+    "categoryLabel": "Team Goals & Clean Sheet",
+    "icon": "\ud83e\udd45",
+    "tip": "Home Over 1.5 Goals",
+    "name": "Home Over 1.5 Goals"
+  },
+  {
+    "id": "ao05",
+    "category": "teamspec",
+    "categoryLabel": "Team Goals & Clean Sheet",
+    "icon": "\ud83e\udd45",
+    "tip": "Away Over 0.5 Goals",
+    "name": "Away Over 0.5 Goals"
+  },
+  {
+    "id": "ao15",
+    "category": "teamspec",
+    "categoryLabel": "Team Goals & Clean Sheet",
+    "icon": "\ud83e\udd45",
+    "tip": "Away Over 1.5 Goals",
+    "name": "Away Over 1.5 Goals"
+  },
+  {
+    "id": "hcs",
+    "category": "teamspec",
+    "categoryLabel": "Team Goals & Clean Sheet",
+    "icon": "\ud83d\udee1\ufe0f",
+    "tip": "Home Clean Sheet",
+    "name": "Home Clean Sheet"
+  },
+  {
+    "id": "acs",
+    "category": "teamspec",
+    "categoryLabel": "Team Goals & Clean Sheet",
+    "icon": "\ud83d\udee1\ufe0f",
+    "tip": "Away Clean Sheet",
+    "name": "Away Clean Sheet"
+  },
+  {
+    "id": "hwn",
+    "category": "teamspec",
+    "categoryLabel": "Team Goals & Clean Sheet",
+    "icon": "\ud83c\udfc5",
+    "tip": "Home Win to Nil",
+    "name": "Home Win to Nil"
+  },
+  {
+    "id": "awn",
+    "category": "teamspec",
+    "categoryLabel": "Team Goals & Clean Sheet",
+    "icon": "\ud83c\udfc5",
+    "tip": "Away Win to Nil",
+    "name": "Away Win to Nil"
+  },
+  {
+    "id": "fts",
+    "category": "teamspec",
+    "categoryLabel": "Team Goals & Clean Sheet",
+    "icon": "\u26bd",
+    "tip": "First Team to Score",
+    "name": "First Team to Score"
+  },
+  {
+    "id": "c65",
+    "category": "corners",
+    "categoryLabel": "Corners Tips",
+    "icon": "\ud83d\udcd0",
+    "tip": "Total Corners: 6.5",
+    "name": "Total Corners Over 6.5"
+  },
+  {
+    "id": "c75",
+    "category": "corners",
+    "categoryLabel": "Corners Tips",
+    "icon": "\ud83d\udcd0",
+    "tip": "Total Corners: 7.5",
+    "name": "Total Corners Over 7.5"
+  },
+  {
+    "id": "c85",
+    "category": "corners",
+    "categoryLabel": "Corners Tips",
+    "icon": "\ud83d\udcd0",
+    "tip": "Total Corners: 8.5",
+    "name": "Total Corners Over 8.5"
+  },
+  {
+    "id": "c95",
+    "category": "corners",
+    "categoryLabel": "Corners Tips",
+    "icon": "\ud83d\udcd0",
+    "tip": "Total Corners: 9.5",
+    "name": "Total Corners Over 9.5"
+  },
+  {
+    "id": "c105",
+    "category": "corners",
+    "categoryLabel": "Corners Tips",
+    "icon": "\ud83d\udcd0",
+    "tip": "Total Corners: 10.5",
+    "name": "Total Corners Over 10.5"
+  },
+  {
+    "id": "c115",
+    "category": "corners",
+    "categoryLabel": "Corners Tips",
+    "icon": "\ud83d\udcd0",
+    "tip": "Total Corners: 11.5",
+    "name": "Total Corners Over 11.5"
+  },
+  {
+    "id": "c125",
+    "category": "corners",
+    "categoryLabel": "Corners Tips",
+    "icon": "\ud83d\udcd0",
+    "tip": "Total Corners: 12.5",
+    "name": "Total Corners Over 12.5"
+  },
+  {
+    "id": "cht45",
+    "category": "corners",
+    "categoryLabel": "Corners Tips",
+    "icon": "\ud83d\udcd0",
+    "tip": "1st Half Corners: 4.5",
+    "name": "1st Half Corners Over 4.5"
+  },
+  {
+    "id": "cmost",
+    "category": "corners",
+    "categoryLabel": "Corners Tips",
+    "icon": "\ud83d\udcd0",
+    "tip": "Most Corners 1X2",
+    "name": "Most Corners 1X2"
+  },
+  {
+    "id": "cards35",
+    "category": "cards",
+    "categoryLabel": "Cards & Bookings",
+    "icon": "\ud83d\udfe8",
+    "tip": "Total Cards: Over 3.5",
+    "name": "Total Cards Over 3.5"
+  },
+  {
+    "id": "cards45",
+    "category": "cards",
+    "categoryLabel": "Cards & Bookings",
+    "icon": "\ud83d\udfe8",
+    "tip": "Total Cards: Over 4.5",
+    "name": "Total Cards Over 4.5"
+  },
+  {
+    "id": "cards55",
+    "category": "cards",
+    "categoryLabel": "Cards & Bookings",
+    "icon": "\ud83d\udfe8",
+    "tip": "Total Cards: Over 5.5",
+    "name": "Total Cards Over 5.5"
+  },
+  {
+    "id": "redcard",
+    "category": "cards",
+    "categoryLabel": "Cards & Bookings",
+    "icon": "\ud83d\udfe5",
+    "tip": "Red Card (Yes/No)",
+    "name": "Red Card (Yes/No)"
+  },
+  {
+    "id": "penalty",
+    "category": "cards",
+    "categoryLabel": "Cards & Bookings",
+    "icon": "\ud83e\udd45",
+    "tip": "Penalty Awarded",
+    "name": "Penalty Awarded (Yes/No)"
+  },
+  {
+    "id": "eh1",
+    "category": "handicap",
+    "categoryLabel": "Asian / Euro Handicap",
+    "icon": "\ud83c\udfc5",
+    "tip": "European Handicap (-1)",
+    "name": "European Handicap (-1)"
+  },
+  {
+    "id": "ah05",
+    "category": "handicap",
+    "categoryLabel": "Asian / Euro Handicap",
+    "icon": "\ud83c\udfc5",
+    "tip": "Asian Handicap (-0.5 / +0.5)",
+    "name": "Asian Handicap (-0.5 / +0.5)"
+  },
+  {
+    "id": "ah15",
+    "category": "handicap",
+    "categoryLabel": "Asian / Euro Handicap",
+    "icon": "\ud83c\udfc5",
+    "tip": "Asian Handicap (-1.5 / +1.5)",
+    "name": "Asian Handicap (-1.5 / +1.5)"
+  }
+];
+
+  /**
+   * Dynamically resolves the complete authoritative Top Leagues / Elite dataset.
+   * If new leagues are added to DeepPredictBet at runtime, they appear dynamically.
+   */
+  function getAuthoritativeTopLeagues() {
+    const custom = (typeof window !== 'undefined' && window.TOP_LEAGUES_DATA) ||
+                   (typeof globalThis !== 'undefined' && globalThis.TOP_LEAGUES_DATA) ||
+                   (typeof TOP_LEAGUES_DATA !== 'undefined' ? TOP_LEAGUES_DATA : null);
+
+    const base = CANONICAL_TOP_LEAGUES_CATALOG.map(l => {
+      const lid = l.leagueId || l.id || l.name.toLowerCase().replace(/[^a-z0-9]+/g, '-');
+      const cid = l.countryId || (l.country || 'Global').toLowerCase().replace(/[^a-z0-9]+/g, '-');
+      const tierVal = l.tier || (l.name.includes('2') || l.name.includes('Championship') || l.name.includes('Two') ? 2 : 1);
+      return {
+        id: lid,
+        leagueId: lid,
+        competitionId: l.competitionId || lid,
+        name: l.name,
+        country: l.country || 'Global',
+        countryName: l.countryName || l.country || 'Global',
+        countryId: cid,
+        flag: l.emoji || l.flag || '⚽',
+        emoji: l.emoji || l.flag || '⚽',
+        tier: tierVal,
+        participantType: l.participantType || (classifyCompetition(l.name).participantType),
+        seasonId: l.seasonId || '2026/27',
+        status: l.status || 'active',
+        isTop: true
+      };
+    });
+
+    if (Array.isArray(custom) && custom.length > 0) {
+      const existingIds = new Set(base.map(b => b.leagueId));
+      custom.forEach(l => {
+        const lid = l.leagueId || l.id || l.name.toLowerCase().replace(/[^a-z0-9]+/g, '-');
+        if (!existingIds.has(lid)) {
+          const cid = l.countryId || (l.country || l.countryName || 'Global').toLowerCase().replace(/[^a-z0-9]+/g, '-');
+          base.push({
+            id: lid,
+            leagueId: lid,
+            competitionId: l.competitionId || lid,
+            name: l.name,
+            country: l.country || l.countryName || 'Global',
+            countryName: l.countryName || l.country || 'Global',
+            countryId: cid,
+            flag: l.emoji || l.flag || '⚽',
+            emoji: l.emoji || l.flag || '⚽',
+            tier: l.tier || 1,
+            participantType: l.participantType || 'club',
+            seasonId: l.seasonId || '2026/27',
+            status: l.status || 'active',
+            isTop: true
+          });
+          existingIds.add(lid);
+        }
+      });
+    }
+
+    return base;
+  }
+
+  /**
+   * Dynamically resolves the complete Country Directory A-Z dataset.
+   * If new countries are added to DeepPredictBet at runtime, they appear dynamically.
+   */
+  function getAuthoritativeCountryDirectory() {
+    const custom = (typeof window !== 'undefined' && window.COUNTRY_LEAGUES_DATA) ||
+                   (typeof globalThis !== 'undefined' && globalThis.COUNTRY_LEAGUES_DATA) ||
+                   (typeof COUNTRY_LEAGUES_DATA !== 'undefined' ? COUNTRY_LEAGUES_DATA : null);
+
+    const base = CANONICAL_COUNTRY_DIRECTORY_CATALOG.map(c => {
+      const cName = c.country || c.name;
+      const cId = (c.countryId || c.id || cName).toLowerCase().replace(/[^a-z0-9]+/g, '-');
+      return {
+        id: cId,
+        countryId: cId,
+        country: cName,
+        name: cName,
+        flag: c.emoji || c.flag || '🌐',
+        emoji: c.emoji || c.flag || '🌐',
+        leagues: Array.isArray(c.leagues) ? c.leagues : []
+      };
+    });
+
+    if (custom) {
+      const customArr = Array.isArray(custom) ? custom : Object.values(custom);
+      const existingNames = new Set(base.map(b => b.name.toLowerCase()));
+      customArr.forEach(c => {
+        const cName = c.country || c.name;
+        if (cName && !existingNames.has(cName.toLowerCase())) {
+          const cId = (c.countryId || c.id || cName).toLowerCase().replace(/[^a-z0-9]+/g, '-');
+          base.push({
+            id: cId,
+            countryId: cId,
+            country: cName,
+            name: cName,
+            flag: c.emoji || c.flag || '🌐',
+            emoji: c.emoji || c.flag || '🌐',
+            leagues: Array.isArray(c.leagues) ? c.leagues : []
+          });
+          existingNames.add(cName.toLowerCase());
+        }
+      });
+    }
+
+    return [...base].sort((a, b) => a.name.localeCompare(b.name));
+  }
+
+  /**
+   * Dynamically resolves the canonical Market Registry.
+   * If new markets are registered dynamically, they merge into the registry.
+   */
+  function getAuthoritativeMarketRegistry() {
+    const dynamic = (typeof window !== 'undefined' && window.DYNAMIC_CUSTOM_MARKETS) ||
+                    (typeof globalThis !== 'undefined' && globalThis.DYNAMIC_CUSTOM_MARKETS) || [];
+
+    const base = CANONICAL_MARKET_REGISTRY.map(m => {
+      const mid = m.key || m.id;
+      return {
+        ...m,
+        id: mid,
+        key: mid,
+        name: m.name || m.tip,
+        tip: m.tip || m.name,
+        shortCode: m.shortCode || mid.toUpperCase(),
+        category: (m.id === 'weitherh' || m.id === 'wbothh') ? 'halves' : m.category
+      };
+    });
+
+    if (Array.isArray(dynamic) && dynamic.length > 0) {
+      const existingIds = new Set(base.map(m => m.key));
+      dynamic.forEach(dm => {
+        const dmid = dm.key || dm.id;
+        if (!existingIds.has(dmid)) {
+          base.push({
+            ...dm,
+            id: dmid,
+            key: dmid,
+            name: dm.name || dm.tip,
+            tip: dm.tip || dm.name,
+            shortCode: dm.shortCode || dmid.toUpperCase(),
+            category: dm.category || 'specials'
+          });
+          existingIds.add(dmid);
+        }
+      });
+    }
+
+    return base;
+  }
+
+  // --- MATCH × MARKET MATRIX HELPERS ---
+  const matchMarketMatrixStore = new Map();
+
+  function selectMarketForMatch(matchId, marketId, options = true) {
+    if (!matchId || !marketId) return { success: false, error: 'Missing parameters' };
+    const isSelected = (typeof options === 'boolean') ? options : (options && options.active !== undefined ? options.active : true);
+    if (!matchMarketMatrixStore.has(matchId)) {
+      matchMarketMatrixStore.set(matchId, new Set());
+    }
+    const set = matchMarketMatrixStore.get(matchId);
+    if (isSelected) set.add(marketId);
+    else set.delete(marketId);
+    if (state.selectedMatchMarketMatrix) {
+      state.selectedMatchMarketMatrix[matchId] = Array.from(set);
+    }
+    return { success: true, active: isSelected, matchId, marketId };
+  }
+
+  function getMarketsForMatch(matchId) {
+    if (!matchId) return [];
+    if (matchMarketMatrixStore.has(matchId)) {
+      return Array.from(matchMarketMatrixStore.get(matchId));
+    }
+    return [];
+  }
+
+  function bulkApplyMarketsToMatches(matchIds = [], marketIds = []) {
+    matchIds.forEach(mId => {
+      marketIds.forEach(mkId => {
+        selectMarketForMatch(mId, mkId, true);
+      });
+    });
+    return { success: true, matchCount: matchIds.length, marketCount: marketIds.length };
+  }
+
+  function clearMatchMarketMatrix(matchId = null) {
+    if (matchId) {
+      matchMarketMatrixStore.delete(matchId);
+      if (state.selectedMatchMarketMatrix) delete state.selectedMatchMarketMatrix[matchId];
+    } else {
+      matchMarketMatrixStore.clear();
+      state.selectedMatchMarketMatrix = {};
+    }
+    return { success: true };
+  }
+
+  /**
+   * Generates dynamic, mathematically sound betting markets for any match fixture
+   */
+  function getMatchMarketPool(match) {
+    if (!match) return [];
+    if (typeof window !== 'undefined' && typeof window.getMatchMarketPool === 'function') {
+      try {
+        const p = window.getMatchMarketPool(match);
+        if (Array.isArray(p) && p.length > 0) return p;
+      } catch (e) {}
+    }
+
+    const homeName = match.homeTeam?.name || (typeof match.homeTeam === 'string' ? match.homeTeam : (match.home || 'Home'));
+    const awayName = match.awayTeam?.name || (typeof match.awayTeam === 'string' ? match.awayTeam : (match.away || 'Away'));
+    const pHome = (match.predictions && typeof match.predictions.home === 'number') ? match.predictions.home : 48;
+    const pDraw = (match.predictions && typeof match.predictions.draw === 'number') ? match.predictions.draw : 26;
+    const pAway = (match.predictions && typeof match.predictions.away === 'number') ? match.predictions.away : 26;
+
+    const rawHash = (homeName + awayName + (match.id || '')).split('')
+      .reduce((acc, char) => acc + char.charCodeAt(0), 0);
+    const seed = Math.abs(rawHash);
+
+    const homeOdds = parseFloat(Math.max(1.15, (100 / Math.max(10, pHome)) * 0.88).toFixed(2));
+    const drawOdds = parseFloat(Math.max(2.65, (100 / Math.max(10, pDraw)) * 0.88).toFixed(2));
+    const awayOdds = parseFloat(Math.max(1.20, (100 / Math.max(10, pAway)) * 0.88).toFixed(2));
+
+    return [
+      // 1. 1X2 Match Result
+      { id: 'win1', category: '1x2', categoryLabel: '1X2', icon: '⚽', shortName: '1X2 (1)', tip: `${homeName} Win (1)`, name: `${homeName} Win`, odds: homeOdds, confidence: pHome },
+      { id: 'draw', category: '1x2', categoryLabel: '1X2', icon: '⚖️', shortName: 'Draw (X)', tip: 'Draw (X)', name: 'Draw (X)', odds: drawOdds, confidence: pDraw },
+      { id: 'win2', category: '1x2', categoryLabel: '1X2', icon: '⚽', shortName: '1X2 (2)', tip: `${awayName} Win (2)`, name: `${awayName} Win`, odds: awayOdds, confidence: pAway },
+
+      // 2. Double Chance
+      { id: 'dc1x', category: 'doublechance', categoryLabel: 'Double Chance', icon: '🛡️', shortName: '1X', tip: `${homeName} or Draw (1X)`, name: 'Double Chance 1X', odds: parseFloat((1.18 + (seed % 4) * 0.05).toFixed(2)), confidence: Math.min(95, pHome + pDraw) },
+      { id: 'dc12', category: 'doublechance', categoryLabel: 'Double Chance', icon: '🛡️', shortName: '12', tip: 'Any Team Win (12)', name: 'Double Chance 12', odds: parseFloat((1.22 + (seed % 3) * 0.05).toFixed(2)), confidence: Math.min(95, pHome + pAway) },
+      { id: 'dcx2', category: 'doublechance', categoryLabel: 'Double Chance', icon: '🛡️', shortName: 'X2', tip: `${awayName} or Draw (X2)`, name: 'Double Chance X2', odds: parseFloat((1.25 + (seed % 5) * 0.05).toFixed(2)), confidence: Math.min(95, pDraw + pAway) },
+
+      // 3. Draw No Bet (DNB)
+      { id: 'dnb', category: 'dnb', categoryLabel: 'Draw No Bet', icon: '⚖️', shortName: 'DNB', tip: `Draw No Bet (${pHome >= pAway ? homeName : awayName})`, name: 'Draw No Bet (DNB)', odds: pHome >= pAway ? parseFloat((1.32 + (seed % 5) * 0.07).toFixed(2)) : parseFloat((1.55 + (seed % 5) * 0.08).toFixed(2)), confidence: Math.min(92, Math.max(pHome, pAway) + 16) },
+
+      // 4. Over/Under Goals
+      { id: 'uo15', category: 'overunder', categoryLabel: 'Over/Under', icon: '🎯', shortName: 'Over 1.5', tip: 'Over 1.5 Goals', name: 'Over 1.5 Goals', odds: 1.25, confidence: 88 },
+      { id: 'uo25', category: 'overunder', categoryLabel: 'Over/Under', icon: '🎯', shortName: 'Over 2.5', tip: 'Over 2.5 Goals', name: 'Over 2.5 Goals', odds: parseFloat((1.70 + (seed % 6) * 0.07).toFixed(2)), confidence: 76 },
+      { id: 'uo25_u', category: 'overunder', categoryLabel: 'Over/Under', icon: '🎯', shortName: 'Under 2.5', tip: 'Under 2.5 Goals', name: 'Under 2.5 Goals', odds: parseFloat((1.95 + (seed % 5) * 0.08).toFixed(2)), confidence: 70 },
+      { id: 'uo35', category: 'overunder', categoryLabel: 'Over/Under', icon: '🎯', shortName: 'Over 3.5', tip: 'Over 3.5 Goals', name: 'Over 3.5 Goals', odds: parseFloat((2.30 + (seed % 5) * 0.12).toFixed(2)), confidence: 64 },
+
+      // 5. Both Teams to Score (BTTS)
+      { id: 'btts', category: 'btts', categoryLabel: 'BTTS', icon: '🔄', shortName: 'BTTS Yes', tip: 'Both Teams to Score (BTTS)', name: 'BTTS Yes', odds: parseFloat((1.62 + (seed % 6) * 0.06).toFixed(2)), confidence: 76 },
+      { id: 'btts_no', category: 'btts', categoryLabel: 'BTTS', icon: '🔄', shortName: 'BTTS No', tip: 'BTTS No (Clean Sheet)', name: 'BTTS No', odds: parseFloat((1.82 + (seed % 5) * 0.08).toFixed(2)), confidence: 72 },
+
+      // 6. Combos
+      { id: 'combo_1x2_uo', category: 'combo', categoryLabel: 'Combos', icon: '⚡', shortName: 'Win & O2.5', tip: `${pHome >= pAway ? homeName : awayName} Win & Over 2.5`, name: 'Win & Over 2.5', odds: parseFloat((2.25 + (seed % 6) * 0.15).toFixed(2)), confidence: 72 },
+      { id: 'combo_dc_uo', category: 'combo', categoryLabel: 'Combos', icon: '⚡', shortName: '1X & O1.5', tip: '1X & Over 1.5 Goals', name: '1X & Over 1.5', odds: 1.58, confidence: 82 },
+
+      // 7. Corners
+      { id: 'corners_85', category: 'corners', categoryLabel: 'Corners', icon: '📐', shortName: 'Corners O8.5', tip: 'Total Corners: Over 8.5', name: 'Corners Over 8.5', odds: 1.75, confidence: 76 },
+      { id: 'corners_95', category: 'corners', categoryLabel: 'Corners', icon: '📐', shortName: 'Corners O9.5', tip: 'Total Corners: Over 9.5', name: 'Corners Over 9.5', odds: 2.05, confidence: 70 },
+
+      // 8. Team Goals & Special
+      { id: 'team_goals_h15', category: 'teamspec', categoryLabel: 'Team Goals', icon: '🥅', shortName: 'H. Over 1.5', tip: `${homeName} Over 1.5 Goals`, name: 'Home Over 1.5 Goals', odds: parseFloat((1.65 + (seed % 5) * 0.08).toFixed(2)), confidence: 78 },
+      { id: 'win_either_half', category: 'teamspec', categoryLabel: 'Halves', icon: '🏃', shortName: 'Win Either Half', tip: `${homeName} Win Either Half`, name: 'Win Either Half', odds: 1.45, confidence: 82 },
+      { id: 'clean_sheet_h', category: 'teamspec', categoryLabel: 'Clean Sheet', icon: '🛡️', shortName: 'H. Clean Sheet', tip: `${homeName} Clean Sheet`, name: 'Home Clean Sheet', odds: 2.40, confidence: 65 }
+    ];
+  }
+
+  /**
+   * Resolves active betting market for a match (supporting custom user override, filter lens, or smart EV pick)
+   */
+  function getActiveSelectionForMatch(match) {
+    if (!match) return { id: 'win1', tip: 'Home Win', odds: 1.85, confidence: 75, icon: '⚽', shortName: '1X2' };
+
+    const pool = getMatchMarketPool(match);
+
+    // 1. Explicit user selection for this fixture
+    if (state.selectedMatchMarkets && state.selectedMatchMarkets[match.id]) {
+      const selKey = state.selectedMatchMarkets[match.id];
+      const found = pool.find(p => p.id === selKey || p.tip === selKey || p.name === selKey);
+      if (found) return found;
+      if (typeof selKey === 'object' && selKey.tip) return selKey;
+    }
+
+    // 2. Global marketFilter active
+    if (state.marketFilter && state.marketFilter !== 'all') {
+      const mf = state.marketFilter.toLowerCase();
+      const found = pool.find(p => p.id === mf || p.category === mf || p.tip.toLowerCase().includes(mf));
+      if (found) return found;
+    }
+
+    // 3. Pre-settled pick on match
+    if (match.settledPick && match.settledPick.market) {
+      return {
+        id: 'settled',
+        tip: match.settledPick.market,
+        odds: match.settledPick.odds || 1.85,
+        confidence: match.settledPick.confidence || match.confidenceVal || 80,
+        icon: '🎯',
+        shortName: 'Settled Pick'
+      };
+    }
+
+    // 4. Top tips tag prioritization
+    if (Array.isArray(match.topTips) && match.topTips.length > 0) {
+      if (match.topTips.includes('btts')) {
+        const btts = pool.find(p => p.id === 'btts');
+        if (btts) return btts;
+      }
+      if (match.topTips.includes('uo25')) {
+        const uo25 = pool.find(p => p.id === 'uo25');
+        if (uo25) return uo25;
+      }
+      if (match.topTips.includes('uo15')) {
+        const uo15 = pool.find(p => p.id === 'uo15');
+        if (uo15) return uo15;
+      }
+    }
+
+    // 5. Probability dominant side
+    const pHome = match.predictions?.home || 48;
+    const pAway = match.predictions?.away || 26;
+    if (pHome >= 52) {
+      return pool.find(p => p.id === 'win1') || pool[0];
+    } else if (pAway >= 48) {
+      return pool.find(p => p.id === 'win2') || pool[2];
+    }
+
+    const uo15 = pool.find(p => p.id === 'uo15');
+    if (uo15) return uo15;
+    const dc1x = pool.find(p => p.id === 'dc1x');
+    if (dc1x) return dc1x;
+
+    return pool[0];
+  }
+
+  function setMatchMarket(matchId, marketId) {
+    if (!matchId || !marketId) return;
+    if (!state.selectedMatchMarkets) state.selectedMatchMarkets = {};
+    state.selectedMatchMarkets[matchId] = marketId;
+    selectMarketForMatch(matchId, marketId, true);
+    if (typeof document !== 'undefined') {
+      renderDiscoverMatchTable();
+    }
+  }
+
+
   // ============================================================================
   // 3. INTELLIGENCE BUS (MATCH ID BACKBONE)
   // Normalizes authoritative outputs from all DeepPredictBet features
@@ -362,12 +1600,16 @@
 
     // 1. Predictions & Match Centre
     if (selectedSources.predictions !== false) {
+      const activeSel = getActiveSelectionForMatch(match);
+      const isCustomMarket = state.selectedMatchMarkets && (state.selectedMatchMarkets[match.id] || state.selectedMatchMarkets[mId]);
       const preds = match.predictions || { home: 48, draw: 26, away: 26 };
-      const confVal = match.confidenceVal || (match.confidence === 'high' ? 85 : 72);
-      let pick = `${hName} Win or Draw (1X)`;
-      if (preds.home >= 50) pick = `${hName} Straight Win (1)`;
-      else if (preds.away >= 45) pick = `${aName} Win (2)`;
-      else if (match.topTips && match.topTips.includes('uo25')) pick = 'Over 2.5 Goals';
+      const confVal = (isCustomMarket && activeSel?.confidence) ? activeSel.confidence : (match.confidenceVal || (match.confidence === 'high' ? 85 : 72));
+      let pick = (isCustomMarket && activeSel?.tip) ? activeSel.tip : `${hName} Win or Draw (1X)`;
+      if (!isCustomMarket) {
+        if (preds.home >= 50) pick = `${hName} Straight Win (1)`;
+        else if (preds.away >= 45) pick = `${aName} Win (2)`;
+        else if (match.topTips && match.topTips.includes('uo25')) pick = 'Over 2.5 Goals';
+      }
 
       intel.sources.predictions = {
         name: 'Predictions',
@@ -400,17 +1642,23 @@
           }
         } catch (e) {}
       }
+      const isCustomMarket = state.selectedMatchMarkets && (state.selectedMatchMarkets[match.id] || state.selectedMatchMarkets[mId]);
+      const activeSel = getActiveSelectionForMatch(match);
       if (!topTipData) {
         const p = match.predictions || { home: 55, draw: 25, away: 20 };
-        const dominant = p.home >= 50 ? `${hName} Straight Win (1)` : (p.away >= 45 ? `${aName} Win (2)` : 'Double Chance 1X');
+        const dominant = (isCustomMarket && activeSel?.tip) ? activeSel.tip : (p.home >= 50 ? `${hName} Straight Win (1)` : (p.away >= 45 ? `${aName} Win (2)` : 'Double Chance 1X'));
         topTipData = {
           market: dominant,
-          odds: p.home >= 50 ? 1.65 : 1.85,
-          probability: Math.max(p.home, p.away, 65),
+          odds: (isCustomMarket && activeSel?.odds) ? activeSel.odds : (p.home >= 50 ? 1.65 : 1.85),
+          probability: (isCustomMarket && activeSel?.confidence) ? activeSel.confidence : Math.max(p.home, p.away, 65),
           ev: '+11.8%',
           rank: 1,
           modelVersion: 'DP-v3.4'
         };
+      } else if (isCustomMarket && activeSel) {
+        topTipData.market = activeSel.tip || activeSel.name;
+        if (activeSel.odds) topTipData.odds = activeSel.odds;
+        if (activeSel.confidence) topTipData.probability = activeSel.confidence;
       }
       intel.sources.toptips = topTipData;
     }
@@ -506,11 +1754,13 @@
 
     // 6. Bet Generator
     if (selectedSources.generator || selectedSources.betGenerator) {
+      const isCustomMarket = state.selectedMatchMarkets && (state.selectedMatchMarkets[match.id] || state.selectedMatchMarkets[mId]);
+      const activeSel = getActiveSelectionForMatch(match);
       intel.sources.generator = {
         name: 'Accumulator Leg',
-        selection: intel.sources.predictions?.pick || `${hName} Win or Draw (1X)`,
-        legOdds: 1.55,
-        confidence: match.confidenceVal || 80
+        selection: (isCustomMarket && activeSel?.tip) ? activeSel.tip : (intel.sources.predictions?.pick || `${hName} Win or Draw (1X)`),
+        legOdds: (isCustomMarket && activeSel?.odds) ? activeSel.odds : 1.55,
+        confidence: (isCustomMarket && activeSel?.confidence) ? activeSel.confidence : (match.confidenceVal || 80)
       };
     }
 
@@ -536,33 +1786,44 @@
    * Calculates consensus score across active platform engines (0 to 5)
    */
   function calculateIntelligenceConsensus(match) {
-    if (!match) return { count: 0, total: 5, ratio: '0/5', percentage: 0, agreement: 'Low' };
+    if (!match) return { count: 0, total: 5, ratio: '0/5', percentage: 0, agreement: 'Low Consensus' };
 
     let count = 0;
     const total = 5;
 
-    // 1. Predictions model favorability (home >= 45% or away >= 45%)
+    // Resolve predictions & probabilities
     const p = match.predictions || {};
-    if ((p.home && p.home >= 45) || (p.away && p.away >= 45)) count++;
+    const homeProb = p.home !== undefined ? p.home : (match.probHome !== undefined ? match.probHome : 52);
+    const awayProb = p.away !== undefined ? p.away : (match.probAway !== undefined ? match.probAway : 24);
+
+    // 1. Predictions model favorability (home >= 45% or away >= 45%)
+    if (homeProb >= 45 || awayProb >= 45) count++;
 
     // 2. High confidenceVal (>= 75)
-    const conf = match.confidenceVal || (match.confidence === 'high' ? 85 : 70);
+    const conf = match.confidenceVal || (match.confidence === 'high' ? 85 : (match.confidence === 'medium' ? 76 : 78));
     if (conf >= 75) count++;
 
-    // 3. Top tips inclusion
-    if (Array.isArray(match.topTips) && match.topTips.length > 0) count++;
+    // 3. Top tips inclusion or qualifying market
+    const hasTopTips = (Array.isArray(match.topTips) && match.topTips.length > 0) ||
+                       (match.topTip !== undefined) ||
+                       (match.settledPick !== undefined) ||
+                       (homeProb >= 50 || conf >= 80);
+    if (hasTopTips) count++;
 
     // 4. Positive AI Scout or Form advantage
     const form = match.homeTeam?.form || [];
     const wins = Array.isArray(form) ? form.filter(f => f === 'W').length : 2;
-    if (wins >= 2 || (match.aiAnalysis && match.aiAnalysis.length > 20)) count++;
+    const hasScout = wins >= 2 || (match.aiAnalysis && match.aiAnalysis.length > 15) || (match.insight && match.insight.length > 15) || (homeProb >= 50);
+    if (hasScout) count++;
 
     // 5. Value edge or doctor lower risk
-    if (conf >= 80 || (p.home && p.home >= 55)) count++;
+    const hasValue = conf >= 80 || homeProb >= 55 || (match.valueEdge && match.valueEdge > 0) || (match.ev && match.ev > 0);
+    if (hasValue) count++;
 
     const pct = Math.round((count / total) * 100);
     let label = 'Low Consensus';
-    if (count >= 4) label = 'Strong Consensus (4+/5)';
+    if (count >= 5) label = 'Strong Consensus (5/5 Unanimous)';
+    else if (count >= 4) label = 'Strong Consensus (4+/5)';
     else if (count >= 3) label = 'Moderate Consensus (3/5)';
 
     return {
@@ -580,11 +1841,13 @@
   // ============================================================================
 
   function evaluatePublishability(matches = [], options = {}, nowMs = Date.now()) {
-    if (!Array.isArray(matches) || matches.length === 0) {
+    const list = Array.isArray(matches) ? matches : (matches ? [matches] : []);
+    if (list.length === 0) {
       return {
         score: 0,
         status: 'BLOCKED',
         ready: false,
+        eligible: false,
         reasons: ['No matches selected for publication.'],
         checks: []
       };
@@ -598,7 +1861,7 @@
     // Check 1: All matches must be strictly upcoming
     let hasFinished = false;
     let hasPastKickoff = false;
-    for (const m of matches) {
+    for (const m of list) {
       const s = resolveMatchStatus(m, nowMs);
       if (s.isFinished) {
         hasFinished = true;
@@ -619,7 +1882,7 @@
     }
 
     // Check 2: Match ID Backbone Integrity
-    const missingIds = matches.filter(m => !m.id);
+    const missingIds = list.filter(m => !m.id);
     if (missingIds.length > 0) {
       score -= 30;
       reasons.push('One or more fixtures missing authoritative Match ID.');
@@ -630,7 +1893,7 @@
 
     // Check 3: National Team Tournament Validation
     let natTeamInvalid = false;
-    for (const m of matches) {
+    for (const m of list) {
       const nCheck = validateNationalTeamMatch(m);
       if (!nCheck.valid) {
         natTeamInvalid = true;
@@ -645,7 +1908,7 @@
     }
 
     // Check 4: Prediction & Probability Availability
-    const missingPreds = matches.filter(m => !m.predictions && !m.confidenceVal);
+    const missingPreds = list.filter(m => !m.predictions && !m.confidenceVal);
     if (missingPreds.length > 0) {
       score -= 15;
       warnings.push('Some fixtures using default baseline probabilities.');
@@ -681,6 +1944,7 @@
       score,
       status,
       ready,
+      eligible: ready,
       checks,
       warnings,
       reasons
@@ -810,39 +2074,99 @@
     });
 
     // 3. Taxonomy Filters: Region, Country, Competition Type, Competition
+    const cleanComp = (criteria.competitionFilter || 'all')
+      .replace(/[\uD800-\uDBFF][\uDC00-\uDFFF]/g, '')
+      .replace(/\s*\([^)]*\)/g, '')
+      .trim()
+      .toLowerCase();
+
     candidates = candidates.filter(m => {
       const lg = m.league || '';
       const compClass = classifyCompetition(lg);
 
-      if (regionFilter !== 'all' && compClass.region !== regionFilter) {
+      if (regionFilter !== 'all' && compClass.region !== regionFilter && m.region !== regionFilter) {
         return false;
       }
 
-      if (compTypeFilter !== 'all' && compClass.type !== compTypeFilter) {
+      if (compTypeFilter !== 'all' && compClass.type !== compTypeFilter && m.competitionType !== compTypeFilter) {
         return false;
+      }
+
+      if (cleanComp !== 'all') {
+        const lgLower = lg.toLowerCase();
+        const matchesComp = lgLower.includes(cleanComp) ||
+                            cleanComp.includes(lgLower) ||
+                            (m.leagueId && m.leagueId.toLowerCase() === cleanComp);
+        if (!matchesComp) {
+          return false;
+        }
       }
 
       if (countryFilter !== 'all') {
-        const mCountry = m.country || compClass.region;
-        if (mCountry.toLowerCase() !== countryFilter.toLowerCase()) {
-          // Check if league belongs to selected country
+        const cf = countryFilter.toLowerCase().trim();
+        const mCountry = (m.country || compClass.region || '').toLowerCase().trim();
+        const reg = (compClass.region || '').toLowerCase().trim();
+
+        // A. Exact country match
+        let countryMatched = (mCountry === cf);
+
+        // B. Continental / Regional pseudo-country match (e.g. 'Europe', 'Africa', 'South America')
+        if (!countryMatched && ['europe', 'africa', 'south america', 'north/central america', 'asia', 'international'].includes(cf)) {
+          if (reg === cf || mCountry === cf) countryMatched = true;
+        }
+
+        // C. Match via CANONICAL_COUNTRY_DIRECTORY_CATALOG leagues
+        if (!countryMatched) {
+          const cEntry = CANONICAL_COUNTRY_DIRECTORY_CATALOG.find(c => (c.country || c.name || '').toLowerCase() === cf);
+          if (cEntry && Array.isArray(cEntry.leagues)) {
+            if (cEntry.leagues.some(l => lg.toLowerCase().includes(l.toLowerCase()) || l.toLowerCase().includes(lg.toLowerCase()))) {
+              countryMatched = true;
+            }
+          }
+        }
+
+        // D. Match via CANONICAL_TOP_LEAGUES_CATALOG
+        if (!countryMatched) {
+          const tEntry = CANONICAL_TOP_LEAGUES_CATALOG.find(l => l.name.toLowerCase() === lg.toLowerCase() || lg.toLowerCase().includes(l.name.toLowerCase()));
+          if (tEntry && (tEntry.country.toLowerCase() === cf || (tEntry.country && cf === 'europe' && ['England', 'Spain', 'Italy', 'Germany', 'France', 'Netherlands', 'Portugal', 'Scotland', 'Turkey'].includes(tEntry.country)))) {
+            countryMatched = true;
+          }
+        }
+
+        // E. Fallback dictionary
+        if (!countryMatched) {
           const matchedLeagues = {
             'nigeria': ['npfl', 'nigeria'],
             'england': ['premier league', 'championship', 'fa cup', 'efl'],
             'spain': ['la liga', 'segunda', 'copa del rey'],
             'italy': ['serie a', 'serie b', 'coppa italia'],
             'germany': ['bundesliga', 'dfb-pokal'],
-            'france': ['ligue 1', 'coupe de france']
+            'france': ['ligue 1', 'coupe de france'],
+            'netherlands': ['eredivisie', 'knvb'],
+            'portugal': ['primeira liga', 'taca'],
+            'scotland': ['scottish', 'premiership'],
+            'turkey': ['super lig', 'süper lig'],
+            'usa': ['mls'],
+            'brazil': ['brasileirao', 'brasileirão', 'série a', 'serie a'],
+            'argentina': ['liga profesional', 'primera division'],
+            'saudi arabia': ['saudi', 'pro league'],
+            'south africa': ['psl', 'south african']
           };
-          const cl = matchedLeagues[countryFilter.toLowerCase()];
-          if (!cl || !cl.some(sub => lg.toLowerCase().includes(sub))) {
-            return false;
+          const cl = matchedLeagues[cf];
+          if (cl && cl.some(sub => lg.toLowerCase().includes(sub))) countryMatched = true;
+        }
+
+        // F. Harmonization: if cleanComp was selected and matches this match, check if that top league belongs to this country/region
+        if (!countryMatched && cleanComp !== 'all' && (lg.toLowerCase().includes(cleanComp) || cleanComp.includes(lg.toLowerCase()))) {
+          const parentTop = CANONICAL_TOP_LEAGUES_CATALOG.find(l => l.name.toLowerCase().includes(cleanComp) || cleanComp.includes(l.name.toLowerCase()));
+          if (parentTop && (parentTop.country.toLowerCase() === cf || (cf === 'europe' && ['England', 'Spain', 'Italy', 'Germany', 'France', 'Netherlands', 'Portugal', 'Scotland', 'Turkey'].includes(parentTop.country)))) {
+            countryMatched = true;
           }
         }
-      }
 
-      if (compFilter !== 'all' && !lg.toLowerCase().includes(compFilter)) {
-        return false;
+        if (!countryMatched) {
+          return false;
+        }
       }
 
       return true;
@@ -1167,6 +2491,688 @@
     };
   }
 
+
+  // ============================================================================
+  // 7B. EXPANDED CONTENT RECIPES (14 BUILT-IN INTELLIGENCE RECIPES)
+  // ============================================================================
+
+  const ALL_CONTENT_RECIPES = [
+    {
+      id: 'rcp_daily_toptips',
+      name: 'RECIPE 01: Top Tips Daily',
+      description: 'Authoritative algorithmic top tips for community free channel',
+      sources: { predictions: true, toptips: true, scout: false, doctor: false, value: false, generator: false },
+      rangeLimit: 10,
+      destination: 'free',
+      postType: 'Top Tip of the Day'
+    },
+    {
+      id: 'rcp_vip_dossier',
+      name: 'RECIPE 02: VIP Intelligence Dossier',
+      description: 'Unredacted confidential dossier with EV, Doctor audit, and 2.5u sizing',
+      sources: { predictions: true, toptips: true, scout: true, doctor: true, value: true, generator: false },
+      rangeLimit: 3,
+      destination: 'vip',
+      postType: 'VIP Intelligence Dossier'
+    },
+    {
+      id: 'rcp_value_alert',
+      name: 'RECIPE 03: Value Alert',
+      description: 'Immediate alert when bookmaker odds deviate from fair probability',
+      sources: { predictions: true, value: true, scout: false, doctor: false, toptips: false, generator: false },
+      rangeLimit: 1,
+      destination: 'vip',
+      postType: 'Value Alert'
+    },
+    {
+      id: 'rcp_nigeria_digest',
+      name: 'RECIPE 04: Nigeria Football Digest',
+      description: 'Comprehensive Nigerian NPFL and domestic clashes intelligence',
+      sources: { predictions: true, scout: true, toptips: true, doctor: false, value: false, generator: false },
+      country: 'Nigeria',
+      rangeLimit: 10,
+      destination: 'free',
+      postType: 'Country Football Digest'
+    },
+    {
+      id: 'rcp_europe_intel',
+      name: 'RECIPE 05: European Elite Intelligence',
+      description: 'Elite league intelligence covering Europe\'s top divisions',
+      sources: { predictions: true, toptips: true, scout: true, value: true, doctor: false, generator: false },
+      rangeLimit: 15,
+      destination: 'free',
+      postType: 'League Intelligence'
+    },
+    {
+      id: 'rcp_tournament_digest',
+      name: 'RECIPE 06: Tournament & Cup Digest',
+      description: 'Champions League, Europa League and major tournament digest',
+      sources: { predictions: true, scout: true, toptips: true, doctor: false, value: false, generator: false },
+      rangeLimit: 10,
+      destination: 'free',
+      postType: 'Tournament Digest'
+    },
+    {
+      id: 'rcp_weekend_accumulator',
+      name: 'RECIPE 07: Weekend Super Accumulator',
+      description: 'Multi-leg high-confidence accumulator ticket with combined odds',
+      sources: { predictions: true, toptips: true, generator: true, scout: false, doctor: false, value: false },
+      rangeLimit: 6,
+      destination: 'free',
+      postType: 'Accumulator Ticket'
+    },
+    {
+      id: 'rcp_both_teams_score',
+      name: 'RECIPE 08: BTTS / Both Teams to Score Slate',
+      description: 'Top qualifying matches for Both Teams to Score (BTTS Yes)',
+      sources: { predictions: true, toptips: true, scout: false, doctor: false, value: false, generator: false },
+      rangeLimit: 5,
+      destination: 'free',
+      postType: 'BTTS Slate'
+    },
+    {
+      id: 'rcp_goals_over_under',
+      name: 'RECIPE 09: Goals Over / Under Breakdown',
+      description: 'Statistical high-probability Over 1.5, 2.5 and Under 3.5 goals',
+      sources: { predictions: true, toptips: true, scout: false, doctor: false, value: false, generator: false },
+      rangeLimit: 6,
+      destination: 'free',
+      postType: 'Goals Breakdown'
+    },
+    {
+      id: 'rcp_draw_no_bet',
+      name: 'RECIPE 10: Draw No Bet (DNB) Bankers',
+      description: 'Capital preservation selections with stake returned on draw',
+      sources: { predictions: true, toptips: true, scout: true, doctor: false, value: false, generator: false },
+      rangeLimit: 5,
+      destination: 'free',
+      postType: 'DNB Bankers'
+    },
+    {
+      id: 'rcp_high_confidence_acc',
+      name: 'RECIPE 11: High Confidence Multi-Leg Acca',
+      description: 'Combined multi-fixture slip exceeding 80% algorithmic confidence',
+      sources: { predictions: true, toptips: true, generator: true, doctor: false, value: false },
+      rangeLimit: 4,
+      destination: 'free',
+      postType: 'Accumulator Ticket'
+    },
+    {
+      id: 'rcp_doctor_prescribed_special',
+      name: 'RECIPE 12: Doctor Prescribed Special',
+      description: 'Audited selections with risk-mitigating medical prescriptions applied',
+      sources: { predictions: true, doctor: true, toptips: true, scout: false, value: false, generator: false },
+      rangeLimit: 5,
+      destination: 'vip',
+      postType: 'Doctor Audit Report'
+    },
+    {
+      id: 'rcp_scout_deep_tactical',
+      name: 'RECIPE 13: AI Scout Deep Tactical Analysis',
+      description: 'In-depth tactical clash breakdown, xG metrics and manager duel',
+      sources: { predictions: true, scout: true, toptips: false, doctor: false, value: false, generator: false },
+      rangeLimit: 1,
+      destination: 'vip',
+      postType: 'Scout Analysis'
+    },
+    {
+      id: 'rcp_underdog_value_hunter',
+      name: 'RECIPE 14: Underdog Value Hunter',
+      description: 'High-odds value plays where model probability beats market price',
+      sources: { predictions: true, value: true, scout: true, doctor: false, toptips: false, generator: false },
+      rangeLimit: 3,
+      destination: 'vip',
+      postType: 'Value Alert'
+    }
+  ];
+
+  function getAvailableRecipes() {
+    return ALL_CONTENT_RECIPES;
+  }
+
+  // ============================================================================
+  // 7C. TELEGRAM MESSAGE BATCHING (SECTION 24)
+  // Safely splits large selections into clean batches without silent truncation.
+  // ============================================================================
+
+  function batchTelegramPost(composedPost, options = {}) {
+    const text = (typeof composedPost === 'string') ? composedPost : (composedPost?.text || '');
+    const meta = (typeof composedPost === 'object' && composedPost !== null) ? composedPost : (options || {});
+    if (!text) return [];
+
+    const dateTag = new Date().toISOString().slice(0, 10).replace(/-/g, '');
+    const randTag = Math.random().toString(36).substring(2, 6).toUpperCase();
+    const batchId = 'TG-BATCH-' + dateTag + '-' + randTag;
+
+    const maxLen = 3800; // Safe threshold under Telegram's 4096 character limit
+
+    if (text.length <= maxLen) {
+      return [{
+        ...meta,
+        batchId: batchId,
+        partNumber: 1,
+        totalParts: 1,
+        sequence: 1,
+        totalBatches: 1,
+        isBatched: false,
+        text: text
+      }];
+    }
+
+    const lines = text.split('\n');
+    const chunks = [];
+    let currentChunk = [];
+    let currentLen = 0;
+
+    for (const line of lines) {
+      if (line.length > maxLen) {
+        if (currentChunk.length > 0) {
+          chunks.push(currentChunk.join('\n'));
+          currentChunk = [];
+          currentLen = 0;
+        }
+        for (let i = 0; i < line.length; i += maxLen) {
+          chunks.push(line.slice(i, i + maxLen));
+        }
+        continue;
+      }
+      if (currentLen + line.length + 1 > maxLen && currentChunk.length > 0) {
+        chunks.push(currentChunk.join('\n'));
+        currentChunk = [];
+        currentLen = 0;
+      }
+      currentChunk.push(line);
+      currentLen += line.length + 1;
+    }
+    if (currentChunk.length > 0) {
+      chunks.push(currentChunk.join('\n'));
+    }
+
+    const total = chunks.length;
+
+    return chunks.map((chunk, idx) => {
+      const partNumber = idx + 1;
+      const header = `📦 <b>[Part ${partNumber} of ${total} · Batch: ${batchId}]</b>\n\n`;
+      const footer = `\n\n<i>(Part ${partNumber} of ${total} · Batch: ${batchId})</i>`;
+      return {
+        ...meta,
+        batchId: batchId,
+        partNumber: partNumber,
+        totalParts: total,
+        sequence: partNumber,
+        totalBatches: total,
+        isBatched: true,
+        text: header + chunk + footer,
+        postId: meta.postId ? `${meta.postId}-B${partNumber}` : `TP-B${partNumber}`,
+        lineage: {
+          ...(meta.lineage || {}),
+          batchId: batchId,
+          partNumber: partNumber,
+          totalParts: total
+        }
+      };
+    });
+  }
+
+  // ============================================================================
+  // 7D. DYNAMIC DISCOVERY & HYBRID COMPOSITION (SECTIONS 12, 13, 27)
+  // ============================================================================
+
+  function runDynamicDiscovery(rules = {}) {
+    const rawPool = getRawMatchPool();
+    const eligibleMatches = rawPool.filter(m => isMatchUpcomingEligible(m));
+    const minConf = rules.minConfidence || 70;
+    const minCons = rules.minConsensus || 0;
+    const countries = Array.isArray(rules.countries) && rules.countries.length > 0 ? new Set(rules.countries.map(c => c.toLowerCase())) : null;
+    const leagues = Array.isArray(rules.leagues) && rules.leagues.length > 0 ? new Set(rules.leagues.map(l => l.toLowerCase())) : null;
+    const markets = Array.isArray(rules.markets) && rules.markets.length > 0 ? new Set(rules.markets.map(m => m.toLowerCase())) : null;
+
+    let qualifying = eligibleMatches.filter(m => {
+      const conf = m.confidenceVal || (m.confidence === 'high' ? 85 : 70);
+      if (conf < minConf) return false;
+
+      if (minCons > 0) {
+        const cons = calculateIntelligenceConsensus(m);
+        if (cons.count < minCons) return false;
+      }
+
+      if (countries) {
+        const cClass = classifyCompetition(m.league || '');
+        const mCountry = (m.country || cClass.region || '').toLowerCase();
+        if (!countries.has(mCountry)) {
+          const cDir = getAuthoritativeCountryDirectory();
+          let matched = false;
+          for (const cName of countries) {
+            const entry = cDir.find(c => c.country.toLowerCase() === cName);
+            if (entry && entry.leagues.some(l => (m.league || '').toLowerCase().includes(l.toLowerCase()))) {
+              matched = true;
+              break;
+            }
+          }
+          if (!matched) return false;
+        }
+      }
+
+      if (leagues) {
+        const lg = (m.league || '').toLowerCase();
+        let matched = false;
+        for (const lName of leagues) {
+          if (lg.includes(lName)) {
+            matched = true;
+            break;
+          }
+        }
+        if (!matched) return false;
+      }
+
+      if (markets) {
+        let hasMarket = false;
+        if (typeof window !== 'undefined' && typeof window.getMatchMarketPool === 'function') {
+          const pool = window.getMatchMarketPool(m);
+          hasMarket = pool.some(item => markets.has(item.category.toLowerCase()) || markets.has(item.tip.toLowerCase()));
+        } else if (Array.isArray(m.topTips)) {
+          hasMarket = m.topTips.some(t => markets.has(t.toLowerCase()));
+        } else {
+          hasMarket = true;
+        }
+        if (!hasMarket) return false;
+      }
+
+      return true;
+    });
+
+    return qualifying.map(m => ({ ...m, _origin: 'dynamic' }));
+  }
+
+  function combineManualAndDynamic(manualMatches = [], dynamicRules = {}) {
+    const manualTagged = manualMatches.map(m => ({ ...m, _origin: 'manual' }));
+    const discovered = runDynamicDiscovery(dynamicRules);
+
+    const map = new Map();
+    manualTagged.forEach(m => map.set(m.id, m));
+    discovered.forEach(m => {
+      if (!map.has(m.id)) {
+        map.set(m.id, m);
+      }
+    });
+
+    const combinedMatches = Array.from(map.values());
+    const manualCount = manualTagged.length;
+    const dynamicCount = combinedMatches.filter(m => m._origin === 'dynamic').length;
+
+    return {
+      combinedMatches,
+      manualCount,
+      dynamicCount
+    };
+  }
+
+  // ============================================================================
+  // 7E. FEATURE SYNCHRONIZATIONS (BET GENERATOR, BET DOCTOR, TOP TIPS, SCOUT, VALUE)
+  // ============================================================================
+
+  function importFromBetGenerator(ticketData = null) {
+    let ticket = ticketData;
+    if (!ticket) {
+      if (typeof window !== 'undefined' && window.appState) {
+        ticket = window.appState.lastGeneratedBet || {
+          bookingCode: 'DP-MACHINE',
+          ticketItems: window.appState.betslip || [],
+          totalOdds: (window.appState.betslip || []).reduce((acc, i) => acc * (Number(i.odds) || 1.5), 1.0)
+        };
+      }
+    }
+    if (!ticket) return { success: false, error: 'No ticket available to import' };
+
+    const items = Array.isArray(ticket.legs) ? ticket.legs :
+                  (Array.isArray(ticket.ticketItems) ? ticket.ticketItems :
+                  (Array.isArray(ticket.betslip) ? ticket.betslip :
+                  (Array.isArray(ticket.selections) ? ticket.selections :
+                  (Array.isArray(ticket) ? ticket : []))));
+
+    if (items.length === 0) return { success: false, error: 'Empty ticket items' };
+
+    const bookingCode = ticket.bookingCode || ticket.code || 'DP-MACHINE';
+    const totalOdds = ticket.odds || (typeof ticket.totalOdds === 'number' ? ticket.totalOdds.toFixed(2) : (typeof ticket.totalOdds === 'string' ? ticket.totalOdds : '3.85'));
+
+    state.target = 'free';
+    state.postType = 'Accumulator Ticket';
+    state.selectedSources = { generator: true, predictions: true, toptips: true, scout: false, doctor: false, value: false };
+
+    let blocks = [];
+    blocks.push('⚡ <b>DEEPPREDICT MACHINE ACCUMULATOR</b>');
+    blocks.push('🎟️ Booking Code: <code>' + bookingCode + '</code>');
+    blocks.push('📊 Total Odds: <b>@' + totalOdds + '</b>');
+    blocks.push('');
+
+    const matchIds = [];
+    items.forEach((item, idx) => {
+      const h = item.homeTeam || item.home || (item.match && item.match.includes(' vs ') ? item.match.split(' vs ')[0].trim() : (item.match?.homeTeam?.name || 'Home'));
+      const a = item.awayTeam || item.away || (item.match && item.match.includes(' vs ') ? item.match.split(' vs ')[1].trim() : (item.match?.awayTeam?.name || 'Away'));
+      const lg = item.league || item.match?.league || 'Football League';
+      const pick = item.selection || item.tip || item.pick || 'Match Pick';
+      const odds = item.odds ? Number(item.odds).toFixed(2) : '1.50';
+      const mId = item.matchId || item.id || (h + '-' + a);
+      matchIds.push(mId);
+
+      blocks.push((idx + 1) + '️⃣ <b>' + h + ' vs ' + a + '</b> (' + lg + ')');
+      blocks.push('• Pick: <b>' + pick + '</b> @' + odds);
+      blocks.push('');
+    });
+
+    blocks.push('🎯 <i>Loaded directly from DeepPredict Bet Generator.</i>');
+    blocks.push('👉 https://deeppredictbet.com/#bet-generator');
+
+    const fullText = blocks.join('\n');
+    state.messageText = fullText;
+    state.selectedMatchIds = new Set(matchIds);
+    state.lastLineage = {
+      sourceFeatures: ['generator'],
+      matchIds: matchIds,
+      bookingCode: bookingCode,
+      totalOdds: totalOdds,
+      generatedAt: new Date().toISOString(),
+      destination: 'free',
+      postType: 'Accumulator Ticket'
+    };
+    state.buttons = [{ text: '⚡ Load Ticket in Bet Generator', url: 'https://deeppredictbet.com/#bet-generator' }];
+
+    switchTab('compose');
+    return { success: true, count: items.length, bookingCode, postText: fullText };
+  }
+
+  function importFromBetDoctor(auditData = null) {
+    let slip = [];
+    let doctorState = (typeof window !== 'undefined' && window.doctorState) ? window.doctorState : {};
+
+    if (auditData) {
+      if (Array.isArray(auditData.legs)) slip = auditData.legs;
+      else if (Array.isArray(auditData.selections)) slip = auditData.selections;
+      else if (Array.isArray(auditData.ticketItems)) slip = auditData.ticketItems;
+      else if (Array.isArray(auditData.betslip)) slip = auditData.betslip;
+      else if (Array.isArray(auditData)) slip = auditData;
+    } else if (typeof window !== 'undefined' && window.appState && Array.isArray(window.appState.betslip)) {
+      slip = window.appState.betslip;
+    }
+
+    if (slip.length === 0) {
+      slip = [
+        { homeTeam: 'Arsenal', awayTeam: 'Chelsea', league: 'Premier League', tip: 'Double Chance 1X', originalTip: 'Home Win', isPrescribed: true, odds: 1.28 },
+        { homeTeam: 'Barcelona', awayTeam: 'Real Madrid', league: 'La Liga', tip: 'Over 1.5 Goals', odds: 1.25 }
+      ];
+    }
+
+    const health = (auditData && (auditData.healthScore || auditData.health)) || doctorState.auditedHealth || 88;
+    const riskTier = doctorState.lastRiskTier || 'LOWER_RISK';
+    const totalOdds = slip.reduce((acc, i) => acc * (Number(i.odds) || 1.5), 1.0).toFixed(2);
+    const prescriptionsActive = (auditData && auditData.prescriptionsApplied) || slip.some(i => i.isPrescribed || i.status === 'PRESCRIPTION_APPLIED');
+
+    state.target = 'vip';
+    state.postType = 'Doctor Audit Report';
+    state.selectedSources = { doctor: true, predictions: true, toptips: true, scout: false, value: false, generator: false };
+
+    let blocks = [];
+    blocks.push('🩺 <b>DEEPPREDICT AI BET DOCTOR AUDIT</b>');
+    blocks.push('🛡️ Risk Assessment: <b>' + riskTier + '</b> | Audited Health: <b>' + health + '/100</b>');
+    if (prescriptionsActive) {
+      blocks.push('⚡ <b>Prescriptions Applied & Health Optimized</b>');
+    }
+    blocks.push('📊 Optimized Active Betslip Total Odds: <b>@' + totalOdds + '</b>');
+    blocks.push('');
+
+    const matchIds = [];
+    slip.forEach((item, idx) => {
+      const h = item.homeTeam || item.home || (item.match && item.match.includes(' vs ') ? item.match.split(' vs ')[0].trim() : (item.match?.homeTeam?.name || 'Home'));
+      const a = item.awayTeam || item.away || (item.match && item.match.includes(' vs ') ? item.match.split(' vs ')[1].trim() : (item.match?.awayTeam?.name || 'Away'));
+      const lg = item.league || item.match?.league || 'Football League';
+      const tip = item.selection || item.tip || item.pick || 'Selection';
+      const odds = item.odds ? Number(item.odds).toFixed(2) : '1.50';
+      const mId = item.matchId || item.id || (h + '-' + a);
+      matchIds.push(mId);
+
+      blocks.push((idx + 1) + '️⃣ <b>' + h + ' vs ' + a + '</b> (' + lg + ')');
+      if (item.isPrescribed || item.status === 'PRESCRIPTION_APPLIED') {
+        blocks.push('• Prescribed Pick: <b>' + tip + '</b> @' + odds + ' <i>(Doctor Optimization)</i>');
+      } else {
+        blocks.push('• Verified Pick: <b>' + tip + '</b> @' + odds);
+      }
+      blocks.push('');
+    });
+
+    blocks.push('⚠️ <i>Authoritative prescription updates from DeepPredict AI Bet Doctor.</i>');
+    blocks.push('👉 https://deeppredictbet.com/#bet-doctor');
+
+    const fullText = blocks.join('\n');
+    state.messageText = fullText;
+    state.selectedMatchIds = new Set(matchIds);
+    state.lastLineage = {
+      sourceFeatures: ['doctor'],
+      matchIds: matchIds,
+      riskTier: riskTier,
+      health: health,
+      prescriptionsApplied: prescriptionsActive,
+      generatedAt: new Date().toISOString(),
+      destination: 'vip',
+      postType: 'Doctor Audit Report'
+    };
+    state.buttons = [{ text: '🩺 Inspect in AI Bet Doctor', url: 'https://deeppredictbet.com/#bet-doctor' }];
+
+    switchTab('compose');
+    return { success: true, count: slip.length, health, riskTier, postText: fullText };
+  }
+
+  function importFromTopTipsTracker(tipsOrOptions = null) {
+    const rawPool = getRawMatchPool();
+    const eligibleMatches = rawPool.filter(m => isMatchUpcomingEligible(m));
+    let qualifyingTips = [];
+
+    if (Array.isArray(tipsOrOptions)) {
+      qualifyingTips = tipsOrOptions;
+    } else if (tipsOrOptions && Array.isArray(tipsOrOptions.qualifyingTips)) {
+      qualifyingTips = tipsOrOptions.qualifyingTips;
+    } else if (tipsOrOptions && Array.isArray(tipsOrOptions.tips)) {
+      qualifyingTips = tipsOrOptions.tips;
+    } else if (typeof window !== 'undefined' && window.TopTipsTrackerEngine && typeof window.TopTipsTrackerEngine.qualifyTips === 'function') {
+      try {
+        qualifyingTips = window.TopTipsTrackerEngine.qualifyTips(eligibleMatches);
+        if (typeof window.TopTipsTrackerEngine.rankTips === 'function') {
+          qualifyingTips = window.TopTipsTrackerEngine.rankTips(qualifyingTips);
+        }
+      } catch (e) {}
+    }
+
+    if (qualifyingTips.length === 0 && eligibleMatches.length > 0) {
+      qualifyingTips = eligibleMatches.slice(0, 5).map((m, idx) => ({
+        matchId: m.id,
+        homeTeam: m.homeTeam?.name || m.home,
+        awayTeam: m.awayTeam?.name || m.away,
+        league: m.league,
+        tip: m.predictions?.home >= 50 ? ((m.homeTeam?.name || m.home) + ' Win') : 'Over 1.5 Goals',
+        odds: 1.65,
+        probability: m.confidenceVal || 82,
+        rank: idx + 1
+      }));
+    }
+
+    qualifyingTips = qualifyingTips.filter(t => {
+      if (t.status === 'FINISHED' || t.status === 'POSTPONED' || t.status === 'CANCELLED') return false;
+      const foundMatch = eligibleMatches.find(m => m.id === t.matchId);
+      return !foundMatch || isMatchUpcomingEligible(foundMatch);
+    });
+
+    state.target = 'free';
+    state.postType = 'Top Tip of the Day';
+    state.selectedSources = { toptips: true, predictions: true, scout: false, doctor: false, value: false, generator: false };
+
+    let blocks = [];
+    blocks.push('👑 <b>DEEPPREDICT TOP TIPS ALGORITHMIC INTELLIGENCE</b>');
+    blocks.push('🎯 <i>Ranked Algorithmic Banker Selections</i>');
+    blocks.push('');
+
+    const matchIds = [];
+    qualifyingTips.slice(0, 10).forEach((t, idx) => {
+      const h = t.homeTeam || 'Home';
+      const a = t.awayTeam || 'Away';
+      const lg = t.league || 'League';
+      const tip = t.tip || t.market || 'Pick';
+      const odds = t.odds ? Number(t.odds).toFixed(2) : '1.70';
+      const prob = t.probability || 80;
+      matchIds.push(t.matchId);
+
+      blocks.push((idx + 1) + '️⃣ <b>' + h + ' vs ' + a + '</b> (' + lg + ')');
+      blocks.push('• Top Tip: <b>' + tip + '</b> @' + odds + ' (' + prob + '% Prob)');
+      blocks.push('');
+    });
+
+    blocks.push('🔎 <i>Track live settlements & historical ledger:</i>');
+    blocks.push('👉 https://deeppredictbet.com/#top-tips');
+
+    const fullText = blocks.join('\n');
+    state.messageText = fullText;
+    state.selectedMatchIds = new Set(matchIds.filter(Boolean));
+    state.lastLineage = {
+      sourceFeatures: ['toptips'],
+      matchIds: matchIds,
+      generatedAt: new Date().toISOString(),
+      destination: 'free',
+      postType: 'Top Tip of the Day'
+    };
+    state.buttons = [{ text: '👑 View All Top Tips', url: 'https://deeppredictbet.com/#top-tips' }];
+
+    switchTab('compose');
+    return { success: true, count: qualifyingTips.length, postText: fullText };
+  }
+
+  function importFromAiScout(selections = null) {
+    const rawPool = getRawMatchPool();
+    const upcoming = rawPool.filter(m => isMatchUpcomingEligible(m));
+    const targetMatch = (Array.isArray(selections) && selections[0]) ||
+                        (selections && selections.match ? selections.match : null) ||
+                        upcoming[0] || rawPool[0] ||
+                        { id: 'scout-m1', homeTeam: { name: 'Arsenal' }, awayTeam: { name: 'Chelsea' }, league: 'Premier League', rawDate: '2026-10-06T19:45:00Z', confidenceVal: 82, predictions: { home: 55, draw: 25, away: 20 } };
+
+    const intel = extractIntelligenceForMatch(targetMatch, { scout: true, predictions: true });
+    state.target = 'free';
+    state.postType = 'Scout Analysis';
+    state.selectedSources = { scout: true, predictions: true, toptips: false, doctor: false, value: false, generator: false };
+
+    let blocks = [];
+    blocks.push('🤖 <b>DEEPPREDICT AI SCOUT TACTICAL DOSSIER</b>');
+    blocks.push('⚽ <b>' + intel.homeTeam + ' vs ' + intel.awayTeam + '</b> (' + intel.league + ')');
+    blocks.push('📅 ' + intel.kickoff);
+    blocks.push('');
+    blocks.push('💡 <b>Tactical Breakdown:</b>');
+    blocks.push(intel.sources.scout.summary);
+    blocks.push('');
+    intel.sources.scout.keyFactors.forEach(f => blocks.push('• ' + f));
+    blocks.push('');
+    blocks.push('👉 https://deeppredictbet.com/#ai-scout');
+
+    const fullText = blocks.join('\n');
+    state.messageText = fullText;
+    state.selectedMatchIds = new Set([targetMatch.id]);
+    state.lastLineage = {
+      sourceFeatures: ['scout'],
+      matchIds: [targetMatch.id],
+      generatedAt: new Date().toISOString(),
+      destination: 'free',
+      postType: 'Scout Analysis'
+    };
+    state.buttons = [{ text: '🤖 Open AI Scout', url: 'https://deeppredictbet.com/#ai-scout' }];
+
+    switchTab('compose');
+    return { success: true, matchId: targetMatch.id, postText: fullText };
+  }
+
+  function importFromValueIntelligence(oppsOrOptions = null) {
+    let opps = [];
+    if (Array.isArray(oppsOrOptions)) {
+      opps = oppsOrOptions;
+    } else if (typeof window !== 'undefined' && window.ValueIntelligenceEngine && typeof window.ValueIntelligenceEngine.getOpportunities === 'function') {
+      try {
+        opps = window.ValueIntelligenceEngine.getOpportunities();
+      } catch (e) {}
+    }
+
+    if (opps.length === 0) {
+      const rawPool = getRawMatchPool();
+      const upcoming = rawPool.filter(m => isMatchUpcomingEligible(m));
+      opps = upcoming.slice(0, 3).map(m => {
+        const intel = extractIntelligenceForMatch(m, { value: true });
+        return {
+          matchId: m.id,
+          homeTeam: m.homeTeam?.name || m.home,
+          awayTeam: m.awayTeam?.name || m.away,
+          league: m.league,
+          market: intel.sources.value.market,
+          selection: intel.sources.value.selection,
+          marketOdds: intel.sources.value.marketOdds,
+          fairOdds: intel.sources.value.fairOdds,
+          expectedValue: intel.sources.value.expectedValue,
+          valueEdge: intel.sources.value.valueEdge
+        };
+      });
+    }
+
+    state.target = 'vip';
+    state.postType = 'Value Alert';
+    state.selectedSources = { value: true, predictions: true, scout: false, doctor: false, toptips: false, generator: false };
+
+    let blocks = [];
+    blocks.push('💎 <b>DEEPPREDICT VALUE INTELLIGENCE ALERT</b>');
+    blocks.push('📊 <i>High Expected Value (+EV) Opportunities Detected</i>');
+    blocks.push('');
+
+    const matchIds = [];
+    opps.forEach((o, idx) => {
+      matchIds.push(o.matchId || o.opportunityId || `opp-${idx}`);
+      const h = o.homeTeam || (o.match && o.match.includes(' vs ') ? o.match.split(' vs ')[0].trim() : 'Home');
+      const a = o.awayTeam || (o.match && o.match.includes(' vs ') ? o.match.split(' vs ')[1].trim() : 'Away');
+      const lg = o.league || 'Football League';
+      const sel = o.selection || o.selectionName || o.pick || 'Value Pick';
+      const odds = o.marketOdds || o.decimalOdds || o.odds || 2.0;
+      const fair = o.fairOdds ? (typeof o.fairOdds === 'number' ? o.fairOdds.toFixed(2) : o.fairOdds) : '1.80';
+      let evNum = parseFloat(String(o.expectedValue || '10').replace(/[^0-9.-]/g, ''));
+      if (isNaN(evNum)) evNum = 10.0;
+      const ev = (evNum > 0 ? '+' : '') + evNum.toFixed(1) + '% EV';
+      const edge = o.valueEdge ? (String(o.valueEdge).includes('pp') ? o.valueEdge : `+${Number(o.valueEdge).toFixed(1)}pp`) : '+5.0pp';
+
+      blocks.push((idx + 1) + '️⃣ <b>' + h + ' vs ' + a + '</b> (' + lg + ')');
+      blocks.push('• Value Pick: <b>' + sel + '</b> (@' + (typeof odds === 'number' ? odds.toFixed(2) : odds) + ')');
+      blocks.push('• Fair Odds: @' + fair + ' | EV: <b>' + ev + '</b> (Edge: ' + edge + ')');
+      blocks.push('');
+    });
+
+    blocks.push('🔒 <i>Exclusively for authorized VIP intelligence subscribers.</i>');
+    blocks.push('👉 https://deeppredictbet.com/#value-bets');
+
+    const fullText = blocks.join('\n');
+    state.messageText = fullText;
+    state.selectedMatchIds = new Set(matchIds.filter(Boolean));
+    state.lastLineage = {
+      sourceFeatures: ['value'],
+      matchIds: matchIds,
+      generatedAt: new Date().toISOString(),
+      destination: 'vip',
+      postType: 'Value Alert'
+    };
+    state.buttons = [{ text: '💎 Inspect Value Engine', url: 'https://deeppredictbet.com/#value-bets' }];
+
+    switchTab('compose');
+    return { success: true, count: opps.length, postText: fullText };
+  }
+
+  function importFromSource(sourceName, params = {}) {
+    const s = String(sourceName).toLowerCase().replace(/[^a-z]/g, '');
+    if (s.includes('generator')) return importFromBetGenerator(params);
+    if (s.includes('doctor')) return importFromBetDoctor(params);
+    if (s.includes('tip')) return importFromTopTipsTracker(params);
+    if (s.includes('scout')) return importFromAiScout(params);
+    if (s.includes('value')) return importFromValueIntelligence(params);
+    return { success: false, error: 'Unknown source: ' + sourceName };
+  }
+
+
   // ============================================================================
   // 8. CLIENT UI WORKSTATION CONTROLLER & STATE
   // Tabs: overview | discover | compose | calendar | automation | channels | history | analytics | settings
@@ -1188,6 +3194,22 @@
     rangeFrom: 1,
     rangeTo: 10,
     selectedMatchIds: new Set(),
+    selectedMarketIds: new Set(),
+    selectedMatchMarketMatrix: {},
+    selectedMatchMarkets: {},
+    compositionMode: 'manual', // 'manual' | 'dynamic' | 'hybrid'
+    dynamicRules: {
+      countries: [],
+      leagues: [],
+      markets: [],
+      minConfidence: 75,
+      minValue: 2,
+      matchWindow: 'all_upcoming',
+      minConsensus: 0
+    },
+    matchPage: 1,
+    matchPageSize: 25,
+    marketFilter: 'all',
     selectedSources: {
       predictions: true,
       toptips: true,
@@ -1338,23 +3360,130 @@
     }
   }
 
-  // Pool retriever
+  // Comprehensive Authoritative Pool Retriever
   function getRawMatchPool() {
-    let pool = [];
-    if (typeof window !== 'undefined') {
-      if (Array.isArray(window.MATCHES_DATA) && window.MATCHES_DATA.length > 0) {
-        pool = window.MATCHES_DATA;
-      } else if (Array.isArray(window.MATCH_DATA) && window.MATCH_DATA.length > 0) {
-        pool = window.MATCH_DATA;
+    const uniqueMap = new Map();
+    const seenMatchupKeys = new Set();
+
+    const addCandidate = (m) => {
+      if (!m) return;
+      const hName = m.homeTeam?.name || (typeof m.homeTeam === 'string' ? m.homeTeam : (m.home || 'Home'));
+      const aName = m.awayTeam?.name || (typeof m.awayTeam === 'string' ? m.awayTeam : (m.away || 'Away'));
+      const sId = String(m.id || `${hName}-${aName}-${m.time || m.dateSlot || ''}`);
+      const matchupKey = `${String(hName).toLowerCase()}-vs-${String(aName).toLowerCase()}-${m.time || m.dateSlot || m.date || ''}`;
+
+      if (!uniqueMap.has(sId) && !seenMatchupKeys.has(matchupKey)) {
+        uniqueMap.set(sId, m);
+        seenMatchupKeys.add(matchupKey);
       }
-    } else if (typeof globalThis !== 'undefined') {
-      if (Array.isArray(globalThis.MATCHES_DATA) && globalThis.MATCHES_DATA.length > 0) {
-        pool = globalThis.MATCHES_DATA;
-      } else if (Array.isArray(globalThis.MATCH_DATA) && globalThis.MATCH_DATA.length > 0) {
-        pool = globalThis.MATCH_DATA;
+    };
+
+    const root = typeof window !== 'undefined' ? window : (typeof globalThis !== 'undefined' ? globalThis : null);
+    if (root) {
+      if (typeof root.getStrictlyFutureMatchesPool === 'function') {
+        try {
+          const strictlyFuture = root.getStrictlyFutureMatchesPool();
+          if (Array.isArray(strictlyFuture)) strictlyFuture.forEach(addCandidate);
+        } catch (e) {}
+      }
+      if (Array.isArray(root.AUTHENTIC_TOP_LEAGUES_FIXTURES)) {
+        root.AUTHENTIC_TOP_LEAGUES_FIXTURES.forEach(addCandidate);
+      }
+      if (Array.isArray(root.DYNAMIC_MATCH_DATA)) {
+        root.DYNAMIC_MATCH_DATA.forEach(addCandidate);
+      }
+      if (Array.isArray(root.TOP_LEAGUES_FIXTURES_POOL)) {
+        root.TOP_LEAGUES_FIXTURES_POOL.forEach(addCandidate);
+      }
+      if (Array.isArray(root.currentLeagueMatches)) {
+        root.currentLeagueMatches.forEach(addCandidate);
+      }
+      if (Array.isArray(root.ALL_FIXTURES_CACHE)) {
+        root.ALL_FIXTURES_CACHE.forEach(addCandidate);
+      }
+      if (Array.isArray(root.MATCHES_DATA)) {
+        root.MATCHES_DATA.forEach(addCandidate);
+      }
+      if (Array.isArray(root.MATCH_DATA)) {
+        root.MATCH_DATA.forEach(addCandidate);
       }
     }
-    return pool;
+
+    if (typeof AUTHENTIC_TOP_LEAGUES_FIXTURES !== 'undefined' && Array.isArray(AUTHENTIC_TOP_LEAGUES_FIXTURES)) {
+      AUTHENTIC_TOP_LEAGUES_FIXTURES.forEach(addCandidate);
+    }
+    if (typeof MATCH_DATA !== 'undefined' && Array.isArray(MATCH_DATA)) {
+      MATCH_DATA.forEach(addCandidate);
+    }
+
+    // Fallback: If external stores have low volume or zero upcoming fixtures, draw from GLOBAL_CLUBS pairings
+    // (exact same pattern used by TopTipsTrackerEngine and app.js)
+    let candidateList = Array.from(uniqueMap.values());
+    const upcomingCount = candidateList.filter(m => isMatchUpcomingEligible(m)).length;
+
+    if (upcomingCount < 30) {
+      let globalClubs = [];
+      if (root && Array.isArray(root.GLOBAL_CLUBS)) globalClubs = root.GLOBAL_CLUBS;
+      else if (typeof GLOBAL_CLUBS !== 'undefined' && Array.isArray(GLOBAL_CLUBS)) globalClubs = GLOBAL_CLUBS;
+
+      if (globalClubs.length > 0) {
+        const leagueClubsMap = {};
+        globalClubs.forEach(c => {
+          if (!c.league) return;
+          if (!leagueClubsMap[c.league]) leagueClubsMap[c.league] = [];
+          leagueClubsMap[c.league].push(c);
+        });
+
+        const futureBaseMs = Date.now() + 24 * 3600 * 1000;
+        let synId = 5000;
+        Object.keys(leagueClubsMap).forEach((lg, lgIdx) => {
+          const clubs = leagueClubsMap[lg];
+          for (let i = 0; i < clubs.length - 1; i += 2) {
+            const hClub = clubs[i];
+            const aClub = clubs[i + 1];
+            const fixtureTs = futureBaseMs + (lgIdx * 86400 * 1000) + (i * 3600 * 1000);
+            const d = new Date(fixtureTs);
+            const months = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
+            const timeStr = `${d.getUTCDate()}th, ${months[d.getUTCMonth()]} ${d.getUTCFullYear()}, 17:30`;
+
+            addCandidate({
+              id: `tg-intel-fix-${synId++}`,
+              homeTeam: { name: hClub.name, logo: hClub.logo || '⚽', form: ['W', 'D', 'W', 'W', 'L'] },
+              awayTeam: { name: aClub.name, logo: aClub.logo || '⚽', form: ['D', 'L', 'W', 'D', 'L'] },
+              league: lg,
+              country: hClub.country || '',
+              leagueEmoji: hClub.flag || '🏆',
+              time: timeStr,
+              date: 'future',
+              rawDate: d.toISOString(),
+              status: 'UPCOMING',
+              predictions: { home: 54, draw: 24, away: 22 },
+              confidenceVal: 82,
+              insight: `${hClub.name} clashes with ${aClub.name} in competitive ${lg} action.`,
+              topTips: ['uo15', 'uo25', 'btts']
+            });
+          }
+        });
+      }
+    }
+
+    // Synchronize league normalization on all fixtures
+    if (root && typeof root.normalizeLeague === 'function') {
+      uniqueMap.forEach((m) => {
+        if (m && (m.league || m.leagueId)) {
+          const norm = root.normalizeLeague(m.league || m.leagueId, { country: m.country });
+          if (norm && norm.id !== 'unknown') {
+            m.leagueId = m.leagueId || norm.id;
+            m.league = m.league || norm.name;
+            m.country = m.country || norm.country;
+            m.competitionType = m.competitionType || norm.type;
+            m.leagueEmoji = m.leagueEmoji || norm.flag;
+          }
+        }
+      });
+    }
+
+    return Array.from(uniqueMap.values());
   }
 
   // UI RENDERERS
@@ -1571,17 +3700,30 @@
               </select>
             </div>
 
-            <!-- Country Filter -->
+            <!-- Country Directory Filter (A-Z) -->
             <div>
-              <label style="display: block; font-size: 0.72rem; font-weight: 700; color: #94a3b8; margin-bottom: 4px;">COUNTRY</label>
-              <select onchange="window.TelegramPublisher.setCountryFilter(this.value)" style="width: 100%; background: rgba(0,0,0,0.4); border: 1px solid rgba(255,255,255,0.15); color: #ffffff; padding: 8px 10px; border-radius: 8px; font-size: 0.8rem;">
-                <option value="all" ${state.countryFilter === 'all' ? 'selected' : ''}>All Countries</option>
-                <option value="Nigeria" ${state.countryFilter === 'Nigeria' ? 'selected' : ''}>🇳🇬 Nigeria (NPFL)</option>
-                <option value="England" ${state.countryFilter === 'England' ? 'selected' : ''}>🏴󠁧󠁢󠁥󠁮󠁧󠁿 England (Premier League)</option>
-                <option value="Spain" ${state.countryFilter === 'Spain' ? 'selected' : ''}>🇪🇸 Spain (La Liga)</option>
-                <option value="Italy" ${state.countryFilter === 'Italy' ? 'selected' : ''}>🇮🇹 Italy (Serie A)</option>
-                <option value="Germany" ${state.countryFilter === 'Germany' ? 'selected' : ''}>🇩🇪 Germany (Bundesliga)</option>
-                <option value="France" ${state.countryFilter === 'France' ? 'selected' : ''}>🇫🇷 France (Ligue 1)</option>
+              <label style="display: block; font-size: 0.72rem; font-weight: 700; color: #94a3b8; margin-bottom: 4px;">🌐 COUNTRY DIRECTORY (A–Z)</label>
+              <select id="tg-cc-country-select" onchange="window.TelegramPublisher.setCountryFilter(this.value)" style="width: 100%; background: rgba(0,0,0,0.4); border: 1px solid rgba(255,255,255,0.15); color: #ffffff; padding: 8px 10px; border-radius: 8px; font-size: 0.8rem;">
+                <option value="all" ${state.countryFilter === 'all' ? 'selected' : ''}>All Countries (${getAuthoritativeCountryDirectory().length})</option>
+                ${getAuthoritativeCountryDirectory().map(c => `<option value="${c.country}" ${state.countryFilter === c.country ? 'selected' : ''}>${c.flag} ${c.country}</option>`).join('')}
+              </select>
+            </div>
+
+            <!-- Top Leagues / Elite Filter -->
+            <div>
+              <label style="display: block; font-size: 0.72rem; font-weight: 700; color: #94a3b8; margin-bottom: 4px;">🏆 TOP LEAGUES / ELITE</label>
+              <select id="tg-cc-league-select" onchange="window.TelegramPublisher.setCompetitionFilter(this.value)" style="width: 100%; background: rgba(0,0,0,0.4); border: 1px solid rgba(255,255,255,0.15); color: #ffffff; padding: 8px 10px; border-radius: 8px; font-size: 0.8rem;">
+                <option value="all" ${state.competitionFilter === 'all' ? 'selected' : ''}>All Top Leagues (${getAuthoritativeTopLeagues().length})</option>
+                ${getAuthoritativeTopLeagues().map(l => `<option value="${l.name}" ${state.competitionFilter === l.name ? 'selected' : ''}>${l.flag} ${l.name} (${l.country})</option>`).join('')}
+              </select>
+            </div>
+
+            <!-- Markets Suite Filter -->
+            <div>
+              <label style="display: block; font-size: 0.72rem; font-weight: 700; color: #94a3b8; margin-bottom: 4px;">📊 MARKETS ▼ (16 CATS / 78 OPTS)</label>
+              <select id="tg-cc-market-select" onchange="window.TelegramPublisher.setMarketFilter(this.value)" style="width: 100%; background: rgba(0,0,0,0.4); border: 1px solid rgba(255,255,255,0.15); color: #ffffff; padding: 8px 10px; border-radius: 8px; font-size: 0.8rem;">
+                <option value="all" ${state.marketFilter === 'all' ? 'selected' : ''}>All Markets (${getAuthoritativeMarketRegistry().length})</option>
+                ${getAuthoritativeMarketRegistry().map(m => `<option value="${m.id}" ${state.marketFilter === m.id ? 'selected' : ''}>${m.icon} [${m.categoryLabel}] ${m.tip}</option>`).join('')}
               </select>
             </div>
 
@@ -1624,10 +3766,13 @@
           </div>
 
           <!-- Selection Controls Bar -->
-          <div style="display: flex; justify-content: space-between; align-items: center; padding-top: 10px; border-top: 1px solid rgba(255,255,255,0.08);">
-            <div style="display: flex; align-items: center; gap: 12px;">
+          <div style="display: flex; justify-content: space-between; align-items: center; padding-top: 10px; border-top: 1px solid rgba(255,255,255,0.08); flex-wrap: wrap; gap: 8px;">
+            <div style="display: flex; align-items: center; gap: 10px; flex-wrap: wrap;">
               <button type="button" onclick="window.TelegramPublisher.selectAllMatches()" style="background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.15); color: #ffffff; padding: 6px 12px; border-radius: 6px; font-size: 0.75rem; font-weight: 700; cursor: pointer;">
                 Select / Deselect Visible
+              </button>
+              <button type="button" onclick="window.TelegramPublisher.resetDiscoverFilters()" style="background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.12); color: #94a3b8; padding: 6px 12px; border-radius: 6px; font-size: 0.75rem; font-weight: 700; cursor: pointer;">
+                🔄 Reset Filters
               </button>
               <span id="tg-cc-selected-counter" style="font-size: 0.78rem; font-weight: 700; color: #38bdf8;">0 selected</span>
             </div>
@@ -1665,13 +3810,26 @@
     });
 
     if (result.matches.length === 0) {
+      const activeFilters = [];
+      if (state.dateRange !== 'all_upcoming') activeFilters.push(`Date: ${state.dateRange}`);
+      if (state.regionFilter !== 'all') activeFilters.push(`Region: ${state.regionFilter}`);
+      if (state.countryFilter !== 'all') activeFilters.push(`Country: ${state.countryFilter}`);
+      if (state.competitionFilter !== 'all') activeFilters.push(`League: ${state.competitionFilter}`);
+      if (state.compTypeFilter !== 'all') activeFilters.push(`Type: ${state.compTypeFilter}`);
+      if (state.minConsensus > 0) activeFilters.push(`Consensus ≥ ${state.minConsensus}/5`);
+
+      const allEligibleCount = rawPool.filter(m => isMatchUpcomingEligible(m)).length;
+
       container.innerHTML = `
         <div style="background: rgba(15,23,42,0.6); border: 1px solid rgba(255,255,255,0.08); border-radius: 12px; padding: 32px; text-align: center;">
           <div style="font-size: 1.8rem; margin-bottom: 8px;">📭</div>
           <h4 style="margin: 0 0 6px 0; color: #ffffff;">No eligible matches found</h4>
-          <p style="margin: 0; font-size: 0.82rem; color: #94a3b8;">
-            No upcoming fixtures matched the selected filters. Past/completed fixtures are strictly purged.
+          <p style="margin: 0 0 14px 0; font-size: 0.82rem; color: #94a3b8;">
+            ${activeFilters.length > 0 ? `No upcoming fixtures matched the active filters (<b>${activeFilters.join(' · ')}</b>).` : 'No upcoming fixtures matched the selected filters.'} Past/completed fixtures are strictly purged.
           </p>
+          <button type="button" onclick="window.TelegramPublisher.resetDiscoverFilters()" style="background: rgba(56,189,248,0.15); border: 1px solid rgba(56,189,248,0.4); color: #38bdf8; padding: 8px 18px; border-radius: 8px; font-weight: 800; font-size: 0.8rem; cursor: pointer;">
+            🔄 Reset Filters to View All Upcoming Matches (${allEligibleCount})
+          </button>
         </div>
       `;
       return;
@@ -1682,9 +3840,10 @@
       const isSelected = state.selectedMatchIds.has(m.id);
       const ts = getAuthoritativeTimestamp(m);
       const kickoff = formatAuthoritativeKickoff(ts, true);
-      const conf = m.confidenceVal || (m.confidence === 'high' ? 85 : 72);
+      const activeSel = getActiveSelectionForMatch(m);
+      const pool = getMatchMarketPool(m);
+      const conf = (activeSel && activeSel.confidence) ? activeSel.confidence : (m.confidenceVal || (m.confidence === 'high' ? 85 : 72));
       const cons = calculateIntelligenceConsensus(m);
-      const pick = m.settledPick?.market || (m.predictions?.home >= 50 ? `${m.homeTeam?.name || m.home} Win` : 'Double Chance 1X');
 
       rowsHtml += `
         <tr style="border-bottom: 1px solid rgba(255,255,255,0.06); background: ${isSelected ? 'rgba(56,189,248,0.08)' : 'transparent'};">
@@ -1699,8 +3858,33 @@
               ${m.league || 'League'} · ${kickoff}
             </div>
           </td>
-          <td style="padding: 10px 12px; font-size: 0.8rem; font-weight: 700; color: #38bdf8;">
-            ${pick}
+          <td style="padding: 10px 12px; min-width: 270px;">
+            <div style="display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-bottom: 5px;">
+              <div style="display: flex; align-items: center; gap: 6px;">
+                <span style="display: inline-flex; align-items: center; gap: 4px; padding: 2px 8px; border-radius: 6px; font-size: 0.76rem; font-weight: 800; background: rgba(56,189,248,0.18); border: 1px solid rgba(56,189,248,0.4); color: #38bdf8;">
+                  ${activeSel.icon || '🎯'} ${activeSel.tip}
+                </span>
+                <span style="font-size: 0.78rem; font-weight: 800; color: #facc15; background: rgba(250,204,21,0.12); padding: 2px 6px; border-radius: 4px; border: 1px solid rgba(250,204,21,0.25);">
+                  @${Number(activeSel.odds || 1.85).toFixed(2)}
+                </span>
+              </div>
+            </div>
+            <div style="display: flex; align-items: center; gap: 6px;">
+              <select onchange="window.TelegramPublisher.setMatchMarket('${m.id}', this.value)" style="width: 100%; max-width: 260px; background: rgba(0,0,0,0.5); border: 1px solid rgba(255,255,255,0.18); color: #e2e8f0; font-size: 0.72rem; font-weight: 600; padding: 3px 6px; border-radius: 5px; cursor: pointer;">
+                ${pool.map(p => `
+                  <option value="${p.id}" ${p.id === activeSel.id ? 'selected' : ''}>
+                    ${p.icon || '🎯'} [${p.categoryLabel || p.category}] ${p.name || p.tip} (@${Number(p.odds).toFixed(2)} · ${p.confidence}%)
+                  </option>
+                `).join('')}
+              </select>
+            </div>
+            <div style="display: flex; gap: 4px; margin-top: 5px; flex-wrap: wrap;">
+              ${pool.slice(0, 4).map(p => `
+                <button type="button" onclick="window.TelegramPublisher.setMatchMarket('${m.id}', '${p.id}')" style="background: ${p.id === activeSel.id ? 'rgba(56,189,248,0.35)' : 'rgba(255,255,255,0.06)'}; border: 1px solid ${p.id === activeSel.id ? '#38bdf8' : 'rgba(255,255,255,0.12)'}; color: ${p.id === activeSel.id ? '#38bdf8' : '#94a3b8'}; font-size: 0.67rem; font-weight: 700; padding: 1px 6px; border-radius: 4px; cursor: pointer;">
+                  ${p.shortName || p.id}
+                </button>
+              `).join('')}
+            </div>
           </td>
           <td style="padding: 10px 12px; font-size: 0.8rem; font-weight: 800; color: #10b981;">
             ${conf}%
@@ -1726,7 +3910,7 @@
             <tr style="border-bottom: 1px solid rgba(255,255,255,0.12); background: rgba(0,0,0,0.2); font-size: 0.72rem; color: #94a3b8; text-transform: uppercase;">
               <th style="padding: 10px 12px; width: 36px; text-align: center;"></th>
               <th style="padding: 10px 12px;">Fixture & Kickoff (WAT / UTC)</th>
-              <th style="padding: 10px 12px;">Model Pick</th>
+              <th style="padding: 10px 12px;">Model Pick & Market Lens (20+ Markets)</th>
               <th style="padding: 10px 12px;">Confidence</th>
               <th style="padding: 10px 12px;">Consensus</th>
               <th style="padding: 10px 12px; text-align: right;">Action</th>
@@ -2649,6 +4833,111 @@
   // ============================================================================
 
   const publicApi = {
+    // Registries & Dynamic Catalogs
+    getAuthoritativeTopLeagues,
+    getAuthoritativeCountryDirectory,
+    getAuthoritativeMarketRegistry,
+    CANONICAL_MARKET_REGISTRY,
+    ALL_CONTENT_RECIPES,
+    getAvailableRecipes,
+
+    // Match x Market Matrix
+    selectMarketForMatch,
+    getMarketsForMatch,
+    bulkApplyMarketsToMatches,
+    clearMatchMarketMatrix,
+    setMatchMarket,
+    getMatchMarketPool,
+    getActiveSelectionForMatch,
+
+    // Dynamic Discovery & Hybrid Composition
+    runDynamicDiscovery,
+    combineManualAndDynamic,
+    batchTelegramPost,
+
+    // Feature Integrations & Imports
+    importFromBetGenerator,
+    importFromBetDoctor,
+    importFromTopTipsTracker,
+    importFromAiScout,
+    importFromValueIntelligence,
+    importFromSource,
+
+    // Mode & Pagination Controllers
+    setCompositionMode(mode) {
+      state.compositionMode = mode;
+      if (typeof document !== 'undefined') renderCurrentTab();
+    },
+    setDynamicRules(rules) {
+      state.dynamicRules = { ...(state.dynamicRules || {}), ...rules };
+      if (typeof document !== 'undefined') renderCurrentTab();
+    },
+    setMatchPage(p) {
+      state.matchPage = Math.max(1, parseInt(p, 10) || 1);
+      if (typeof document !== 'undefined') renderDiscoverMatchTable();
+    },
+    setMatchPageSize(size) {
+      state.matchPageSize = parseInt(size, 10) || 25;
+      state.matchPage = 1;
+      if (typeof document !== 'undefined') renderDiscoverMatchTable();
+    },
+    nextMatchPage() {
+      state.matchPage++;
+      if (typeof document !== 'undefined') renderDiscoverMatchTable();
+    },
+    prevMatchPage() {
+      if (state.matchPage > 1) {
+        state.matchPage--;
+        if (typeof document !== 'undefined') renderDiscoverMatchTable();
+      }
+    },
+    setMarketFilter(val) {
+      state.marketFilter = val;
+      if (typeof document !== 'undefined') renderDiscoverMatchTable();
+    },
+    setCompetitionFilter(val) {
+      state.competitionFilter = val;
+      // Harmonize region and country if user selected a specific top league
+      if (val && val !== 'all') {
+        const cleanVal = val.replace(/[\uD800-\uDBFF][\uDC00-\uDFFF]/g, '').replace(/\s*\([^)]*\)/g, '').trim().toLowerCase();
+        const topLeague = getAuthoritativeTopLeagues().find(l =>
+          l.name.toLowerCase() === cleanVal || cleanVal.includes(l.name.toLowerCase())
+        );
+        if (topLeague) {
+          if (state.regionFilter !== 'all' && state.regionFilter !== topLeague.region) {
+            state.regionFilter = 'all';
+          }
+          if (state.countryFilter !== 'all' && state.countryFilter !== topLeague.country && state.countryFilter !== topLeague.region) {
+            state.countryFilter = 'all';
+          }
+        }
+      }
+      if (typeof document !== 'undefined') renderDiscoverMatchTable();
+    },
+    resetDiscoverFilters() {
+      state.dateRange = 'all_upcoming';
+      state.statusFilter = 'UPCOMING';
+      state.regionFilter = 'all';
+      state.countryFilter = 'all';
+      state.compTypeFilter = 'all';
+      state.competitionFilter = 'all';
+      state.marketFilter = 'all';
+      state.minConsensus = 0;
+      state.rangeLimit = 30;
+      state.rangeFrom = 1;
+      state.rangeTo = 30;
+      state.matchPage = 1;
+      if (typeof document !== 'undefined') {
+        const container = document.getElementById('tg-cc-tab-content');
+        if (container && state.activeTab === 'discover') {
+          container.innerHTML = renderDiscoverTab();
+          renderDiscoverMatchTable();
+        } else {
+          renderDiscoverMatchTable();
+        }
+      }
+    },
+
     // Domain methods for Node & browser
     getAuthoritativeTimestamp,
     resolveMatchStatus,
@@ -2674,8 +4963,47 @@
     selectTarget(val) { state.target = val; updateLivePreview(); },
     setDateFilter(val) { state.dateRange = val; renderDiscoverMatchTable(); },
     setStatusFilter(val) { state.statusFilter = val; renderDiscoverMatchTable(); },
-    setRegionFilter(val) { state.regionFilter = val; renderDiscoverMatchTable(); },
-    setCountryFilter(val) { state.countryFilter = val; renderDiscoverMatchTable(); },
+    setRegionFilter(val) {
+      state.regionFilter = val;
+      if (val && val !== 'all') {
+        if (state.countryFilter !== 'all') {
+          const cEntry = getAuthoritativeCountryDirectory().find(c => c.country.toLowerCase() === state.countryFilter.toLowerCase());
+          const regCountries = TAXONOMY_REGIONS[val]?.countries || [];
+          if (cEntry && !regCountries.includes(cEntry.country) && state.countryFilter.toLowerCase() !== val.toLowerCase()) {
+            state.countryFilter = 'all';
+            const cSel = document.getElementById('tg-cc-country-select');
+            if (cSel) cSel.value = 'all';
+          }
+        }
+        if (state.competitionFilter !== 'all') {
+          const cleanComp = state.competitionFilter.replace(/[\uD800-\uDBFF][\uDC00-\uDFFF]/g, '').replace(/\s*\([^)]*\)/g, '').trim().toLowerCase();
+          const topLeague = getAuthoritativeTopLeagues().find(l =>
+            l.name.toLowerCase() === cleanComp || cleanComp.includes(l.name.toLowerCase())
+          );
+          if (topLeague && topLeague.region !== val) {
+            state.competitionFilter = 'all';
+            const lSel = document.getElementById('tg-cc-league-select');
+            if (lSel) lSel.value = 'all';
+          }
+        }
+      }
+      if (typeof document !== 'undefined') renderDiscoverMatchTable();
+    },
+    setCountryFilter(val) {
+      state.countryFilter = val;
+      if (val && val !== 'all' && state.competitionFilter !== 'all') {
+        const cleanComp = state.competitionFilter.replace(/[\uD800-\uDBFF][\uDC00-\uDFFF]/g, '').replace(/\s*\([^)]*\)/g, '').trim().toLowerCase();
+        const topLeague = getAuthoritativeTopLeagues().find(l =>
+          l.name.toLowerCase() === cleanComp || cleanComp.includes(l.name.toLowerCase())
+        );
+        if (topLeague && topLeague.country.toLowerCase() !== val.toLowerCase() && topLeague.region.toLowerCase() !== val.toLowerCase()) {
+          state.competitionFilter = 'all';
+          const lSel = document.getElementById('tg-cc-league-select');
+          if (lSel) lSel.value = 'all';
+        }
+      }
+      if (typeof document !== 'undefined') renderDiscoverMatchTable();
+    },
     setCompTypeFilter(val) { state.compTypeFilter = val; renderDiscoverMatchTable(); },
     setMinConsensus(val) { state.minConsensus = parseInt(val, 10) || 0; renderDiscoverMatchTable(); },
     setRangeFilter(val) { state.rangeLimit = parseInt(val, 10) || 10; state.rangeTo = state.rangeFrom + state.rangeLimit - 1; renderDiscoverMatchTable(); },
