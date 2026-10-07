@@ -3332,6 +3332,10 @@
     schedules: [],
     recipes: BUILT_IN_RECIPES,
     automationRules: [],
+    automationMasterEnabled: false,
+    automationMode: 'safe', // 'safe' (simulation) or 'live' (armed)
+    automationDailyCap: 5,
+    automationLogs: [],
     health: null,
     isSubmitting: false,
     lastLineage: null,
@@ -5251,58 +5255,709 @@
     renderCurrentTab();
   }
 
-  // TAB 5: AUTOMATION (DEFAULTS OFF)
+  // ============================================================================
+  // TAB 5: AUTONOMOUS DISTRIBUTION ENGINE & RULE ORCHESTRATION
+  // ============================================================================
+
+  const DEFAULT_AUTOMATION_RULES = [
+    {
+      id: 'aut_daily_banker',
+      name: 'Daily Banker Trigger',
+      ruleCode: 'RULE 01',
+      description: 'Triggers when Top Tips Tracker identifies a canonical fixture with certainty ≥ 85% and consensus ≥ 4/5.',
+      source: 'toptips',
+      threshold: 85,
+      minConsensus: 4,
+      destination: 'free',
+      postType: 'Top Tip of the Day',
+      action: 'queue',
+      enabled: false,
+      cooldownHours: 24,
+      lastTriggered: null
+    },
+    {
+      id: 'aut_vip_value_surge',
+      name: 'VIP Value Surge Trigger',
+      ruleCode: 'RULE 02',
+      description: 'Triggers when Value Intelligence Engine identifies an edge ≥ +5.0pp with valid kickoff > 2 hours away.',
+      source: 'value',
+      threshold: 80,
+      minConsensus: 3,
+      destination: 'vip',
+      postType: 'VIP Intelligence Dossier',
+      action: 'queue',
+      enabled: false,
+      cooldownHours: 12,
+      lastTriggered: null
+    },
+    {
+      id: 'aut_morning_briefing',
+      name: 'Morning Intelligence Briefing',
+      ruleCode: 'RULE 03',
+      description: 'Compiles morning market digest at 09:00 WAT when at least 2 upcoming top-tier league matches exist.',
+      source: 'predictions',
+      threshold: 70,
+      minConsensus: 2,
+      destination: 'free',
+      postType: 'Morning Briefing',
+      action: 'queue',
+      enabled: false,
+      cooldownHours: 24,
+      lastTriggered: null
+    },
+    {
+      id: 'aut_weekend_accumulator',
+      name: 'Weekend Accumulator Slip',
+      ruleCode: 'RULE 04',
+      description: 'Assembles a multi-match accumulator slip when 3+ fixtures each achieve confidence ≥ 75%.',
+      source: 'all',
+      threshold: 75,
+      minConsensus: 3,
+      destination: 'free',
+      postType: 'Multi-Match Slip',
+      action: 'queue',
+      enabled: false,
+      cooldownHours: 48,
+      lastTriggered: null
+    },
+    {
+      id: 'aut_settlement_audit',
+      name: 'Post-Match Settlement & Audit',
+      ruleCode: 'RULE 05',
+      description: 'Triggers automated settlement report at 22:00 WAT auditing settled predictions against actual scores.',
+      source: 'all',
+      threshold: 0,
+      minConsensus: 0,
+      destination: 'free',
+      postType: 'Post-Match Settlement',
+      action: 'queue',
+      enabled: false,
+      cooldownHours: 24,
+      lastTriggered: null
+    }
+  ];
+
+  function getEffectiveAutomationRules() {
+    const list = DEFAULT_AUTOMATION_RULES.map(r => ({ ...r }));
+    if (Array.isArray(state.automationRules) && state.automationRules.length > 0) {
+      state.automationRules.forEach(r => {
+        const idx = list.findIndex(item => item.id === r.id);
+        if (idx >= 0) {
+          list[idx] = { ...list[idx], ...r };
+        } else {
+          list.push({ ...r });
+        }
+      });
+    }
+    return list;
+  }
+
+  function logAutomationEvent(eventType, message, status = 'INFO', meta = {}) {
+    const entry = {
+      id: 'log_' + Date.now().toString(36) + '_' + Math.random().toString(36).substring(2, 6),
+      timestamp: new Date().toISOString(),
+      eventType,
+      message,
+      status,
+      meta
+    };
+    if (!Array.isArray(state.automationLogs)) {
+      state.automationLogs = [];
+    }
+    state.automationLogs.unshift(entry);
+    if (state.automationLogs.length > 50) {
+      state.automationLogs = state.automationLogs.slice(0, 50);
+    }
+    return entry;
+  }
+
+  async function saveAutomationRuleToServer(rule) {
+    const token = getAdminSessionToken();
+    if (!token) return;
+    try {
+      await adminFetch('/api/integrations/telegram/publish', {
+        method: 'POST',
+        body: JSON.stringify({
+          action: 'save_automation_rule',
+          rule
+        })
+      });
+    } catch (e) {
+      console.warn('[TelegramPublisher] Failed to persist automation rule:', e.message);
+    }
+  }
+
+  function toggleMasterAutomation(forceState) {
+    if (typeof forceState === 'boolean') {
+      state.automationMasterEnabled = forceState;
+    } else {
+      state.automationMasterEnabled = !state.automationMasterEnabled;
+    }
+
+    const modeLabel = state.automationMode === 'live' ? 'LIVE BROADCAST ARMED' : 'SAFE SIMULATION MODE';
+    if (state.automationMasterEnabled) {
+      logAutomationEvent(
+        'MASTER_SWITCH',
+        `Autonomous Distribution Engine ENABLED (${modeLabel}). Active rules will evaluate triggers.`,
+        'SUCCESS'
+      );
+      showAlert(`⚡ Autonomous Distribution Engine ENABLED (${modeLabel})`);
+    } else {
+      logAutomationEvent(
+        'MASTER_SWITCH',
+        'Autonomous Distribution Engine DISABLED (Paused). All automated evaluations paused.',
+        'INFO'
+      );
+      showAlert('Autonomous Distribution Engine PAUSED.');
+    }
+
+    renderCurrentTab();
+  }
+
+  function setAutomationMode(mode) {
+    if (mode !== 'safe' && mode !== 'live') return;
+    state.automationMode = mode;
+    logAutomationEvent(
+      'MODE_CHANGE',
+      `Automation mode changed to: ${mode === 'live' ? 'LIVE ARMED' : 'SAFE SIMULATION'}.`,
+      'INFO'
+    );
+    renderCurrentTab();
+  }
+
+  async function toggleAutomationRule(ruleId) {
+    const rules = getEffectiveAutomationRules();
+    const rule = rules.find(r => r.id === ruleId);
+    if (!rule) return;
+
+    rule.enabled = !rule.enabled;
+    rule.updatedAt = new Date().toISOString();
+
+    const idx = state.automationRules.findIndex(r => r.id === ruleId);
+    if (idx >= 0) {
+      state.automationRules[idx] = { ...state.automationRules[idx], ...rule };
+    } else {
+      state.automationRules.push({ ...rule });
+    }
+
+    logAutomationEvent(
+      'RULE_TOGGLE',
+      `Rule "${rule.name}" (${rule.ruleCode}) was ${rule.enabled ? 'ENABLED' : 'DISABLED'}.`,
+      rule.enabled ? 'SUCCESS' : 'INFO',
+      { ruleId, enabled: rule.enabled }
+    );
+
+    renderCurrentTab();
+    await saveAutomationRuleToServer(rule);
+    showAlert(`Rule "${rule.name}" is now ${rule.enabled ? 'ENABLED' : 'DISABLED'}.`);
+  }
+
+  function simulateRule(name, threshold, ruleId) {
+    const rawPool = getRawMatchPool();
+    const threshVal = typeof threshold === 'number' ? threshold : parseFloat(threshold || 75);
+
+    const evaluated = rawPool.map(m => {
+      const ts = getAuthoritativeTimestamp(m);
+      const intel = extractIntelligenceForMatch(m, state.selectedSources);
+      const conf = intel && intel.bestPick ? (intel.bestPick.confidence || 0) : (m.confidenceVal || 70);
+      const consensusRatio = intel && intel.consensusRatio ? intel.consensusRatio : '3/5';
+      const consensusPct = intel && intel.consensusPct ? intel.consensusPct : '60%';
+      const integrity = evaluatePublishability(m);
+      const qualifies = conf >= threshVal && integrity.ready;
+
+      return {
+        match: m,
+        ts,
+        intel,
+        conf,
+        consensusRatio,
+        consensusPct,
+        integrity,
+        qualifies
+      };
+    });
+
+    const qualifying = evaluated.filter(e => e.qualifies);
+
+    logAutomationEvent(
+      'SIMULATION',
+      `Simulation executed for "${name}" (Threshold: ${threshVal}%). Evaluated: ${rawPool.length}, Qualifying: ${qualifying.length}.`,
+      'SIMULATED',
+      { ruleName: name, threshold: threshVal, count: qualifying.length }
+    );
+
+    if (typeof document !== 'undefined') {
+      const box = document.getElementById('tg-cc-automation-sim-result');
+      if (box) {
+        box.style.display = 'block';
+        box.innerHTML = `
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; border-bottom: 1px solid rgba(255,255,255,0.08); padding-bottom: 8px;">
+            <div style="display: flex; align-items: center; gap: 8px;">
+              <span style="font-size: 1.1rem;">🧪</span>
+              <div>
+                <h4 style="margin: 0; color: #38bdf8; font-size: 0.95rem; font-weight: 800;">Simulation Diagnostic: ${escapeHtml(name)}</h4>
+                <div style="font-size: 0.72rem; color: #94a3b8;">Zero live dispatches executed • Simulation Sandbox Mode</div>
+              </div>
+            </div>
+            <button type="button" onclick="document.getElementById('tg-cc-automation-sim-result').style.display='none'" style="background: transparent; border: none; color: #94a3b8; font-size: 1.1rem; cursor: pointer;">✕</button>
+          </div>
+
+          <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 10px; margin-bottom: 14px;">
+            <div style="background: rgba(15,23,42,0.8); border: 1px solid rgba(255,255,255,0.06); padding: 10px; border-radius: 8px;">
+              <div style="font-size: 0.68rem; color: #94a3b8; text-transform: uppercase;">Evaluated Fixtures</div>
+              <div style="font-size: 1.2rem; font-weight: 900; color: #ffffff;">${rawPool.length}</div>
+            </div>
+            <div style="background: rgba(15,23,42,0.8); border: 1px solid rgba(255,255,255,0.06); padding: 10px; border-radius: 8px;">
+              <div style="font-size: 0.68rem; color: #94a3b8; text-transform: uppercase;">Qualifying Fixtures</div>
+              <div style="font-size: 1.2rem; font-weight: 900; color: ${qualifying.length > 0 ? '#10b981' : '#f87171'};">${qualifying.length}</div>
+            </div>
+            <div style="background: rgba(15,23,42,0.8); border: 1px solid rgba(255,255,255,0.06); padding: 10px; border-radius: 8px;">
+              <div style="font-size: 0.68rem; color: #94a3b8; text-transform: uppercase;">Threshold Gate</div>
+              <div style="font-size: 1.2rem; font-weight: 900; color: #38bdf8;">&ge; ${threshVal}%</div>
+            </div>
+          </div>
+
+          ${qualifying.length === 0 ? `
+            <div style="background: rgba(0,0,0,0.3); border-radius: 8px; padding: 14px; text-align: center; color: #94a3b8; font-size: 0.78rem;">
+              No platform fixtures currently meet the <b>&ge; ${threshVal}%</b> threshold. Integrity Gate passed on all ${rawPool.length} evaluated fixtures.
+            </div>
+          ` : `
+            <div style="display: flex; flex-direction: column; gap: 8px;">
+              <div style="font-size: 0.75rem; font-weight: 800; color: #cbd5e1;">Qualifying Matches for Broadcast:</div>
+              ${qualifying.map(q => {
+                const h = q.match.homeTeam?.name || q.match.home || 'Home';
+                const a = q.match.awayTeam?.name || q.match.away || 'Away';
+                const comp = q.match.competition?.name || q.match.league || 'League';
+                const kickoffStr = formatAuthoritativeKickoff(q.ts, true);
+                const pickLabel = q.intel && q.intel.bestPick ? q.intel.bestPick.label : 'Recommended Pick';
+
+                return `
+                  <div style="background: rgba(0,0,0,0.3); border: 1px solid rgba(56,189,248,0.2); border-radius: 8px; padding: 10px 14px; display: flex; justify-content: space-between; align-items: center;">
+                    <div>
+                      <div style="font-weight: 800; color: #ffffff; font-size: 0.85rem;">${escapeHtml(h)} vs ${escapeHtml(a)}</div>
+                      <div style="font-size: 0.72rem; color: #94a3b8; margin-top: 2px;">
+                        ${escapeHtml(comp)} • ${kickoffStr}
+                      </div>
+                    </div>
+                    <div style="text-align: right;">
+                      <div style="font-size: 0.8rem; font-weight: 800; color: #10b981;">
+                        ${pickLabel} (${Math.round(q.conf)}%)
+                      </div>
+                      <div style="font-size: 0.7rem; color: #fbbf24; margin-top: 2px;">
+                        Consensus: ${q.consensusRatio} (${q.consensusPct})
+                      </div>
+                    </div>
+                  </div>
+                `;
+              }).join('')}
+            </div>
+          `}
+        `;
+        box.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+      }
+    }
+
+    return {
+      ruleName: name,
+      evaluatedCount: rawPool.length,
+      qualifyingCount: qualifying.length,
+      qualifyingMatches: qualifying.map(q => ({
+        id: q.match.id,
+        home: q.match.homeTeam?.name || q.match.home,
+        away: q.match.awayTeam?.name || q.match.away,
+        confidenceVal: q.conf
+      }))
+    };
+  }
+
+  async function runAutomationRuleNow(ruleId) {
+    const rules = getEffectiveAutomationRules();
+    const rule = rules.find(r => r.id === ruleId);
+    if (!rule) {
+      showAlert('Rule not found.');
+      return;
+    }
+
+    const sim = simulateRule(rule.name, rule.threshold, rule.id);
+    if (sim.qualifyingCount === 0) {
+      showAlert(`Scan finished: No matches currently meet criteria for ${rule.name}.`);
+      return;
+    }
+
+    const rawPool = getRawMatchPool();
+    const qualifyingMatch = rawPool.find(m => {
+      const intel = extractIntelligenceForMatch(m, state.selectedSources);
+      const conf = intel && intel.bestPick ? (intel.bestPick.confidence || 0) : (m.confidenceVal || 70);
+      return conf >= rule.threshold && evaluatePublishability(m).ready;
+    });
+
+    if (!qualifyingMatch) {
+      showAlert('No qualifying match passed integrity checks.');
+      return;
+    }
+
+    const hName = qualifyingMatch.homeTeam?.name || qualifyingMatch.home || 'Home';
+    const aName = qualifyingMatch.awayTeam?.name || qualifyingMatch.away || 'Away';
+
+    if (!state.automationMasterEnabled) {
+      showAlert(`⚠️ Master Automation is currently OFF.\nSimulation passed for ${hName} vs ${aName}.\nEnable Master Automation at top to authorize automated broadcasts.`);
+      return;
+    }
+
+    if (state.automationMode === 'safe') {
+      showAlert(`🧪 SAFE SIMULATION MODE ACTIVE (Zero Dispatches Sent):\nRule "${rule.name}" triggered on ${hName} vs ${aName}.\nSwitch to "Live Broadcast Armed" mode to dispatch live messages.`);
+      return;
+    }
+
+    const post = composeTelegramPost({
+      matches: [qualifyingMatch],
+      target: rule.destination || 'free',
+      postType: rule.postType || 'Top Tip of the Day',
+      selectedSources: state.selectedSources
+    });
+
+    if (rule.action === 'publish') {
+      state.target = rule.destination || 'free';
+      state.postType = rule.postType || 'Top Tip of the Day';
+      state.messageText = post.text;
+      state.buttons = [];
+      await executePublish(false);
+      logAutomationEvent(
+        'LIVE_DISPATCH',
+        `Live broadcast dispatched by "${rule.name}" for ${hName} vs ${aName}.`,
+        'SUCCESS',
+        { matchId: qualifyingMatch.id }
+      );
+      showAlert(`🚀 Live broadcast dispatched to ${rule.destination.toUpperCase()} for ${hName} vs ${aName}!`);
+    } else {
+      const schedTime = new Date(Date.now() + 2 * 3600 * 1000).toISOString();
+      await submitSchedule({
+        target: rule.destination || 'free',
+        postType: rule.postType || 'Top Tip of the Day',
+        text: post.text,
+        scheduledAt: schedTime,
+        matchId: qualifyingMatch.id
+      });
+      logAutomationEvent(
+        'QUEUE_DISPATCH',
+        `Broadcast queued for review by "${rule.name}" for ${hName} vs ${aName}.`,
+        'QUEUED',
+        { matchId: qualifyingMatch.id }
+      );
+      showAlert(`📋 Broadcast queued to Scheduled Queue for ${hName} vs ${aName}!`);
+    }
+
+    rule.lastTriggered = new Date().toISOString();
+    renderCurrentTab();
+  }
+
+  function runFullAutomationCycle() {
+    const rules = getEffectiveAutomationRules();
+    const rawPool = getRawMatchPool();
+    const enabledRules = rules.filter(r => r.enabled);
+
+    let summaryText = `Scanned ${rules.length} rules (${enabledRules.length} enabled) against ${rawPool.length} platform matches.\n\n`;
+    rules.forEach(r => {
+      const sim = simulateRule(r.name, r.threshold, r.id);
+      summaryText += `• [${r.ruleCode}] ${r.name}: ${sim.qualifyingCount} qualifying fixtures (Status: ${r.enabled ? 'ACTIVE' : 'DISABLED'})\n`;
+    });
+
+    logAutomationEvent(
+      'FULL_SCAN',
+      `Full automation cycle completed across ${rules.length} rules (${enabledRules.length} active).`,
+      'INFO'
+    );
+
+    showAlert(summaryText);
+    renderCurrentTab();
+  }
+
+  async function emergencyKillAutomation() {
+    state.automationMasterEnabled = false;
+    const rules = getEffectiveAutomationRules();
+    rules.forEach(r => {
+      r.enabled = false;
+    });
+    state.automationRules = rules;
+
+    logAutomationEvent(
+      'EMERGENCY_HALT',
+      '🛑 EMERGENCY KILL-SWITCH ACTIVATED: Master automation halted and all trigger rules disabled.',
+      'ALERT'
+    );
+
+    renderCurrentTab();
+    showAlert('🛑 EMERGENCY KILL-SWITCH ACTIVATED!\nMaster automation is OFF and all trigger rules have been disabled.');
+  }
+
+  function openCreateRuleModal() {
+    if (typeof document === 'undefined') return;
+    const modal = document.getElementById('tg-pub-create-rule-modal');
+    if (modal) modal.style.display = 'flex';
+  }
+
+  function closeCreateRuleModal() {
+    if (typeof document === 'undefined') return;
+    const modal = document.getElementById('tg-pub-create-rule-modal');
+    if (modal) modal.style.display = 'none';
+  }
+
+  async function saveNewAutomationRule() {
+    if (typeof document === 'undefined') return;
+    const nameEl = document.getElementById('tg-new-rule-name');
+    const sourceEl = document.getElementById('tg-new-rule-source');
+    const threshEl = document.getElementById('tg-new-rule-threshold');
+    const consensusEl = document.getElementById('tg-new-rule-consensus');
+    const destEl = document.getElementById('tg-new-rule-target');
+    const actionEl = document.getElementById('tg-new-rule-action');
+    const cooldownEl = document.getElementById('tg-new-rule-cooldown');
+    const typeEl = document.getElementById('tg-new-rule-type');
+
+    if (!nameEl || !nameEl.value.trim()) {
+      showAlert('Please enter a name for the trigger rule.');
+      return;
+    }
+
+    const rules = getEffectiveAutomationRules();
+    const nextCode = `RULE 0${rules.length + 1}`;
+    const newRule = {
+      id: `aut_custom_${Date.now().toString(36)}`,
+      name: nameEl.value.trim(),
+      ruleCode: nextCode,
+      description: `Custom trigger: Source ${sourceEl?.value || 'all'}, Threshold ≥ ${threshEl?.value || 80}%, Min Consensus ≥ ${consensusEl?.value || 3}/5.`,
+      source: sourceEl?.value || 'all',
+      threshold: parseFloat(threshEl?.value || 80),
+      minConsensus: parseInt(consensusEl?.value || 3, 10),
+      destination: destEl?.value || 'free',
+      postType: typeEl?.value || 'Top Tip of the Day',
+      action: actionEl?.value || 'queue',
+      enabled: true,
+      cooldownHours: parseInt(cooldownEl?.value || 24, 10),
+      lastTriggered: null,
+      isCustom: true
+    };
+
+    state.automationRules.push(newRule);
+    closeCreateRuleModal();
+    logAutomationEvent(
+      'RULE_CREATED',
+      `Custom trigger rule "${newRule.name}" created and enabled.`,
+      'SUCCESS'
+    );
+    renderCurrentTab();
+
+    await saveAutomationRuleToServer(newRule);
+    showAlert(`✅ Custom Trigger Rule "${newRule.name}" successfully created and activated!`);
+  }
+
+  async function deleteAutomationRule(ruleId) {
+    state.automationRules = state.automationRules.filter(r => r.id !== ruleId);
+    logAutomationEvent('RULE_DELETED', `Rule ${ruleId} was removed.`, 'INFO');
+    renderCurrentTab();
+    showAlert('Automation rule deleted.');
+  }
+
   function renderAutomationTab() {
+    const rules = getEffectiveAutomationRules();
+    const activeCount = rules.filter(r => r.enabled).length;
+    const isLive = state.automationMasterEnabled && state.automationMode === 'live';
+    const isSafe = state.automationMasterEnabled && state.automationMode === 'safe';
+    const isOff = !state.automationMasterEnabled;
+
     return `
       <div>
-        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
+        <!-- Automation Header -->
+        <div style="display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 14px; margin-bottom: 20px;">
           <div>
-            <h3 style="margin: 0; font-size: 1.1rem; font-weight: 800; color: #ffffff;">Autonomous Distribution Engine</h3>
-            <div style="font-size: 0.75rem; color: #94a3b8; margin-top: 2px;">Configurable trigger rules with mandatory Data Integrity Gate and zero-execution simulation</div>
-          </div>
-          <span style="background: rgba(239,68,68,0.15); border: 1px solid rgba(239,68,68,0.4); color: #f87171; font-size: 0.75rem; font-weight: 800; padding: 4px 12px; border-radius: 20px;">
-            AUTOMATION: OFF (SAFE MODE)
-          </span>
-        </div>
-
-        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 16px;">
-          <!-- Rule 1: High-Confidence Top Tip -->
-          <div style="background: rgba(15,23,42,0.8); border: 1px solid rgba(255,255,255,0.08); border-radius: 12px; padding: 18px;">
-            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
-              <span style="font-weight: 800; color: #ffffff; font-size: 0.9rem;">👑 Daily Banker Trigger</span>
-              <span style="font-size: 0.72rem; color: #64748b;">RULE 01</span>
+            <h3 style="margin: 0; font-size: 1.2rem; font-weight: 900; color: #ffffff; display: flex; align-items: center; gap: 8px;">
+              <span>⚡ Autonomous Distribution Engine</span>
+            </h3>
+            <div style="font-size: 0.78rem; color: #94a3b8; margin-top: 4px;">
+              Configurable trigger rules with mandatory Data Integrity Gate, intelligent consensus verification, and zero-execution simulation safeguards.
             </div>
-            <p style="font-size: 0.78rem; color: #94a3b8; margin: 0 0 12px 0;">
-              Triggers when Top Tips Tracker identifies a fixture with certainty &ge; 85% and no duplicate within 24h.
-            </p>
-            <div style="display: flex; justify-content: space-between; align-items: center;">
-              <span style="font-size: 0.75rem; color: #f87171; font-weight: 700;">Status: Disabled</span>
-              <button type="button" onclick="window.TelegramPublisher.simulateRule('Top Tip Trigger', 85)" style="background: rgba(56,189,248,0.15); border: 1px solid rgba(56,189,248,0.3); color: #38bdf8; font-size: 0.72rem; font-weight: 700; padding: 4px 10px; border-radius: 6px; cursor: pointer;">
-                🧪 Run Simulation
+          </div>
+
+          <div style="display: flex; flex-wrap: wrap; align-items: center; gap: 10px;">
+            <!-- Master State Badge -->
+            ${isLive ? `
+              <span style="background: rgba(16,185,129,0.2); border: 1px solid rgba(16,185,129,0.5); color: #34d399; font-size: 0.78rem; font-weight: 900; padding: 6px 14px; border-radius: 20px; display: flex; align-items: center; gap: 6px; box-shadow: 0 0 12px rgba(16,185,129,0.3);">
+                <span style="display: inline-block; width: 8px; height: 8px; border-radius: 50%; background: #34d399;"></span>
+                AUTOMATION: LIVE (BROADCAST ARMED)
+              </span>
+            ` : isSafe ? `
+              <span style="background: rgba(245,158,11,0.2); border: 1px solid rgba(245,158,11,0.5); color: #fbbf24; font-size: 0.78rem; font-weight: 900; padding: 6px 14px; border-radius: 20px; display: flex; align-items: center; gap: 6px;">
+                <span style="display: inline-block; width: 8px; height: 8px; border-radius: 50%; background: #fbbf24;"></span>
+                AUTOMATION: ACTIVE (SAFE SIMULATION MODE)
+              </span>
+            ` : `
+              <span style="background: rgba(239,68,68,0.15); border: 1px solid rgba(239,68,68,0.4); color: #f87171; font-size: 0.78rem; font-weight: 900; padding: 6px 14px; border-radius: 20px; display: flex; align-items: center; gap: 6px;">
+                <span style="display: inline-block; width: 8px; height: 8px; border-radius: 50%; background: #f87171;"></span>
+                AUTOMATION: OFF (PAUSED)
+              </span>
+            `}
+
+            <!-- Master Toggle Button -->
+            <button type="button" onclick="window.TelegramPublisher.toggleMasterAutomation()" style="background: ${state.automationMasterEnabled ? 'rgba(239,68,68,0.2)' : 'linear-gradient(135deg, #10b981, #059669)'}; border: 1px solid ${state.automationMasterEnabled ? 'rgba(239,68,68,0.4)' : '#10b981'}; color: #ffffff; font-size: 0.78rem; font-weight: 800; padding: 7px 16px; border-radius: 8px; cursor: pointer; transition: all 0.15s;">
+              ${state.automationMasterEnabled ? '⏸️ Pause Master Engine' : '⚡ Enable Master Engine'}
+            </button>
+
+            <!-- Mode Selector Switch -->
+            <div style="display: flex; background: rgba(0,0,0,0.35); border: 1px solid rgba(255,255,255,0.08); border-radius: 8px; padding: 3px;">
+              <button type="button" onclick="window.TelegramPublisher.setAutomationMode('safe')" style="background: ${state.automationMode === 'safe' ? 'rgba(245,158,11,0.25)' : 'transparent'}; border: none; color: ${state.automationMode === 'safe' ? '#fbbf24' : '#94a3b8'}; font-size: 0.72rem; font-weight: 800; padding: 5px 10px; border-radius: 6px; cursor: pointer;">
+                🛡️ Safe Mode
+              </button>
+              <button type="button" onclick="window.TelegramPublisher.setAutomationMode('live')" style="background: ${state.automationMode === 'live' ? 'rgba(16,185,129,0.25)' : 'transparent'}; border: none; color: ${state.automationMode === 'live' ? '#34d399' : '#94a3b8'}; font-size: 0.72rem; font-weight: 800; padding: 5px 10px; border-radius: 6px; cursor: pointer;">
+                🚀 Live Armed
               </button>
             </div>
-          </div>
 
-          <!-- Rule 2: Value Discrepancy Alert -->
-          <div style="background: rgba(15,23,42,0.8); border: 1px solid rgba(255,255,255,0.08); border-radius: 12px; padding: 18px;">
-            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
-              <span style="font-weight: 800; color: #ffffff; font-size: 0.9rem;">💎 VIP Value Surge Trigger</span>
-              <span style="font-size: 0.72rem; color: #64748b;">RULE 02</span>
+            <!-- New Trigger Rule Button -->
+            <button type="button" onclick="window.TelegramPublisher.openCreateRuleModal()" style="background: rgba(56,189,248,0.15); border: 1px solid rgba(56,189,248,0.35); color: #38bdf8; font-size: 0.78rem; font-weight: 800; padding: 7px 14px; border-radius: 8px; cursor: pointer;">
+              ➕ New Rule
+            </button>
+          </div>
+        </div>
+
+        <!-- Metrics & Guardrails Strip -->
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 12px; margin-bottom: 20px;">
+          <div style="background: rgba(15,23,42,0.6); border: 1px solid rgba(255,255,255,0.08); border-radius: 10px; padding: 12px 16px;">
+            <div style="font-size: 0.72rem; color: #94a3b8; font-weight: 700; text-transform: uppercase;">Active Trigger Rules</div>
+            <div style="font-size: 1.3rem; font-weight: 900; color: #38bdf8; margin-top: 2px;">${activeCount} of ${rules.length} Active</div>
+            <div style="font-size: 0.68rem; color: #64748b; margin-top: 2px;">Evaluated on platform sync</div>
+          </div>
+          <div style="background: rgba(15,23,42,0.6); border: 1px solid rgba(255,255,255,0.08); border-radius: 10px; padding: 12px 16px;">
+            <div style="font-size: 0.72rem; color: #94a3b8; font-weight: 700; text-transform: uppercase;">Dispatch Guard Mode</div>
+            <div style="font-size: 1.3rem; font-weight: 900; color: ${isLive ? '#34d399' : (isSafe ? '#fbbf24' : '#f87171')}; margin-top: 2px;">
+              ${isLive ? 'Live Armed' : (isSafe ? 'Simulation Safe' : 'Engine Paused')}
             </div>
-            <p style="font-size: 0.78rem; color: #94a3b8; margin: 0 0 12px 0;">
-              Triggers when Value Intelligence Engine identifies an edge &ge; +5.0pp with valid kickoff &gt; 2 hours away.
-            </p>
-            <div style="display: flex; justify-content: space-between; align-items: center;">
-              <span style="font-size: 0.75rem; color: #f87171; font-weight: 700;">Status: Disabled</span>
-              <button type="button" onclick="window.TelegramPublisher.simulateRule('Value Surge Trigger', 80)" style="background: rgba(56,189,248,0.15); border: 1px solid rgba(56,189,248,0.3); color: #38bdf8; font-size: 0.72rem; font-weight: 700; padding: 4px 10px; border-radius: 6px; cursor: pointer;">
-                🧪 Run Simulation
+            <div style="font-size: 0.68rem; color: #64748b; margin-top: 2px;">Zero backfill strictly active</div>
+          </div>
+          <div style="background: rgba(15,23,42,0.6); border: 1px solid rgba(255,255,255,0.08); border-radius: 10px; padding: 12px 16px;">
+            <div style="font-size: 0.72rem; color: #94a3b8; font-weight: 700; text-transform: uppercase;">Daily Volume Cap</div>
+            <div style="font-size: 1.3rem; font-weight: 900; color: #fbbf24; margin-top: 2px;">Max 5 Posts / 24h</div>
+            <div style="font-size: 0.68rem; color: #64748b; margin-top: 2px;">Anti-spam deduplication active</div>
+          </div>
+          <div style="background: rgba(15,23,42,0.6); border: 1px solid rgba(255,255,255,0.08); border-radius: 10px; padding: 12px 16px;">
+            <div style="font-size: 0.72rem; color: #94a3b8; font-weight: 700; text-transform: uppercase;">Quick Actions</div>
+            <div style="display: flex; gap: 8px; margin-top: 6px;">
+              <button type="button" onclick="window.TelegramPublisher.runFullAutomationCycle()" style="flex: 1; background: rgba(56,189,248,0.2); border: 1px solid rgba(56,189,248,0.4); color: #38bdf8; font-size: 0.72rem; font-weight: 800; padding: 5px; border-radius: 6px; cursor: pointer;">
+                ⚡ Scan All Rules
+              </button>
+              <button type="button" onclick="window.TelegramPublisher.emergencyKillAutomation()" style="background: rgba(239,68,68,0.2); border: 1px solid rgba(239,68,68,0.4); color: #f87171; font-size: 0.72rem; font-weight: 800; padding: 5px 8px; border-radius: 6px; cursor: pointer;">
+                🛑 Halt
               </button>
             </div>
           </div>
         </div>
 
         <!-- Simulation Output Box -->
-        <div id="tg-cc-automation-sim-result" style="display: none; margin-top: 18px; background: rgba(0,0,0,0.4); border: 1px solid rgba(56,189,248,0.3); border-radius: 10px; padding: 16px;"></div>
+        <div id="tg-cc-automation-sim-result" style="display: none; margin-bottom: 20px; background: rgba(0,0,0,0.5); border: 1px solid rgba(56,189,248,0.4); border-radius: 12px; padding: 18px; box-shadow: 0 10px 25px rgba(0,0,0,0.5);"></div>
+
+        <!-- Automation Trigger Rules Grid -->
+        <h4 style="margin: 0 0 14px 0; font-size: 0.95rem; font-weight: 800; color: #cbd5e1; display: flex; align-items: center; justify-content: space-between;">
+          <span>🎯 Registered Autonomous Trigger Rules (${rules.length})</span>
+          <span style="font-size: 0.72rem; color: #64748b; font-weight: 600;">Data Integrity Gate ≥ 90 Enforced</span>
+        </h4>
+
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(340px, 1fr)); gap: 16px; margin-bottom: 24px;">
+          ${rules.map(rule => `
+            <div style="background: rgba(15,23,42,0.85); border: 1px solid ${rule.enabled ? 'rgba(56,189,248,0.3)' : 'rgba(255,255,255,0.08)'}; border-radius: 12px; padding: 18px; display: flex; flex-direction: column; justify-content: space-between; transition: all 0.15s; box-shadow: ${rule.enabled ? '0 4px 16px rgba(56,189,248,0.1)' : 'none'};">
+              <div>
+                <!-- Top Row -->
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+                  <span style="font-weight: 900; color: #ffffff; font-size: 0.95rem;">
+                    ${rule.id === 'aut_daily_banker' ? '👑 ' : rule.id === 'aut_vip_value_surge' ? '💎 ' : rule.id === 'aut_morning_briefing' ? '🌅 ' : rule.id === 'aut_weekend_accumulator' ? '⚡ ' : rule.id === 'aut_settlement_audit' ? '📊 ' : '⚙️ '}
+                    ${escapeHtml(rule.name)}
+                  </span>
+                  <div style="display: flex; align-items: center; gap: 6px;">
+                    <span style="font-size: 0.68rem; font-weight: 800; padding: 2px 6px; border-radius: 4px; background: ${rule.destination === 'vip' ? 'rgba(245,158,11,0.2)' : 'rgba(16,185,129,0.2)'}; color: ${rule.destination === 'vip' ? '#fbbf24' : '#34d399'};">
+                      ${rule.destination?.toUpperCase()}
+                    </span>
+                    <span style="font-size: 0.68rem; color: #64748b; font-weight: 800;">${rule.ruleCode}</span>
+                  </div>
+                </div>
+
+                <!-- Description -->
+                <p style="font-size: 0.78rem; color: #94a3b8; margin: 0 0 12px 0; line-height: 1.45;">
+                  ${escapeHtml(rule.description)}
+                </p>
+
+                <!-- Criteria Parameters Pills -->
+                <div style="display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 14px;">
+                  <span style="background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.08); font-size: 0.68rem; color: #cbd5e1; padding: 2px 8px; border-radius: 4px;">
+                    Threshold: <strong style="color: #38bdf8;">&ge; ${rule.threshold}%</strong>
+                  </span>
+                  <span style="background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.08); font-size: 0.68rem; color: #cbd5e1; padding: 2px 8px; border-radius: 4px;">
+                    Consensus: <strong style="color: #fbbf24;">&ge; ${rule.minConsensus}/5</strong>
+                  </span>
+                  <span style="background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.08); font-size: 0.68rem; color: #cbd5e1; padding: 2px 8px; border-radius: 4px;">
+                    Action: <strong style="color: #ffffff;">${rule.action === 'publish' ? 'Live Send' : 'Queue Review'}</strong>
+                  </span>
+                  <span style="background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.08); font-size: 0.68rem; color: #cbd5e1; padding: 2px 8px; border-radius: 4px;">
+                    Cooldown: <strong style="color: #94a3b8;">${rule.cooldownHours}h</strong>
+                  </span>
+                </div>
+              </div>
+
+              <!-- Controls Row -->
+              <div style="display: flex; justify-content: space-between; align-items: center; border-top: 1px solid rgba(255,255,255,0.06); padding-top: 12px;">
+                <span style="font-size: 0.75rem; font-weight: 800; color: ${rule.enabled ? '#34d399' : '#f87171'};">
+                  ${rule.enabled ? '🟢 Active' : '🔴 Disabled'}
+                </span>
+
+                <div style="display: flex; align-items: center; gap: 6px;">
+                  <button type="button" onclick="window.TelegramPublisher.toggleAutomationRule('${rule.id}')" style="background: ${rule.enabled ? 'rgba(239,68,68,0.15)' : 'rgba(16,185,129,0.15)'}; border: 1px solid ${rule.enabled ? 'rgba(239,68,68,0.3)' : 'rgba(16,185,129,0.3)'}; color: ${rule.enabled ? '#f87171' : '#34d399'}; font-size: 0.72rem; font-weight: 800; padding: 4px 10px; border-radius: 6px; cursor: pointer;">
+                    ${rule.enabled ? '⏸️ Disable' : '▶️ Enable'}
+                  </button>
+
+                  <button type="button" onclick="window.TelegramPublisher.simulateRule('${rule.name}', ${rule.threshold}, '${rule.id}')" style="background: rgba(56,189,248,0.15); border: 1px solid rgba(56,189,248,0.3); color: #38bdf8; font-size: 0.72rem; font-weight: 700; padding: 4px 10px; border-radius: 6px; cursor: pointer;">
+                    🧪 Simulate
+                  </button>
+
+                  <button type="button" onclick="window.TelegramPublisher.runAutomationRuleNow('${rule.id}')" style="background: linear-gradient(135deg, #0284c7, #38bdf8); border: none; color: #ffffff; font-size: 0.72rem; font-weight: 800; padding: 4px 10px; border-radius: 6px; cursor: pointer;">
+                    ⚡ Trigger
+                  </button>
+
+                  ${rule.isCustom ? `
+                    <button type="button" onclick="window.TelegramPublisher.deleteAutomationRule('${rule.id}')" style="background: rgba(239,68,68,0.1); border: 1px solid rgba(239,68,68,0.25); color: #f87171; font-size: 0.72rem; padding: 4px 8px; border-radius: 6px; cursor: pointer;">
+                      🗑️
+                    </button>
+                  ` : ''}
+                </div>
+              </div>
+            </div>
+          `).join('')}
+        </div>
+
+        <!-- Activity Log & Audit Trail -->
+        <div style="background: rgba(15,23,42,0.6); border: 1px solid rgba(255,255,255,0.08); border-radius: 12px; padding: 18px;">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+            <h4 style="margin: 0; font-size: 0.9rem; font-weight: 800; color: #ffffff;">📜 Automation Activity & Audit Trail</h4>
+            <span style="font-size: 0.7rem; color: #64748b;">Live Telemetry Stream</span>
+          </div>
+
+          ${state.automationLogs.length === 0 ? `
+            <div style="text-align: center; padding: 24px; color: #64748b; font-size: 0.78rem;">
+              No automation events recorded yet. Run a simulation or toggle a rule to generate audit logs.
+            </div>
+          ` : `
+            <div style="display: flex; flex-direction: column; gap: 8px; max-height: 220px; overflow-y: auto;">
+              ${state.automationLogs.map(log => `
+                <div style="background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.04); border-radius: 6px; padding: 8px 12px; display: flex; justify-content: space-between; align-items: center; font-size: 0.75rem;">
+                  <div style="display: flex; align-items: center; gap: 10px;">
+                    <span style="font-size: 0.65rem; font-weight: 800; padding: 1px 6px; border-radius: 4px; background: ${log.status === 'SUCCESS' ? 'rgba(16,185,129,0.2)' : log.status === 'ALERT' ? 'rgba(239,68,68,0.2)' : log.status === 'SIMULATED' ? 'rgba(56,189,248,0.2)' : 'rgba(245,158,11,0.2)'}; color: ${log.status === 'SUCCESS' ? '#34d399' : log.status === 'ALERT' ? '#f87171' : log.status === 'SIMULATED' ? '#38bdf8' : '#fbbf24'};">
+                      ${log.status}
+                    </span>
+                    <span style="color: #cbd5e1;">${escapeHtml(log.message)}</span>
+                  </div>
+                  <span style="color: #64748b; font-size: 0.68rem; white-space: nowrap; margin-left: 10px;">
+                    ${new Date(log.timestamp).toLocaleTimeString()}
+                  </span>
+                </div>
+              `).join('')}
+            </div>
+          `}
+        </div>
       </div>
     `;
   }
@@ -5697,6 +6352,129 @@
               </button>
               <button type="button" id="tg-sched-submit-btn" onclick="window.TelegramPublisher.submitSchedule()" style="background: linear-gradient(135deg, #0284c7, #38bdf8); border: none; color: #ffffff; padding: 10px 22px; border-radius: 8px; font-weight: 800; font-size: 0.82rem; cursor: pointer;">
                 📅 Confirm & Queue Schedule
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- MODAL 4: CREATE AUTOMATION TRIGGER RULE MODAL -->
+        <div id="tg-pub-create-rule-modal" style="display: none; position: fixed; inset: 0; z-index: 99999; background: rgba(0,0,0,0.85); backdrop-filter: blur(8px); align-items: center; justify-content: center; padding: 16px;">
+          <div style="background: #0f172a; border: 1px solid rgba(56,189,248,0.4); border-radius: 18px; max-width: 600px; width: 100%; padding: 24px; box-shadow: 0 20px 40px rgba(0,0,0,0.8); max-height: 90vh; overflow-y: auto;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
+              <h3 style="margin: 0; font-size: 1.15rem; font-weight: 900; color: #ffffff;">⚡ Create Automation Trigger Rule</h3>
+              <button type="button" onclick="window.TelegramPublisher.closeCreateRuleModal()" style="background: transparent; border: none; color: #94a3b8; font-size: 1.2rem; cursor: pointer;">✕</button>
+            </div>
+            
+            <p style="margin: 0 0 16px 0; font-size: 0.78rem; color: #94a3b8;">
+              Define autonomous rules to automatically monitor match intelligence and queue or dispatch broadcasts without manual intervention.
+            </p>
+
+            <div style="display: flex; flex-direction: column; gap: 14px;">
+              <!-- Rule Name -->
+              <div>
+                <label style="display: block; font-size: 0.75rem; font-weight: 700; color: #cbd5e1; margin-bottom: 6px;">
+                  Rule Name *
+                </label>
+                <input type="text" id="tg-new-rule-name" placeholder="e.g. High Certainty Premier League Banker" style="width: 100%; box-sizing: border-box; background: rgba(0,0,0,0.4); border: 1px solid rgba(255,255,255,0.15); border-radius: 8px; color: #ffffff; padding: 10px; font-size: 0.82rem;">
+              </div>
+
+              <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
+                <!-- AI Source -->
+                <div>
+                  <label style="display: block; font-size: 0.75rem; font-weight: 700; color: #cbd5e1; margin-bottom: 6px;">
+                    Intelligence Source
+                  </label>
+                  <select id="tg-new-rule-source" style="width: 100%; box-sizing: border-box; background: rgba(0,0,0,0.4); border: 1px solid rgba(255,255,255,0.15); border-radius: 8px; color: #ffffff; padding: 10px; font-size: 0.82rem;">
+                    <option value="all">Consensus Blend (All AI Sources)</option>
+                    <option value="deepseek">DeepSeek AI</option>
+                    <option value="gemini">Google Gemini</option>
+                    <option value="claude">Anthropic Claude</option>
+                    <option value="groq">Groq Llama 3</option>
+                    <option value="chatgpt">ChatGPT-4o</option>
+                  </select>
+                </div>
+
+                <!-- Confidence Threshold -->
+                <div>
+                  <label style="display: block; font-size: 0.75rem; font-weight: 700; color: #cbd5e1; margin-bottom: 6px;">
+                    Certainty Threshold (%)
+                  </label>
+                  <input type="number" id="tg-new-rule-threshold" min="50" max="99" value="80" style="width: 100%; box-sizing: border-box; background: rgba(0,0,0,0.4); border: 1px solid rgba(255,255,255,0.15); border-radius: 8px; color: #ffffff; padding: 10px; font-size: 0.82rem;">
+                </div>
+              </div>
+
+              <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
+                <!-- Min Consensus -->
+                <div>
+                  <label style="display: block; font-size: 0.75rem; font-weight: 700; color: #cbd5e1; margin-bottom: 6px;">
+                    Minimum AI Consensus
+                  </label>
+                  <select id="tg-new-rule-consensus" style="width: 100%; box-sizing: border-box; background: rgba(0,0,0,0.4); border: 1px solid rgba(255,255,255,0.15); border-radius: 8px; color: #ffffff; padding: 10px; font-size: 0.82rem;">
+                    <option value="1">1 / 5 Models</option>
+                    <option value="2">2 / 5 Models</option>
+                    <option value="3" selected>3 / 5 Models (Majority)</option>
+                    <option value="4">4 / 5 Models (Supermajority)</option>
+                    <option value="5">5 / 5 Models (Unanimous)</option>
+                  </select>
+                </div>
+
+                <!-- Target Channel -->
+                <div>
+                  <label style="display: block; font-size: 0.75rem; font-weight: 700; color: #cbd5e1; margin-bottom: 6px;">
+                    Target Channel
+                  </label>
+                  <select id="tg-new-rule-target" style="width: 100%; box-sizing: border-box; background: rgba(0,0,0,0.4); border: 1px solid rgba(255,255,255,0.15); border-radius: 8px; color: #ffffff; padding: 10px; font-size: 0.82rem;">
+                    <option value="free">Free Public Channel</option>
+                    <option value="vip">VIP Premium Channel</option>
+                    <option value="both">Both Channels</option>
+                  </select>
+                </div>
+              </div>
+
+              <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
+                <!-- Post Type -->
+                <div>
+                  <label style="display: block; font-size: 0.75rem; font-weight: 700; color: #cbd5e1; margin-bottom: 6px;">
+                    Broadcast Template Type
+                  </label>
+                  <select id="tg-new-rule-type" style="width: 100%; box-sizing: border-box; background: rgba(0,0,0,0.4); border: 1px solid rgba(255,255,255,0.15); border-radius: 8px; color: #ffffff; padding: 10px; font-size: 0.82rem;">
+                    <option value="Top Tip of the Day">Top Tip of the Day</option>
+                    <option value="Banker of the Day">Banker of the Day</option>
+                    <option value="Value Bet Alert">Value Bet Alert</option>
+                    <option value="Daily Morning Digest">Daily Morning Digest</option>
+                    <option value="Weekend Accumulator Slip">Weekend Accumulator Slip</option>
+                    <option value="Post-Match Results Summary">Post-Match Results Summary</option>
+                  </select>
+                </div>
+
+                <!-- Execution Action -->
+                <div>
+                  <label style="display: block; font-size: 0.75rem; font-weight: 700; color: #cbd5e1; margin-bottom: 6px;">
+                    Execution Action
+                  </label>
+                  <select id="tg-new-rule-action" style="width: 100%; box-sizing: border-box; background: rgba(0,0,0,0.4); border: 1px solid rgba(255,255,255,0.15); border-radius: 8px; color: #ffffff; padding: 10px; font-size: 0.82rem;">
+                    <option value="queue">Queue in Schedule (Requires Approval)</option>
+                    <option value="publish_safe">Simulate / Dry-Run Only</option>
+                    <option value="publish_live">Autonomous Live Dispatch</option>
+                  </select>
+                </div>
+              </div>
+
+              <!-- Cooldown -->
+              <div>
+                <label style="display: block; font-size: 0.75rem; font-weight: 700; color: #cbd5e1; margin-bottom: 6px;">
+                  Cooldown Window (Hours between triggers)
+                </label>
+                <input type="number" id="tg-new-rule-cooldown" min="1" max="168" value="24" style="width: 100%; box-sizing: border-box; background: rgba(0,0,0,0.4); border: 1px solid rgba(255,255,255,0.15); border-radius: 8px; color: #ffffff; padding: 10px; font-size: 0.82rem;">
+              </div>
+            </div>
+
+            <div style="display: flex; justify-content: flex-end; gap: 10px; margin-top: 20px;">
+              <button type="button" onclick="window.TelegramPublisher.closeCreateRuleModal()" style="background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.15); color: #ffffff; padding: 10px 18px; border-radius: 8px; font-weight: 700; font-size: 0.82rem; cursor: pointer;">
+                Cancel
+              </button>
+              <button type="button" id="tg-new-rule-submit-btn" onclick="window.TelegramPublisher.saveNewAutomationRule()" style="background: linear-gradient(135deg, #0284c7, #38bdf8); border: none; color: #ffffff; padding: 10px 22px; border-radius: 8px; font-weight: 800; font-size: 0.82rem; cursor: pointer;">
+                ⚡ Create & Activate Rule
               </button>
             </div>
           </div>
@@ -6101,22 +6879,7 @@
     showAlert(`Audit Record ${item.id}\nTarget: ${item.target}\nStatus: ${item.status}\nTime: ${item.dispatchedAt}\nTelegram ID: ${item.telegramMessageId || 'N/A'}`);
   }
 
-  function simulateRule(name, threshold) {
-    const rawPool = getRawMatchPool();
-    const qualifying = rawPool.filter(m => (m.confidenceVal || 70) >= threshold);
-    const box = document.getElementById('tg-cc-automation-sim-result');
-    if (box) {
-      box.style.display = 'block';
-      box.innerHTML = `
-        <h4 style="margin: 0 0 8px 0; color: #38bdf8;">Simulation Result: ${name}</h4>
-        <div style="font-size: 0.8rem; color: #cbd5e1;">
-          Evaluated <b>${rawPool.length}</b> platform matches.<br>
-          <b>${qualifying.length}</b> matches meet threshold (&ge; ${threshold}% confidence).<br>
-          <em>Zero automated messages were dispatched. (Simulation mode)</em>
-        </div>
-      `;
-    }
-  }
+
 
   // ============================================================================
   // 9. PUBLIC API EXPORT (FULL BACKWARD & FORWARD COMPATIBILITY)
@@ -6380,6 +7143,19 @@
     viewHistoryDetails,
     saveCurrentDraft,
     simulateRule,
+    toggleMasterAutomation,
+    setAutomationMode,
+    toggleAutomationRule,
+    runAutomationRuleNow,
+    runFullAutomationCycle,
+    emergencyKillAutomation,
+    openCreateRuleModal,
+    closeCreateRuleModal,
+    saveNewAutomationRule,
+    deleteAutomationRule,
+    getEffectiveAutomationRules,
+    DEFAULT_AUTOMATION_RULES,
+    renderAutomationTab,
     refreshHealth: fetchTelegramHealth,
     refreshData: fetchPublishData,
     getAdminSessionToken,

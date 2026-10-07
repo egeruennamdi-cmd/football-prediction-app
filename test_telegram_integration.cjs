@@ -3765,6 +3765,128 @@ async function runTests() {
     global.document = origDoc;
   });
 
+  await testAsync('Section 58.38: Autonomous Distribution Engine, Interactive Automation Rules, Simulation & Safety Governance', async () => {
+    // 1. Initial State & Defaults
+    const state = telegramPublisher.getState();
+    assert.strictEqual(typeof state.automationMasterEnabled, 'boolean', 'automationMasterEnabled must be a boolean');
+    assert.strictEqual(state.automationMode, 'safe', 'Default automation mode must be safe (simulation)');
+    assert.strictEqual(typeof telegramPublisher.renderAutomationTab, 'function', 'renderAutomationTab must be exported');
+
+    // 2. Default Rules Verification
+    const defaultRules = telegramPublisher.DEFAULT_AUTOMATION_RULES;
+    assert.ok(Array.isArray(defaultRules) && defaultRules.length >= 5, 'Must define at least 5 default rules');
+    const effectiveRules = telegramPublisher.getEffectiveAutomationRules();
+    assert.ok(effectiveRules.length >= 5, 'Effective rules must contain at least 5 rules');
+    assert.ok(effectiveRules.some(r => r.name.includes('Banker')), 'Must contain Banker rule');
+    assert.ok(effectiveRules.some(r => r.name.includes('Value Surge')), 'Must contain Value Surge rule');
+    assert.ok(effectiveRules.some(r => r.name.includes('Morning')), 'Must contain Morning briefing rule');
+    assert.ok(effectiveRules.some(r => r.name.includes('Accumulator')), 'Must contain Accumulator rule');
+    assert.ok(effectiveRules.some(r => r.name.includes('Settlement')), 'Must contain Post-Match audit rule');
+
+    // 3. Render Automation Tab Verification
+    const autoHtml = telegramPublisher.renderAutomationTab();
+    assert.ok(autoHtml.includes('Autonomous Distribution Engine'), 'Engine title must render');
+    assert.ok(autoHtml.includes('Master Engine') || autoHtml.includes('AUTOMATION:'), 'Master switch label must render');
+    assert.ok(autoHtml.includes('🛑 Halt') || autoHtml.includes('emergencyKillAutomation'), 'Emergency kill switch must render');
+    assert.ok(autoHtml.includes('⚡ Scan All Rules') || autoHtml.includes('runFullAutomationCycle'), 'Run full cycle button must render');
+    assert.ok(autoHtml.includes('Daily Banker Trigger'), 'Rule 01 card must render');
+    assert.ok(autoHtml.includes('Automation Activity & Audit Trail'), 'Activity log section must render');
+
+    // 4. Master Automation Toggle & Mode Switch
+    const initMaster = state.automationMasterEnabled;
+    telegramPublisher.toggleMasterAutomation();
+    assert.strictEqual(telegramPublisher.getState().automationMasterEnabled, !initMaster, 'toggleMasterAutomation must flip master enable state');
+    telegramPublisher.toggleMasterAutomation();
+    assert.strictEqual(telegramPublisher.getState().automationMasterEnabled, initMaster, 'toggleMasterAutomation restores master state');
+
+    telegramPublisher.setAutomationMode('live');
+    assert.strictEqual(telegramPublisher.getState().automationMode, 'live', 'setAutomationMode live');
+    telegramPublisher.setAutomationMode('safe');
+    assert.strictEqual(telegramPublisher.getState().automationMode, 'safe', 'setAutomationMode safe');
+
+    // 5. Individual Rule Toggle (Enable/Disable)
+    const targetRule = effectiveRules[0];
+    const initialRuleEnabled = targetRule.enabled;
+    await telegramPublisher.toggleAutomationRule(targetRule.id);
+    const toggledRule = telegramPublisher.getEffectiveAutomationRules().find(r => r.id === targetRule.id);
+    assert.strictEqual(toggledRule.enabled, !initialRuleEnabled, 'toggleAutomationRule must flip rule enabled state');
+    await telegramPublisher.toggleAutomationRule(targetRule.id);
+    const restoredRule = telegramPublisher.getEffectiveAutomationRules().find(r => r.id === targetRule.id);
+    assert.strictEqual(restoredRule.enabled, initialRuleEnabled, 'toggleAutomationRule restored rule state');
+
+    // 6. Simulation Sandbox Mode
+    const initLogsCount = (telegramPublisher.getState().automationLogs || []).length;
+    telegramPublisher.simulateRule(targetRule.name, targetRule.threshold, targetRule.id);
+    const postSimLogs = telegramPublisher.getState().automationLogs || [];
+    assert.ok(postSimLogs.length > initLogsCount, 'Simulation must append to automationLogs');
+    const simLog = postSimLogs[0]; // Most recent is unshifted to index 0
+    assert.strictEqual(simLog.eventType, 'SIMULATION');
+    assert.strictEqual(simLog.status, 'SIMULATED');
+
+    // 7. Manual Rule Trigger & Full Automation Cycle in Safe Mode
+    await telegramPublisher.runAutomationRuleNow(targetRule.id);
+    const afterRunLogs = telegramPublisher.getState().automationLogs;
+    assert.ok(afterRunLogs.some(l => l.eventType === 'EXECUTION' || l.eventType === 'SIMULATION'), 'runAutomationRuleNow logs execution event');
+
+    await telegramPublisher.runFullAutomationCycle();
+    const afterCycleLogs = telegramPublisher.getState().automationLogs;
+    assert.ok(afterCycleLogs.some(l => l.message.includes('Full automation cycle') || l.message.includes('Triggered') || l.eventType === 'FULL_CYCLE'), 'runFullAutomationCycle logs cycle');
+
+    // 8. Custom Trigger Rule Creation via Modal Mock
+    const origDoc = global.document;
+    const domStore = {};
+    global.document = {
+      getElementById(id) {
+        if (!domStore[id]) {
+          domStore[id] = { style: {}, innerHTML: '', value: '', textContent: '' };
+        }
+        return domStore[id];
+      },
+      querySelectorAll() { return []; }
+    };
+
+    domStore['tg-pub-create-rule-modal'] = { style: { display: 'none' } };
+    domStore['tg-new-rule-name'] = { value: 'Bundesliga High Value Surge' };
+    domStore['tg-new-rule-source'] = { value: 'gemini' };
+    domStore['tg-new-rule-threshold'] = { value: '82' };
+    domStore['tg-new-rule-consensus'] = { value: '4' };
+    domStore['tg-new-rule-target'] = { value: 'vip' };
+    domStore['tg-new-rule-type'] = { value: 'Value Bet Alert' };
+    domStore['tg-new-rule-action'] = { value: 'queue' };
+    domStore['tg-new-rule-cooldown'] = { value: '12' };
+
+    telegramPublisher.openCreateRuleModal();
+    assert.strictEqual(domStore['tg-pub-create-rule-modal'].style.display, 'flex', 'openCreateRuleModal displays modal');
+
+    telegramPublisher.closeCreateRuleModal();
+    assert.strictEqual(domStore['tg-pub-create-rule-modal'].style.display, 'none', 'closeCreateRuleModal hides modal');
+
+    const prevRulesCount = telegramPublisher.getEffectiveAutomationRules().length;
+    await telegramPublisher.saveNewAutomationRule();
+    const newRules = telegramPublisher.getEffectiveAutomationRules();
+    assert.strictEqual(newRules.length, prevRulesCount + 1, 'Custom rule added to effective rules');
+    const createdRule = newRules.find(r => r.name === 'Bundesliga High Value Surge');
+    assert.ok(createdRule, 'Created rule must exist in effective rules');
+    assert.strictEqual(createdRule.source, 'gemini');
+    assert.strictEqual(createdRule.threshold, 82);
+    assert.strictEqual(createdRule.minConsensus, 4);
+    assert.strictEqual(createdRule.destination, 'vip');
+    assert.strictEqual(createdRule.isCustom, true);
+
+    // Delete custom rule
+    telegramPublisher.deleteAutomationRule(createdRule.id);
+    const postDelRules = telegramPublisher.getEffectiveAutomationRules();
+    assert.ok(!postDelRules.some(r => r.id === createdRule.id), 'deleteAutomationRule removes custom rule');
+
+    // 9. Emergency Kill-Switch
+    telegramPublisher.emergencyKillAutomation();
+    assert.strictEqual(telegramPublisher.getState().automationMasterEnabled, false, 'Emergency halt must turn off master automation');
+    assert.strictEqual(telegramPublisher.getState().automationMode, 'safe', 'Emergency halt must revert to safe mode');
+    assert.ok(telegramPublisher.getState().automationLogs.some(l => l.eventType === 'EMERGENCY_HALT'), 'Emergency halt must be logged in telemetry');
+
+    global.document = origDoc;
+  });
+
   // Restore globals
   global.localStorage = originalLocalStorage;
   global.sessionStorage = originalSessionStorage;
