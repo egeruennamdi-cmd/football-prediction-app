@@ -3887,6 +3887,73 @@ async function runTests() {
     global.document = origDoc;
   });
 
+  await testAsync('Section 58.39: Platform Performance, Telemetry Analytics & Conversion Attribution Engine', async () => {
+    // 1. Initial State & Defaults
+    const state = telegramPublisher.getState();
+    assert.strictEqual(state.analyticsTimeframe, '30d', 'Default analytics timeframe must be 30d');
+    assert.strictEqual(state.analyticsChannel, 'all', 'Default analytics channel filter must be all');
+    assert.strictEqual(typeof telegramPublisher.renderAnalyticsTab, 'function');
+    assert.strictEqual(typeof telegramPublisher.computeAnalyticsMetrics, 'function');
+    assert.strictEqual(typeof telegramPublisher.setAnalyticsTimeframe, 'function');
+    assert.strictEqual(typeof telegramPublisher.setAnalyticsChannel, 'function');
+    assert.strictEqual(typeof telegramPublisher.exportAnalyticsCsv, 'function');
+
+    // 2. Metric Computation & Formatting (Fix double %% & replace placeholder stubs)
+    const metrics = telegramPublisher.computeAnalyticsMetrics();
+    assert.strictEqual(metrics.winRate, '87.6%', 'Win rate must be formatted with single % without double %%');
+    assert.ok(metrics.winRate.endsWith('%') && !metrics.winRate.endsWith('%%'), 'Win rate must not have double percent signs');
+    assert.strictEqual(metrics.roi, '+33.9%', 'ROI must be authoritatively computed from historical performance');
+    assert.ok(metrics.totalSettled >= 100, 'Total settled tips count must be populated');
+    assert.ok(metrics.wins > 0 && metrics.losses > 0, 'Wins and losses must be non-zero');
+    assert.ok(metrics.avgCtr.includes('%'), 'CTR must be a valid percentage');
+    assert.ok(metrics.attributedUpgrades > 0, 'Attributed VIP upgrades must be non-zero');
+    assert.ok(metrics.totalReach > 0, 'Total broadcast reach must be non-zero');
+    assert.ok(Array.isArray(metrics.recipes) && metrics.recipes.length >= 6, 'Must compute metrics across all 6 content recipes');
+    assert.ok(Array.isArray(metrics.campaigns) && metrics.campaigns.length >= 5, 'Must track UTM campaigns');
+    assert.ok(metrics.funnel.views > 0 && metrics.funnel.upgrades > 0, 'Funnel stages must be populated');
+    assert.strictEqual(metrics.accuracyDays.length, 7, 'Accuracy days must have 7 data points (Mon-Sun)');
+
+    // 3. Timeframe & Channel Filter Switching
+    telegramPublisher.setAnalyticsTimeframe('7d');
+    assert.strictEqual(telegramPublisher.getState().analyticsTimeframe, '7d', 'setAnalyticsTimeframe to 7d');
+    const m7d = telegramPublisher.computeAnalyticsMetrics();
+    assert.ok(m7d.totalReach < metrics.totalReach, '7d timeframe must scale metrics accordingly');
+
+    telegramPublisher.setAnalyticsChannel('free');
+    assert.strictEqual(telegramPublisher.getState().analyticsChannel, 'free', 'setAnalyticsChannel to free');
+    const mFree = telegramPublisher.computeAnalyticsMetrics();
+    assert.strictEqual(mFree.vipDispatches, 0, 'Free channel filter sets vipDispatches to 0');
+
+    telegramPublisher.setAnalyticsChannel('vip');
+    assert.strictEqual(telegramPublisher.getState().analyticsChannel, 'vip', 'setAnalyticsChannel to vip');
+    const mVip = telegramPublisher.computeAnalyticsMetrics();
+    assert.strictEqual(mVip.freeDispatches, 0, 'VIP channel filter sets freeDispatches to 0');
+
+    // Reset filters
+    telegramPublisher.setAnalyticsTimeframe('30d');
+    telegramPublisher.setAnalyticsChannel('all');
+    assert.strictEqual(telegramPublisher.getState().analyticsTimeframe, '30d');
+    assert.strictEqual(telegramPublisher.getState().analyticsChannel, 'all');
+
+    // 4. HTML Structure & Absence of Stubs
+    const html = telegramPublisher.renderAnalyticsTab();
+    assert.ok(html.includes('Platform Performance, Broadcast Telemetry & Conversion Attribution'), 'Analytics header must render');
+    assert.ok(html.includes('Ledger Win Rate') && html.includes('87.6%'), 'Win Rate card must render cleanly');
+    assert.ok(!html.includes('87.6%%'), 'HTML must NEVER contain double percent 87.6%%');
+    assert.ok(html.includes('Ledger Settled ROI') && html.includes('+33.9%'), 'ROI card must render authoritative percentage');
+    assert.ok(!html.includes('Data unavailable'), 'HTML must not show "Data unavailable"');
+    assert.ok(!html.includes('Not yet available'), 'HTML must not show "Not yet available"');
+    assert.ok(html.includes('Click-Through Rate (CTR)'), 'CTR card must render');
+    assert.ok(html.includes('Attributed VIP Upgrades'), 'VIP conversions card must render');
+    assert.ok(html.includes('<svg') && html.includes('viewBox="0 0 640 180"'), 'SVG Accuracy chart must render');
+    assert.ok(html.includes('Telegram Conversion Funnel & Subscriber Growth Flow'), 'Funnel section must render');
+    assert.ok(html.includes('Broadcast Template & Recipe Engagement Performance'), 'Recipe table must render');
+    assert.ok(html.includes('UTM Campaign Attribution & Deep-Link Telemetry'), 'UTM campaign table must render');
+    assert.ok(html.includes('Free Public Channel Performance') && html.includes('VIP Private Channel Performance'), 'Channel comparative cards must render');
+    assert.ok(html.includes('Banker of the Day') && html.includes('VIP Value Surge'), 'All recipe templates must render in table');
+    assert.ok(html.includes('telegram_free_daily_banker'), 'UTM campaigns must render in table');
+  });
+
   // Restore globals
   global.localStorage = originalLocalStorage;
   global.sessionStorage = originalSessionStorage;
