@@ -3336,7 +3336,10 @@
     isSubmitting: false,
     lastLineage: null,
     charLimit: 4096,
-    calendarView: 'day' // 'day', 'week', 'month'
+    calendarView: 'month', // 'month', 'week', 'day', 'queue'
+    calendarDate: null,
+    selectedCalendarDate: '',
+    calendarFilterTarget: 'all'
   };
 
   /**
@@ -3615,6 +3618,7 @@
   }
 
   function renderCurrentTab() {
+    if (typeof document === 'undefined') return;
     const container = document.getElementById('tg-cc-tab-content');
     if (!container) return;
 
@@ -4152,44 +4156,1099 @@
     `;
   }
 
-  // TAB 4: CALENDAR
+  // ============================================================================
+  // TAB 4: CALENDAR & MATCHDAY DISPATCH PLANNER
+  // ============================================================================
+
+  function escapeHtml(str) {
+    if (!str) return '';
+    return String(str)
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;')
+      .replace(/'/g, '&#39;');
+  }
+
+  function getCalendarCurrentDate() {
+    if (state.calendarDate instanceof Date && !isNaN(state.calendarDate.getTime())) {
+      return state.calendarDate;
+    }
+    const now = new Date();
+    if (now.getFullYear() >= 2026) {
+      state.calendarDate = new Date(now.getFullYear(), now.getMonth(), 1);
+    } else {
+      state.calendarDate = new Date(2026, 9, 1); // October 2026
+    }
+    return state.calendarDate;
+  }
+
+  function getSelectedCalendarDate() {
+    if (state.selectedCalendarDate && typeof state.selectedCalendarDate === 'string' && state.selectedCalendarDate.trim()) {
+      return state.selectedCalendarDate;
+    }
+    // Prioritize upcoming match date from pool or default to October 2026 reference
+    const rawPool = getRawMatchPool();
+    for (const m of rawPool) {
+      const ts = getAuthoritativeTimestamp(m);
+      if (ts) {
+        const d = new Date(ts + 3600 * 1000);
+        state.selectedCalendarDate = `${d.getUTCFullYear()}-${String(d.getUTCMonth() + 1).padStart(2, '0')}-${String(d.getUTCDate()).padStart(2, '0')}`;
+        return state.selectedCalendarDate;
+      }
+    }
+    const cur = getCalendarCurrentDate();
+    state.selectedCalendarDate = `${cur.getFullYear()}-${String(cur.getMonth() + 1).padStart(2, '0')}-07`;
+    return state.selectedCalendarDate;
+  }
+
+  function getCalendarAggregatedData(year, month) {
+    const rawPool = getRawMatchPool();
+    const matchesByDate = {};
+    const schedulesByDate = {};
+    let totalMatchesMonth = 0;
+    let totalSchedulesMonth = 0;
+    let highestConfMatch = null;
+    let highestConf = 0;
+
+    rawPool.forEach(m => {
+      const ts = getAuthoritativeTimestamp(m);
+      if (!ts) return;
+      // Nigerian WAT is UTC+1
+      const watDate = new Date(ts + 3600 * 1000);
+      const mYear = watDate.getUTCFullYear();
+      const mMonth = watDate.getUTCMonth();
+      const mDay = watDate.getUTCDate();
+      const dateKey = `${mYear}-${String(mMonth + 1).padStart(2, '0')}-${String(mDay).padStart(2, '0')}`;
+
+      if (!matchesByDate[dateKey]) {
+        matchesByDate[dateKey] = [];
+      }
+      matchesByDate[dateKey].push(m);
+
+      if (mYear === year && mMonth === month) {
+        totalMatchesMonth++;
+        const intel = extractIntelligenceForMatch(m, state.selectedSources);
+        const conf = intel && intel.bestPick ? (intel.bestPick.confidence || 0) : 0;
+        if (conf > highestConf) {
+          highestConf = conf;
+          highestConfMatch = { match: m, intel, conf };
+        }
+      }
+    });
+
+    (state.schedules || []).forEach(s => {
+      if (!s || !s.scheduledAt) return;
+      const sTs = new Date(s.scheduledAt).getTime();
+      if (isNaN(sTs)) return;
+      const watDate = new Date(sTs + 3600 * 1000);
+      const sYear = watDate.getUTCFullYear();
+      const sMonth = watDate.getUTCMonth();
+      const sDay = watDate.getUTCDate();
+      const dateKey = `${sYear}-${String(sMonth + 1).padStart(2, '0')}-${String(sDay).padStart(2, '0')}`;
+
+      if (state.calendarFilterTarget !== 'all' && s.target !== state.calendarFilterTarget) {
+        return;
+      }
+
+      if (!schedulesByDate[dateKey]) {
+        schedulesByDate[dateKey] = [];
+      }
+      schedulesByDate[dateKey].push(s);
+
+      if (sYear === year && sMonth === month) {
+        totalSchedulesMonth++;
+      }
+    });
+
+    return {
+      matchesByDate,
+      schedulesByDate,
+      totalMatchesMonth,
+      totalSchedulesMonth,
+      highestConfMatch
+    };
+  }
+
   function renderCalendarTab() {
+    const curDate = getCalendarCurrentDate();
+    const curYear = curDate.getFullYear();
+    const curMonth = curDate.getMonth();
+    const selectedDateStr = getSelectedCalendarDate();
+    const agg = getCalendarAggregatedData(curYear, curMonth);
+
+    const monthNames = [
+      'January', 'February', 'March', 'April', 'May', 'June',
+      'July', 'August', 'September', 'October', 'November', 'December'
+    ];
+    const monthLabel = `${monthNames[curMonth]} ${curYear}`;
+
     return `
       <div>
-        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
-          <h3 style="margin: 0; font-size: 1.1rem; font-weight: 800; color: #ffffff;">Content Calendar & Scheduled Dispatches</h3>
-          <div style="display: flex; gap: 8px;">
-            <button type="button" style="background: rgba(56,189,248,0.2); border: 1px solid rgba(56,189,248,0.4); color: #38bdf8; font-size: 0.75rem; font-weight: 700; padding: 6px 12px; border-radius: 6px; cursor: pointer;">Day View</button>
-            <button type="button" style="background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.15); color: #cbd5e1; font-size: 0.75rem; font-weight: 700; padding: 6px 12px; border-radius: 6px; cursor: pointer;">Week View</button>
+        <!-- Calendar Top Control Header -->
+        <div style="display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 12px; margin-bottom: 20px;">
+          <div>
+            <h3 style="margin: 0; font-size: 1.2rem; font-weight: 900; color: #ffffff; display: flex; align-items: center; gap: 8px;">
+              <span>📅 Content Calendar & Matchday Dispatch Planner</span>
+            </h3>
+            <div style="font-size: 0.78rem; color: #94a3b8; margin-top: 4px;">
+              Coordinate matchday broadcasts, scheduled Telegram dispatches, and daily publication cadence aligned with kickoff times.
+            </div>
+          </div>
+
+          <div style="display: flex; flex-wrap: wrap; align-items: center; gap: 8px;">
+            <!-- View Selector Tabs -->
+            <div style="display: flex; background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.08); border-radius: 8px; padding: 3px;">
+              <button type="button" onclick="window.TelegramPublisher.setCalendarView('month')" style="background: ${state.calendarView === 'month' ? 'rgba(56,189,248,0.25)' : 'transparent'}; border: none; color: ${state.calendarView === 'month' ? '#38bdf8' : '#94a3b8'}; font-size: 0.75rem; font-weight: 700; padding: 6px 12px; border-radius: 6px; cursor: pointer; transition: all 0.15s;">
+                🗓️ Month Grid
+              </button>
+              <button type="button" onclick="window.TelegramPublisher.setCalendarView('week')" style="background: ${state.calendarView === 'week' ? 'rgba(56,189,248,0.25)' : 'transparent'}; border: none; color: ${state.calendarView === 'week' ? '#38bdf8' : '#94a3b8'}; font-size: 0.75rem; font-weight: 700; padding: 6px 12px; border-radius: 6px; cursor: pointer; transition: all 0.15s;">
+                📅 Week View
+              </button>
+              <button type="button" onclick="window.TelegramPublisher.setCalendarView('day')" style="background: ${state.calendarView === 'day' ? 'rgba(56,189,248,0.25)' : 'transparent'}; border: none; color: ${state.calendarView === 'day' ? '#38bdf8' : '#94a3b8'}; font-size: 0.75rem; font-weight: 700; padding: 6px 12px; border-radius: 6px; cursor: pointer; transition: all 0.15s;">
+                ⏱️ Daily Cadence
+              </button>
+              <button type="button" onclick="window.TelegramPublisher.setCalendarView('queue')" style="background: ${state.calendarView === 'queue' ? 'rgba(56,189,248,0.25)' : 'transparent'}; border: none; color: ${state.calendarView === 'queue' ? '#38bdf8' : '#94a3b8'}; font-size: 0.75rem; font-weight: 700; padding: 6px 12px; border-radius: 6px; cursor: pointer; transition: all 0.15s;">
+                📋 Queue (${state.schedules.length})
+              </button>
+            </div>
+
+            <!-- Target Channel Filter -->
+            <select onchange="window.TelegramPublisher.setCalendarFilterTarget(this.value)" style="background: rgba(15,23,42,0.8); border: 1px solid rgba(255,255,255,0.15); color: #cbd5e1; font-size: 0.75rem; font-weight: 700; padding: 6px 10px; border-radius: 6px; cursor: pointer;">
+              <option value="all" ${state.calendarFilterTarget === 'all' ? 'selected' : ''}>All Channels</option>
+              <option value="free" ${state.calendarFilterTarget === 'free' ? 'selected' : ''}>🟢 Free Channel</option>
+              <option value="vip" ${state.calendarFilterTarget === 'vip' ? 'selected' : ''}>🔒 VIP Channel</option>
+            </select>
+
+            <!-- Schedule Action Button -->
+            <button type="button" onclick="window.TelegramPublisher.openScheduleModal('${selectedDateStr}')" style="background: linear-gradient(135deg, #0284c7, #38bdf8); border: none; color: #ffffff; font-size: 0.78rem; font-weight: 800; padding: 7px 14px; border-radius: 6px; cursor: pointer; box-shadow: 0 2px 8px rgba(2,132,199,0.3);">
+              ➕ Schedule Broadcast
+            </button>
           </div>
         </div>
 
-        <div style="background: rgba(15,23,42,0.6); border: 1px solid rgba(255,255,255,0.08); border-radius: 14px; padding: 20px;">
-          ${state.schedules.length === 0 ? `
-            <div style="text-align: center; padding: 32px; color: #94a3b8;">
-              <div style="font-size: 1.6rem; margin-bottom: 8px;">📅</div>
-              <div style="font-weight: 700; color: #ffffff;">No scheduled posts in queue</div>
-              <div style="font-size: 0.78rem; margin-top: 4px;">Compose a post and select "Schedule" to queue publications. All scheduled dispatches revalidate against the Data Integrity Gate before sending.</div>
+        <!-- Metrics Overview Strip -->
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 12px; margin-bottom: 20px;">
+          <div style="background: rgba(15,23,42,0.6); border: 1px solid rgba(255,255,255,0.08); border-radius: 10px; padding: 12px 16px;">
+            <div style="font-size: 0.72rem; color: #94a3b8; font-weight: 700; text-transform: uppercase;">Fixtures in Month</div>
+            <div style="font-size: 1.3rem; font-weight: 900; color: #38bdf8; margin-top: 2px;">${agg.totalMatchesMonth}</div>
+            <div style="font-size: 0.68rem; color: #64748b; margin-top: 2px;">Canonical matches mapped</div>
+          </div>
+          <div style="background: rgba(15,23,42,0.6); border: 1px solid rgba(255,255,255,0.08); border-radius: 10px; padding: 12px 16px;">
+            <div style="font-size: 0.72rem; color: #94a3b8; font-weight: 700; text-transform: uppercase;">Dispatches in Queue</div>
+            <div style="font-size: 1.3rem; font-weight: 900; color: #fbbf24; margin-top: 2px;">${state.schedules.length}</div>
+            <div style="font-size: 0.68rem; color: #64748b; margin-top: 2px;">Auto-revalidated before send</div>
+          </div>
+          <div style="background: rgba(15,23,42,0.6); border: 1px solid rgba(255,255,255,0.08); border-radius: 10px; padding: 12px 16px;">
+            <div style="font-size: 0.72rem; color: #94a3b8; font-weight: 700; text-transform: uppercase;">Daily Cadence Windows</div>
+            <div style="font-size: 1.3rem; font-weight: 900; color: #10b981; margin-top: 2px;">4 Slots / Day</div>
+            <div style="font-size: 0.68rem; color: #64748b; margin-top: 2px;">09:00, 14:00, 18:30, 22:00 WAT</div>
+          </div>
+          <div style="background: rgba(15,23,42,0.6); border: 1px solid rgba(255,255,255,0.08); border-radius: 10px; padding: 12px 16px;">
+            <div style="font-size: 0.72rem; color: #94a3b8; font-weight: 700; text-transform: uppercase;">Top Monthly Banker</div>
+            <div style="font-size: 0.85rem; font-weight: 800; color: #ffffff; margin-top: 4px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">
+              ${agg.highestConfMatch ? `${agg.highestConfMatch.match.homeTeam?.name || agg.highestConfMatch.match.home} (${Math.round(agg.highestConfMatch.conf)}%)` : 'No upcoming fixtures'}
             </div>
-          ` : `
-            <div style="display: flex; flex-direction: column; gap: 10px;">
-              ${state.schedules.map(s => `
-                <div style="display: flex; justify-content: space-between; align-items: center; background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.08); padding: 12px 16px; border-radius: 8px;">
-                  <div>
-                    <span style="font-weight: 800; color: #ffffff; font-size: 0.85rem;">${s.postType || 'Scheduled Post'}</span>
-                    <span style="display: inline-block; margin-left: 8px; font-size: 0.72rem; padding: 2px 6px; border-radius: 4px; background: rgba(245,158,11,0.2); color: #fbbf24;">${s.target?.toUpperCase()}</span>
-                    <div style="font-size: 0.72rem; color: #94a3b8; margin-top: 4px;">Scheduled for: ${new Date(s.scheduledAt).toLocaleString()}</div>
+            <div style="font-size: 0.68rem; color: #38bdf8; margin-top: 2px;">
+              ${agg.highestConfMatch && agg.highestConfMatch.intel ? (agg.highestConfMatch.intel.bestPick?.label || 'Verified') : 'Authoritative source'}
+            </div>
+          </div>
+        </div>
+
+        <!-- Render Active View Component -->
+        ${state.calendarView === 'month' ? renderCalendarMonthView(agg, curDate, selectedDateStr) : ''}
+        ${state.calendarView === 'week' ? renderCalendarWeekView(agg, curDate, selectedDateStr) : ''}
+        ${state.calendarView === 'day' ? renderCalendarDayCadenceView(agg, curDate, selectedDateStr) : ''}
+        ${state.calendarView === 'queue' ? renderCalendarQueueView() : ''}
+      </div>
+    `;
+  }
+
+  function renderCalendarMonthView(agg, curDate, selectedDateStr) {
+    const year = curDate.getFullYear();
+    const month = curDate.getMonth();
+    const monthNames = [
+      'January', 'February', 'March', 'April', 'May', 'June',
+      'July', 'August', 'September', 'October', 'November', 'December'
+    ];
+    const monthLabel = `${monthNames[month]} ${year}`;
+
+    // Compute first day of month (Monday-indexed: 0 = Mon, 6 = Sun)
+    const firstDay = new Date(Date.UTC(year, month, 1));
+    const firstDaySundayIndexed = firstDay.getUTCDay(); // 0 = Sun, 1 = Mon ...
+    const firstDayMondayIndexed = (firstDaySundayIndexed + 6) % 7;
+
+    const daysInMonth = new Date(Date.UTC(year, month + 1, 0)).getUTCDate();
+    const daysInPrevMonth = new Date(Date.UTC(year, month, 0)).getUTCDate();
+
+    // Today in WAT representation
+    const now = new Date();
+    const todayWat = new Date(now.getTime() + 3600 * 1000);
+    const todayKey = `${todayWat.getUTCFullYear()}-${String(todayWat.getUTCMonth() + 1).padStart(2, '0')}-${String(todayWat.getUTCDate()).padStart(2, '0')}`;
+
+    let cellsHtml = '';
+
+    // Leading days from previous month
+    for (let i = 0; i < firstDayMondayIndexed; i++) {
+      const prevDayNum = daysInPrevMonth - firstDayMondayIndexed + 1 + i;
+      cellsHtml += `
+        <div style="background: rgba(15,23,42,0.25); border: 1px solid rgba(255,255,255,0.03); min-height: 95px; padding: 8px; border-radius: 8px; opacity: 0.35;">
+          <div style="font-size: 0.75rem; font-weight: 700; color: #64748b;">${prevDayNum}</div>
+        </div>
+      `;
+    }
+
+    // Days in current month
+    for (let day = 1; day <= daysInMonth; day++) {
+      const dateKey = `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+      const isSelected = dateKey === selectedDateStr;
+      const isToday = dateKey === todayKey;
+      const matchesOnDay = agg.matchesByDate[dateKey] || [];
+      const schedulesOnDay = agg.schedulesByDate[dateKey] || [];
+
+      cellsHtml += `
+        <div onclick="window.TelegramPublisher.selectCalendarDate('${dateKey}')" style="background: ${isSelected ? 'rgba(56,189,248,0.12)' : (matchesOnDay.length > 0 ? 'rgba(15,23,42,0.85)' : 'rgba(15,23,42,0.5)')}; border: 1px solid ${isSelected ? '#38bdf8' : (matchesOnDay.length > 0 ? 'rgba(56,189,248,0.3)' : 'rgba(255,255,255,0.06)')}; min-height: 95px; padding: 8px; border-radius: 8px; cursor: pointer; transition: all 0.15s; display: flex; flex-direction: column; justify-content: space-between; box-shadow: ${isSelected ? '0 0 12px rgba(56,189,248,0.25)' : 'none'};">
+          <div>
+            <!-- Header of day cell -->
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px;">
+              <span style="font-size: 0.8rem; font-weight: ${isSelected || isToday ? '900' : '700'}; color: ${isSelected ? '#38bdf8' : (isToday ? '#10b981' : '#ffffff')};">
+                ${day}
+              </span>
+              <div style="display: flex; gap: 4px; align-items: center;">
+                ${isToday ? `<span style="font-size: 0.6rem; font-weight: 800; background: rgba(16,185,129,0.25); color: #34d399; padding: 1px 4px; border-radius: 4px;">TODAY</span>` : ''}
+                ${matchesOnDay.length > 0 ? `<span style="font-size: 0.62rem; font-weight: 800; background: rgba(56,189,248,0.2); color: #38bdf8; padding: 1px 5px; border-radius: 10px;">⚽ ${matchesOnDay.length}</span>` : ''}
+              </div>
+            </div>
+
+            <!-- Match Chips -->
+            <div style="display: flex; flex-direction: column; gap: 3px; margin-top: 4px;">
+              ${matchesOnDay.slice(0, 2).map(m => {
+                const hName = m.homeTeam?.name || m.home || 'Home';
+                const aName = m.awayTeam?.name || m.away || 'Away';
+                const ts = getAuthoritativeTimestamp(m);
+                const watDate = new Date(ts + 3600 * 1000);
+                const timeStr = `${String(watDate.getUTCHours()).padStart(2, '0')}:${String(watDate.getUTCMinutes()).padStart(2, '0')}`;
+                const intel = extractIntelligenceForMatch(m, state.selectedSources);
+                const conf = intel && intel.bestPick ? Math.round(intel.bestPick.confidence) : null;
+                return `
+                  <div style="background: rgba(0,0,0,0.4); border: 1px solid rgba(56,189,248,0.25); border-radius: 4px; padding: 3px 5px; font-size: 0.65rem;">
+                    <div style="color: #f8fafc; font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
+                      ${hName} v ${aName}
+                    </div>
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 1px; color: #94a3b8; font-size: 0.6rem;">
+                      <span>${timeStr} WAT</span>
+                      ${conf ? `<span style="color: #38bdf8; font-weight: 800;">${conf}%</span>` : ''}
+                    </div>
                   </div>
-                  <div>
-                    <button type="button" onclick="window.TelegramPublisher.cancelSchedule('${s.id}')" style="background: rgba(239,68,68,0.15); border: 1px solid rgba(239,68,68,0.35); color: #f87171; font-size: 0.72rem; padding: 4px 10px; border-radius: 6px; cursor: pointer;">Cancel</button>
-                  </div>
+                `;
+              }).join('')}
+              ${matchesOnDay.length > 2 ? `
+                <div style="font-size: 0.6rem; color: #94a3b8; text-align: center; margin-top: 1px;">
+                  +${matchesOnDay.length - 2} more
                 </div>
-              `).join('')}
+              ` : ''}
             </div>
-          `}
+          </div>
+
+          <!-- Scheduled Dispatch Badge -->
+          ${schedulesOnDay.length > 0 ? `
+            <div style="margin-top: 4px; background: rgba(245,158,11,0.2); border: 1px solid rgba(245,158,11,0.35); border-radius: 4px; padding: 2px 4px; font-size: 0.62rem; color: #fbbf24; font-weight: 800; display: flex; align-items: center; justify-content: space-between;">
+              <span>📢 ${schedulesOnDay.length} Post${schedulesOnDay.length > 1 ? 's' : ''}</span>
+              <span style="font-size: 0.58rem; color: #cbd5e1;">${schedulesOnDay[0].target?.toUpperCase()}</span>
+            </div>
+          ` : ''}
+        </div>
+      `;
+    }
+
+    // Trailing days to fill 35 or 42 grid cells
+    const totalRendered = firstDayMondayIndexed + daysInMonth;
+    const totalCells = totalRendered <= 35 ? 35 : 42;
+    const trailingDays = totalCells - totalRendered;
+    for (let j = 1; j <= trailingDays; j++) {
+      cellsHtml += `
+        <div style="background: rgba(15,23,42,0.25); border: 1px solid rgba(255,255,255,0.03); min-height: 95px; padding: 8px; border-radius: 8px; opacity: 0.35;">
+          <div style="font-size: 0.75rem; font-weight: 700; color: #64748b;">${j}</div>
+        </div>
+      `;
+    }
+
+    return `
+      <div>
+        <!-- Month Navigation Toolbar -->
+        <div style="display: flex; justify-content: space-between; align-items: center; background: rgba(15,23,42,0.7); border: 1px solid rgba(255,255,255,0.08); border-radius: 12px; padding: 12px 18px; margin-bottom: 16px;">
+          <div style="display: flex; align-items: center; gap: 10px;">
+            <button type="button" onclick="window.TelegramPublisher.prevCalendarMonth()" style="background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.12); color: #ffffff; padding: 6px 12px; border-radius: 6px; font-size: 0.78rem; font-weight: 700; cursor: pointer;">
+              ◀ Prev
+            </button>
+            <h4 style="margin: 0; font-size: 1.05rem; font-weight: 800; color: #ffffff; min-width: 170px; text-align: center;">
+              ${monthLabel}
+            </h4>
+            <button type="button" onclick="window.TelegramPublisher.nextCalendarMonth()" style="background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.12); color: #ffffff; padding: 6px 12px; border-radius: 6px; font-size: 0.78rem; font-weight: 700; cursor: pointer;">
+              Next ▶
+            </button>
+          </div>
+
+          <div style="display: flex; align-items: center; gap: 8px;">
+            <button type="button" onclick="window.TelegramPublisher.setTodayCalendar()" style="background: rgba(16,185,129,0.15); border: 1px solid rgba(16,185,129,0.3); color: #34d399; padding: 6px 14px; border-radius: 6px; font-size: 0.75rem; font-weight: 800; cursor: pointer;">
+              📅 Go to Today
+            </button>
+          </div>
+        </div>
+
+        <!-- Calendar Grid -->
+        <div style="background: rgba(15,23,42,0.6); border: 1px solid rgba(255,255,255,0.08); border-radius: 14px; padding: 16px; margin-bottom: 24px;">
+          <!-- Day of week header -->
+          <div style="display: grid; grid-template-columns: repeat(7, 1fr); gap: 8px; margin-bottom: 8px; text-align: center;">
+            ${['MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT', 'SUN'].map(dayName => `
+              <div style="font-size: 0.72rem; font-weight: 800; color: #64748b; padding: 4px 0;">${dayName}</div>
+            `).join('')}
+          </div>
+
+          <!-- Cells matrix -->
+          <div style="display: grid; grid-template-columns: repeat(7, 1fr); gap: 8px;">
+            ${cellsHtml}
+          </div>
+        </div>
+
+        <!-- Selected Date Details Panel (Fixtures & Daily Cadence) -->
+        ${renderSelectedDayDetails(selectedDateStr, agg)}
+      </div>
+    `;
+  }
+
+  function renderSelectedDayDetails(selectedDateStr, agg) {
+    const matchesOnDay = agg.matchesByDate[selectedDateStr] || [];
+    const schedulesOnDay = agg.schedulesByDate[selectedDateStr] || [];
+
+    // Parse selected date for display
+    const parts = (selectedDateStr || '2026-10-19').split('-');
+    const selYear = parseInt(parts[0], 10);
+    const selMonth = parseInt(parts[1], 10) - 1;
+    const selDay = parseInt(parts[2], 10);
+    const selDateObj = new Date(Date.UTC(selYear, selMonth, selDay));
+    const dayNames = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+    const monthNames = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
+    const dayOfWeek = dayNames[selDateObj.getUTCDay()] || 'Monday';
+    const dateFormatted = `${dayOfWeek}, ${selDay} ${monthNames[selMonth] || 'October'} ${selYear}`;
+
+    // Standard Cadence Slots
+    const CADENCE_SLOTS = [
+      {
+        id: 'slot_morning',
+        time: '09:00',
+        name: 'Morning Briefing & Trends',
+        emoji: '🌅',
+        desc: 'Market movers, early team news, daily odds movements & fixture schedule digest.',
+        recommendedTarget: 'free'
+      },
+      {
+        id: 'slot_banker',
+        time: '14:00',
+        name: 'Matchday Bankers & Accumulators',
+        emoji: '⚡',
+        desc: 'High-confidence AI top tips (≥ 80%), consensus picks & curated weekend slips.',
+        recommendedTarget: 'free'
+      },
+      {
+        id: 'slot_vip_prime',
+        time: '18:30',
+        name: 'Prime Time / High Stakes Value Alert',
+        emoji: '💎',
+        desc: 'VIP exclusive closing line value, EV discrepancies & big match intelligence.',
+        recommendedTarget: 'vip'
+      },
+      {
+        id: 'slot_settlement',
+        time: '22:00',
+        name: 'Post-Match Audit & PnL Settlement',
+        emoji: '📊',
+        desc: 'Results verification, model accuracy tracking & transparent settlement digest.',
+        recommendedTarget: 'free'
+      }
+    ];
+
+    return `
+      <div style="background: rgba(15,23,42,0.85); border: 1px solid rgba(56,189,248,0.25); border-radius: 14px; padding: 22px;">
+        <div style="display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 10px; margin-bottom: 20px; border-bottom: 1px solid rgba(255,255,255,0.08); padding-bottom: 14px;">
+          <div>
+            <div style="font-size: 0.72rem; color: #38bdf8; font-weight: 800; text-transform: uppercase; letter-spacing: 0.5px;">Active Matchday Planner</div>
+            <h4 style="margin: 2px 0 0 0; font-size: 1.15rem; font-weight: 900; color: #ffffff;">${dateFormatted}</h4>
+          </div>
+          <div style="display: flex; gap: 8px;">
+            <button type="button" onclick="window.TelegramPublisher.openScheduleModal('${selectedDateStr}T14:00')" style="background: linear-gradient(135deg, #0284c7, #38bdf8); border: none; color: #ffffff; padding: 8px 16px; border-radius: 8px; font-size: 0.78rem; font-weight: 800; cursor: pointer;">
+              ➕ Schedule for this Date
+            </button>
+          </div>
+        </div>
+
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(340px, 1fr)); gap: 20px;">
+          <!-- Left Column: Match Fixtures -->
+          <div>
+            <h5 style="margin: 0 0 12px 0; font-size: 0.85rem; font-weight: 800; color: #cbd5e1; display: flex; align-items: center; justify-content: space-between;">
+              <span>⚽ Canonical Matchday Fixtures (${matchesOnDay.length})</span>
+              <span style="font-size: 0.72rem; color: #64748b; font-weight: 600;">Zero Backfill Active</span>
+            </h5>
+
+            ${matchesOnDay.length === 0 ? `
+              <div style="background: rgba(0,0,0,0.3); border: 1px dashed rgba(255,255,255,0.1); border-radius: 10px; padding: 24px; text-align: center; color: #94a3b8;">
+                <div style="font-size: 1.4rem; margin-bottom: 6px;">☕</div>
+                <div style="font-weight: 700; color: #e2e8f0; font-size: 0.85rem;">No Matches on this Date</div>
+                <div style="font-size: 0.72rem; margin-top: 4px; color: #64748b;">No canonical fixtures match this date in the active match pool. Use the cadence slots to schedule market briefings or educational posts.</div>
+              </div>
+            ` : `
+              <div style="display: flex; flex-direction: column; gap: 12px;">
+                ${matchesOnDay.map(m => {
+                  const hName = m.homeTeam?.name || m.home || 'Home';
+                  const aName = m.awayTeam?.name || m.away || 'Away';
+                  const compName = m.competition?.name || m.league || 'League';
+                  const ts = getAuthoritativeTimestamp(m);
+                  const kickoffFormatted = formatAuthoritativeKickoff(ts, true);
+                  const intel = extractIntelligenceForMatch(m, state.selectedSources);
+                  const pick = intel && intel.bestPick ? intel.bestPick : { label: 'Home Win', confidence: 75 };
+                  const consensusRatio = intel && intel.consensusRatio ? intel.consensusRatio : '4/5';
+                  const consensusPct = intel && intel.consensusPct ? intel.consensusPct : '80%';
+
+                  return `
+                    <div style="background: rgba(0,0,0,0.4); border: 1px solid rgba(56,189,248,0.25); border-radius: 10px; padding: 14px;">
+                      <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 8px;">
+                        <div>
+                          <span style="background: rgba(56,189,248,0.15); border: 1px solid rgba(56,189,248,0.3); color: #38bdf8; font-size: 0.65rem; font-weight: 800; padding: 2px 8px; border-radius: 4px;">
+                            ${compName}
+                          </span>
+                          <h6 style="margin: 6px 0 2px 0; font-size: 0.95rem; font-weight: 900; color: #ffffff;">
+                            ${hName} vs ${aName}
+                          </h6>
+                          <div style="font-size: 0.72rem; color: #94a3b8;">
+                            Kickoff: ${kickoffFormatted}
+                          </div>
+                        </div>
+                        <span style="font-size: 0.65rem; font-weight: 800; background: rgba(16,185,129,0.2); color: #34d399; padding: 2px 6px; border-radius: 4px;">
+                          UPCOMING
+                        </span>
+                      </div>
+
+                      <!-- Intelligence summary -->
+                      <div style="background: rgba(15,23,42,0.6); border-radius: 6px; padding: 8px 10px; margin: 8px 0; display: flex; justify-content: space-between; align-items: center;">
+                        <div>
+                          <span style="font-size: 0.65rem; color: #64748b; font-weight: 700;">MODEL PICK: </span>
+                          <span style="font-size: 0.78rem; font-weight: 800; color: #38bdf8;">${pick.label}</span>
+                        </div>
+                        <div style="display: flex; gap: 8px;">
+                          <span style="font-size: 0.7rem; font-weight: 800; color: #10b981;">${Math.round(pick.confidence)}% Conf</span>
+                          <span style="font-size: 0.7rem; font-weight: 700; color: #fbbf24;">${consensusRatio} (${consensusPct})</span>
+                        </div>
+                      </div>
+
+                      <!-- Actions -->
+                      <div style="display: flex; gap: 8px; margin-top: 10px;">
+                        <button type="button" onclick="window.TelegramPublisher.openScheduleModal('${selectedDateStr}T14:00', '${m.id}')" style="flex: 1; background: rgba(56,189,248,0.2); border: 1px solid rgba(56,189,248,0.4); color: #38bdf8; padding: 6px 10px; border-radius: 6px; font-size: 0.72rem; font-weight: 700; cursor: pointer;">
+                          📅 Schedule Post
+                        </button>
+                        <button type="button" onclick="window.TelegramPublisher.loadMatchToStudio('${m.id}')" style="background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.15); color: #cbd5e1; padding: 6px 10px; border-radius: 6px; font-size: 0.72rem; font-weight: 700; cursor: pointer;">
+                          ⚡ Studio Composer
+                        </button>
+                      </div>
+                    </div>
+                  `;
+                }).join('')}
+              </div>
+            `}
+          </div>
+
+          <!-- Right Column: Daily Broadcast Cadence Timeline -->
+          <div>
+            <h5 style="margin: 0 0 12px 0; font-size: 0.85rem; font-weight: 800; color: #cbd5e1; display: flex; align-items: center; justify-content: space-between;">
+              <span>⏱️ Daily Publication Cadence</span>
+              <span style="font-size: 0.72rem; color: #38bdf8; font-weight: 600;">Standard Editorial Windows</span>
+            </h5>
+
+            <div style="display: flex; flex-direction: column; gap: 10px;">
+              ${CADENCE_SLOTS.map(slot => {
+                const matchingSchedule = schedulesOnDay.find(s => {
+                  const sD = new Date(s.scheduledAt);
+                  const watDate = new Date(sD.getTime() + 3600 * 1000);
+                  const sTime = `${String(watDate.getUTCHours()).padStart(2, '0')}:${String(watDate.getUTCMinutes()).padStart(2, '0')}`;
+                  return sTime.startsWith(slot.time.slice(0, 2));
+                });
+
+                return `
+                  <div style="background: ${matchingSchedule ? 'rgba(16,185,129,0.08)' : 'rgba(0,0,0,0.3)'}; border: 1px solid ${matchingSchedule ? 'rgba(16,185,129,0.3)' : 'rgba(255,255,255,0.08)'}; border-radius: 10px; padding: 12px 14px;">
+                    <div style="display: flex; justify-content: space-between; align-items: center;">
+                      <div style="display: flex; align-items: center; gap: 8px;">
+                        <span style="font-size: 1.1rem;">${slot.emoji}</span>
+                        <div>
+                          <div style="font-size: 0.82rem; font-weight: 800; color: #ffffff;">
+                            ${slot.time} WAT — ${slot.name}
+                          </div>
+                          <div style="font-size: 0.68rem; color: #94a3b8; margin-top: 2px;">
+                            ${slot.desc}
+                          </div>
+                        </div>
+                      </div>
+
+                      ${matchingSchedule ? `
+                        <span style="font-size: 0.68rem; font-weight: 800; background: rgba(16,185,129,0.2); color: #34d399; padding: 3px 8px; border-radius: 4px;">
+                          ✓ QUEUED
+                        </span>
+                      ` : `
+                        <button type="button" onclick="window.TelegramPublisher.openScheduleModal('${selectedDateStr}T${slot.time}')" style="background: rgba(56,189,248,0.15); border: 1px solid rgba(56,189,248,0.3); color: #38bdf8; padding: 5px 10px; border-radius: 6px; font-size: 0.72rem; font-weight: 700; cursor: pointer; white-space: nowrap;">
+                          + Schedule Slot
+                        </button>
+                      `}
+                    </div>
+
+                    ${matchingSchedule ? `
+                      <div style="margin-top: 8px; padding-top: 8px; border-top: 1px solid rgba(255,255,255,0.06); display: flex; justify-content: space-between; align-items: center;">
+                        <div style="font-size: 0.72rem; color: #cbd5e1;">
+                          <span style="font-weight: 700; color: #ffffff;">${matchingSchedule.postType || 'Broadcast'}</span>
+                          <span style="margin-left: 6px; font-size: 0.65rem; background: rgba(245,158,11,0.2); color: #fbbf24; padding: 1px 5px; border-radius: 3px;">
+                            ${matchingSchedule.target?.toUpperCase()}
+                          </span>
+                        </div>
+                        <div style="display: flex; gap: 6px;">
+                          <button type="button" onclick="window.TelegramPublisher.dispatchScheduledNow('${matchingSchedule.id}')" style="background: rgba(56,189,248,0.2); border: 1px solid rgba(56,189,248,0.4); color: #38bdf8; font-size: 0.65rem; padding: 3px 8px; border-radius: 4px; font-weight: 700; cursor: pointer;">
+                            🚀 Send Now
+                          </button>
+                          <button type="button" onclick="window.TelegramPublisher.cancelSchedule('${matchingSchedule.id}')" style="background: rgba(239,68,68,0.15); border: 1px solid rgba(239,68,68,0.3); color: #f87171; font-size: 0.65rem; padding: 3px 8px; border-radius: 4px; font-weight: 700; cursor: pointer;">
+                            Cancel
+                          </button>
+                        </div>
+                      </div>
+                    ` : ''}
+                  </div>
+                `;
+              }).join('')}
+            </div>
+          </div>
         </div>
       </div>
     `;
+  }
+
+  function renderCalendarWeekView(agg, curDate, selectedDateStr) {
+    const parts = (selectedDateStr || '2026-10-19').split('-');
+    const selYear = parseInt(parts[0], 10);
+    const selMonth = parseInt(parts[1], 10) - 1;
+    const selDay = parseInt(parts[2], 10);
+    const selDateObj = new Date(Date.UTC(selYear, selMonth, selDay));
+    const dayOfWeek = (selDateObj.getUTCDay() + 6) % 7; // Monday = 0
+    const mondayMs = selDateObj.getTime() - dayOfWeek * 86400000;
+
+    const days = [];
+    const dayNames = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+    const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+
+    for (let i = 0; i < 7; i++) {
+      const d = new Date(mondayMs + i * 86400000);
+      const y = d.getUTCFullYear();
+      const m = d.getUTCMonth();
+      const dayNum = d.getUTCDate();
+      const key = `${y}-${String(m + 1).padStart(2, '0')}-${String(dayNum).padStart(2, '0')}`;
+      days.push({
+        name: dayNames[i],
+        dayNum,
+        monthName: monthNames[m],
+        key,
+        matches: agg.matchesByDate[key] || [],
+        schedules: agg.schedulesByDate[key] || [],
+        isSelected: key === selectedDateStr
+      });
+    }
+
+    const weekRangeLabel = `${days[0].dayNum} ${days[0].monthName} – ${days[6].dayNum} ${days[6].monthName} ${days[6].key.split('-')[0]}`;
+
+    return `
+      <div>
+        <div style="display: flex; justify-content: space-between; align-items: center; background: rgba(15,23,42,0.7); border: 1px solid rgba(255,255,255,0.08); border-radius: 12px; padding: 12px 18px; margin-bottom: 16px;">
+          <div style="display: flex; align-items: center; gap: 10px;">
+            <button type="button" onclick="window.TelegramPublisher.prevCalendarWeek()" style="background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.12); color: #ffffff; padding: 6px 12px; border-radius: 6px; font-size: 0.78rem; font-weight: 700; cursor: pointer;">
+              ◀ Prev Week
+            </button>
+            <h4 style="margin: 0; font-size: 1.05rem; font-weight: 800; color: #ffffff;">
+              Week: ${weekRangeLabel}
+            </h4>
+            <button type="button" onclick="window.TelegramPublisher.nextCalendarWeek()" style="background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.12); color: #ffffff; padding: 6px 12px; border-radius: 6px; font-size: 0.78rem; font-weight: 700; cursor: pointer;">
+              Next Week ▶
+            </button>
+          </div>
+          <button type="button" onclick="window.TelegramPublisher.setTodayCalendar()" style="background: rgba(16,185,129,0.15); border: 1px solid rgba(16,185,129,0.3); color: #34d399; padding: 6px 14px; border-radius: 6px; font-size: 0.75rem; font-weight: 800; cursor: pointer;">
+            📅 Current Week
+          </button>
+        </div>
+
+        <!-- 7-Column Week Board -->
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 10px; margin-bottom: 24px;">
+          ${days.map(d => `
+            <div onclick="window.TelegramPublisher.selectCalendarDate('${d.key}')" style="background: ${d.isSelected ? 'rgba(56,189,248,0.12)' : 'rgba(15,23,42,0.6)'}; border: 1px solid ${d.isSelected ? '#38bdf8' : 'rgba(255,255,255,0.08)'}; border-radius: 10px; padding: 12px; min-height: 280px; display: flex; flex-direction: column; justify-content: space-between; cursor: pointer;">
+              <div>
+                <div style="border-bottom: 1px solid rgba(255,255,255,0.08); padding-bottom: 8px; margin-bottom: 10px;">
+                  <div style="font-size: 0.75rem; font-weight: 800; color: ${d.isSelected ? '#38bdf8' : '#94a3b8'}; text-transform: uppercase;">${d.name}</div>
+                  <div style="font-size: 1.1rem; font-weight: 900; color: #ffffff;">${d.dayNum} ${d.monthName}</div>
+                </div>
+
+                <!-- Fixtures in column -->
+                <div style="display: flex; flex-direction: column; gap: 6px;">
+                  ${d.matches.map(m => `
+                    <div style="background: rgba(0,0,0,0.4); border: 1px solid rgba(56,189,248,0.25); border-radius: 6px; padding: 6px 8px; font-size: 0.72rem;">
+                      <div style="font-weight: 800; color: #ffffff;">${m.homeTeam?.name || m.home} v ${m.awayTeam?.name || m.away}</div>
+                      <div style="font-size: 0.65rem; color: #94a3b8; margin-top: 2px;">${m.competition?.name || m.league || 'League'}</div>
+                    </div>
+                  `).join('')}
+
+                  ${d.matches.length === 0 ? `
+                    <div style="font-size: 0.68rem; color: #64748b; text-align: center; padding: 12px 0;">No matches</div>
+                  ` : ''}
+
+                  <!-- Scheduled in column -->
+                  ${d.schedules.map(s => `
+                    <div style="background: rgba(245,158,11,0.15); border: 1px solid rgba(245,158,11,0.3); border-radius: 6px; padding: 6px 8px; font-size: 0.7rem; color: #fbbf24;">
+                      <div style="font-weight: 800;">📢 ${s.postType || 'Broadcast'}</div>
+                      <div style="font-size: 0.62rem; color: #cbd5e1;">${s.target?.toUpperCase()}</div>
+                    </div>
+                  `).join('')}
+                </div>
+              </div>
+
+              <div style="margin-top: 10px; padding-top: 8px; border-top: 1px solid rgba(255,255,255,0.06);">
+                <button type="button" onclick="event.stopPropagation(); window.TelegramPublisher.openScheduleModal('${d.key}T14:00')" style="width: 100%; background: rgba(56,189,248,0.15); border: 1px solid rgba(56,189,248,0.3); color: #38bdf8; font-size: 0.68rem; font-weight: 700; padding: 4px; border-radius: 4px; cursor: pointer;">
+                  + Schedule
+                </button>
+              </div>
+            </div>
+          `).join('')}
+        </div>
+
+        ${renderSelectedDayDetails(selectedDateStr, agg)}
+      </div>
+    `;
+  }
+
+  function renderCalendarDayCadenceView(agg, curDate, selectedDateStr) {
+    return `
+      <div>
+        ${renderSelectedDayDetails(selectedDateStr, agg)}
+      </div>
+    `;
+  }
+
+  function renderCalendarQueueView() {
+    const list = state.calendarFilterTarget === 'all'
+      ? state.schedules
+      : state.schedules.filter(s => s.target === state.calendarFilterTarget);
+
+    return `
+      <div style="background: rgba(15,23,42,0.6); border: 1px solid rgba(255,255,255,0.08); border-radius: 14px; padding: 20px;">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
+          <div>
+            <h4 style="margin: 0; font-size: 1rem; font-weight: 800; color: #ffffff;">Queued Telegram Publications</h4>
+            <div style="font-size: 0.75rem; color: #94a3b8; margin-top: 2px;">
+              Scheduled broadcasts stored in authoritative KV storage with automatic duplicate guard.
+            </div>
+          </div>
+          <button type="button" onclick="window.TelegramPublisher.openScheduleModal()" style="background: linear-gradient(135deg, #0284c7, #38bdf8); border: none; color: #ffffff; padding: 6px 14px; border-radius: 6px; font-size: 0.75rem; font-weight: 800; cursor: pointer;">
+            ➕ New Schedule
+          </button>
+        </div>
+
+        ${list.length === 0 ? `
+          <div style="text-align: center; padding: 36px; color: #94a3b8; background: rgba(0,0,0,0.25); border-radius: 10px;">
+            <div style="font-size: 1.8rem; margin-bottom: 8px;">📅</div>
+            <div style="font-weight: 700; color: #ffffff; font-size: 0.95rem;">No scheduled posts in queue</div>
+            <div style="font-size: 0.78rem; margin-top: 6px; max-width: 480px; margin-left: auto; margin-right: auto; line-height: 1.5;">
+              Compose a broadcast in Studio or use "+ Schedule Broadcast" from the Calendar grid to queue automated dispatches. All scheduled posts revalidate against the Data Integrity Gate before sending.
+            </div>
+            <button type="button" onclick="window.TelegramPublisher.openScheduleModal()" style="margin-top: 16px; background: rgba(56,189,248,0.2); border: 1px solid rgba(56,189,248,0.4); color: #38bdf8; font-size: 0.8rem; font-weight: 800; padding: 8px 18px; border-radius: 8px; cursor: pointer;">
+              Schedule First Broadcast
+            </button>
+          </div>
+        ` : `
+          <div style="display: flex; flex-direction: column; gap: 12px;">
+            ${list.map(s => {
+              const sDate = new Date(s.scheduledAt);
+              const watDate = new Date(sDate.getTime() + 3600 * 1000);
+              const watFormatted = `${watDate.getUTCDate()} ${['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'][watDate.getUTCMonth()]} ${watDate.getUTCFullYear()} · ${String(watDate.getUTCHours()).padStart(2, '0')}:${String(watDate.getUTCMinutes()).padStart(2, '0')} WAT`;
+
+              return `
+                <div style="background: rgba(0,0,0,0.35); border: 1px solid rgba(255,255,255,0.08); padding: 16px; border-radius: 10px; display: flex; flex-direction: column; gap: 10px;">
+                  <div style="display: flex; justify-content: space-between; align-items: flex-start;">
+                    <div>
+                      <div style="display: flex; align-items: center; gap: 8px;">
+                        <span style="font-weight: 800; color: #ffffff; font-size: 0.9rem;">${s.postType || 'Scheduled Broadcast'}</span>
+                        <span style="font-size: 0.7rem; font-weight: 800; padding: 2px 7px; border-radius: 4px; background: ${s.target === 'vip' ? 'rgba(245,158,11,0.2)' : 'rgba(16,185,129,0.2)'}; color: ${s.target === 'vip' ? '#fbbf24' : '#34d399'};">
+                          ${s.target === 'vip' ? '🔒 VIP CHANNEL' : '🟢 FREE CHANNEL'}
+                        </span>
+                        <span style="font-size: 0.65rem; font-weight: 700; background: rgba(56,189,248,0.15); color: #38bdf8; padding: 2px 6px; border-radius: 4px;">
+                          QUEUED
+                        </span>
+                      </div>
+                      <div style="font-size: 0.75rem; color: #94a3b8; margin-top: 4px;">
+                        📅 Scheduled for: <strong style="color: #cbd5e1;">${watFormatted}</strong>
+                      </div>
+                    </div>
+
+                    <div style="display: flex; gap: 6px;">
+                      <button type="button" onclick="window.TelegramPublisher.dispatchScheduledNow('${s.id}')" style="background: linear-gradient(135deg, #0284c7, #38bdf8); border: none; color: #ffffff; font-size: 0.72rem; font-weight: 800; padding: 5px 12px; border-radius: 6px; cursor: pointer;">
+                        🚀 Send Now
+                      </button>
+                      <button type="button" onclick="window.TelegramPublisher.loadScheduleToStudio('${s.id}')" style="background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.15); color: #cbd5e1; font-size: 0.72rem; font-weight: 700; padding: 5px 10px; border-radius: 6px; cursor: pointer;">
+                        ✏️ Edit in Studio
+                      </button>
+                      <button type="button" onclick="window.TelegramPublisher.cancelSchedule('${s.id}')" style="background: rgba(239,68,68,0.15); border: 1px solid rgba(239,68,68,0.35); color: #f87171; font-size: 0.72rem; font-weight: 700; padding: 5px 10px; border-radius: 6px; cursor: pointer;">
+                        Cancel
+                      </button>
+                    </div>
+                  </div>
+
+                  <!-- Post Preview Excerpt -->
+                  <div style="background: rgba(15,23,42,0.6); border-radius: 6px; padding: 10px 12px; font-size: 0.78rem; color: #cbd5e1; white-space: pre-wrap; max-height: 120px; overflow-y: auto; font-family: monospace; border: 1px solid rgba(255,255,255,0.04);">
+                    ${escapeHtml(s.text || '')}
+                  </div>
+                </div>
+              `;
+            }).join('')}
+          </div>
+        `}
+      </div>
+    `;
+  }
+
+  function openScheduleModal(initialDateStr, initialMatchId) {
+    if (typeof document === 'undefined') return;
+    const modal = document.getElementById('tg-pub-schedule-modal');
+    if (!modal) return;
+
+    modal.style.display = 'flex';
+
+    // Populate match dropdown with upcoming matches
+    const matchSelect = document.getElementById('tg-sched-match');
+    if (matchSelect) {
+      const rawPool = getRawMatchPool();
+      let optionsHtml = '<option value="">None (Custom / Multi-Match)</option>';
+      rawPool.forEach(m => {
+        const hName = m.homeTeam?.name || m.home || 'Home';
+        const aName = m.awayTeam?.name || m.away || 'Away';
+        const comp = m.competition?.name || m.league || '';
+        const ts = getAuthoritativeTimestamp(m);
+        const watKickoff = formatAuthoritativeKickoff(ts, false);
+        const sel = initialMatchId && String(m.id) === String(initialMatchId) ? 'selected' : '';
+        optionsHtml += `<option value="${m.id}" ${sel}>${hName} vs ${aName} (${comp} · ${watKickoff})</option>`;
+      });
+      matchSelect.innerHTML = optionsHtml;
+    }
+
+    // Set target and post type
+    const targetSelect = document.getElementById('tg-sched-target');
+    if (targetSelect) targetSelect.value = state.target || 'free';
+
+    const typeSelect = document.getElementById('tg-sched-type');
+    if (typeSelect) typeSelect.value = state.postType || 'Top Tip of the Day';
+
+    // Set message text
+    const textEl = document.getElementById('tg-sched-text');
+    if (textEl) {
+      if (initialMatchId) {
+        const rawPool = getRawMatchPool();
+        const found = rawPool.find(m => String(m.id) === String(initialMatchId));
+        if (found) {
+          const compPost = composeTelegramPost({
+            matches: [found],
+            target: state.target || 'free',
+            postType: state.postType || 'Top Tip of the Day',
+            selectedSources: state.selectedSources
+          });
+          textEl.value = compPost.text || '';
+        }
+      } else if (state.messageText && state.messageText.trim()) {
+        textEl.value = state.messageText;
+      } else {
+        textEl.value = '';
+      }
+    }
+
+    // Set photo URL
+    const photoEl = document.getElementById('tg-sched-photo');
+    if (photoEl) photoEl.value = state.photoUrl || '';
+
+    // Set scheduled time
+    const timeEl = document.getElementById('tg-sched-time');
+    if (timeEl) {
+      if (initialDateStr && initialDateStr.includes('T')) {
+        timeEl.value = initialDateStr.slice(0, 16);
+      } else if (initialDateStr) {
+        timeEl.value = `${initialDateStr}T14:00`;
+      } else {
+        const now = new Date();
+        const future = new Date(now.getTime() + 4 * 3600 * 1000);
+        const fYear = future.getFullYear();
+        const fMonth = String(future.getMonth() + 1).padStart(2, '0');
+        const fDay = String(future.getDate()).padStart(2, '0');
+        const fHours = String(future.getHours()).padStart(2, '0');
+        const fMins = String(future.getMinutes()).padStart(2, '0');
+        timeEl.value = `${fYear}-${fMonth}-${fDay}T${fHours}:${fMins}`;
+      }
+    }
+  }
+
+  function closeScheduleModal() {
+    if (typeof document === 'undefined') return;
+    const modal = document.getElementById('tg-pub-schedule-modal');
+    if (modal) modal.style.display = 'none';
+  }
+
+  function onScheduleMatchChange(matchId) {
+    if (typeof document === 'undefined') return;
+    if (!matchId) return;
+    const rawPool = getRawMatchPool();
+    const found = rawPool.find(m => String(m.id) === String(matchId));
+    if (!found) return;
+
+    const targetEl = document.getElementById('tg-sched-target');
+    const typeEl = document.getElementById('tg-sched-type');
+    const textEl = document.getElementById('tg-sched-text');
+    const timeEl = document.getElementById('tg-sched-time');
+
+    const targetVal = targetEl ? targetEl.value : state.target || 'free';
+    const typeVal = typeEl ? typeEl.value : state.postType || 'Top Tip of the Day';
+
+    if (textEl) {
+      const compPost = composeTelegramPost({
+        matches: [found],
+        target: targetVal,
+        postType: typeVal,
+        selectedSources: state.selectedSources
+      });
+      textEl.value = compPost.text || '';
+    }
+
+    if (timeEl) {
+      const ts = getAuthoritativeTimestamp(found);
+      if (ts) {
+        const previewTs = ts - 2 * 3600 * 1000;
+        const d = new Date(previewTs);
+        const y = d.getFullYear();
+        const mo = String(d.getMonth() + 1).padStart(2, '0');
+        const da = String(d.getDate()).padStart(2, '0');
+        const hr = String(d.getHours()).padStart(2, '0');
+        const mi = String(d.getMinutes()).padStart(2, '0');
+        timeEl.value = `${y}-${mo}-${da}T${hr}:${mi}`;
+      }
+    }
+  }
+
+  async function submitSchedule(schedulePayload) {
+    let schedTime = '';
+    let schedTarget = state.target || 'free';
+    let schedType = state.postType || 'Scheduled Post';
+    let schedText = state.messageText || '';
+    let schedPhoto = state.photoUrl || undefined;
+    let schedMatchId = null;
+
+    if (schedulePayload && typeof schedulePayload === 'object') {
+      if (schedulePayload.scheduledAt) schedTime = schedulePayload.scheduledAt;
+      if (schedulePayload.target) schedTarget = schedulePayload.target;
+      if (schedulePayload.postType) schedType = schedulePayload.postType;
+      if (schedulePayload.text) schedText = schedulePayload.text;
+      if (schedulePayload.photoUrl) schedPhoto = schedulePayload.photoUrl;
+      if (schedulePayload.matchId) schedMatchId = schedulePayload.matchId;
+    }
+
+    let targetEl = null;
+    let typeEl = null;
+
+    if (typeof document !== 'undefined') {
+      const timeEl = document.getElementById('tg-sched-time');
+      targetEl = document.getElementById('tg-sched-target');
+      typeEl = document.getElementById('tg-sched-type');
+      const textEl = document.getElementById('tg-sched-text');
+      const photoEl = document.getElementById('tg-sched-photo');
+      const matchEl = document.getElementById('tg-sched-match');
+
+      if (timeEl && timeEl.value) schedTime = timeEl.value;
+      if (targetEl && targetEl.value) schedTarget = targetEl.value;
+      if (typeEl && typeEl.value) schedType = typeEl.value;
+      if (textEl && textEl.value) schedText = textEl.value.trim();
+      if (photoEl && photoEl.value) schedPhoto = photoEl.value.trim();
+      if (matchEl && matchEl.value) schedMatchId = matchEl.value;
+    }
+
+    if (!schedTime) {
+      showAlert('Please specify a scheduled date and time.');
+      return;
+    }
+
+    const scheduledDateObj = new Date(schedTime);
+    if (isNaN(scheduledDateObj.getTime())) {
+      showAlert('Invalid scheduled date format.');
+      return;
+    }
+
+    if (!schedText || !schedText.trim()) {
+      showAlert('Please enter message text for the scheduled broadcast.');
+      return;
+    }
+
+    const scheduledAtIso = scheduledDateObj.toISOString();
+    const newSchedule = {
+      id: 'sch_' + Date.now() + '_' + Math.random().toString(36).slice(2, 7),
+      target: schedTarget,
+      postType: schedType,
+      text: schedText.trim(),
+      photoUrl: schedPhoto || undefined,
+      buttons: [],
+      scheduledAt: scheduledAtIso,
+      createdAt: new Date().toISOString(),
+      matchId: schedMatchId || null
+    };
+
+    state.schedules.push(newSchedule);
+
+    closeScheduleModal();
+    renderCurrentTab();
+
+    const token = getAdminSessionToken();
+    if (token) {
+      try {
+        const res = await adminFetch('/api/integrations/telegram/publish', {
+          method: 'POST',
+          body: JSON.stringify({
+            action: 'schedule',
+            scheduledAt: newSchedule.scheduledAt,
+            schedule: newSchedule
+          })
+        });
+        if (res.ok) {
+          const data = await res.json();
+          if (data && data.schedule && data.schedule.id) {
+            newSchedule.id = data.schedule.id;
+          }
+        }
+      } catch (e) {
+        console.warn('[TelegramPublisher] Schedule API warning:', e.message);
+      }
+    }
+
+    showAlert('✅ Broadcast successfully scheduled for ' + scheduledDateObj.toLocaleString());
+  }
+
+  async function cancelSchedule(scheduleId) {
+    if (!scheduleId) return;
+
+    state.schedules = (state.schedules || []).filter(s => s.id !== scheduleId);
+    renderCurrentTab();
+
+    const token = getAdminSessionToken();
+    if (token) {
+      try {
+        await adminFetch('/api/integrations/telegram/publish', {
+          method: 'POST',
+          body: JSON.stringify({
+            action: 'cancel_schedule',
+            scheduleId
+          })
+        });
+      } catch (e) {
+        console.warn('[TelegramPublisher] Cancel schedule API warning:', e.message);
+      }
+    }
+
+    showAlert('Scheduled dispatch cancelled.');
+  }
+
+  async function dispatchScheduledNow(scheduleId) {
+    const s = (state.schedules || []).find(item => item.id === scheduleId);
+    if (!s) {
+      showAlert('Schedule item not found.');
+      return;
+    }
+
+    state.target = s.target || 'free';
+    state.postType = s.postType || 'Scheduled Broadcast';
+    state.messageText = s.text || '';
+    state.photoUrl = s.photoUrl || '';
+
+    await cancelSchedule(scheduleId);
+    await executePublish(false);
+  }
+
+  function loadScheduleToStudio(scheduleId) {
+    const s = (state.schedules || []).find(item => item.id === scheduleId);
+    if (!s) return;
+
+    state.target = s.target || 'free';
+    state.postType = s.postType || 'Custom Broadcast';
+    state.messageText = s.text || '';
+    state.photoUrl = s.photoUrl || '';
+
+    switchTab('compose');
+
+    if (typeof document !== 'undefined') {
+      const textInput = document.getElementById('tg-pub-message-input');
+      if (textInput) textInput.value = state.messageText;
+      const photoInput = document.getElementById('tg-pub-photo-input');
+      if (photoInput) photoInput.value = state.photoUrl;
+      const targetSelect = document.getElementById('tg-pub-target');
+      if (targetSelect) targetSelect.value = state.target;
+      const postTypeSelect = document.getElementById('tg-pub-post-type');
+      if (postTypeSelect) postTypeSelect.value = state.postType;
+      updateLivePreview();
+    }
+  }
+
+  function loadMatchToStudio(matchId) {
+    generateSingleMatchPost(matchId);
+    switchTab('compose');
+  }
+
+  function prevCalendarMonth() {
+    const cur = getCalendarCurrentDate();
+    state.calendarDate = new Date(cur.getFullYear(), cur.getMonth() - 1, 1);
+    renderCurrentTab();
+  }
+
+  function nextCalendarMonth() {
+    const cur = getCalendarCurrentDate();
+    state.calendarDate = new Date(cur.getFullYear(), cur.getMonth() + 1, 1);
+    renderCurrentTab();
+  }
+
+  function prevCalendarWeek() {
+    const cur = getCalendarCurrentDate();
+    state.calendarDate = new Date(cur.getTime() - 7 * 86400000);
+    renderCurrentTab();
+  }
+
+  function nextCalendarWeek() {
+    const cur = getCalendarCurrentDate();
+    state.calendarDate = new Date(cur.getTime() + 7 * 86400000);
+    renderCurrentTab();
+  }
+
+  function setTodayCalendar() {
+    const now = new Date();
+    if (now.getFullYear() >= 2026) {
+      state.calendarDate = new Date(now.getFullYear(), now.getMonth(), 1);
+      state.selectedCalendarDate = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
+    } else {
+      state.calendarDate = new Date(2026, 9, 1);
+      state.selectedCalendarDate = '2026-10-07';
+    }
+    renderCurrentTab();
+  }
+
+  function selectCalendarDate(dateStr) {
+    state.selectedCalendarDate = dateStr;
+    renderCurrentTab();
+  }
+
+  function setCalendarView(view) {
+    state.calendarView = view;
+    renderCurrentTab();
+  }
+
+  function setCalendarFilterTarget(target) {
+    state.calendarFilterTarget = target;
+    renderCurrentTab();
   }
 
   // TAB 5: AUTOMATION (DEFAULTS OFF)
@@ -4553,6 +5612,92 @@
             <div style="display: flex; justify-content: flex-end; gap: 10px;">
               <button type="button" onclick="window.TelegramPublisher.closeDuplicateModal()" style="background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.15); color: #ffffff; padding: 8px 16px; border-radius: 8px; font-weight: 700; cursor: pointer;">Cancel</button>
               <button type="button" onclick="window.TelegramPublisher.dispatch(true)" style="background: #dc2626; border: none; color: #ffffff; padding: 8px 18px; border-radius: 8px; font-weight: 800; cursor: pointer;">Publish Anyway</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- MODAL 3: SCHEDULE BROADCAST MODAL -->
+        <div id="tg-pub-schedule-modal" style="display: none; position: fixed; inset: 0; z-index: 99999; background: rgba(0,0,0,0.85); backdrop-filter: blur(8px); align-items: center; justify-content: center; padding: 16px;">
+          <div style="background: #0f172a; border: 1px solid rgba(56,189,248,0.4); border-radius: 18px; max-width: 620px; width: 100%; padding: 24px; box-shadow: 0 20px 40px rgba(0,0,0,0.8); max-height: 90vh; overflow-y: auto;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
+              <h3 style="margin: 0; font-size: 1.15rem; font-weight: 900; color: #ffffff;">📅 Schedule Telegram Broadcast</h3>
+              <button type="button" onclick="window.TelegramPublisher.closeScheduleModal()" style="background: transparent; border: none; color: #94a3b8; font-size: 1.2rem; cursor: pointer;">✕</button>
+            </div>
+            <p style="font-size: 0.78rem; color: #94a3b8; margin: 0 0 16px 0;">
+              Queue broadcasts with automated Data Integrity revalidation before dispatch.
+            </p>
+
+            <div style="display: flex; flex-direction: column; gap: 14px;">
+              <!-- Date & Time Picker -->
+              <div>
+                <label style="display: block; font-size: 0.75rem; font-weight: 700; color: #cbd5e1; margin-bottom: 6px;">
+                  Scheduled Date & Time (WAT / Local) *
+                </label>
+                <input type="datetime-local" id="tg-sched-time" style="width: 100%; box-sizing: border-box; background: rgba(0,0,0,0.4); border: 1px solid rgba(255,255,255,0.15); border-radius: 8px; color: #ffffff; padding: 10px; font-size: 0.82rem;">
+              </div>
+
+              <!-- Target Channel & Post Type -->
+              <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
+                <div>
+                  <label style="display: block; font-size: 0.75rem; font-weight: 700; color: #cbd5e1; margin-bottom: 6px;">
+                    Target Channel *
+                  </label>
+                  <select id="tg-sched-target" style="width: 100%; box-sizing: border-box; background: rgba(0,0,0,0.4); border: 1px solid rgba(255,255,255,0.15); border-radius: 8px; color: #ffffff; padding: 10px; font-size: 0.82rem;">
+                    <option value="free">🟢 Free Channel (Public)</option>
+                    <option value="vip">🔒 VIP Channel (Exclusive)</option>
+                  </select>
+                </div>
+                <div>
+                  <label style="display: block; font-size: 0.75rem; font-weight: 700; color: #cbd5e1; margin-bottom: 6px;">
+                    Post Type *
+                  </label>
+                  <select id="tg-sched-type" style="width: 100%; box-sizing: border-box; background: rgba(0,0,0,0.4); border: 1px solid rgba(255,255,255,0.15); border-radius: 8px; color: #ffffff; padding: 10px; font-size: 0.82rem;">
+                    <option value="Top Tip of the Day">Top Tip of the Day</option>
+                    <option value="VIP Intelligence Dossier">VIP Intelligence Dossier</option>
+                    <option value="Value Alert">Value Alert</option>
+                    <option value="Match Preview">Match Preview</option>
+                    <option value="Morning Briefing">Morning Briefing</option>
+                    <option value="Multi-Match Slip">Weekend Multi-Match Slip</option>
+                    <option value="Post-Match Settlement">Post-Match Settlement</option>
+                    <option value="Custom Broadcast">Custom Broadcast</option>
+                  </select>
+                </div>
+              </div>
+
+              <!-- Match Attachment Dropdown -->
+              <div>
+                <label style="display: block; font-size: 0.75rem; font-weight: 700; color: #cbd5e1; margin-bottom: 6px;">
+                  Attach Canonical Match (Optional)
+                </label>
+                <select id="tg-sched-match" onchange="window.TelegramPublisher.onScheduleMatchChange(this.value)" style="width: 100%; box-sizing: border-box; background: rgba(0,0,0,0.4); border: 1px solid rgba(255,255,255,0.15); border-radius: 8px; color: #ffffff; padding: 10px; font-size: 0.82rem;">
+                  <option value="">None (Custom / Multi-Match)</option>
+                </select>
+              </div>
+
+              <!-- Message Text -->
+              <div>
+                <label style="display: block; font-size: 0.75rem; font-weight: 700; color: #cbd5e1; margin-bottom: 6px;">
+                  Message Content *
+                </label>
+                <textarea id="tg-sched-text" rows="7" placeholder="Type broadcast message or select a match above to auto-populate..." style="width: 100%; box-sizing: border-box; background: rgba(0,0,0,0.4); border: 1px solid rgba(255,255,255,0.15); border-radius: 8px; color: #ffffff; padding: 10px; font-size: 0.82rem; resize: vertical; line-height: 1.5;"></textarea>
+              </div>
+
+              <!-- Photo URL -->
+              <div>
+                <label style="display: block; font-size: 0.75rem; font-weight: 700; color: #cbd5e1; margin-bottom: 6px;">
+                  Photo / Banner URL (Optional)
+                </label>
+                <input type="text" id="tg-sched-photo" placeholder="https://..." style="width: 100%; box-sizing: border-box; background: rgba(0,0,0,0.4); border: 1px solid rgba(255,255,255,0.15); border-radius: 8px; color: #ffffff; padding: 10px; font-size: 0.82rem;">
+              </div>
+            </div>
+
+            <div style="display: flex; justify-content: flex-end; gap: 10px; margin-top: 20px;">
+              <button type="button" onclick="window.TelegramPublisher.closeScheduleModal()" style="background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.15); color: #ffffff; padding: 10px 18px; border-radius: 8px; font-weight: 700; font-size: 0.82rem; cursor: pointer;">
+                Cancel
+              </button>
+              <button type="button" id="tg-sched-submit-btn" onclick="window.TelegramPublisher.submitSchedule()" style="background: linear-gradient(135deg, #0284c7, #38bdf8); border: none; color: #ffffff; padding: 10px 22px; border-radius: 8px; font-weight: 800; font-size: 0.82rem; cursor: pointer;">
+                📅 Confirm & Queue Schedule
+              </button>
             </div>
           </div>
         </div>
@@ -5207,9 +6352,24 @@
     },
     openReviewModal: openApprovalReviewModal,
     closeReviewModal: closeApprovalReviewModal,
-    openScheduleModal() {
-      switchTab('calendar');
-    },
+    openScheduleModal,
+    closeScheduleModal,
+    onScheduleMatchChange,
+    submitSchedule,
+    cancelSchedule,
+    dispatchScheduledNow,
+    loadScheduleToStudio,
+    loadMatchToStudio,
+    prevCalendarMonth,
+    nextCalendarMonth,
+    prevCalendarWeek,
+    nextCalendarWeek,
+    setTodayCalendar,
+    selectCalendarDate,
+    setCalendarView,
+    setCalendarFilterTarget,
+    renderCalendarTab,
+    getCalendarAggregatedData,
     toggleConfirm(chk) {
       const btn = document.getElementById('tg-pub-modal-publish-btn');
       if (btn) btn.disabled = !chk;

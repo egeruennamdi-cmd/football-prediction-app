@@ -3659,6 +3659,112 @@ async function runTests() {
     global.document = origDoc;
   });
 
+  await testAsync('Section 58.37: Interactive Content Calendar, Matchday Dispatch Planner & Cadence Timeline', async () => {
+    // 1. Initial State & Defaults
+    const state = telegramPublisher.getState();
+    assert.strictEqual(state.calendarView, 'month', 'Default calendar view must be month');
+    assert.strictEqual(typeof telegramPublisher.renderCalendarTab, 'function');
+
+    // 2. Full Month Calendar Render & HTML Structure (No blank or stub displays)
+    const calHtml = telegramPublisher.renderCalendarTab();
+    assert.ok(calHtml.includes('Content Calendar & Matchday Dispatch Planner'), 'Calendar title must render');
+    assert.ok(calHtml.includes('Month Grid'), 'Month Grid tab button must render');
+    assert.ok(calHtml.includes('Week View'), 'Week View tab button must render');
+    assert.ok(calHtml.includes('Daily Cadence'), 'Daily Cadence tab button must render');
+    assert.ok(calHtml.includes('MON') && calHtml.includes('SUN'), 'Week day headers must render');
+    assert.ok(calHtml.includes('09:00 WAT — Morning Briefing & Trends'), '09:00 cadence slot must render');
+    assert.ok(calHtml.includes('14:00 WAT — Matchday Bankers & Accumulators'), '14:00 cadence slot must render');
+    assert.ok(calHtml.includes('18:30 WAT — Prime Time / High Stakes Value Alert'), '18:30 cadence slot must render');
+    assert.ok(calHtml.includes('22:00 WAT — Post-Match Audit & PnL Settlement'), '22:00 cadence slot must render');
+
+    // 3. View Switcher Operations
+    telegramPublisher.setCalendarView('week');
+    assert.strictEqual(telegramPublisher.getState().calendarView, 'week', 'setCalendarView to week');
+    const weekHtml = telegramPublisher.renderCalendarTab();
+    assert.ok(weekHtml.includes('Week:'), 'Week view must display week header');
+
+    telegramPublisher.setCalendarView('day');
+    assert.strictEqual(telegramPublisher.getState().calendarView, 'day', 'setCalendarView to day');
+
+    telegramPublisher.setCalendarView('queue');
+    assert.strictEqual(telegramPublisher.getState().calendarView, 'queue', 'setCalendarView to queue');
+    const queueHtml = telegramPublisher.renderCalendarTab();
+    assert.ok(queueHtml.includes('Queued Telegram Publications'), 'Queue view must render queue header');
+
+    // Return to month
+    telegramPublisher.setCalendarView('month');
+    assert.strictEqual(telegramPublisher.getState().calendarView, 'month');
+
+    // 4. Date & Month Navigation
+    telegramPublisher.selectCalendarDate('2026-10-19');
+    assert.strictEqual(telegramPublisher.getState().selectedCalendarDate, '2026-10-19');
+
+    telegramPublisher.nextCalendarMonth();
+    assert.strictEqual(telegramPublisher.getState().calendarDate.getMonth(), 10, 'nextCalendarMonth increments month to November (10)');
+
+    telegramPublisher.prevCalendarMonth();
+    assert.strictEqual(telegramPublisher.getState().calendarDate.getMonth(), 9, 'prevCalendarMonth decrements back to October (9)');
+
+    telegramPublisher.setTodayCalendar();
+    assert.ok(telegramPublisher.getState().calendarDate instanceof Date, 'setTodayCalendar sets Date');
+
+    // 5. Data Aggregation by Date
+    const agg = telegramPublisher.getCalendarAggregatedData(2026, 9);
+    assert.ok(agg.matchesByDate, 'agg.matchesByDate must be present');
+    assert.ok(typeof agg.totalMatchesMonth === 'number');
+
+    // 6. Schedule Modal DOM Flow, Submission and Cancellation
+    const origDoc = global.document;
+    const domStore = {};
+    global.document = {
+      getElementById(id) {
+        if (!domStore[id]) {
+          domStore[id] = { style: {}, innerHTML: '', value: '', textContent: '' };
+        }
+        return domStore[id];
+      },
+      querySelectorAll() { return []; }
+    };
+
+    domStore['tg-pub-schedule-modal'] = { style: { display: 'none' } };
+    domStore['tg-sched-time'] = { value: '' };
+    domStore['tg-sched-target'] = { value: 'free' };
+    domStore['tg-sched-type'] = { value: 'Match Preview' };
+    domStore['tg-sched-text'] = { value: '' };
+    domStore['tg-sched-photo'] = { value: '' };
+    domStore['tg-sched-match'] = { innerHTML: '', value: '' };
+
+    // Open Schedule Modal
+    telegramPublisher.openScheduleModal('2026-10-19T14:00', 'test-match-1');
+    assert.strictEqual(domStore['tg-pub-schedule-modal'].style.display, 'flex', 'Schedule modal must open');
+    assert.strictEqual(domStore['tg-sched-time'].value, '2026-10-19T14:00', 'Scheduled time prefilled');
+
+    // Close Modal
+    telegramPublisher.closeScheduleModal();
+    assert.strictEqual(domStore['tg-pub-schedule-modal'].style.display, 'none', 'Schedule modal must close');
+
+    // Submit valid schedule
+    domStore['tg-sched-time'].value = '2026-10-19T14:00';
+    domStore['tg-sched-target'].value = 'vip';
+    domStore['tg-sched-type'].value = 'VIP Value Surge Alert';
+    domStore['tg-sched-text'].value = '💎 High Stakes Value Bet on Liverpool vs Chelsea';
+
+    const prevSchedCount = telegramPublisher.getState().schedules.length;
+    await telegramPublisher.submitSchedule();
+    const newSchedules = telegramPublisher.getState().schedules;
+    assert.strictEqual(newSchedules.length, prevSchedCount + 1, 'Schedule must be added to state.schedules');
+    const createdSched = newSchedules[newSchedules.length - 1];
+    assert.strictEqual(createdSched.target, 'vip');
+    assert.strictEqual(createdSched.postType, 'VIP Value Surge Alert');
+    assert.ok(createdSched.text.includes('High Stakes Value Bet'));
+
+    // Cancel Schedule
+    await telegramPublisher.cancelSchedule(createdSched.id);
+    assert.strictEqual(telegramPublisher.getState().schedules.length, prevSchedCount, 'Cancelled schedule must be removed from state.schedules');
+
+    global.document = origDoc;
+  });
+
   // Restore globals
   global.localStorage = originalLocalStorage;
   global.sessionStorage = originalSessionStorage;
