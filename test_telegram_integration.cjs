@@ -3536,6 +3536,56 @@ async function runTests() {
     });
   });
 
+  // Req 35: Market Selection Dropdown Retention & Canonical ID Resolution
+  test('Section 58.35: Market Selection Dropdown retains chosen market and prevents snapback to Asian Handicap', () => {
+    const sampleMatch = {
+      id: 'match-audit-market-101',
+      homeTeam: { name: 'Bayern Munich' },
+      awayTeam: { name: 'Dortmund' },
+      league: 'Bundesliga',
+      predictions: { home: 65, draw: 20, away: 15 }
+    };
+
+    // 1. Every item in market pool must have a valid non-empty canonical ID
+    const pool = telegramPublisher.getMatchMarketPool(sampleMatch);
+    assert.ok(pool.length >= 70, `Pool should contain at least 70 markets, got ${pool.length}`);
+    pool.forEach((p, idx) => {
+      assert.ok(p.id && typeof p.id === 'string' && p.id.trim().length > 0, `Pool item index ${idx} missing valid id`);
+      assert.notStrictEqual(p.id, 'undefined', `Pool item index ${idx} has invalid string 'undefined' as id`);
+    });
+
+    // 2. Default selection before user override
+    const defaultSel = telegramPublisher.getActiveSelectionForMatch(sampleMatch);
+    assert.ok(defaultSel && defaultSel.id, 'Must have a valid default selection');
+
+    // 3. User selects Double Chance (dc1x)
+    telegramPublisher.setMatchMarket(sampleMatch.id, 'dc1x');
+    const dc1xSel = telegramPublisher.getActiveSelectionForMatch(sampleMatch);
+    assert.strictEqual(dc1xSel.id, 'dc1x', 'Active selection must resolve to dc1x');
+    assert.notStrictEqual(dc1xSel.category, 'handicap', 'Must NOT snap back to handicap');
+
+    // 4. User selects Over 2.5 Goals (uo25)
+    telegramPublisher.setMatchMarket(sampleMatch.id, 'uo25');
+    const uo25Sel = telegramPublisher.getActiveSelectionForMatch(sampleMatch);
+    assert.strictEqual(uo25Sel.id, 'uo25', 'Active selection must resolve to uo25');
+    assert.ok(uo25Sel.shortName && uo25Sel.shortName.includes('Over 2.5'), 'Selection shortName must include Over 2.5');
+
+    // 5. User selects Draw (draw)
+    telegramPublisher.setMatchMarket(sampleMatch.id, 'draw');
+    const drawSel = telegramPublisher.getActiveSelectionForMatch(sampleMatch);
+    assert.strictEqual(drawSel.id, 'draw', 'Active selection must resolve to draw');
+
+    // 6. User selection propagates to extractIntelligenceForMatch
+    const intel = telegramPublisher.extractIntelligenceForMatch(sampleMatch);
+    assert.ok(intel.sources.predictions.pick.includes('Draw'), 'Predictions pick must reflect user selected market');
+
+    // 7. Test numeric matchId and String matchId parity
+    const numMatch = { id: 98765, homeTeam: { name: 'Arsenal' }, awayTeam: { name: 'Chelsea' } };
+    telegramPublisher.setMatchMarket(98765, 'btts');
+    const bttsSel = telegramPublisher.getActiveSelectionForMatch(numMatch);
+    assert.strictEqual(bttsSel.id, 'btts', 'Active selection for numeric matchId must resolve correctly');
+  });
+
   // Restore globals
   global.localStorage = originalLocalStorage;
   global.sessionStorage = originalSessionStorage;

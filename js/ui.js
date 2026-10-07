@@ -21,114 +21,114 @@ function getMatchMarketPool(match) {
 
   return [
     // 1. 1X2 Market (3)
-    { category: '1x2', categoryLabel: '1X2', icon: '⚽', tip: '1X2: Home Win (1)', odds: homeOdds, confidence: pHome },
-    { category: '1x2', categoryLabel: '1X2', icon: '⚽', tip: '1X2: Draw (X)', odds: drawOdds, confidence: pDraw },
-    { category: '1x2', categoryLabel: '1X2', icon: '⚽', tip: '1X2: Away Win (2)', odds: awayOdds, confidence: pAway },
+    { id: 'win1', category: '1x2', categoryLabel: '1X2', icon: '⚽', tip: '1X2: Home Win (1)', odds: homeOdds, confidence: pHome },
+    { id: 'draw', category: '1x2', categoryLabel: '1X2', icon: '⚽', tip: '1X2: Draw (X)', odds: drawOdds, confidence: pDraw },
+    { id: 'win2', category: '1x2', categoryLabel: '1X2', icon: '⚽', tip: '1X2: Away Win (2)', odds: awayOdds, confidence: pAway },
 
     // 2. Double Chance (3)
-    { category: 'doublechance', categoryLabel: 'Double Chance', icon: '🛡️', tip: 'Double Chance: 1X', odds: parseFloat((1.18 + (seed % 4) * 0.05).toFixed(2)), confidence: Math.min(95, pHome + pDraw) },
-    { category: 'doublechance', categoryLabel: 'Double Chance', icon: '🛡️', tip: 'Double Chance: 12', odds: parseFloat((1.22 + (seed % 3) * 0.05).toFixed(2)), confidence: Math.min(95, pHome + pAway) },
-    { category: 'doublechance', categoryLabel: 'Double Chance', icon: '🛡️', tip: 'Double Chance: X2', odds: parseFloat((1.25 + (seed % 5) * 0.05).toFixed(2)), confidence: Math.min(95, pDraw + pAway) },
+    { id: 'dc1x', category: 'doublechance', categoryLabel: 'Double Chance', icon: '🛡️', tip: 'Double Chance: 1X', odds: parseFloat((1.18 + (seed % 4) * 0.05).toFixed(2)), confidence: Math.min(95, pHome + pDraw) },
+    { id: 'dc12', category: 'doublechance', categoryLabel: 'Double Chance', icon: '🛡️', tip: 'Double Chance: 12', odds: parseFloat((1.22 + (seed % 3) * 0.05).toFixed(2)), confidence: Math.min(95, pHome + pAway) },
+    { id: 'dcx2', category: 'doublechance', categoryLabel: 'Double Chance', icon: '🛡️', tip: 'Double Chance: X2', odds: parseFloat((1.25 + (seed % 5) * 0.05).toFixed(2)), confidence: Math.min(95, pDraw + pAway) },
 
     // 3. Draw No Bet (1)
-    { category: 'dnb', categoryLabel: 'Draw No Bet', icon: '⚖️', tip: 'Draw No Bet (DNB)', odds: pHome >= pAway ? parseFloat((1.32 + (seed % 5) * 0.07).toFixed(2)) : parseFloat((1.55 + (seed % 5) * 0.08).toFixed(2)), confidence: Math.min(92, Math.max(pHome, pAway) + 16) },
+    { id: 'dnb', category: 'dnb', categoryLabel: 'Draw No Bet', icon: '⚖️', tip: 'Draw No Bet (DNB)', odds: pHome >= pAway ? parseFloat((1.32 + (seed % 5) * 0.07).toFixed(2)) : parseFloat((1.55 + (seed % 5) * 0.08).toFixed(2)), confidence: Math.min(92, Math.max(pHome, pAway) + 16) },
 
     // 4. Full-Time Over/Under Goals (6)
-    { category: 'overunder', categoryLabel: 'Over/Under', icon: '🎯', tip: 'Under/Over: 0.5', odds: 1.06, confidence: 96 },
-    { category: 'overunder', categoryLabel: 'Over/Under', icon: '🎯', tip: 'Under/Over: 1.5', odds: 1.25, confidence: 88 },
-    { category: 'overunder', categoryLabel: 'Over/Under', icon: '🎯', tip: 'Under/Over: 2.5', odds: parseFloat((1.70 + (seed % 6) * 0.07).toFixed(2)), confidence: 76 },
-    { category: 'overunder', categoryLabel: 'Over/Under', icon: '🎯', tip: 'Under/Over: 3.5', odds: parseFloat((2.30 + (seed % 5) * 0.12).toFixed(2)), confidence: 64 },
-    { category: 'overunder', categoryLabel: 'Over/Under', icon: '🎯', tip: 'Under/Over: 4.5', odds: parseFloat((3.40 + (seed % 5) * 0.20).toFixed(2)), confidence: 52 },
-    { category: 'overunder', categoryLabel: 'Over/Under', icon: '🎯', tip: 'Under/Over: 5.5', odds: parseFloat((5.50 + (seed % 4) * 0.30).toFixed(2)), confidence: 42 },
+    { id: 'uo05', category: 'overunder', categoryLabel: 'Over/Under', icon: '🎯', tip: 'Under/Over: 0.5', odds: 1.06, confidence: 96 },
+    { id: 'uo15', category: 'overunder', categoryLabel: 'Over/Under', icon: '🎯', tip: 'Under/Over: 1.5', odds: 1.25, confidence: 88 },
+    { id: 'uo25', category: 'overunder', categoryLabel: 'Over/Under', icon: '🎯', tip: 'Under/Over: 2.5', odds: parseFloat((1.70 + (seed % 6) * 0.07).toFixed(2)), confidence: 76 },
+    { id: 'uo35', category: 'overunder', categoryLabel: 'Over/Under', icon: '🎯', tip: 'Under/Over: 3.5', odds: parseFloat((2.30 + (seed % 5) * 0.12).toFixed(2)), confidence: 64 },
+    { id: 'uo45', category: 'overunder', categoryLabel: 'Over/Under', icon: '🎯', tip: 'Under/Over: 4.5', odds: parseFloat((3.40 + (seed % 5) * 0.20).toFixed(2)), confidence: 52 },
+    { id: 'uo55', category: 'overunder', categoryLabel: 'Over/Under', icon: '🎯', tip: 'Under/Over: 5.5', odds: parseFloat((5.50 + (seed % 4) * 0.30).toFixed(2)), confidence: 42 },
 
     // 5. Half-Time Over/Under Goals (3)
-    { category: 'overunder', categoryLabel: 'Over/Under HT', icon: '⏱️', tip: 'Under/Over HT: 0.5', odds: 1.40, confidence: 78 },
-    { category: 'overunder', categoryLabel: 'Over/Under HT', icon: '⏱️', tip: 'Under/Over HT: 1.5', odds: 2.65, confidence: 62 },
-    { category: 'overunder', categoryLabel: 'Over/Under HT', icon: '⏱️', tip: 'Under/Over HT: 2.5', odds: 5.20, confidence: 45 },
+    { id: 'uoht05', category: 'overunder', categoryLabel: 'Over/Under HT', icon: '⏱️', tip: 'Under/Over HT: 0.5', odds: 1.40, confidence: 78 },
+    { id: 'uoht15', category: 'overunder', categoryLabel: 'Over/Under HT', icon: '⏱️', tip: 'Under/Over HT: 1.5', odds: 2.65, confidence: 62 },
+    { id: 'uoht25', category: 'overunder', categoryLabel: 'Over/Under HT', icon: '⏱️', tip: 'Under/Over HT: 2.5', odds: 5.20, confidence: 45 },
 
     // 6. 2nd Half Over/Under Goals (3)
-    { category: 'overunder', categoryLabel: 'Over/Under 2H', icon: '⏱️', tip: 'Under/Over 2nd Half: 0.5', odds: 1.28, confidence: 84 },
-    { category: 'overunder', categoryLabel: 'Over/Under 2H', icon: '⏱️', tip: 'Under/Over 2nd Half: 1.5', odds: 2.10, confidence: 68 },
-    { category: 'overunder', categoryLabel: 'Over/Under 2H', icon: '⏱️', tip: 'Under/Over 2nd Half: 2.5', odds: 4.50, confidence: 50 },
+    { id: 'uo2h05', category: 'overunder', categoryLabel: 'Over/Under 2H', icon: '⏱️', tip: 'Under/Over 2nd Half: 0.5', odds: 1.28, confidence: 84 },
+    { id: 'uo2h15', category: 'overunder', categoryLabel: 'Over/Under 2H', icon: '⏱️', tip: 'Under/Over 2nd Half: 1.5', odds: 2.10, confidence: 68 },
+    { id: 'uo2h25', category: 'overunder', categoryLabel: 'Over/Under 2H', icon: '⏱️', tip: 'Under/Over 2nd Half: 2.5', odds: 4.50, confidence: 50 },
 
     // 7. Multi-Goals & Ranges (7)
-    { category: 'multigoals', categoryLabel: 'Multi-Goals', icon: '📊', tip: 'Multi-Goals: 1-2 Goals', odds: 1.95, confidence: 74 },
-    { category: 'multigoals', categoryLabel: 'Multi-Goals', icon: '📊', tip: 'Multi-Goals: 1-3 Goals', odds: 1.42, confidence: 85 },
-    { category: 'multigoals', categoryLabel: 'Multi-Goals', icon: '📊', tip: 'Multi-Goals: 2-3 Goals', odds: 1.98, confidence: 77 },
-    { category: 'multigoals', categoryLabel: 'Multi-Goals', icon: '📊', tip: 'Multi-Goals: 2-4 Goals', odds: 1.55, confidence: 83 },
-    { category: 'multigoals', categoryLabel: 'Multi-Goals', icon: '📊', tip: 'Multi-Goals: 2-5 Goals', odds: 1.35, confidence: 88 },
-    { category: 'multigoals', categoryLabel: 'Multi-Goals', icon: '📊', tip: 'Multi-Goals: 3-5 Goals', odds: 2.25, confidence: 68 },
-    { category: 'multigoals', categoryLabel: 'Multi-Goals', icon: '📊', tip: 'Multi-Goals: 4-6 Goals', odds: 3.80, confidence: 52 },
+    { id: 'mg12', category: 'multigoals', categoryLabel: 'Multi-Goals', icon: '📊', tip: 'Multi-Goals: 1-2 Goals', odds: 1.95, confidence: 74 },
+    { id: 'mg13', category: 'multigoals', categoryLabel: 'Multi-Goals', icon: '📊', tip: 'Multi-Goals: 1-3 Goals', odds: 1.42, confidence: 85 },
+    { id: 'mg23', category: 'multigoals', categoryLabel: 'Multi-Goals', icon: '📊', tip: 'Multi-Goals: 2-3 Goals', odds: 1.98, confidence: 77 },
+    { id: 'mg24', category: 'multigoals', categoryLabel: 'Multi-Goals', icon: '📊', tip: 'Multi-Goals: 2-4 Goals', odds: 1.55, confidence: 83 },
+    { id: 'mg25', category: 'multigoals', categoryLabel: 'Multi-Goals', icon: '📊', tip: 'Multi-Goals: 2-5 Goals', odds: 1.35, confidence: 88 },
+    { id: 'mg35', category: 'multigoals', categoryLabel: 'Multi-Goals', icon: '📊', tip: 'Multi-Goals: 3-5 Goals', odds: 2.25, confidence: 68 },
+    { id: 'mg46', category: 'multigoals', categoryLabel: 'Multi-Goals', icon: '📊', tip: 'Multi-Goals: 4-6 Goals', odds: 3.80, confidence: 52 },
 
     // 8. Exact Goals (5)
-    { category: 'multigoals', categoryLabel: 'Exact Goals', icon: '🎯', tip: 'Exact Goals: 0 Goals', odds: 8.50, confidence: 35 },
-    { category: 'multigoals', categoryLabel: 'Exact Goals', icon: '🎯', tip: 'Exact Goals: 1 Goal', odds: 4.60, confidence: 55 },
-    { category: 'multigoals', categoryLabel: 'Exact Goals', icon: '🎯', tip: 'Exact Goals: 2 Goals', odds: 3.40, confidence: 68 },
-    { category: 'multigoals', categoryLabel: 'Exact Goals', icon: '🎯', tip: 'Exact Goals: 3 Goals', odds: 4.10, confidence: 60 },
-    { category: 'multigoals', categoryLabel: 'Exact Goals', icon: '🎯', tip: 'Exact Goals: 4+ Goals', odds: 3.65, confidence: 58 },
+    { id: 'eg0', category: 'multigoals', categoryLabel: 'Exact Goals', icon: '🎯', tip: 'Exact Goals: 0 Goals', odds: 8.50, confidence: 35 },
+    { id: 'eg1', category: 'multigoals', categoryLabel: 'Exact Goals', icon: '🎯', tip: 'Exact Goals: 1 Goal', odds: 4.60, confidence: 55 },
+    { id: 'eg2', category: 'multigoals', categoryLabel: 'Exact Goals', icon: '🎯', tip: 'Exact Goals: 2 Goals', odds: 3.40, confidence: 68 },
+    { id: 'eg3', category: 'multigoals', categoryLabel: 'Exact Goals', icon: '🎯', tip: 'Exact Goals: 3 Goals', odds: 4.10, confidence: 60 },
+    { id: 'eg4', category: 'multigoals', categoryLabel: 'Exact Goals', icon: '🎯', tip: 'Exact Goals: 4+ Goals', odds: 3.65, confidence: 58 },
 
     // 9. Both Teams to Score (BTTS) (5)
-    { category: 'btts', categoryLabel: 'BTTS', icon: '🔄', tip: 'BTTS / GG (Both Score)', odds: parseFloat((1.62 + (seed % 6) * 0.06).toFixed(2)), confidence: 76 },
-    { category: 'btts', categoryLabel: 'BTTS', icon: '🔄', tip: 'BTTS No / NG', odds: parseFloat((1.82 + (seed % 5) * 0.08).toFixed(2)), confidence: 72 },
-    { category: 'btts', categoryLabel: 'BTTS HT', icon: '🔄', tip: 'BTTS - Half Time', odds: 4.20, confidence: 45 },
-    { category: 'btts', categoryLabel: 'BTTS 2H', icon: '🔄', tip: 'BTTS - 2nd Half', odds: 3.10, confidence: 55 },
-    { category: 'btts', categoryLabel: 'BTTS Halves', icon: '🔄', tip: 'BTTS Both Halves', odds: 9.50, confidence: 30 },
+    { id: 'btts', category: 'btts', categoryLabel: 'BTTS', icon: '🔄', tip: 'BTTS / GG (Both Score)', odds: parseFloat((1.62 + (seed % 6) * 0.06).toFixed(2)), confidence: 76 },
+    { id: 'bttsno', category: 'btts', categoryLabel: 'BTTS', icon: '🔄', tip: 'BTTS No / NG', odds: parseFloat((1.82 + (seed % 5) * 0.08).toFixed(2)), confidence: 72 },
+    { id: 'bttsht', category: 'btts', categoryLabel: 'BTTS HT', icon: '🔄', tip: 'BTTS - Half Time', odds: 4.20, confidence: 45 },
+    { id: 'btts2h', category: 'btts', categoryLabel: 'BTTS 2H', icon: '🔄', tip: 'BTTS - 2nd Half', odds: 3.10, confidence: 55 },
+    { id: 'bttsboth', category: 'btts', categoryLabel: 'BTTS Halves', icon: '🔄', tip: 'BTTS Both Halves', odds: 9.50, confidence: 30 },
 
     // 10. Combos (1X2 + Goals / GG) (5)
-    { category: 'combo', categoryLabel: 'Combos', icon: '⚡', tip: '1X2 + Over 2.5 Combo', odds: parseFloat((2.25 + (seed % 6) * 0.15).toFixed(2)), confidence: 72 },
-    { category: 'combo', categoryLabel: 'Combos', icon: '⚡', tip: '1X2 + Under 2.5 Combo', odds: parseFloat((3.10 + (seed % 5) * 0.18).toFixed(2)), confidence: 65 },
-    { category: 'combo', categoryLabel: 'Combos', icon: '⚡', tip: '1X2 + GG Combo', odds: parseFloat((2.90 + (seed % 5) * 0.16).toFixed(2)), confidence: 68 },
-    { category: 'combo', categoryLabel: 'Combos', icon: '⚡', tip: 'Double Chance + Over 2.5', odds: 1.82, confidence: 77 },
-    { category: 'combo', categoryLabel: 'Combos', icon: '⚡', tip: 'Double Chance + GG', odds: 2.10, confidence: 74 },
+    { id: 'combo_1x2_o25', category: 'combo', categoryLabel: 'Combos', icon: '⚡', tip: '1X2 + Over 2.5 Combo', odds: parseFloat((2.25 + (seed % 6) * 0.15).toFixed(2)), confidence: 72 },
+    { id: 'combo_1x2_u25', category: 'combo', categoryLabel: 'Combos', icon: '⚡', tip: '1X2 + Under 2.5 Combo', odds: parseFloat((3.10 + (seed % 5) * 0.18).toFixed(2)), confidence: 65 },
+    { id: 'combo_1x2_gg', category: 'combo', categoryLabel: 'Combos', icon: '⚡', tip: '1X2 + GG Combo', odds: parseFloat((2.90 + (seed % 5) * 0.16).toFixed(2)), confidence: 68 },
+    { id: 'combo_dc_o25', category: 'combo', categoryLabel: 'Combos', icon: '⚡', tip: 'Double Chance + Over 2.5', odds: 1.82, confidence: 77 },
+    { id: 'combo_dc_gg', category: 'combo', categoryLabel: 'Combos', icon: '⚡', tip: 'Double Chance + GG', odds: 2.10, confidence: 74 },
 
     // 11. Half Time / Full Time (HT/FT) (9)
-    { category: 'htft', categoryLabel: 'HT/FT', icon: '⏱️', tip: 'HT/FT: 1/1 (Home/Home)', odds: parseFloat((2.35 + (seed % 6) * 0.15).toFixed(2)), confidence: 68 },
-    { category: 'htft', categoryLabel: 'HT/FT', icon: '⏱️', tip: 'HT/FT: X/1 (Draw/Home)', odds: 4.80, confidence: 55 },
-    { category: 'htft', categoryLabel: 'HT/FT', icon: '⏱️', tip: 'HT/FT: 2/1 (Away/Home)', odds: 26.00, confidence: 25 },
-    { category: 'htft', categoryLabel: 'HT/FT', icon: '⏱️', tip: 'HT/FT: 1/X (Home/Draw)', odds: 15.00, confidence: 32 },
-    { category: 'htft', categoryLabel: 'HT/FT', icon: '⏱️', tip: 'HT/FT: X/X (Draw/Draw)', odds: 5.50, confidence: 50 },
-    { category: 'htft', categoryLabel: 'HT/FT', icon: '⏱️', tip: 'HT/FT: 2/X (Away/Draw)', odds: 16.00, confidence: 30 },
-    { category: 'htft', categoryLabel: 'HT/FT', icon: '⏱️', tip: 'HT/FT: 1/2 (Home/Away)', odds: 30.00, confidence: 22 },
-    { category: 'htft', categoryLabel: 'HT/FT', icon: '⏱️', tip: 'HT/FT: X/2 (Draw/Away)', odds: 6.20, confidence: 48 },
-    { category: 'htft', categoryLabel: 'HT/FT', icon: '⏱️', tip: 'HT/FT: 2/2 (Away/Away)', odds: parseFloat((3.40 + (seed % 6) * 0.20).toFixed(2)), confidence: 58 },
+    { id: 'htft_11', category: 'htft', categoryLabel: 'HT/FT', icon: '⏱️', tip: 'HT/FT: 1/1 (Home/Home)', odds: parseFloat((2.35 + (seed % 6) * 0.15).toFixed(2)), confidence: 68 },
+    { id: 'htft_x1', category: 'htft', categoryLabel: 'HT/FT', icon: '⏱️', tip: 'HT/FT: X/1 (Draw/Home)', odds: 4.80, confidence: 55 },
+    { id: 'htft_21', category: 'htft', categoryLabel: 'HT/FT', icon: '⏱️', tip: 'HT/FT: 2/1 (Away/Home)', odds: 26.00, confidence: 25 },
+    { id: 'htft_1x', category: 'htft', categoryLabel: 'HT/FT', icon: '⏱️', tip: 'HT/FT: 1/X (Home/Draw)', odds: 15.00, confidence: 32 },
+    { id: 'htft_xx', category: 'htft', categoryLabel: 'HT/FT', icon: '⏱️', tip: 'HT/FT: X/X (Draw/Draw)', odds: 5.50, confidence: 50 },
+    { id: 'htft_2x', category: 'htft', categoryLabel: 'HT/FT', icon: '⏱️', tip: 'HT/FT: 2/X (Away/Draw)', odds: 16.00, confidence: 30 },
+    { id: 'htft_12', category: 'htft', categoryLabel: 'HT/FT', icon: '⏱️', tip: 'HT/FT: 1/2 (Home/Away)', odds: 30.00, confidence: 22 },
+    { id: 'htft_x2', category: 'htft', categoryLabel: 'HT/FT', icon: '⏱️', tip: 'HT/FT: X/2 (Draw/Away)', odds: 6.20, confidence: 48 },
+    { id: 'htft_22', category: 'htft', categoryLabel: 'HT/FT', icon: '⏱️', tip: 'HT/FT: 2/2 (Away/Away)', odds: parseFloat((3.40 + (seed % 6) * 0.20).toFixed(2)), confidence: 58 },
 
     // 12. Halves (2)
-    { category: 'teamspec', categoryLabel: 'Halves', icon: '🏃', tip: 'Win Either Half', odds: 1.45, confidence: 82 },
-    { category: 'teamspec', categoryLabel: 'Halves', icon: '🏃', tip: 'Win Both Halves', odds: 3.80, confidence: 52 },
+    { id: 'weitherh', category: 'teamspec', categoryLabel: 'Halves', icon: '🏃', tip: 'Win Either Half', odds: 1.45, confidence: 82 },
+    { id: 'wbothh', category: 'teamspec', categoryLabel: 'Halves', icon: '🏃', tip: 'Win Both Halves', odds: 3.80, confidence: 52 },
 
     // 13. Team Goals & Clean Sheet (9)
-    { category: 'teamspec', categoryLabel: 'Team Goals', icon: '🥅', tip: 'Home Over 0.5 Goals', odds: 1.18, confidence: 92 },
-    { category: 'teamspec', categoryLabel: 'Team Goals', icon: '🥅', tip: 'Home Over 1.5 Goals', odds: parseFloat((1.65 + (seed % 5) * 0.08).toFixed(2)), confidence: 78 },
-    { category: 'teamspec', categoryLabel: 'Team Goals', icon: '🥅', tip: 'Away Over 0.5 Goals', odds: 1.35, confidence: 84 },
-    { category: 'teamspec', categoryLabel: 'Team Goals', icon: '🥅', tip: 'Away Over 1.5 Goals', odds: parseFloat((2.15 + (seed % 5) * 0.10).toFixed(2)), confidence: 66 },
-    { category: 'teamspec', categoryLabel: 'Clean Sheet', icon: '🛡️', tip: 'Home Clean Sheet', odds: 2.40, confidence: 65 },
-    { category: 'teamspec', categoryLabel: 'Clean Sheet', icon: '🛡️', tip: 'Away Clean Sheet', odds: 3.20, confidence: 54 },
-    { category: 'teamspec', categoryLabel: 'Win to Nil', icon: '🏅', tip: 'Home Win to Nil', odds: 2.85, confidence: 60 },
-    { category: 'teamspec', categoryLabel: 'Win to Nil', icon: '🏅', tip: 'Away Win to Nil', odds: 4.50, confidence: 48 },
-    { category: 'teamspec', categoryLabel: 'First Goal', icon: '⚽', tip: 'First Team to Score', odds: 1.62, confidence: 75 },
+    { id: 'ho05', category: 'teamspec', categoryLabel: 'Team Goals', icon: '🥅', tip: 'Home Over 0.5 Goals', odds: 1.18, confidence: 92 },
+    { id: 'ho15', category: 'teamspec', categoryLabel: 'Team Goals', icon: '🥅', tip: 'Home Over 1.5 Goals', odds: parseFloat((1.65 + (seed % 5) * 0.08).toFixed(2)), confidence: 78 },
+    { id: 'ao05', category: 'teamspec', categoryLabel: 'Team Goals', icon: '🥅', tip: 'Away Over 0.5 Goals', odds: 1.35, confidence: 84 },
+    { id: 'ao15', category: 'teamspec', categoryLabel: 'Team Goals', icon: '🥅', tip: 'Away Over 1.5 Goals', odds: parseFloat((2.15 + (seed % 5) * 0.10).toFixed(2)), confidence: 66 },
+    { id: 'hcs', category: 'teamspec', categoryLabel: 'Clean Sheet', icon: '🛡️', tip: 'Home Clean Sheet', odds: 2.40, confidence: 65 },
+    { id: 'acs', category: 'teamspec', categoryLabel: 'Clean Sheet', icon: '🛡️', tip: 'Away Clean Sheet', odds: 3.20, confidence: 54 },
+    { id: 'hwn', category: 'teamspec', categoryLabel: 'Win to Nil', icon: '🏅', tip: 'Home Win to Nil', odds: 2.85, confidence: 60 },
+    { id: 'awn', category: 'teamspec', categoryLabel: 'Win to Nil', icon: '🏅', tip: 'Away Win to Nil', odds: 4.50, confidence: 48 },
+    { id: 'fts', category: 'teamspec', categoryLabel: 'First Goal', icon: '⚽', tip: 'First Team to Score', odds: 1.62, confidence: 75 },
 
     // 14. Corners Tips (9)
-    { category: 'corners', categoryLabel: 'Corners', icon: '📐', tip: 'Total Corners: 6.5', odds: 1.25, confidence: 88 },
-    { category: 'corners', categoryLabel: 'Corners', icon: '📐', tip: 'Total Corners: 7.5', odds: 1.48, confidence: 82 },
-    { category: 'corners', categoryLabel: 'Corners', icon: '📐', tip: 'Total Corners: 8.5', odds: 1.75, confidence: 76 },
-    { category: 'corners', categoryLabel: 'Corners', icon: '📐', tip: 'Total Corners: 9.5', odds: 2.05, confidence: 70 },
-    { category: 'corners', categoryLabel: 'Corners', icon: '📐', tip: 'Total Corners: 10.5', odds: 2.50, confidence: 62 },
-    { category: 'corners', categoryLabel: 'Corners', icon: '📐', tip: 'Total Corners: 11.5', odds: 3.20, confidence: 54 },
-    { category: 'corners', categoryLabel: 'Corners', icon: '📐', tip: 'Total Corners: 12.5', odds: 4.10, confidence: 46 },
-    { category: 'corners', categoryLabel: 'Corners HT', icon: '📐', tip: '1st Half Corners: 4.5', odds: 1.88, confidence: 72 },
-    { category: 'corners', categoryLabel: 'Most Corners', icon: '📐', tip: 'Most Corners 1X2', odds: 1.65, confidence: 75 },
+    { id: 'c65', category: 'corners', categoryLabel: 'Corners', icon: '📐', tip: 'Total Corners: 6.5', odds: 1.25, confidence: 88 },
+    { id: 'c75', category: 'corners', categoryLabel: 'Corners', icon: '📐', tip: 'Total Corners: 7.5', odds: 1.48, confidence: 82 },
+    { id: 'c85', category: 'corners', categoryLabel: 'Corners', icon: '📐', tip: 'Total Corners: 8.5', odds: 1.75, confidence: 76 },
+    { id: 'c95', category: 'corners', categoryLabel: 'Corners', icon: '📐', tip: 'Total Corners: 9.5', odds: 2.05, confidence: 70 },
+    { id: 'c105', category: 'corners', categoryLabel: 'Corners', icon: '📐', tip: 'Total Corners: 10.5', odds: 2.50, confidence: 62 },
+    { id: 'c115', category: 'corners', categoryLabel: 'Corners', icon: '📐', tip: 'Total Corners: 11.5', odds: 3.20, confidence: 54 },
+    { id: 'c125', category: 'corners', categoryLabel: 'Corners', icon: '📐', tip: 'Total Corners: 12.5', odds: 4.10, confidence: 46 },
+    { id: 'cht45', category: 'corners', categoryLabel: 'Corners HT', icon: '📐', tip: '1st Half Corners: 4.5', odds: 1.88, confidence: 72 },
+    { id: 'cmost', category: 'corners', categoryLabel: 'Most Corners', icon: '📐', tip: 'Most Corners 1X2', odds: 1.65, confidence: 75 },
 
     // 15. Cards & Bookings (5)
-    { category: 'cards', categoryLabel: 'Cards', icon: '🟨', tip: 'Total Cards: Over 3.5', odds: 1.68, confidence: 74 },
-    { category: 'cards', categoryLabel: 'Cards', icon: '🟨', tip: 'Total Cards: Over 4.5', odds: 2.15, confidence: 66 },
-    { category: 'cards', categoryLabel: 'Cards', icon: '🟨', tip: 'Total Cards: Over 5.5', odds: 3.10, confidence: 52 },
-    { category: 'cards', categoryLabel: 'Red Card', icon: '🟥', tip: 'Red Card (Yes/No)', odds: 3.80, confidence: 48 },
-    { category: 'cards', categoryLabel: 'Penalty', icon: '🥅', tip: 'Penalty Awarded', odds: 2.90, confidence: 50 },
+    { id: 'cards35', category: 'cards', categoryLabel: 'Cards', icon: '🟨', tip: 'Total Cards: Over 3.5', odds: 1.68, confidence: 74 },
+    { id: 'cards45', category: 'cards', categoryLabel: 'Cards', icon: '🟨', tip: 'Total Cards: Over 4.5', odds: 2.15, confidence: 66 },
+    { id: 'cards55', category: 'cards', categoryLabel: 'Cards', icon: '🟨', tip: 'Total Cards: Over 5.5', odds: 3.10, confidence: 52 },
+    { id: 'redcard', category: 'cards', categoryLabel: 'Red Card', icon: '🟥', tip: 'Red Card (Yes/No)', odds: 3.80, confidence: 48 },
+    { id: 'penalty', category: 'cards', categoryLabel: 'Penalty', icon: '🥅', tip: 'Penalty Awarded', odds: 2.90, confidence: 50 },
 
     // 16. Asian / Euro Handicap (3)
-    { category: 'handicap', categoryLabel: 'Handicap', icon: '🏅', tip: 'European Handicap (-1)', odds: 2.70, confidence: 62 },
-    { category: 'handicap', categoryLabel: 'Asian Handicap', icon: '🏅', tip: 'Asian Handicap (-0.5 / +0.5)', odds: 1.85, confidence: 75 },
-    { category: 'handicap', categoryLabel: 'Asian Handicap', icon: '🏅', tip: 'Asian Handicap (-1.5 / +1.5)', odds: 2.25, confidence: 68 }
+    { id: 'eh1', category: 'handicap', categoryLabel: 'Handicap', icon: '🏅', tip: 'European Handicap (-1)', odds: 2.70, confidence: 62 },
+    { id: 'ah05', category: 'handicap', categoryLabel: 'Asian Handicap', icon: '🏅', tip: 'Asian Handicap (-0.5 / +0.5)', odds: 1.85, confidence: 75 },
+    { id: 'ah15', category: 'handicap', categoryLabel: 'Asian Handicap', icon: '🏅', tip: 'Asian Handicap (-1.5 / +1.5)', odds: 2.25, confidence: 68 }
   ];
 }
 window.getMatchMarketPool = getMatchMarketPool;

@@ -1419,64 +1419,106 @@
    */
   function getMatchMarketPool(match) {
     if (!match) return [];
+    let p = null;
     if (typeof window !== 'undefined' && typeof window.getMatchMarketPool === 'function') {
       try {
-        const p = window.getMatchMarketPool(match);
-        if (Array.isArray(p) && p.length > 0) return p;
+        const raw = window.getMatchMarketPool(match);
+        if (Array.isArray(raw) && raw.length > 0) p = raw;
+      } catch (e) {}
+    } else if (typeof globalThis !== 'undefined' && typeof globalThis.getMatchMarketPool === 'function') {
+      try {
+        const raw = globalThis.getMatchMarketPool(match);
+        if (Array.isArray(raw) && raw.length > 0) p = raw;
       } catch (e) {}
     }
 
-    const homeName = match.homeTeam?.name || (typeof match.homeTeam === 'string' ? match.homeTeam : (match.home || 'Home'));
-    const awayName = match.awayTeam?.name || (typeof match.awayTeam === 'string' ? match.awayTeam : (match.away || 'Away'));
-    const pHome = (match.predictions && typeof match.predictions.home === 'number') ? match.predictions.home : 48;
-    const pDraw = (match.predictions && typeof match.predictions.draw === 'number') ? match.predictions.draw : 26;
-    const pAway = (match.predictions && typeof match.predictions.away === 'number') ? match.predictions.away : 26;
+    if (!p || p.length === 0) {
+      const homeName = match.homeTeam?.name || (typeof match.homeTeam === 'string' ? match.homeTeam : (match.home || 'Home'));
+      const awayName = match.awayTeam?.name || (typeof match.awayTeam === 'string' ? match.awayTeam : (match.away || 'Away'));
+      const pHome = (match.predictions && typeof match.predictions.home === 'number') ? match.predictions.home : 48;
+      const pDraw = (match.predictions && typeof match.predictions.draw === 'number') ? match.predictions.draw : 26;
+      const pAway = (match.predictions && typeof match.predictions.away === 'number') ? match.predictions.away : 26;
 
-    const rawHash = (homeName + awayName + (match.id || '')).split('')
-      .reduce((acc, char) => acc + char.charCodeAt(0), 0);
-    const seed = Math.abs(rawHash);
+      const rawHash = (homeName + awayName + (match.id || '')).split('')
+        .reduce((acc, char) => acc + char.charCodeAt(0), 0);
+      const seed = Math.abs(rawHash);
 
-    const homeOdds = parseFloat(Math.max(1.15, (100 / Math.max(10, pHome)) * 0.88).toFixed(2));
-    const drawOdds = parseFloat(Math.max(2.65, (100 / Math.max(10, pDraw)) * 0.88).toFixed(2));
-    const awayOdds = parseFloat(Math.max(1.20, (100 / Math.max(10, pAway)) * 0.88).toFixed(2));
+      const homeOdds = parseFloat(Math.max(1.15, (100 / Math.max(10, pHome)) * 0.88).toFixed(2));
+      const drawOdds = parseFloat(Math.max(2.65, (100 / Math.max(10, pDraw)) * 0.88).toFixed(2));
+      const awayOdds = parseFloat(Math.max(1.20, (100 / Math.max(10, pAway)) * 0.88).toFixed(2));
 
-    return [
-      // 1. 1X2 Match Result
-      { id: 'win1', category: '1x2', categoryLabel: '1X2', icon: '⚽', shortName: '1X2 (1)', tip: `${homeName} Win (1)`, name: `${homeName} Win`, odds: homeOdds, confidence: pHome },
-      { id: 'draw', category: '1x2', categoryLabel: '1X2', icon: '⚖️', shortName: 'Draw (X)', tip: 'Draw (X)', name: 'Draw (X)', odds: drawOdds, confidence: pDraw },
-      { id: 'win2', category: '1x2', categoryLabel: '1X2', icon: '⚽', shortName: '1X2 (2)', tip: `${awayName} Win (2)`, name: `${awayName} Win`, odds: awayOdds, confidence: pAway },
+      // Build complete pool for all 78 canonical markets
+      p = CANONICAL_MARKET_REGISTRY.map((mkt, idx) => {
+        let odds = 1.85;
+        let conf = 70;
 
-      // 2. Double Chance
-      { id: 'dc1x', category: 'doublechance', categoryLabel: 'Double Chance', icon: '🛡️', shortName: '1X', tip: `${homeName} or Draw (1X)`, name: 'Double Chance 1X', odds: parseFloat((1.18 + (seed % 4) * 0.05).toFixed(2)), confidence: Math.min(95, pHome + pDraw) },
-      { id: 'dc12', category: 'doublechance', categoryLabel: 'Double Chance', icon: '🛡️', shortName: '12', tip: 'Any Team Win (12)', name: 'Double Chance 12', odds: parseFloat((1.22 + (seed % 3) * 0.05).toFixed(2)), confidence: Math.min(95, pHome + pAway) },
-      { id: 'dcx2', category: 'doublechance', categoryLabel: 'Double Chance', icon: '🛡️', shortName: 'X2', tip: `${awayName} or Draw (X2)`, name: 'Double Chance X2', odds: parseFloat((1.25 + (seed % 5) * 0.05).toFixed(2)), confidence: Math.min(95, pDraw + pAway) },
+        switch (mkt.id) {
+          case 'win1': odds = homeOdds; conf = pHome; break;
+          case 'draw': odds = drawOdds; conf = pDraw; break;
+          case 'win2': odds = awayOdds; conf = pAway; break;
+          case 'dc1x': odds = parseFloat((1.18 + (seed % 4) * 0.05).toFixed(2)); conf = Math.min(95, pHome + pDraw); break;
+          case 'dc12': odds = parseFloat((1.22 + (seed % 3) * 0.05).toFixed(2)); conf = Math.min(95, pHome + pAway); break;
+          case 'dcx2': odds = parseFloat((1.25 + (seed % 5) * 0.05).toFixed(2)); conf = Math.min(95, pDraw + pAway); break;
+          case 'dnb': odds = pHome >= pAway ? parseFloat((1.32 + (seed % 5) * 0.07).toFixed(2)) : parseFloat((1.55 + (seed % 5) * 0.08).toFixed(2)); conf = Math.min(92, Math.max(pHome, pAway) + 16); break;
+          case 'uo05': odds = 1.06; conf = 96; break;
+          case 'uo15': odds = 1.25; conf = 88; break;
+          case 'uo25': odds = parseFloat((1.70 + (seed % 6) * 0.07).toFixed(2)); conf = 76; break;
+          case 'uo35': odds = parseFloat((2.30 + (seed % 5) * 0.12).toFixed(2)); conf = 64; break;
+          case 'uo45': odds = parseFloat((3.40 + (seed % 5) * 0.20).toFixed(2)); conf = 52; break;
+          case 'uo55': odds = parseFloat((5.50 + (seed % 4) * 0.30).toFixed(2)); conf = 42; break;
+          case 'uoht05': odds = 1.40; conf = 78; break;
+          case 'uoht15': odds = 2.45; conf = 58; break;
+          case 'uoht25': odds = 5.20; conf = 34; break;
+          case 'btts': odds = parseFloat((1.62 + (seed % 6) * 0.06).toFixed(2)); conf = 76; break;
+          case 'btts_no': odds = parseFloat((1.82 + (seed % 5) * 0.08).toFixed(2)); conf = 72; break;
+          default:
+            odds = parseFloat((1.40 + ((seed + idx * 7) % 18) * 0.10).toFixed(2));
+            conf = Math.max(45, Math.min(90, 80 - ((seed + idx) % 25)));
+        }
 
-      // 3. Draw No Bet (DNB)
-      { id: 'dnb', category: 'dnb', categoryLabel: 'Draw No Bet', icon: '⚖️', shortName: 'DNB', tip: `Draw No Bet (${pHome >= pAway ? homeName : awayName})`, name: 'Draw No Bet (DNB)', odds: pHome >= pAway ? parseFloat((1.32 + (seed % 5) * 0.07).toFixed(2)) : parseFloat((1.55 + (seed % 5) * 0.08).toFixed(2)), confidence: Math.min(92, Math.max(pHome, pAway) + 16) },
+        return {
+          id: mkt.id,
+          category: mkt.category,
+          categoryLabel: mkt.categoryLabel,
+          icon: mkt.icon,
+          tip: mkt.tip,
+          name: mkt.name,
+          shortName: mkt.name || mkt.tip,
+          odds,
+          confidence: conf
+        };
+      });
+    }
 
-      // 4. Over/Under Goals
-      { id: 'uo15', category: 'overunder', categoryLabel: 'Over/Under', icon: '🎯', shortName: 'Over 1.5', tip: 'Over 1.5 Goals', name: 'Over 1.5 Goals', odds: 1.25, confidence: 88 },
-      { id: 'uo25', category: 'overunder', categoryLabel: 'Over/Under', icon: '🎯', shortName: 'Over 2.5', tip: 'Over 2.5 Goals', name: 'Over 2.5 Goals', odds: parseFloat((1.70 + (seed % 6) * 0.07).toFixed(2)), confidence: 76 },
-      { id: 'uo25_u', category: 'overunder', categoryLabel: 'Over/Under', icon: '🎯', shortName: 'Under 2.5', tip: 'Under 2.5 Goals', name: 'Under 2.5 Goals', odds: parseFloat((1.95 + (seed % 5) * 0.08).toFixed(2)), confidence: 70 },
-      { id: 'uo35', category: 'overunder', categoryLabel: 'Over/Under', icon: '🎯', shortName: 'Over 3.5', tip: 'Over 3.5 Goals', name: 'Over 3.5 Goals', odds: parseFloat((2.30 + (seed % 5) * 0.12).toFixed(2)), confidence: 64 },
+    // CRITICAL NORMALIZATION: Guarantee every item in the pool has a defined, non-empty, unique ID
+    return p.map((item, idx) => {
+      const canon = CANONICAL_MARKET_REGISTRY.find(c =>
+        (item.id && c.id === item.id) ||
+        (item.tip && (c.tip === item.tip || c.name === item.tip)) ||
+        (item.name && (c.name === item.name || c.tip === item.name))
+      ) || (idx < CANONICAL_MARKET_REGISTRY.length ? CANONICAL_MARKET_REGISTRY[idx] : null);
 
-      // 5. Both Teams to Score (BTTS)
-      { id: 'btts', category: 'btts', categoryLabel: 'BTTS', icon: '🔄', shortName: 'BTTS Yes', tip: 'Both Teams to Score (BTTS)', name: 'BTTS Yes', odds: parseFloat((1.62 + (seed % 6) * 0.06).toFixed(2)), confidence: 76 },
-      { id: 'btts_no', category: 'btts', categoryLabel: 'BTTS', icon: '🔄', shortName: 'BTTS No', tip: 'BTTS No (Clean Sheet)', name: 'BTTS No', odds: parseFloat((1.82 + (seed % 5) * 0.08).toFixed(2)), confidence: 72 },
+      const stableId = (item.id && item.id !== 'undefined') ? item.id : (canon ? canon.id : `${item.category || 'mkt'}_${idx}`);
+      const tip = item.tip || (canon ? canon.tip : 'Market Tip');
+      const name = item.name || (canon ? canon.name : tip);
+      const shortName = item.shortName || (canon ? canon.name : name);
+      const icon = item.icon || (canon ? canon.icon : '🎯');
+      const categoryLabel = item.categoryLabel || (canon ? canon.categoryLabel : (item.category || 'Market'));
+      const odds = (typeof item.odds === 'number' && !isNaN(item.odds)) ? item.odds : 1.85;
+      const confidence = (typeof item.confidence === 'number' && !isNaN(item.confidence)) ? item.confidence : 75;
 
-      // 6. Combos
-      { id: 'combo_1x2_uo', category: 'combo', categoryLabel: 'Combos', icon: '⚡', shortName: 'Win & O2.5', tip: `${pHome >= pAway ? homeName : awayName} Win & Over 2.5`, name: 'Win & Over 2.5', odds: parseFloat((2.25 + (seed % 6) * 0.15).toFixed(2)), confidence: 72 },
-      { id: 'combo_dc_uo', category: 'combo', categoryLabel: 'Combos', icon: '⚡', shortName: '1X & O1.5', tip: '1X & Over 1.5 Goals', name: '1X & Over 1.5', odds: 1.58, confidence: 82 },
-
-      // 7. Corners
-      { id: 'corners_85', category: 'corners', categoryLabel: 'Corners', icon: '📐', shortName: 'Corners O8.5', tip: 'Total Corners: Over 8.5', name: 'Corners Over 8.5', odds: 1.75, confidence: 76 },
-      { id: 'corners_95', category: 'corners', categoryLabel: 'Corners', icon: '📐', shortName: 'Corners O9.5', tip: 'Total Corners: Over 9.5', name: 'Corners Over 9.5', odds: 2.05, confidence: 70 },
-
-      // 8. Team Goals & Special
-      { id: 'team_goals_h15', category: 'teamspec', categoryLabel: 'Team Goals', icon: '🥅', shortName: 'H. Over 1.5', tip: `${homeName} Over 1.5 Goals`, name: 'Home Over 1.5 Goals', odds: parseFloat((1.65 + (seed % 5) * 0.08).toFixed(2)), confidence: 78 },
-      { id: 'win_either_half', category: 'teamspec', categoryLabel: 'Halves', icon: '🏃', shortName: 'Win Either Half', tip: `${homeName} Win Either Half`, name: 'Win Either Half', odds: 1.45, confidence: 82 },
-      { id: 'clean_sheet_h', category: 'teamspec', categoryLabel: 'Clean Sheet', icon: '🛡️', shortName: 'H. Clean Sheet', tip: `${homeName} Clean Sheet`, name: 'Home Clean Sheet', odds: 2.40, confidence: 65 }
-    ];
+      return {
+        ...item,
+        id: stableId,
+        tip,
+        name,
+        shortName,
+        icon,
+        categoryLabel,
+        odds,
+        confidence
+      };
+    });
   }
 
   /**
@@ -1486,24 +1528,32 @@
     if (!match) return { id: 'win1', tip: 'Home Win', odds: 1.85, confidence: 75, icon: '⚽', shortName: '1X2' };
 
     const pool = getMatchMarketPool(match);
+    if (!pool || pool.length === 0) {
+      return { id: 'win1', tip: 'Home Win', odds: 1.85, confidence: 75, icon: '⚽', shortName: '1X2' };
+    }
 
     // 1. Explicit user selection for this fixture
-    if (state.selectedMatchMarkets && state.selectedMatchMarkets[match.id]) {
-      const selKey = state.selectedMatchMarkets[match.id];
-      const found = pool.find(p => p.id === selKey || p.tip === selKey || p.name === selKey);
-      if (found) return found;
-      if (typeof selKey === 'object' && selKey.tip) return selKey;
+    if (state.selectedMatchMarkets) {
+      const selKey = state.selectedMatchMarkets[match.id] || state.selectedMatchMarkets[String(match.id)];
+      if (selKey && selKey !== 'undefined') {
+        const found = pool.find(p => p.id === selKey || p.tip === selKey || p.name === selKey);
+        if (found) return found;
+        if (typeof selKey === 'object' && selKey.tip) return selKey;
+      }
     }
 
     // 2. Global marketFilter active
     if (state.marketFilter && state.marketFilter !== 'all') {
       const mf = state.marketFilter.toLowerCase();
-      const found = pool.find(p => p.id === mf || p.category === mf || p.tip.toLowerCase().includes(mf));
+      const found = pool.find(p => p.id === mf || p.category === mf || (p.tip && p.tip.toLowerCase().includes(mf)));
       if (found) return found;
     }
 
     // 3. Pre-settled pick on match
     if (match.settledPick && match.settledPick.market) {
+      const sPick = match.settledPick.market;
+      const found = pool.find(p => p.id === sPick || p.tip === sPick || p.name === sPick || (p.tip && p.tip.includes(sPick)));
+      if (found) return found;
       return {
         id: 'settled',
         tip: match.settledPick.market,
@@ -1548,9 +1598,10 @@
   }
 
   function setMatchMarket(matchId, marketId) {
-    if (!matchId || !marketId) return;
+    if (!matchId || !marketId || marketId === 'undefined') return;
     if (!state.selectedMatchMarkets) state.selectedMatchMarkets = {};
     state.selectedMatchMarkets[matchId] = marketId;
+    state.selectedMatchMarkets[String(matchId)] = marketId;
     selectMarketForMatch(matchId, marketId, true);
     if (typeof document !== 'undefined') {
       renderDiscoverMatchTable();
@@ -1601,7 +1652,7 @@
     // 1. Predictions & Match Centre
     if (selectedSources.predictions !== false) {
       const activeSel = getActiveSelectionForMatch(match);
-      const isCustomMarket = state.selectedMatchMarkets && (state.selectedMatchMarkets[match.id] || state.selectedMatchMarkets[mId]);
+      const isCustomMarket = state.selectedMatchMarkets && (state.selectedMatchMarkets[match.id] || state.selectedMatchMarkets[String(match.id)] || state.selectedMatchMarkets[mId]);
       const preds = match.predictions || { home: 48, draw: 26, away: 26 };
       const confVal = (isCustomMarket && activeSel?.confidence) ? activeSel.confidence : (match.confidenceVal || (match.confidence === 'high' ? 85 : 72));
       let pick = (isCustomMarket && activeSel?.tip) ? activeSel.tip : `${hName} Win or Draw (1X)`;
@@ -1642,7 +1693,7 @@
           }
         } catch (e) {}
       }
-      const isCustomMarket = state.selectedMatchMarkets && (state.selectedMatchMarkets[match.id] || state.selectedMatchMarkets[mId]);
+      const isCustomMarket = state.selectedMatchMarkets && (state.selectedMatchMarkets[match.id] || state.selectedMatchMarkets[String(match.id)] || state.selectedMatchMarkets[mId]);
       const activeSel = getActiveSelectionForMatch(match);
       if (!topTipData) {
         const p = match.predictions || { home: 55, draw: 25, away: 20 };
@@ -1754,7 +1805,7 @@
 
     // 6. Bet Generator
     if (selectedSources.generator || selectedSources.betGenerator) {
-      const isCustomMarket = state.selectedMatchMarkets && (state.selectedMatchMarkets[match.id] || state.selectedMatchMarkets[mId]);
+      const isCustomMarket = state.selectedMatchMarkets && (state.selectedMatchMarkets[match.id] || state.selectedMatchMarkets[String(match.id)] || state.selectedMatchMarkets[mId]);
       const activeSel = getActiveSelectionForMatch(match);
       intel.sources.generator = {
         name: 'Accumulator Leg',
@@ -3872,7 +3923,7 @@
             <div style="display: flex; align-items: center; gap: 6px;">
               <select onchange="window.TelegramPublisher.setMatchMarket('${m.id}', this.value)" style="width: 100%; max-width: 260px; background: rgba(0,0,0,0.5); border: 1px solid rgba(255,255,255,0.18); color: #e2e8f0; font-size: 0.72rem; font-weight: 600; padding: 3px 6px; border-radius: 5px; cursor: pointer;">
                 ${pool.map(p => `
-                  <option value="${p.id}" ${p.id === activeSel.id ? 'selected' : ''}>
+                  <option value="${p.id}" ${activeSel && p.id === activeSel.id ? 'selected' : ''}>
                     ${p.icon || '🎯'} [${p.categoryLabel || p.category}] ${p.name || p.tip} (@${Number(p.odds).toFixed(2)} · ${p.confidence}%)
                   </option>
                 `).join('')}
@@ -3880,7 +3931,7 @@
             </div>
             <div style="display: flex; gap: 4px; margin-top: 5px; flex-wrap: wrap;">
               ${pool.slice(0, 4).map(p => `
-                <button type="button" onclick="window.TelegramPublisher.setMatchMarket('${m.id}', '${p.id}')" style="background: ${p.id === activeSel.id ? 'rgba(56,189,248,0.35)' : 'rgba(255,255,255,0.06)'}; border: 1px solid ${p.id === activeSel.id ? '#38bdf8' : 'rgba(255,255,255,0.12)'}; color: ${p.id === activeSel.id ? '#38bdf8' : '#94a3b8'}; font-size: 0.67rem; font-weight: 700; padding: 1px 6px; border-radius: 4px; cursor: pointer;">
+                <button type="button" onclick="window.TelegramPublisher.setMatchMarket('${m.id}', '${p.id}')" style="background: ${activeSel && p.id === activeSel.id ? 'rgba(56,189,248,0.35)' : 'rgba(255,255,255,0.06)'}; border: 1px solid ${activeSel && p.id === activeSel.id ? '#38bdf8' : 'rgba(255,255,255,0.12)'}; color: ${activeSel && p.id === activeSel.id ? '#38bdf8' : '#94a3b8'}; font-size: 0.67rem; font-weight: 700; padding: 1px 6px; border-radius: 4px; cursor: pointer;">
                   ${p.shortName || p.id}
                 </button>
               `).join('')}
