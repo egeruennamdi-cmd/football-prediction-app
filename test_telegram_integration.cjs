@@ -3586,6 +3586,79 @@ async function runTests() {
     assert.strictEqual(bttsSel.id, 'btts', 'Active selection for numeric matchId must resolve correctly');
   });
 
+  // Req 36: Custom Post Studio Composition & Review Gate
+  test('Section 58.36: Custom Studio composition allows typing/pasting text, updating state, and passing review gate', () => {
+    // 1. Set message text, post type, and photo URL via public API
+    const customText = '🔥 <b>WEEKEND VALUE DIGEST</b>\nOur tactical AI scout detected huge discrepancies in Bundesliga lines today.';
+    telegramPublisher.setMessageText(customText);
+    assert.strictEqual(telegramPublisher.getState().messageText, customText, 'setMessageText must update state.messageText');
+
+    telegramPublisher.setPostType('Custom Broadcast');
+    assert.strictEqual(telegramPublisher.getState().postType, 'Custom Broadcast', 'setPostType must update state.postType');
+
+    telegramPublisher.setPhotoUrl('https://example.com/digest.jpg');
+    assert.strictEqual(telegramPublisher.getState().photoUrl, 'https://example.com/digest.jpg', 'setPhotoUrl must update state.photoUrl');
+
+    // 2. Custom post publishability gate evaluation
+    const customEval = telegramPublisher.evaluatePublishability([], {
+      target: 'free',
+      messageText: customText,
+      isCustomPost: true
+    });
+    assert.strictEqual(customEval.ready, true, 'Valid custom post must have ready: true');
+    assert.strictEqual(customEval.status, 'READY', 'Valid custom post must have status: READY');
+    assert.strictEqual(customEval.score, 100, 'Valid custom post must score 100');
+    assert.strictEqual(customEval.isCustomPost, true);
+
+    // 3. Rejects empty custom message
+    const emptyEval = telegramPublisher.evaluatePublishability([], {
+      target: 'free',
+      messageText: '   ',
+      isCustomPost: true
+    });
+    assert.strictEqual(emptyEval.ready, false, 'Empty custom message must have ready: false');
+    assert.strictEqual(emptyEval.status, 'BLOCKED', 'Empty custom message must have status: BLOCKED');
+
+    // 4. Rejects oversized custom message (>4096 chars)
+    const longText = 'A'.repeat(4097);
+    const oversizedEval = telegramPublisher.evaluatePublishability([], {
+      target: 'free',
+      messageText: longText,
+      isCustomPost: true
+    });
+    assert.strictEqual(oversizedEval.ready, false, 'Oversized custom message must fail');
+
+    // 5. DOM review modal integration with custom message
+    const origDoc = global.document;
+    const domStore = {};
+    global.document = {
+      getElementById(id) {
+        if (!domStore[id]) {
+          domStore[id] = { style: {}, innerHTML: '', value: '', checked: false, disabled: true, textContent: '' };
+        }
+        return domStore[id];
+      },
+      querySelectorAll() { return []; }
+    };
+
+    domStore['tg-pub-message-input'] = { value: customText };
+    domStore['tg-pub-review-modal'] = { style: { display: 'none' } };
+    domStore['tg-pub-review-content'] = { innerHTML: '' };
+    domStore['tg-pub-modal-confirm'] = { checked: false };
+    domStore['tg-pub-modal-publish-btn'] = { disabled: true };
+
+    telegramPublisher.openReviewModal();
+    assert.strictEqual(domStore['tg-pub-review-modal'].style.display, 'flex', 'Review modal must open on custom post');
+    assert.ok(domStore['tg-pub-review-content'].innerHTML.includes('READY'), 'Modal content must show READY gate');
+    assert.ok(domStore['tg-pub-review-content'].innerHTML.includes('Custom Studio Composition'), 'Modal must indicate custom studio post');
+
+    // Toggle confirm checkbox
+    telegramPublisher.toggleConfirm(true);
+    assert.strictEqual(domStore['tg-pub-modal-publish-btn'].disabled, false, 'Publish button must enable on confirmation');
+
+    global.document = origDoc;
+  });
+
   // Restore globals
   global.localStorage = originalLocalStorage;
   global.sessionStorage = originalSessionStorage;

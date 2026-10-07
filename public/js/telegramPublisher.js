@@ -1894,6 +1894,58 @@
   function evaluatePublishability(matches = [], options = {}, nowMs = Date.now()) {
     const list = Array.isArray(matches) ? matches : (matches ? [matches] : []);
     if (list.length === 0) {
+      if (options.isCustomPost || options.customPost) {
+        let customScore = 100;
+        const customChecks = [];
+        const customWarnings = [];
+        const customReasons = [];
+
+        const text = (options.messageText || '').trim();
+        if (!text) {
+          customScore -= 60;
+          customReasons.push('Message text is empty.');
+          customChecks.push({ label: 'Message Content', passed: false, detail: 'Empty text' });
+        } else if (text.length > 4096) {
+          customScore -= 40;
+          customReasons.push(`Message length (${text.length}) exceeds Telegram limit of 4096 characters.`);
+          customChecks.push({ label: 'Message Length', passed: false, detail: 'Exceeds 4096 limit' });
+        } else {
+          customChecks.push({ label: 'Message Content', passed: true, detail: `${text.length} characters` });
+        }
+
+        const target = options.target || 'free';
+        if (!['free', 'vip', 'user'].includes(target)) {
+          customScore -= 30;
+          customReasons.push(`Invalid Telegram destination: ${target}`);
+          customChecks.push({ label: 'Channel Destination', passed: false, detail: 'Invalid target channel' });
+        } else {
+          customChecks.push({ label: 'Channel Destination', passed: true, detail: `Valid target: ${target.toUpperCase()}` });
+        }
+
+        if (options.duplicateDetected) {
+          customScore -= 30;
+          customReasons.push('Duplicate content published within the last 24 hours.');
+          customChecks.push({ label: 'Duplicate Protection', passed: false, detail: 'Duplicate detected in KV' });
+        } else {
+          customChecks.push({ label: 'Duplicate Protection', passed: true, detail: 'No duplicates found' });
+        }
+
+        customScore = Math.max(0, Math.min(100, customScore));
+        const ready = customScore >= 70 && text.length > 0 && text.length <= 4096;
+        const status = ready ? (customScore >= 90 ? 'READY' : 'WARNING') : 'BLOCKED';
+
+        return {
+          score: customScore,
+          status,
+          ready,
+          eligible: ready,
+          checks: customChecks,
+          warnings: customWarnings,
+          reasons: customReasons,
+          isCustomPost: true
+        };
+      }
+
       return {
         score: 0,
         status: 'BLOCKED',
@@ -4005,7 +4057,7 @@
             </div>
             <div>
               <label style="display: block; font-size: 0.72rem; font-weight: 800; color: #94a3b8; margin-bottom: 4px;">POST TYPE</label>
-              <select onchange="state.postType = this.value; window.TelegramPublisher.updatePreview();" style="width: 100%; background: rgba(0,0,0,0.4); border: 1px solid rgba(255,255,255,0.15); color: #ffffff; padding: 8px 10px; border-radius: 8px; font-size: 0.8rem;">
+              <select onchange="window.TelegramPublisher.setPostType(this.value)" style="width: 100%; background: rgba(0,0,0,0.4); border: 1px solid rgba(255,255,255,0.15); color: #ffffff; padding: 8px 10px; border-radius: 8px; font-size: 0.8rem;">
                 <option value="Top Tip of the Day">Top Tip of the Day</option>
                 <option value="VIP Intelligence Dossier">VIP Intelligence Dossier</option>
                 <option value="Value Alert">Value Alert</option>
@@ -4031,7 +4083,7 @@
 
           <!-- Textarea Input -->
           <div style="position: relative;">
-            <textarea id="tg-pub-message-input" oninput="state.messageText = this.value; window.TelegramPublisher.updatePreview();" rows="11" placeholder="Compose message in HTML or generate from selection..." style="width: 100%; box-sizing: border-box; background: rgba(0,0,0,0.5); border: 1px solid rgba(255,255,255,0.15); border-radius: 10px; padding: 12px; color: #ffffff; font-size: 0.82rem; font-family: inherit; resize: vertical;">${state.messageText || ''}</textarea>
+            <textarea id="tg-pub-message-input" oninput="window.TelegramPublisher.setMessageText(this.value)" rows="11" placeholder="Compose message in HTML or generate from selection..." style="width: 100%; box-sizing: border-box; background: rgba(0,0,0,0.5); border: 1px solid rgba(255,255,255,0.15); border-radius: 10px; padding: 12px; color: #ffffff; font-size: 0.82rem; font-family: inherit; resize: vertical;">${state.messageText || ''}</textarea>
             <div id="tg-cc-char-counter" style="position: absolute; right: 12px; bottom: 10px; font-size: 0.72rem; color: #64748b; font-weight: 700;">
               0 / 4096
             </div>
@@ -4040,7 +4092,7 @@
           <!-- Photo URL -->
           <div>
             <label style="display: block; font-size: 0.72rem; font-weight: 800; color: #94a3b8; margin-bottom: 4px;">PHOTO ATTACHMENT URL (OPTIONAL)</label>
-            <input type="text" id="tg-pub-photo-input" value="${state.photoUrl || ''}" oninput="state.photoUrl = this.value; window.TelegramPublisher.updatePreview();" placeholder="https://example.com/image.jpg" style="width: 100%; box-sizing: border-box; background: rgba(0,0,0,0.4); border: 1px solid rgba(255,255,255,0.15); color: #ffffff; padding: 8px 10px; border-radius: 8px; font-size: 0.8rem;">
+            <input type="text" id="tg-pub-photo-input" value="${state.photoUrl || ''}" oninput="window.TelegramPublisher.setPhotoUrl(this.value)" placeholder="https://example.com/image.jpg" style="width: 100%; box-sizing: border-box; background: rgba(0,0,0,0.4); border: 1px solid rgba(255,255,255,0.15); color: #ffffff; padding: 8px 10px; border-radius: 8px; font-size: 0.8rem;">
           </div>
 
           <!-- Buttons Container -->
@@ -4533,6 +4585,7 @@
   }
 
   function updateLivePreview() {
+    if (typeof document === 'undefined') return;
     const textEl = document.getElementById('tg-sim-text');
     const photoWrap = document.getElementById('tg-sim-photo-wrap');
     const photoEl = document.getElementById('tg-sim-photo');
@@ -4694,14 +4747,37 @@
   }
 
   function openApprovalReviewModal() {
+    const inputEl = document.getElementById('tg-pub-message-input');
+    if (inputEl) {
+      state.messageText = inputEl.value;
+    }
+    const photoEl = document.getElementById('tg-pub-photo-input');
+    if (photoEl) {
+      state.photoUrl = photoEl.value;
+    }
+
+    if (!state.messageText || !state.messageText.trim()) {
+      showAlert('Cannot review empty message. Please compose or paste your message text into the Studio.');
+      return;
+    }
+
     const rawPool = getRawMatchPool();
     const selectedMatches = rawPool.filter(m => state.selectedMatchIds.has(m.id));
-    const targetMatches = selectedMatches.length > 0 ? selectedMatches : (rawPool.length > 0 ? [rawPool[0]] : []);
+    const isCustomPost = selectedMatches.length === 0 || state.postType === 'Custom Broadcast';
 
-    const gate = evaluatePublishability(targetMatches, {
-      target: state.target,
-      messageText: state.messageText
-    });
+    let gate;
+    if (isCustomPost) {
+      gate = evaluatePublishability([], {
+        target: state.target,
+        messageText: state.messageText,
+        isCustomPost: true
+      });
+    } else {
+      gate = evaluatePublishability(selectedMatches, {
+        target: state.target,
+        messageText: state.messageText
+      });
+    }
 
     const modal = document.getElementById('tg-pub-review-modal');
     const content = document.getElementById('tg-pub-review-content');
@@ -4715,7 +4791,7 @@
       content.innerHTML = `
         <div style="background: rgba(0,0,0,0.3); border-radius: 8px; padding: 12px; margin-bottom: 12px;">
           <div><b>Destination:</b> ${state.target === 'vip' ? '🔒 VIP Channel' : '🟢 Free Community Channel'}</div>
-          <div><b>Post Type:</b> ${state.postType}</div>
+          <div><b>Post Type:</b> ${state.postType}${isCustomPost ? ' (Custom Studio Composition)' : ''}</div>
           <div><b>Publishability Score:</b> <span style="font-weight: 800; color: ${gate.score >= 80 ? '#10b981' : '#f59e0b'};">${gate.score} / 100</span></div>
           <div><b>Status Gate:</b> <span style="font-weight: 800; color: ${gate.ready ? '#10b981' : '#ef4444'};">${gate.status}</span></div>
         </div>
@@ -4740,10 +4816,19 @@
   }
 
   async function executePublish(forceDuplicate = false) {
+    const inputEl = document.getElementById('tg-pub-message-input');
+    if (inputEl && inputEl.value) {
+      state.messageText = inputEl.value;
+    }
+    const photoEl = document.getElementById('tg-pub-photo-input');
+    if (photoEl) {
+      state.photoUrl = photoEl.value;
+    }
+
     closeApprovalReviewModal();
     if (forceDuplicate) closeDuplicateAlertModal();
 
-    if (!state.messageText) {
+    if (!state.messageText || !state.messageText.trim()) {
       showAlert('Cannot publish empty message text.');
       return;
     }
@@ -4799,7 +4884,16 @@
   }
 
   async function saveCurrentDraft() {
-    if (!state.messageText) {
+    const inputEl = document.getElementById('tg-pub-message-input');
+    if (inputEl && inputEl.value) {
+      state.messageText = inputEl.value;
+    }
+    const photoEl = document.getElementById('tg-pub-photo-input');
+    if (photoEl) {
+      state.photoUrl = photoEl.value;
+    }
+
+    if (!state.messageText || !state.messageText.trim()) {
       showAlert('Draft text cannot be empty.');
       return;
     }
@@ -5066,6 +5160,18 @@
     generateSingleMatchPost,
     applyRecipe,
     updatePreview: updateLivePreview,
+    setMessageText(val) {
+      state.messageText = val || '';
+      updateLivePreview();
+    },
+    setPostType(val) {
+      state.postType = val || 'Top Tip';
+      updateLivePreview();
+    },
+    setPhotoUrl(val) {
+      state.photoUrl = val || '';
+      updateLivePreview();
+    },
     format(tag) {
       const textarea = document.getElementById('tg-pub-message-input');
       if (!textarea) return;
