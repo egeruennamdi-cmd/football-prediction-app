@@ -4060,6 +4060,126 @@ async function runTests() {
     global.document = origDoc;
   });
 
+  await testAsync('Section 58.41: Autonomous Schedule Post Engine, Live Due Dispatching, Time-Based KV Auto-Posting & Queue Countdown', async () => {
+    // 1. Queue UI contains Auto-Scheduler Active pill, Check Due button, and live countdowns
+    const origState = telegramPublisher.getState();
+    origState.schedules = [
+      {
+        id: 'sch_test_future',
+        target: 'free',
+        postType: 'Future Tip',
+        text: 'Upcoming scheduled post for tomorrow',
+        scheduledAt: new Date(Date.now() + 3600 * 1000).toISOString()
+      },
+      {
+        id: 'sch_test_due',
+        target: 'vip',
+        postType: 'Due Banker',
+        text: 'Overdue scheduled post ready to fire now',
+        scheduledAt: new Date(Date.now() - 60 * 1000).toISOString()
+      }
+    ];
+
+    origState.calendarView = 'queue';
+    const queueHtml = telegramPublisher.renderCalendarTab();
+    assert.ok(queueHtml.includes('Autonomous Auto-Scheduler: ACTIVE'), 'Queue UI must show Auto-Scheduler: ACTIVE status banner');
+    assert.ok(queueHtml.includes('Check Due Now'), 'Queue UI must show Check Due Now trigger button');
+    assert.ok(queueHtml.includes('⚡ DUE FOR DISPATCH (Auto-posting now...)'), 'Overdue schedule item must display due status badge');
+    assert.ok(queueHtml.includes('⏳ Auto-posts in'), 'Future schedule item must display countdown badge');
+
+    // 2. Client-side Autonomous Dispatcher lifecycle and execution
+    assert.strictEqual(typeof telegramPublisher.startAutonomousScheduleDispatcher, 'function');
+    assert.strictEqual(typeof telegramPublisher.checkAndDispatchDueSchedules, 'function');
+    assert.strictEqual(typeof telegramPublisher.dispatchScheduledItem, 'function');
+
+    // 3. Client-side checkAndDispatchDueSchedules dispatches due item autonomously
+    let dispatchedPayload = null;
+    mockFetchHandler = async (url, options) => {
+      if (options && options.body) {
+        try {
+          const parsed = JSON.parse(options.body);
+          if (parsed.action === 'dispatch_schedule') {
+            dispatchedPayload = parsed;
+            return {
+              ok: true,
+              status: 200,
+              json: async () => ({ success: true, messageId: 998877 })
+            };
+          }
+        } catch (_) {}
+      }
+      return { ok: true, status: 200, json: async () => ({ success: true }) };
+    };
+
+    // Run autonomous check
+    await telegramPublisher.checkAndDispatchDueSchedules();
+
+    assert.ok(dispatchedPayload, 'Autonomous schedule check must trigger dispatch_schedule for due item');
+    assert.strictEqual(dispatchedPayload.scheduleId, 'sch_test_due');
+    assert.strictEqual(dispatchedPayload.schedule.text, 'Overdue scheduled post ready to fire now');
+    assert.strictEqual(dispatchedPayload.schedule.target, 'vip');
+
+    // Ensure due item was removed from state.schedules while future item remains
+    const remainingSchedules = telegramPublisher.getState().schedules;
+    assert.strictEqual(remainingSchedules.some(s => s.id === 'sch_test_due'), false, 'Due schedule must be removed after autonomous dispatch');
+    assert.strictEqual(remainingSchedules.some(s => s.id === 'sch_test_future'), true, 'Future schedule must remain queued');
+
+    // Test start and stop dispatcher timer
+    const timer = telegramPublisher.startAutonomousScheduleDispatcher(5000);
+    assert.ok(timer, 'startAutonomousScheduleDispatcher must return active timer');
+    telegramPublisher.stopAutonomousScheduleDispatcher();
+
+    mockFetchHandler = null;
+
+    // 4. Server-Side processDueSchedules(env) in publish.js
+    assert.strictEqual(typeof publishModule.processDueSchedules, 'function', 'publishModule must export processDueSchedules');
+
+    // Seed KV with an overdue schedule
+    const serverDueSchedule = {
+      id: 'sch_server_due_1',
+      target: 'free',
+      postType: 'Server Scheduled Post',
+      text: '🤖 Automatic post from server sweep engine',
+      scheduledAt: new Date(Date.now() - 10000).toISOString()
+    };
+    await vipTestEnv.USERS_KV.put('telegram_schedules', JSON.stringify([serverDueSchedule]));
+
+    fetchCalls = [];
+    const serverResult = await publishModule.processDueSchedules(vipTestEnv);
+    assert.strictEqual(serverResult.processedCount, 1, 'Server must process 1 due schedule');
+    assert.strictEqual(serverResult.dispatchedCount, 1, 'Server must dispatch 1 due schedule');
+    assert.strictEqual(serverResult.dispatched[0].id, 'sch_server_due_1');
+
+    // Verify Telegram API was called to publish
+    assert.ok(fetchCalls.length > 0, 'Telegram API must be invoked during server schedule processing');
+
+    // Verify schedule was deleted from KV
+    const kvSchedulesAfter = JSON.parse(await vipTestEnv.USERS_KV.get('telegram_schedules') || '[]');
+    assert.strictEqual(kvSchedulesAfter.some(s => s.id === 'sch_server_due_1'), false, 'Due schedule must be deleted from KV after dispatch');
+
+    // Verify history was saved with AUTONOMOUS_SCHEDULE_ENGINE source
+    const kvHistory = JSON.parse(await vipTestEnv.USERS_KV.get('telegram_publish_history') || '[]');
+    const autoHistoryItem = kvHistory.find(h => h.scheduleId === 'sch_server_due_1');
+    assert.ok(autoHistoryItem, 'History item must be saved with scheduleId');
+    assert.strictEqual(autoHistoryItem.source, 'AUTONOMOUS_SCHEDULE_ENGINE', 'History source must be AUTONOMOUS_SCHEDULE_ENGINE');
+    assert.strictEqual(autoHistoryItem.status, 'DISPATCHED_AUTOMATIC', 'History status must be DISPATCHED_AUTOMATIC');
+
+    // 5. Server-side POST /api/integrations/telegram/publish (action: process_due_schedules)
+    const procReq = new Request('https://deeppredictbet.com/api/integrations/telegram/publish', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer deep_admin_78_key' },
+      body: JSON.stringify({ action: 'process_due_schedules' })
+    });
+    const procRes = await publishModule.onRequestPost({ request: procReq, env: vipTestEnv });
+    assert.strictEqual(procRes.status, 200);
+    const procJson = await procRes.json();
+    assert.strictEqual(procJson.success, true);
+    assert.strictEqual(typeof procJson.processedCount, 'number');
+
+    // Clean up
+    origState.schedules = [];
+  });
+
   // Restore globals
   global.localStorage = originalLocalStorage;
   global.sessionStorage = originalSessionStorage;

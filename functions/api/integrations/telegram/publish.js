@@ -31,6 +31,100 @@ export async function onRequestOptions() {
 }
 
 /**
+ * Automatically evaluates all stored schedules in KV, and dispatches any schedule
+ * whose scheduledAt timestamp has been reached (scheduledAt <= now).
+ * Strictly autonomous: posts to Telegram on its own without requiring human button clicks.
+ */
+export async function processDueSchedules(env) {
+  try {
+    const rawSchedules = await getSchedules(env);
+    if (!Array.isArray(rawSchedules) || rawSchedules.length === 0) {
+      return { processedCount: 0, dispatchedCount: 0, dispatched: [] };
+    }
+
+    const now = Date.now();
+    const dueSchedules = rawSchedules.filter(s => {
+      if (!s || !s.scheduledAt) return false;
+      if (s.status === 'DISPATCHED' || s.dispatchedAt) return false;
+      const schedTime = new Date(s.scheduledAt).getTime();
+      return !isNaN(schedTime) && schedTime <= now;
+    });
+
+    if (dueSchedules.length === 0) {
+      return { processedCount: 0, dispatchedCount: 0, dispatched: [] };
+    }
+
+    const dispatched = [];
+
+    for (const s of dueSchedules) {
+      try {
+        const target = (s.target || 'free').toLowerCase();
+        const text = s.text || '';
+        const options = {
+          parseMode: 'HTML',
+          photoUrl: s.photoUrl || undefined
+        };
+
+        if (Array.isArray(s.buttons) && s.buttons.length > 0) {
+          const validButtons = s.buttons.filter(b => b && b.text && b.url).map(b => ({
+            text: String(b.text).trim(),
+            url: String(b.url).trim()
+          }));
+          if (validButtons.length > 0) {
+            options.replyMarkup = {
+              inline_keyboard: [validButtons]
+            };
+          }
+        }
+
+        let pubResult;
+        if (target === 'free') {
+          pubResult = await publishToFreeChannel(env, text, options);
+        } else if (target === 'vip') {
+          pubResult = await publishToVipChannel(env, text, options);
+        } else if (target === 'user' && s.telegramUserId) {
+          pubResult = await sendUserNotification(env, s.telegramUserId, text, options);
+        }
+
+        const dispatchedAt = new Date().toISOString();
+        if (pubResult && pubResult.success) {
+          await savePublishHistory(env, {
+            target,
+            postType: s.postType || 'Scheduled Broadcast',
+            textSnippet: text.slice(0, 140),
+            fullText: text,
+            photoUrl: s.photoUrl || undefined,
+            buttons: s.buttons || [],
+            telegramMessageId: pubResult.result ? pubResult.result.message_id : undefined,
+            dispatchedAt,
+            status: 'DISPATCHED_AUTOMATIC',
+            source: 'AUTONOMOUS_SCHEDULE_ENGINE',
+            scheduleId: s.id
+          });
+
+          await deleteSchedule(env, s.id);
+
+          dispatched.push({
+            id: s.id,
+            success: true,
+            target,
+            postType: s.postType,
+            messageId: pubResult.result ? pubResult.result.message_id : undefined
+          });
+        }
+      } catch (err) {
+        console.error('[processDueSchedules] Error dispatching schedule item:', err);
+      }
+    }
+
+    return { processedCount: dueSchedules.length, dispatchedCount: dispatched.length, dispatched };
+  } catch (e) {
+    console.warn('[processDueSchedules] Error:', e.message);
+    return { processedCount: 0, dispatchedCount: 0, dispatched: [], error: e.message };
+  }
+}
+
+/**
  * GET /api/integrations/telegram/publish
  * Returns publication history, linked users, drafts, schedules, recipes & automation rules
  */
@@ -50,6 +144,9 @@ export async function onRequestGet(context) {
   }
 
   try {
+    // Automatically process any due schedules that reached their dispatch time
+    await processDueSchedules(env);
+
     const history = await getPublishHistory(env, 50);
     const members = await getMembers(env);
     const drafts = await getDrafts(env);
@@ -164,6 +261,91 @@ export async function onRequestPost(context) {
         status: 200,
         headers: adminCorsHeaders()
       });
+    }
+
+    if (action === 'process_due_schedules' || action === 'check_schedules') {
+      const result = await processDueSchedules(env);
+      const schedules = await getSchedules(env);
+      const history = await getPublishHistory(env, 50);
+      return new Response(JSON.stringify({
+        success: true,
+        ...result,
+        schedules,
+        history
+      }), {
+        status: 200,
+        headers: adminCorsHeaders()
+      });
+    }
+
+    if (action === 'dispatch_schedule') {
+      const scheduleId = body.scheduleId || body.id;
+      const schedules = await getSchedules(env);
+      const item = schedules.find(s => s.id === scheduleId) || body.schedule;
+      if (!item) {
+        return new Response(JSON.stringify({ success: false, error: 'Schedule item not found.' }), {
+          status: 404,
+          headers: adminCorsHeaders()
+        });
+      }
+      const target = (item.target || 'free').toLowerCase();
+      const text = item.text || '';
+      const options = {
+        parseMode: 'HTML',
+        photoUrl: item.photoUrl || undefined
+      };
+      if (Array.isArray(item.buttons) && item.buttons.length > 0) {
+        const validButtons = item.buttons.filter(b => b && b.text && b.url).map(b => ({
+          text: String(b.text).trim(),
+          url: String(b.url).trim()
+        }));
+        if (validButtons.length > 0) {
+          options.replyMarkup = {
+            inline_keyboard: [validButtons]
+          };
+        }
+      }
+      let pubResult;
+      if (target === 'free') {
+        pubResult = await publishToFreeChannel(env, text, options);
+      } else if (target === 'vip') {
+        pubResult = await publishToVipChannel(env, text, options);
+      } else if (target === 'user' && item.telegramUserId) {
+        pubResult = await sendUserNotification(env, item.telegramUserId, text, options);
+      }
+      const dispatchedAt = new Date().toISOString();
+      if (pubResult && pubResult.success) {
+        await savePublishHistory(env, {
+          target,
+          postType: item.postType || 'Scheduled Broadcast',
+          textSnippet: text.slice(0, 140),
+          fullText: text,
+          photoUrl: item.photoUrl || undefined,
+          buttons: item.buttons || [],
+          telegramMessageId: pubResult.result ? pubResult.result.message_id : undefined,
+          dispatchedAt,
+          status: 'DISPATCHED_AUTOMATIC',
+          source: 'AUTONOMOUS_SCHEDULE_ENGINE',
+          scheduleId: item.id
+        });
+        await deleteSchedule(env, item.id);
+        return new Response(JSON.stringify({
+          success: true,
+          dispatchedAt,
+          telegramMessageId: pubResult.result ? pubResult.result.message_id : undefined
+        }), {
+          status: 200,
+          headers: adminCorsHeaders()
+        });
+      } else {
+        return new Response(JSON.stringify({
+          success: false,
+          error: pubResult?.error || 'Failed to dispatch to Telegram.'
+        }), {
+          status: 502,
+          headers: adminCorsHeaders()
+        });
+      }
     }
 
     // --- COMMAND CENTER ACTION: RECIPES ---

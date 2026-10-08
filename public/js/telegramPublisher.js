@@ -3444,6 +3444,7 @@
             state.automationRules = data.automationRules;
           }
           renderCurrentTab();
+          checkAndDispatchDueSchedules();
         }
       }
     } catch (e) {
@@ -4903,16 +4904,26 @@
 
     return `
       <div style="background: rgba(15,23,42,0.6); border: 1px solid rgba(255,255,255,0.08); border-radius: 14px; padding: 20px;">
-        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; flex-wrap: wrap; gap: 12px;">
           <div>
             <h4 style="margin: 0; font-size: 1rem; font-weight: 800; color: #ffffff;">Queued Telegram Publications</h4>
             <div style="font-size: 0.75rem; color: #94a3b8; margin-top: 2px;">
               Scheduled broadcasts stored in authoritative KV storage with automatic duplicate guard.
             </div>
+            <div style="display: flex; align-items: center; gap: 8px; margin-top: 8px; padding: 6px 12px; background: rgba(16,185,129,0.12); border: 1px solid rgba(16,185,129,0.3); border-radius: 8px; font-size: 0.75rem; color: #34d399;">
+              <span style="display: inline-block; width: 8px; height: 8px; border-radius: 50%; background: #10b981; box-shadow: 0 0 8px #10b981;"></span>
+              <strong>Autonomous Auto-Scheduler: ACTIVE</strong>
+              <span style="color: #94a3b8; margin-left: 6px;">• Automatically evaluates and posts broadcasts on scheduled time</span>
+            </div>
           </div>
-          <button type="button" onclick="window.TelegramPublisher.openScheduleModal()" style="background: linear-gradient(135deg, #0284c7, #38bdf8); border: none; color: #ffffff; padding: 6px 14px; border-radius: 6px; font-size: 0.75rem; font-weight: 800; cursor: pointer;">
-            ➕ New Schedule
-          </button>
+          <div style="display: flex; gap: 8px;">
+            <button type="button" onclick="window.TelegramPublisher.checkAndDispatchDueSchedules()" style="background: rgba(16,185,129,0.18); border: 1px solid rgba(16,185,129,0.4); color: #34d399; padding: 6px 12px; border-radius: 6px; font-size: 0.75rem; font-weight: 800; cursor: pointer;">
+              ⚡ Check Due Now
+            </button>
+            <button type="button" onclick="window.TelegramPublisher.openScheduleModal()" style="background: linear-gradient(135deg, #0284c7, #38bdf8); border: none; color: #ffffff; padding: 6px 14px; border-radius: 6px; font-size: 0.75rem; font-weight: 800; cursor: pointer;">
+              ➕ New Schedule
+            </button>
+          </div>
         </div>
 
         ${list.length === 0 ? `
@@ -4930,6 +4941,21 @@
           <div style="display: flex; flex-direction: column; gap: 12px;">
             ${list.map(s => {
               const sDate = new Date(s.scheduledAt);
+              const now = Date.now();
+              const diffMs = sDate.getTime() - now;
+              const isDue = diffMs <= 0;
+              let countdownLabel = '';
+              if (isDue) {
+                countdownLabel = `<span style="font-size: 0.68rem; font-weight: 800; padding: 2px 7px; border-radius: 4px; background: rgba(239,68,68,0.2); color: #f87171; border: 1px solid rgba(239,68,68,0.4);">⚡ DUE FOR DISPATCH (Auto-posting now...)</span>`;
+              } else {
+                const diffSec = Math.floor(diffMs / 1000);
+                const hours = Math.floor(diffSec / 3600);
+                const mins = Math.floor((diffSec % 3600) / 60);
+                const secs = diffSec % 60;
+                const timeStr = hours > 0 ? `${hours}h ${mins}m` : mins > 0 ? `${mins}m ${secs}s` : `${secs}s`;
+                countdownLabel = `<span style="font-size: 0.68rem; font-weight: 800; padding: 2px 7px; border-radius: 4px; background: rgba(56,189,248,0.15); color: #38bdf8; border: 1px solid rgba(56,189,248,0.3);">⏳ Auto-posts in ${timeStr} (Automatic)</span>`;
+              }
+
               const watDate = new Date(sDate.getTime() + 3600 * 1000);
               const watFormatted = `${watDate.getUTCDate()} ${['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'][watDate.getUTCMonth()]} ${watDate.getUTCFullYear()} · ${String(watDate.getUTCHours()).padStart(2, '0')}:${String(watDate.getUTCMinutes()).padStart(2, '0')} WAT`;
 
@@ -4937,7 +4963,7 @@
                 <div style="background: rgba(0,0,0,0.35); border: 1px solid rgba(255,255,255,0.08); padding: 16px; border-radius: 10px; display: flex; flex-direction: column; gap: 10px;">
                   <div style="display: flex; justify-content: space-between; align-items: flex-start;">
                     <div>
-                      <div style="display: flex; align-items: center; gap: 8px;">
+                      <div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap;">
                         <span style="font-weight: 800; color: #ffffff; font-size: 0.9rem;">${s.postType || 'Scheduled Broadcast'}</span>
                         <span style="font-size: 0.7rem; font-weight: 800; padding: 2px 7px; border-radius: 4px; background: ${s.target === 'vip' ? 'rgba(245,158,11,0.2)' : 'rgba(16,185,129,0.2)'}; color: ${s.target === 'vip' ? '#fbbf24' : '#34d399'};">
                           ${s.target === 'vip' ? '🔒 VIP CHANNEL' : '🟢 FREE CHANNEL'}
@@ -4945,6 +4971,7 @@
                         <span style="font-size: 0.65rem; font-weight: 700; background: rgba(56,189,248,0.15); color: #38bdf8; padding: 2px 6px; border-radius: 4px;">
                           QUEUED
                         </span>
+                        ${countdownLabel}
                       </div>
                       <div style="font-size: 0.75rem; color: #94a3b8; margin-top: 4px;">
                         📅 Scheduled for: <strong style="color: #cbd5e1;">${watFormatted}</strong>
@@ -5193,9 +5220,10 @@
     }
 
     showAlert('✅ Broadcast successfully scheduled for ' + scheduledDateObj.toLocaleString());
+    checkAndDispatchDueSchedules();
   }
 
-  async function cancelSchedule(scheduleId) {
+  async function cancelSchedule(scheduleId, silent = false) {
     if (!scheduleId) return;
 
     state.schedules = (state.schedules || []).filter(s => s.id !== scheduleId);
@@ -5216,7 +5244,77 @@
       }
     }
 
-    showAlert('Scheduled dispatch cancelled.');
+    if (!silent) {
+      showAlert('Scheduled dispatch cancelled.');
+    }
+  }
+
+  let _isCheckingDueSchedules = false;
+  let autoScheduleTimer = null;
+
+  async function dispatchScheduledItem(scheduleItem, isAutonomous = false) {
+    if (!scheduleItem) return;
+    const scheduleId = scheduleItem.id;
+    if (!scheduleId) return;
+
+    if (scheduleItem._dispatching && !isAutonomous) {
+      showAlert('Broadcast dispatch already in progress...');
+      return;
+    }
+    scheduleItem._dispatching = true;
+
+    try {
+      const res = await adminFetch('/api/integrations/telegram/publish', {
+        method: 'POST',
+        body: JSON.stringify({
+          action: 'dispatch_schedule',
+          scheduleId: scheduleId,
+          schedule: scheduleItem
+        })
+      });
+
+      if (!res.ok) {
+        let errDetail = 'Failed to dispatch scheduled post.';
+        try {
+          const errData = await res.json();
+          if (errData && errData.error) errDetail = errData.error;
+        } catch (_) {}
+        if (!isAutonomous) {
+          showAlert(`❌ Dispatch error: ${errDetail}`);
+        } else {
+          console.warn(`[AutoScheduleDispatcher] Dispatch failed for ${scheduleId}:`, errDetail);
+        }
+        scheduleItem._dispatching = false;
+        return;
+      }
+
+      const data = await res.json();
+      if (data && data.success) {
+        state.schedules = (state.schedules || []).filter(s => s.id !== scheduleId);
+        await cancelSchedule(scheduleId, true);
+
+        if (isAutonomous) {
+          showAlert(`⚡ [Auto-Scheduler] "${scheduleItem.postType || 'Scheduled Broadcast'}" automatically posted to Telegram!`);
+        } else {
+          showAlert(`🚀 Scheduled post "${scheduleItem.postType || 'Broadcast'}" dispatched successfully!`);
+        }
+
+        fetchPublishData();
+        renderCurrentTab();
+      } else {
+        if (!isAutonomous) {
+          showAlert(`❌ Dispatch error: ${data?.error || 'Unknown error'}`);
+        }
+        scheduleItem._dispatching = false;
+      }
+    } catch (e) {
+      scheduleItem._dispatching = false;
+      if (!isAutonomous) {
+        showAlert(`Dispatch network error: ${e.message}`);
+      } else {
+        console.warn(`[AutoScheduleDispatcher] Exception dispatching ${scheduleId}:`, e.message);
+      }
+    }
   }
 
   async function dispatchScheduledNow(scheduleId) {
@@ -5225,14 +5323,48 @@
       showAlert('Schedule item not found.');
       return;
     }
+    await dispatchScheduledItem(s, false);
+  }
 
-    state.target = s.target || 'free';
-    state.postType = s.postType || 'Scheduled Broadcast';
-    state.messageText = s.text || '';
-    state.photoUrl = s.photoUrl || '';
+  async function checkAndDispatchDueSchedules() {
+    if (_isCheckingDueSchedules) return;
+    if (!Array.isArray(state.schedules) || state.schedules.length === 0) return;
 
-    await cancelSchedule(scheduleId);
-    await executePublish(false);
+    _isCheckingDueSchedules = true;
+    try {
+      const now = Date.now();
+      const dueList = state.schedules.filter(s => {
+        if (!s || !s.scheduledAt) return false;
+        if (s._dispatching) return false;
+        const time = new Date(s.scheduledAt).getTime();
+        return !isNaN(time) && time <= now;
+      });
+
+      for (const item of dueList) {
+        await dispatchScheduledItem(item, true);
+      }
+    } finally {
+      _isCheckingDueSchedules = false;
+    }
+  }
+
+  function startAutonomousScheduleDispatcher(intervalMs = 10000) {
+    if (autoScheduleTimer) {
+      clearInterval(autoScheduleTimer);
+      autoScheduleTimer = null;
+    }
+    checkAndDispatchDueSchedules();
+    autoScheduleTimer = setInterval(() => {
+      checkAndDispatchDueSchedules();
+    }, intervalMs);
+    return autoScheduleTimer;
+  }
+
+  function stopAutonomousScheduleDispatcher() {
+    if (autoScheduleTimer) {
+      clearInterval(autoScheduleTimer);
+      autoScheduleTimer = null;
+    }
   }
 
   function loadScheduleToStudio(scheduleId) {
@@ -8020,6 +8152,10 @@
     submitSchedule,
     cancelSchedule,
     dispatchScheduledNow,
+    dispatchScheduledItem,
+    checkAndDispatchDueSchedules,
+    startAutonomousScheduleDispatcher,
+    stopAutonomousScheduleDispatcher,
     loadScheduleToStudio,
     loadMatchToStudio,
     prevCalendarMonth,
@@ -8070,6 +8206,10 @@
       if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
     }
   };
+
+  if (typeof window !== 'undefined') {
+    startAutonomousScheduleDispatcher(10000);
+  }
 
   return publicApi;
 });

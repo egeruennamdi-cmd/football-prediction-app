@@ -367,13 +367,15 @@ export async function savePublishHistory(env, entryData) {
     postType: entryData.postType || 'Custom Post',
     status: entryData.status || 'SUCCESS',
     telegramMessageId: entryData.telegramMessageId !== undefined ? entryData.telegramMessageId : null,
-    textSnippet: (entryData.text || entryData.message || '').slice(0, 140),
-    fullText: entryData.text || entryData.message || '',
+    textSnippet: entryData.textSnippet || (entryData.text || entryData.message || '').slice(0, 140),
+    fullText: entryData.fullText || entryData.text || entryData.message || '',
     photoUrl: entryData.photoUrl || null,
     buttons: entryData.buttons || null,
     recipient: entryData.recipient || null,
     author: entryData.author || 'Admin',
-    fingerprint: entryData.fingerprint || null
+    fingerprint: entryData.fingerprint || null,
+    source: entryData.source || 'MANUAL',
+    scheduleId: entryData.scheduleId || null
   };
 
   const key = 'telegram_publish_history';
