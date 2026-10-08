@@ -1530,11 +1530,14 @@
     return base;
   }
 
+  let cachedAuthoritativeClubsPool = null;
+
   /**
    * Dynamically resolves the authoritative clubs pool.
    * Merges CANONICAL_CLUBS_CATALOG, window.GLOBAL_CLUBS, and raw matches.
    */
   function getAuthoritativeClubsPool() {
+    if (cachedAuthoritativeClubsPool) return cachedAuthoritativeClubsPool;
     const root = typeof window !== 'undefined' ? window : (typeof globalThis !== 'undefined' ? globalThis : null);
     const clubsMap = new Map();
 
@@ -1569,32 +1572,47 @@
       GLOBAL_CLUBS.forEach(addClub);
     }
 
-    // 3. Extract clubs from Match Pool
-    try {
-      const pool = getRawMatchPool();
-      if (Array.isArray(pool)) {
-        pool.forEach(m => {
-          if (m && m.homeTeam && m.homeTeam.name) {
-            addClub({
-              name: m.homeTeam.name,
-              logo: m.homeTeam.logo || '⚽',
-              country: m.country || '',
-              league: m.league || ''
-            });
-          }
-          if (m && m.awayTeam && m.awayTeam.name) {
-            addClub({
-              name: m.awayTeam.name,
-              logo: m.awayTeam.logo || '⚽',
-              country: m.country || '',
-              league: m.league || ''
-            });
-          }
-        });
-      }
-    } catch (e) {}
+    // 3. Extract clubs directly from raw match collections (SAFE: avoids calling getRawMatchPool() to prevent circular recursion)
+    const scanMatches = (arr) => {
+      if (!Array.isArray(arr)) return;
+      arr.forEach(m => {
+        if (m && m.homeTeam && m.homeTeam.name) {
+          addClub({
+            name: m.homeTeam.name,
+            logo: m.homeTeam.logo || '⚽',
+            country: m.country || '',
+            league: m.league || ''
+          });
+        }
+        if (m && m.awayTeam && m.awayTeam.name) {
+          addClub({
+            name: m.awayTeam.name,
+            logo: m.awayTeam.logo || '⚽',
+            country: m.country || '',
+            league: m.league || ''
+          });
+        }
+      });
+    };
 
-    return Array.from(clubsMap.values()).sort((a, b) => a.name.localeCompare(b.name));
+    if (root) {
+      if (Array.isArray(root.AUTHENTIC_TOP_LEAGUES_FIXTURES)) scanMatches(root.AUTHENTIC_TOP_LEAGUES_FIXTURES);
+      if (Array.isArray(root.MATCH_DATA)) scanMatches(root.MATCH_DATA);
+      if (Array.isArray(root.ALL_FIXTURES_CACHE)) scanMatches(root.ALL_FIXTURES_CACHE);
+      if (Array.isArray(root.MATCHES_DATA)) scanMatches(root.MATCHES_DATA);
+      if (Array.isArray(root.currentLeagueMatches)) scanMatches(root.currentLeagueMatches);
+      if (Array.isArray(root.DYNAMIC_MATCH_DATA)) scanMatches(root.DYNAMIC_MATCH_DATA);
+      if (Array.isArray(root.TOP_LEAGUES_FIXTURES_POOL)) scanMatches(root.TOP_LEAGUES_FIXTURES_POOL);
+    }
+    if (typeof AUTHENTIC_TOP_LEAGUES_FIXTURES !== 'undefined' && Array.isArray(AUTHENTIC_TOP_LEAGUES_FIXTURES)) {
+      scanMatches(AUTHENTIC_TOP_LEAGUES_FIXTURES);
+    }
+    if (typeof MATCH_DATA !== 'undefined' && Array.isArray(MATCH_DATA)) {
+      scanMatches(MATCH_DATA);
+    }
+
+    cachedAuthoritativeClubsPool = Array.from(clubsMap.values()).sort((a, b) => a.name.localeCompare(b.name));
+    return cachedAuthoritativeClubsPool;
   }
 
   /**
@@ -3859,6 +3877,8 @@
       if (res.ok) {
         const data = await res.json();
         if (data.success) {
+          cachedRawMatchPool = null;
+          cachedAuthoritativeClubsPool = null;
           state.history = data.history || [];
           state.linkedUsers = data.linkedUsers || [];
           state.drafts = data.drafts || [];
@@ -3904,127 +3924,155 @@
   }
 
   // Comprehensive Authoritative Pool Retriever
+  let isBuildingRawMatchPool = false;
+  let cachedRawMatchPool = null;
+  let cachedRawMatchPoolTs = 0;
+
   function getRawMatchPool() {
-    const uniqueMap = new Map();
-    const seenMatchupKeys = new Set();
-
-    const addCandidate = (m) => {
-      if (!m) return;
-      const hName = m.homeTeam?.name || (typeof m.homeTeam === 'string' ? m.homeTeam : (m.home || 'Home'));
-      const aName = m.awayTeam?.name || (typeof m.awayTeam === 'string' ? m.awayTeam : (m.away || 'Away'));
-      const sId = String(m.id || `${hName}-${aName}-${m.time || m.dateSlot || ''}`);
-      const matchupKey = `${String(hName).toLowerCase()}-vs-${String(aName).toLowerCase()}-${m.time || m.dateSlot || m.date || ''}`;
-
-      if (!uniqueMap.has(sId) && !seenMatchupKeys.has(matchupKey)) {
-        uniqueMap.set(sId, m);
-        seenMatchupKeys.add(matchupKey);
-      }
-    };
-
-    const root = typeof window !== 'undefined' ? window : (typeof globalThis !== 'undefined' ? globalThis : null);
-    if (root) {
-      if (typeof root.getStrictlyFutureMatchesPool === 'function') {
-        try {
-          const strictlyFuture = root.getStrictlyFutureMatchesPool();
-          if (Array.isArray(strictlyFuture)) strictlyFuture.forEach(addCandidate);
-        } catch (e) {}
-      }
-      if (Array.isArray(root.AUTHENTIC_TOP_LEAGUES_FIXTURES)) {
-        root.AUTHENTIC_TOP_LEAGUES_FIXTURES.forEach(addCandidate);
-      }
-      if (Array.isArray(root.DYNAMIC_MATCH_DATA)) {
-        root.DYNAMIC_MATCH_DATA.forEach(addCandidate);
-      }
-      if (Array.isArray(root.TOP_LEAGUES_FIXTURES_POOL)) {
-        root.TOP_LEAGUES_FIXTURES_POOL.forEach(addCandidate);
-      }
-      if (Array.isArray(root.currentLeagueMatches)) {
-        root.currentLeagueMatches.forEach(addCandidate);
-      }
-      if (Array.isArray(root.ALL_FIXTURES_CACHE)) {
-        root.ALL_FIXTURES_CACHE.forEach(addCandidate);
-      }
-      if (Array.isArray(root.MATCHES_DATA)) {
-        root.MATCHES_DATA.forEach(addCandidate);
-      }
-      if (Array.isArray(root.MATCH_DATA)) {
-        root.MATCH_DATA.forEach(addCandidate);
-      }
+    const now = Date.now();
+    // Cache for 2.5s to prevent redundant computations on rapid consecutive UI tab renders
+    if (cachedRawMatchPool && (now - cachedRawMatchPoolTs < 2500)) {
+      return cachedRawMatchPool;
     }
-
-    if (typeof AUTHENTIC_TOP_LEAGUES_FIXTURES !== 'undefined' && Array.isArray(AUTHENTIC_TOP_LEAGUES_FIXTURES)) {
-      AUTHENTIC_TOP_LEAGUES_FIXTURES.forEach(addCandidate);
+    if (isBuildingRawMatchPool) {
+      return cachedRawMatchPool || [];
     }
-    if (typeof MATCH_DATA !== 'undefined' && Array.isArray(MATCH_DATA)) {
-      MATCH_DATA.forEach(addCandidate);
-    }
+    isBuildingRawMatchPool = true;
 
-    // Fallback: Ensure all top leagues and clubs have upcoming fixtures in match pool
-    const clubsPool = getAuthoritativeClubsPool();
-    if (clubsPool.length > 0) {
-      const leagueClubsMap = {};
-      clubsPool.forEach(c => {
-        if (!c.league) return;
-        if (!leagueClubsMap[c.league]) leagueClubsMap[c.league] = [];
-        leagueClubsMap[c.league].push(c);
-      });
+    try {
+      const uniqueMap = new Map();
+      const seenMatchupKeys = new Set();
 
-      const futureBaseMs = Date.now() + 24 * 3600 * 1000;
-      let synId = 5000;
-      Object.keys(leagueClubsMap).forEach((lg, lgIdx) => {
-        const existingCount = Array.from(uniqueMap.values()).filter(m =>
-          (m.league || '').toLowerCase().trim() === lg.toLowerCase().trim() && isMatchUpcomingEligible(m)
-        ).length;
+      const addCandidate = (m) => {
+        if (!m) return;
+        const hName = m.homeTeam?.name || (typeof m.homeTeam === 'string' ? m.homeTeam : (m.home || 'Home'));
+        const aName = m.awayTeam?.name || (typeof m.awayTeam === 'string' ? m.awayTeam : (m.away || 'Away'));
+        const sId = String(m.id || `${hName}-${aName}-${m.time || m.dateSlot || ''}`);
+        const matchupKey = `${String(hName).toLowerCase()}-vs-${String(aName).toLowerCase()}-${m.time || m.dateSlot || m.date || ''}`;
 
-        // If fewer than 2 upcoming matches exist for this league, generate pairings for clubs
-        if (existingCount < 2) {
-          const clubs = leagueClubsMap[lg];
-          for (let i = 0; i < clubs.length - 1; i += 2) {
-            const hClub = clubs[i];
-            const aClub = clubs[i + 1];
-            const fixtureTs = futureBaseMs + (lgIdx * 86400 * 1000) + (i * 3600 * 1000);
-            const d = new Date(fixtureTs);
-            const months = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
-            const timeStr = `${d.getUTCDate()}th, ${months[d.getUTCMonth()]} ${d.getUTCFullYear()}, 17:30`;
-
-            addCandidate({
-              id: `tg-intel-fix-${synId++}`,
-              homeTeam: { name: hClub.name, logo: hClub.logo || '⚽', form: ['W', 'D', 'W', 'W', 'L'] },
-              awayTeam: { name: aClub.name, logo: aClub.logo || '⚽', form: ['D', 'L', 'W', 'D', 'L'] },
-              league: lg,
-              country: hClub.country || '',
-              leagueEmoji: hClub.flag || '🏆',
-              time: timeStr,
-              date: 'future',
-              rawDate: d.toISOString(),
-              status: 'UPCOMING',
-              predictions: { home: 54, draw: 24, away: 22 },
-              confidenceVal: 82,
-              insight: `${hClub.name} clashes with ${aClub.name} in competitive ${lg} action.`,
-              topTips: ['uo15', 'uo25', 'btts']
-            });
-          }
+        if (!uniqueMap.has(sId) && !seenMatchupKeys.has(matchupKey)) {
+          uniqueMap.set(sId, m);
+          seenMatchupKeys.add(matchupKey);
         }
-      });
-    }
+      };
 
-    // Synchronize league normalization on all fixtures
-    if (root && typeof root.normalizeLeague === 'function') {
-      uniqueMap.forEach((m) => {
-        if (m && (m.league || m.leagueId)) {
-          const norm = root.normalizeLeague(m.league || m.leagueId, { country: m.country });
-          if (norm && norm.id !== 'unknown') {
-            m.leagueId = m.leagueId || norm.id;
-            m.league = m.league || norm.name;
-            m.country = m.country || norm.country;
-            m.competitionType = m.competitionType || norm.type;
-            m.leagueEmoji = m.leagueEmoji || norm.flag;
-          }
+      const root = typeof window !== 'undefined' ? window : (typeof globalThis !== 'undefined' ? globalThis : null);
+      if (root) {
+        if (typeof root.getStrictlyFutureMatchesPool === 'function') {
+          try {
+            const strictlyFuture = root.getStrictlyFutureMatchesPool();
+            if (Array.isArray(strictlyFuture)) strictlyFuture.forEach(addCandidate);
+          } catch (e) {}
         }
-      });
-    }
+        if (Array.isArray(root.AUTHENTIC_TOP_LEAGUES_FIXTURES)) {
+          root.AUTHENTIC_TOP_LEAGUES_FIXTURES.forEach(addCandidate);
+        }
+        if (Array.isArray(root.DYNAMIC_MATCH_DATA)) {
+          root.DYNAMIC_MATCH_DATA.forEach(addCandidate);
+        }
+        if (Array.isArray(root.TOP_LEAGUES_FIXTURES_POOL)) {
+          root.TOP_LEAGUES_FIXTURES_POOL.forEach(addCandidate);
+        }
+        if (Array.isArray(root.currentLeagueMatches)) {
+          root.currentLeagueMatches.forEach(addCandidate);
+        }
+        if (Array.isArray(root.ALL_FIXTURES_CACHE)) {
+          root.ALL_FIXTURES_CACHE.forEach(addCandidate);
+        }
+        if (Array.isArray(root.MATCHES_DATA)) {
+          root.MATCHES_DATA.forEach(addCandidate);
+        }
+        if (Array.isArray(root.MATCH_DATA)) {
+          root.MATCH_DATA.forEach(addCandidate);
+        }
+      }
 
-    return Array.from(uniqueMap.values());
+      if (typeof AUTHENTIC_TOP_LEAGUES_FIXTURES !== 'undefined' && Array.isArray(AUTHENTIC_TOP_LEAGUES_FIXTURES)) {
+        AUTHENTIC_TOP_LEAGUES_FIXTURES.forEach(addCandidate);
+      }
+      if (typeof MATCH_DATA !== 'undefined' && Array.isArray(MATCH_DATA)) {
+        MATCH_DATA.forEach(addCandidate);
+      }
+
+      // Fallback: Ensure all top leagues and clubs have upcoming fixtures in match pool
+      const clubsPool = getAuthoritativeClubsPool();
+      if (clubsPool.length > 0) {
+        const leagueClubsMap = {};
+        clubsPool.forEach(c => {
+          if (!c.league) return;
+          if (!leagueClubsMap[c.league]) leagueClubsMap[c.league] = [];
+          leagueClubsMap[c.league].push(c);
+        });
+
+        const futureBaseMs = Date.now() + 24 * 3600 * 1000;
+        let synId = 5000;
+
+        // Pre-index existing league counts once to avoid O(L*M) array iterations
+        const existingLeagueCounts = new Map();
+        uniqueMap.forEach(m => {
+          if (m && m.league && isMatchUpcomingEligible(m)) {
+            const lKey = m.league.toLowerCase().trim();
+            existingLeagueCounts.set(lKey, (existingLeagueCounts.get(lKey) || 0) + 1);
+          }
+        });
+
+        Object.keys(leagueClubsMap).forEach((lg, lgIdx) => {
+          const existingCount = existingLeagueCounts.get(lg.toLowerCase().trim()) || 0;
+
+          // If fewer than 2 upcoming matches exist for this league, generate pairings for clubs
+          if (existingCount < 2) {
+            const clubs = leagueClubsMap[lg];
+            for (let i = 0; i < clubs.length - 1; i += 2) {
+              const hClub = clubs[i];
+              const aClub = clubs[i + 1];
+              const fixtureTs = futureBaseMs + (lgIdx * 86400 * 1000) + (i * 3600 * 1000);
+              const d = new Date(fixtureTs);
+              const months = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
+              const timeStr = `${d.getUTCDate()}th, ${months[d.getUTCMonth()]} ${d.getUTCFullYear()}, 17:30`;
+
+              addCandidate({
+                id: `tg-intel-fix-${synId++}`,
+                homeTeam: { name: hClub.name, logo: hClub.logo || '⚽', form: ['W', 'D', 'W', 'W', 'L'] },
+                awayTeam: { name: aClub.name, logo: aClub.logo || '⚽', form: ['D', 'L', 'W', 'D', 'L'] },
+                league: lg,
+                country: hClub.country || '',
+                leagueEmoji: hClub.flag || '🏆',
+                time: timeStr,
+                date: 'future',
+                rawDate: d.toISOString(),
+                status: 'UPCOMING',
+                predictions: { home: 54, draw: 24, away: 22 },
+                confidenceVal: 82,
+                insight: `${hClub.name} clashes with ${aClub.name} in competitive ${lg} action.`,
+                topTips: ['uo15', 'uo25', 'btts']
+              });
+            }
+          }
+        });
+      }
+
+      // Synchronize league normalization on all fixtures
+      if (root && typeof root.normalizeLeague === 'function') {
+        uniqueMap.forEach((m) => {
+          if (m && (m.league || m.leagueId)) {
+            const norm = root.normalizeLeague(m.league || m.leagueId, { country: m.country });
+            if (norm && norm.id !== 'unknown') {
+              m.leagueId = m.leagueId || norm.id;
+              m.league = m.league || norm.name;
+              m.country = m.country || norm.country;
+              m.competitionType = m.competitionType || norm.type;
+              m.leagueEmoji = m.leagueEmoji || norm.flag;
+            }
+          }
+        });
+      }
+
+      cachedRawMatchPool = Array.from(uniqueMap.values());
+      cachedRawMatchPoolTs = Date.now();
+      return cachedRawMatchPool;
+    } finally {
+      isBuildingRawMatchPool = false;
+    }
   }
 
   // UI RENDERERS
@@ -8445,6 +8493,8 @@
       }
     },
     resetDiscoverFilters() {
+      cachedRawMatchPool = null;
+      cachedAuthoritativeClubsPool = null;
       state.dateRange = 'all_upcoming';
       state.statusFilter = 'UPCOMING';
       state.regionFilter = 'all';
