@@ -3954,6 +3954,112 @@ async function runTests() {
     assert.ok(html.includes('telegram_free_daily_banker'), 'UTM campaigns must render in table');
   });
 
+  await testAsync('Section 58.40: Post Body Image Attachment, Device Upload, Presets, Inline Links & Multipart Backend', async () => {
+    // 1. Verify Composer HTML rendering contains image attachment controls on post body
+    const composeHtml = telegramPublisher.renderComposeTab();
+    assert.ok(composeHtml.includes('id="tg-pub-toolbar-attach-btn"'), 'Formatting toolbar must contain Attach Image button');
+    assert.ok(composeHtml.includes('🖼️ Attach Image'), 'Attach image button label must render');
+    assert.ok(composeHtml.includes('id="tg-pub-file-input"'), 'Hidden file input for device upload must exist');
+    assert.ok(composeHtml.includes('accept="image/*"'), 'File input must accept image files');
+    assert.ok(composeHtml.includes('🔗 Inline Link'), 'Toolbar must contain Inline Link button');
+    assert.ok(composeHtml.includes('🎨 Presets'), 'Toolbar must contain Presets button');
+    assert.ok(composeHtml.includes('id="tg-pub-presets-drawer"'), 'Presets drawer container must exist');
+    assert.ok(composeHtml.includes('id="tg-pub-attached-image-card"'), 'Attached image preview card must exist');
+    assert.ok(composeHtml.includes('id="tg-pub-photo-input"'), 'Photo input must exist');
+
+    // 2. Mock DOM for interactive events
+    const origDoc = global.document;
+    const domStore = {};
+    const createMockEl = (tag, id = '') => {
+      const el = {
+        id,
+        tagName: tag.toUpperCase(),
+        value: '',
+        innerHTML: '',
+        textContent: '',
+        style: {},
+        dataset: {},
+        listeners: {},
+        addEventListener(event, fn) {
+          if (!this.listeners[event]) this.listeners[event] = [];
+          this.listeners[event].push(fn);
+        },
+        click() {
+          if (this.listeners['click']) this.listeners['click'].forEach(fn => fn());
+        }
+      };
+      if (id) domStore[id] = el;
+      return el;
+    };
+
+    const textareaEl = createMockEl('textarea', 'tg-pub-message-input');
+    const photoInputEl = createMockEl('input', 'tg-pub-photo-input');
+    const fileInputEl = createMockEl('input', 'tg-pub-file-input');
+    const cardEl = createMockEl('div', 'tg-pub-attached-image-card');
+    const simPhotoWrap = createMockEl('div', 'tg-sim-photo-wrap');
+    const simPhoto = createMockEl('img', 'tg-sim-photo');
+    const simText = createMockEl('div', 'tg-sim-text');
+    const charCounter = createMockEl('div', 'tg-cc-char-counter');
+
+    global.document = {
+      getElementById(id) {
+        return domStore[id] || null;
+      },
+      querySelectorAll() { return []; }
+    };
+
+    // 3. Test Device / Local File Attachment
+    const fakeImageFile = {
+      name: 'tactical_matrix.png',
+      size: 15420,
+      type: 'image/png'
+    };
+    telegramPublisher.handleImageFileUpload({ target: { files: [fakeImageFile] } });
+    const localState = telegramPublisher.getState();
+    assert.ok(localState.photoUrl && localState.photoUrl.startsWith('data:image/png'), 'Local image upload must populate photoUrl as Data URL');
+    assert.strictEqual(localState.attachedImageName, 'tactical_matrix.png', 'Attached image name must be preserved');
+    assert.strictEqual(localState.attachedImageSize, 15420, 'Attached image size must be preserved');
+    assert.strictEqual(simPhoto.src, localState.photoUrl, 'Live simulator photo src must update');
+    assert.strictEqual(simPhotoWrap.style.display, 'block', 'Live simulator photo wrap must display block');
+
+    // 4. Test Inline Image Link Insertion (<a href="URL">&#8203;</a>)
+    textareaEl.value = 'Banker slip for matchday:';
+    textareaEl.selectionStart = textareaEl.value.length;
+    textareaEl.selectionEnd = textareaEl.value.length;
+    telegramPublisher.insertInlineImageLink(localState.photoUrl);
+    const updatedMsg = telegramPublisher.getState().messageText;
+    assert.ok(updatedMsg.includes(`<a href="${localState.photoUrl}">&#8203;</a>`), 'Inline link must insert Telegram-compliant zero-width anchor');
+
+    // 5. Test Preset Graphic Attachment
+    telegramPublisher.attachPresetImage('https://images.unsplash.com/photo-1508098682722-e99c43a406b2?w=800&q=80', '👑 Banker Header Slip');
+    const presetState = telegramPublisher.getState();
+    assert.strictEqual(presetState.photoUrl, 'https://images.unsplash.com/photo-1508098682722-e99c43a406b2?w=800&q=80');
+    assert.strictEqual(presetState.attachedImageName, '👑 Banker Header Slip');
+
+    // 6. Test Image Attachment Removal
+    telegramPublisher.removeAttachedImage();
+    const removedState = telegramPublisher.getState();
+    assert.strictEqual(removedState.photoUrl, '', 'removeAttachedImage must clear photoUrl');
+    assert.strictEqual(removedState.attachedImageName, '', 'removeAttachedImage must clear attachedImageName');
+    assert.strictEqual(simPhotoWrap.style.display, 'none', 'Live simulator photo wrap must be hidden when removed');
+
+    // 7. Test Backend callTelegramApi with Data URL (Multipart / FormData conversion)
+    fetchCalls = [];
+    const testDataUrl = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNk+A8AAQUBAScY42YAAAAASUVORK5CYII=';
+    const backendRes = await telegramService.callTelegramApi(
+      { TELEGRAM_BOT_TOKEN: FAKE_BOT_TOKEN },
+      'sendPhoto',
+      { chat_id: '@testchannel', photo: testDataUrl, caption: 'Test Caption' }
+    );
+    assert.strictEqual(backendRes.success, true);
+    assert.strictEqual(fetchCalls.length, 1);
+    assert.ok(fetchCalls[0].url.includes('/sendPhoto'));
+    assert.ok(fetchCalls[0].options.body instanceof FormData, 'Data URL photo must trigger multipart/form-data body');
+    assert.ok(fetchCalls[0].options.body.has('photo'), 'FormData must contain photo field');
+
+    global.document = origDoc;
+  });
+
   // Restore globals
   global.localStorage = originalLocalStorage;
   global.sessionStorage = originalSessionStorage;

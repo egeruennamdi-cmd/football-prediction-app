@@ -48,15 +48,53 @@ export async function callTelegramApi(envOrContext, method, payload = {}) {
     const controller = new AbortController();
     const timeoutId = setTimeout(() => controller.abort(), 6000);
 
-    const response = await fetch(endpoint, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Accept': 'application/json'
-      },
-      body: JSON.stringify(payload),
-      signal: controller.signal
-    });
+    let response;
+    // Support direct file uploads when payload.photo is a Data URL (e.g. from local file upload or clipboard paste)
+    if (payload && typeof payload.photo === 'string' && payload.photo.startsWith('data:')) {
+      const match = payload.photo.match(/^data:([a-zA-Z0-9]+\/[a-zA-Z0-9-.+]+);base64,(.+)$/);
+      if (match) {
+        const mimeType = match[1];
+        const base64Data = match[2];
+        const binaryStr = atob(base64Data);
+        const bytes = new Uint8Array(binaryStr.length);
+        for (let i = 0; i < binaryStr.length; i++) {
+          bytes[i] = binaryStr.charCodeAt(i);
+        }
+        const ext = mimeType.split('/')[1] || 'png';
+        const fileBlob = new Blob([bytes], { type: mimeType });
+        const formData = new FormData();
+        formData.append('photo', fileBlob, `attached_image.${ext}`);
+
+        for (const [key, value] of Object.entries(payload)) {
+          if (key === 'photo') continue;
+          if (value !== undefined && value !== null) {
+            if (typeof value === 'object') {
+              formData.append(key, JSON.stringify(value));
+            } else {
+              formData.append(key, String(value));
+            }
+          }
+        }
+
+        response = await fetch(endpoint, {
+          method: 'POST',
+          body: formData,
+          signal: controller.signal
+        });
+      }
+    }
+
+    if (!response) {
+      response = await fetch(endpoint, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json'
+        },
+        body: JSON.stringify(payload),
+        signal: controller.signal
+      });
+    }
 
     clearTimeout(timeoutId);
 

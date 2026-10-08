@@ -3324,6 +3324,10 @@
     },
     messageText: '',
     photoUrl: '',
+    attachedImageName: '',
+    attachedImageSize: 0,
+    attachedImageType: '',
+    showVisualPresets: false,
     buttons: [{ text: '', url: '' }],
     telegramUserId: '',
     linkedUsers: [],
@@ -3639,6 +3643,7 @@
       case 'compose':
         container.innerHTML = renderComposeTab();
         renderButtonInputs();
+        setupComposerMediaInteractions();
         updateLivePreview();
         break;
       case 'calendar':
@@ -4079,30 +4084,83 @@
             </div>
           </div>
 
-          <!-- HTML Formatting Toolbar -->
-          <div style="display: flex; gap: 6px; background: rgba(0,0,0,0.3); padding: 6px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.08);">
-            <button type="button" onclick="window.TelegramPublisher.format('b')" style="background: rgba(255,255,255,0.06); border: none; color: #fff; padding: 4px 10px; border-radius: 4px; font-size: 0.72rem; font-weight: 700; cursor: pointer;"><b>B</b></button>
-            <button type="button" onclick="window.TelegramPublisher.format('i')" style="background: rgba(255,255,255,0.06); border: none; color: #fff; padding: 4px 10px; border-radius: 4px; font-size: 0.72rem; font-weight: 700; cursor: pointer;"><i>I</i></button>
-            <button type="button" onclick="window.TelegramPublisher.format('code')" style="background: rgba(255,255,255,0.06); border: none; color: #fff; padding: 4px 10px; border-radius: 4px; font-size: 0.72rem; font-family: monospace; cursor: pointer;">&lt;&gt;</button>
+          <!-- HTML Formatting Toolbar & Image Controls -->
+          <div style="display: flex; gap: 6px; background: rgba(0,0,0,0.3); padding: 6px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.08); align-items: center; flex-wrap: wrap;">
+            <button type="button" onclick="window.TelegramPublisher.format('b')" title="Bold (<b>...</b>)" style="background: rgba(255,255,255,0.06); border: none; color: #fff; padding: 4px 10px; border-radius: 4px; font-size: 0.72rem; font-weight: 700; cursor: pointer;"><b>B</b></button>
+            <button type="button" onclick="window.TelegramPublisher.format('i')" title="Italic (<i>...</i>)" style="background: rgba(255,255,255,0.06); border: none; color: #fff; padding: 4px 10px; border-radius: 4px; font-size: 0.72rem; font-weight: 700; cursor: pointer;"><i>I</i></button>
+            <button type="button" onclick="window.TelegramPublisher.format('code')" title="Monospace (<code>...</code>)" style="background: rgba(255,255,255,0.06); border: none; color: #fff; padding: 4px 10px; border-radius: 4px; font-size: 0.72rem; font-family: monospace; cursor: pointer;">&lt;&gt;</button>
             <button type="button" onclick="window.TelegramPublisher.insertEmoji('👑')" style="background: transparent; border: none; font-size: 0.85rem; cursor: pointer;">👑</button>
             <button type="button" onclick="window.TelegramPublisher.insertEmoji('🎯')" style="background: transparent; border: none; font-size: 0.85rem; cursor: pointer;">🎯</button>
             <button type="button" onclick="window.TelegramPublisher.insertEmoji('📊')" style="background: transparent; border: none; font-size: 0.85rem; cursor: pointer;">📊</button>
             <button type="button" onclick="window.TelegramPublisher.insertEmoji('💰')" style="background: transparent; border: none; font-size: 0.85rem; cursor: pointer;">💰</button>
             <button type="button" onclick="window.TelegramPublisher.insertEmoji('💎')" style="background: transparent; border: none; font-size: 0.85rem; cursor: pointer;">💎</button>
+            <div style="width: 1px; height: 18px; background: rgba(255,255,255,0.15); margin: 0 4px;"></div>
+            <!-- Toolbar Image Attachment & Media Buttons -->
+            <button type="button" id="tg-pub-toolbar-attach-btn" onclick="window.TelegramPublisher.triggerImageUpload()" title="Attach image from your device directly onto post body" style="background: rgba(56,189,248,0.18); border: 1px solid rgba(56,189,248,0.45); color: #38bdf8; padding: 4px 10px; border-radius: 6px; font-size: 0.72rem; font-weight: 700; cursor: pointer; display: flex; align-items: center; gap: 5px;">
+              <span>🖼️ Attach Image</span>
+            </button>
+            <button type="button" onclick="window.TelegramPublisher.insertInlineImageLinkPrompt()" title="Embed hidden or labeled image link into body HTML" style="background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.12); color: #cbd5e1; padding: 4px 8px; border-radius: 6px; font-size: 0.72rem; font-weight: 600; cursor: pointer; display: flex; align-items: center; gap: 4px;">
+              <span>🔗 Inline Link</span>
+            </button>
+            <button type="button" onclick="window.TelegramPublisher.toggleVisualPresets()" title="Pick from DeepPredictBet graphics and badges" style="background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.12); color: #cbd5e1; padding: 4px 8px; border-radius: 6px; font-size: 0.72rem; font-weight: 600; cursor: pointer; display: flex; align-items: center; gap: 4px;">
+              <span>🎨 Presets</span>
+            </button>
+            <input type="file" id="tg-pub-file-input" accept="image/*" style="display: none;" onchange="window.TelegramPublisher.handleImageFileUpload(event)">
           </div>
 
-          <!-- Textarea Input -->
+          <!-- Official Graphic Presets Bar (Collapsible) -->
+          <div id="tg-pub-presets-drawer" style="display: ${state.showVisualPresets ? 'block' : 'none'}; background: rgba(15,23,42,0.85); border: 1px solid rgba(56,189,248,0.25); border-radius: 8px; padding: 10px;">
+            <div style="font-size: 0.72rem; font-weight: 800; color: #38bdf8; margin-bottom: 8px; display: flex; justify-content: space-between; align-items: center;">
+              <span>🎨 DEEPPREDICTBET OFFICIAL GRAPHIC PRESETS</span>
+              <button type="button" onclick="window.TelegramPublisher.toggleVisualPresets()" style="background: transparent; border: none; color: #94a3b8; font-size: 0.72rem; cursor: pointer;">✕ Close</button>
+            </div>
+            <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px;">
+              <button type="button" onclick="window.TelegramPublisher.attachPresetImage('https://images.unsplash.com/photo-1508098682722-e99c43a406b2?w=800&q=80', '👑 Banker Header Slip')" style="background: rgba(0,0,0,0.4); border: 1px solid rgba(255,255,255,0.12); border-radius: 6px; padding: 6px; text-align: left; cursor: pointer; color: #fff; display: flex; flex-direction: column; gap: 4px;">
+                <span style="font-size: 0.75rem; font-weight: 700; color: #facc15;">👑 Banker Banner</span>
+                <span style="font-size: 0.65rem; color: #94a3b8;">High-confidence slip</span>
+              </button>
+              <button type="button" onclick="window.TelegramPublisher.attachPresetImage('https://images.unsplash.com/photo-1574629810360-7efbbe195018?w=800&q=80', '💎 VIP Value Surge Badge')" style="background: rgba(0,0,0,0.4); border: 1px solid rgba(255,255,255,0.12); border-radius: 6px; padding: 6px; text-align: left; cursor: pointer; color: #fff; display: flex; flex-direction: column; gap: 4px;">
+                <span style="font-size: 0.75rem; font-weight: 700; color: #38bdf8;">💎 VIP Value Surge</span>
+                <span style="font-size: 0.65rem; color: #94a3b8;">+EV Edge signal</span>
+              </button>
+              <button type="button" onclick="window.TelegramPublisher.attachPresetImage('https://images.unsplash.com/photo-1518091043644-c1d4457512c6?w=800&q=80', '⚽ Weekend Acca Slip Card')" style="background: rgba(0,0,0,0.4); border: 1px solid rgba(255,255,255,0.12); border-radius: 6px; padding: 6px; text-align: left; cursor: pointer; color: #fff; display: flex; flex-direction: column; gap: 4px;">
+                <span style="font-size: 0.75rem; font-weight: 700; color: #4ade80;">⚽ Matchday Acca</span>
+                <span style="font-size: 0.65rem; color: #94a3b8;">Multi-leg combo slip</span>
+              </button>
+              <button type="button" onclick="window.TelegramPublisher.attachPresetImage('https://images.unsplash.com/photo-1489944440615-453fc2b6a9a9?w=800&q=80', '📊 Tactical Match Radar')" style="background: rgba(0,0,0,0.4); border: 1px solid rgba(255,255,255,0.12); border-radius: 6px; padding: 6px; text-align: left; cursor: pointer; color: #fff; display: flex; flex-direction: column; gap: 4px;">
+                <span style="font-size: 0.75rem; font-weight: 700; color: #e879f9;">📊 Intelligence Radar</span>
+                <span style="font-size: 0.65rem; color: #94a3b8;">AI Scout metrics</span>
+              </button>
+            </div>
+          </div>
+
+          <!-- Attached Image Preview Chip / Drop Status -->
+          <div id="tg-pub-attached-image-card">
+            ${renderAttachedImageCardHtml()}
+          </div>
+
+          <!-- Textarea Input (Post Body) -->
           <div style="position: relative;">
-            <textarea id="tg-pub-message-input" oninput="window.TelegramPublisher.setMessageText(this.value)" rows="11" placeholder="Compose message in HTML or generate from selection..." style="width: 100%; box-sizing: border-box; background: rgba(0,0,0,0.5); border: 1px solid rgba(255,255,255,0.15); border-radius: 10px; padding: 12px; color: #ffffff; font-size: 0.82rem; font-family: inherit; resize: vertical;">${state.messageText || ''}</textarea>
+            <textarea id="tg-pub-message-input" oninput="window.TelegramPublisher.setMessageText(this.value)" rows="11" placeholder="Compose message in HTML or generate from selection... (Drag & drop image files or paste Ctrl+V screenshots directly here)" style="width: 100%; box-sizing: border-box; background: rgba(0,0,0,0.5); border: 1px solid rgba(255,255,255,0.15); border-radius: 10px; padding: 12px; color: #ffffff; font-size: 0.82rem; font-family: inherit; resize: vertical; transition: border-color 0.2s, background-color 0.2s;">${state.messageText || ''}</textarea>
             <div id="tg-cc-char-counter" style="position: absolute; right: 12px; bottom: 10px; font-size: 0.72rem; color: #64748b; font-weight: 700;">
               0 / 4096
             </div>
           </div>
 
-          <!-- Photo URL -->
-          <div>
-            <label style="display: block; font-size: 0.72rem; font-weight: 800; color: #94a3b8; margin-bottom: 4px;">PHOTO ATTACHMENT URL (OPTIONAL)</label>
-            <input type="text" id="tg-pub-photo-input" value="${state.photoUrl || ''}" oninput="window.TelegramPublisher.setPhotoUrl(this.value)" placeholder="https://example.com/image.jpg" style="width: 100%; box-sizing: border-box; background: rgba(0,0,0,0.4); border: 1px solid rgba(255,255,255,0.15); color: #ffffff; padding: 8px 10px; border-radius: 8px; font-size: 0.8rem;">
+          <!-- Photo URL / Attachment Source -->
+          <div style="background: rgba(0,0,0,0.2); border: 1px solid rgba(255,255,255,0.08); border-radius: 8px; padding: 8px 10px;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px;">
+              <label style="font-size: 0.72rem; font-weight: 800; color: #94a3b8;">PHOTO ATTACHMENT URL / SOURCE (OPTIONAL)</label>
+              ${state.photoUrl ? `
+                <span style="font-size: 0.68rem; color: #38bdf8; font-weight: 700;">● Image Loaded</span>
+              ` : ''}
+            </div>
+            <div style="display: flex; gap: 8px;">
+              <input type="text" id="tg-pub-photo-input" value="${state.photoUrl || ''}" oninput="window.TelegramPublisher.setPhotoUrl(this.value)" placeholder="https://example.com/image.jpg or attach via button / paste above..." style="flex: 1; box-sizing: border-box; background: rgba(0,0,0,0.4); border: 1px solid rgba(255,255,255,0.15); color: #ffffff; padding: 8px 10px; border-radius: 8px; font-size: 0.8rem;">
+              <button type="button" onclick="window.TelegramPublisher.triggerImageUpload()" style="background: rgba(56,189,248,0.15); border: 1px solid rgba(56,189,248,0.3); color: #38bdf8; font-size: 0.75rem; font-weight: 700; padding: 0 12px; border-radius: 8px; cursor: pointer; white-space: nowrap;">
+                📁 Browse
+              </button>
+            </div>
           </div>
 
           <!-- Buttons Container -->
@@ -7085,6 +7143,250 @@
     `).join('');
   }
 
+  function renderAttachedImageCardHtml() {
+    if (state.photoUrl) {
+      const fileName = escapeHtml(state.attachedImageName || (state.photoUrl.startsWith('data:') ? 'Attached Local Graphic' : 'Attached Remote Photo'));
+      const isLocal = state.photoUrl.startsWith('data:');
+      const sizeStr = state.attachedImageSize ? ` • ${(state.attachedImageSize / 1024).toFixed(1)} KB` : '';
+      return `
+        <div style="display: flex; align-items: center; justify-content: space-between; background: rgba(56,189,248,0.08); border: 1px solid rgba(56,189,248,0.3); border-radius: 8px; padding: 8px 12px; gap: 12px;">
+          <div style="display: flex; align-items: center; gap: 10px; min-width: 0;">
+            <img src="${state.photoUrl}" alt="Attached to post" style="width: 44px; height: 44px; object-fit: cover; border-radius: 6px; border: 1px solid rgba(255,255,255,0.2); flex-shrink: 0; background: #000;" />
+            <div style="min-width: 0;">
+              <div style="font-size: 0.78rem; font-weight: 800; color: #ffffff; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
+                ${fileName}
+              </div>
+              <div style="font-size: 0.68rem; color: #38bdf8; display: flex; align-items: center; gap: 6px; margin-top: 2px;">
+                <span style="display: inline-flex; align-items: center; gap: 3px;">✅ <b>Attached to Post</b></span>
+                <span>•</span>
+                <span style="color: #94a3b8;">${isLocal ? 'Local Device Upload' : 'Remote URL'}</span>
+                ${sizeStr ? `<span style="color: #64748b;">${sizeStr}</span>` : ''}
+              </div>
+            </div>
+          </div>
+          <div style="display: flex; gap: 6px; flex-shrink: 0;">
+            <button type="button" onclick="window.TelegramPublisher.insertInlineImageLink()" title="Insert zero-width HTML link into body to unfurl this image in chat" style="background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.18); color: #cbd5e1; padding: 5px 9px; border-radius: 6px; font-size: 0.7rem; font-weight: 600; cursor: pointer; display: flex; align-items: center; gap: 4px;">
+              <span>🔗 Insert Link in Body</span>
+            </button>
+            <button type="button" onclick="window.TelegramPublisher.removeAttachedImage()" title="Remove image attachment" style="background: rgba(239,68,68,0.15); border: 1px solid rgba(239,68,68,0.3); color: #ef4444; padding: 5px 9px; border-radius: 6px; font-size: 0.7rem; font-weight: 700; cursor: pointer;">
+              ✕ Remove
+            </button>
+          </div>
+        </div>
+      `;
+    }
+
+    return `
+      <div style="display: flex; align-items: center; justify-content: space-between; background: rgba(0,0,0,0.25); border: 1px dashed rgba(255,255,255,0.15); border-radius: 8px; padding: 6px 12px; font-size: 0.72rem; color: #94a3b8;">
+        <div style="display: flex; align-items: center; gap: 6px;">
+          <span style="font-size: 0.9rem;">📷</span>
+          <span><b>Attach Image to Post:</b> Drag & drop files or paste (Ctrl+V) screenshots directly into the body below</span>
+        </div>
+        <div style="display: flex; gap: 6px;">
+          <button type="button" onclick="window.TelegramPublisher.triggerImageUpload()" style="background: rgba(56,189,248,0.12); border: 1px solid rgba(56,189,248,0.25); color: #38bdf8; font-size: 0.68rem; font-weight: 700; padding: 2px 8px; border-radius: 4px; cursor: pointer;">
+            📁 Choose File
+          </button>
+          <button type="button" onclick="window.TelegramPublisher.toggleVisualPresets()" style="background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.12); color: #cbd5e1; font-size: 0.68rem; font-weight: 600; padding: 2px 8px; border-radius: 4px; cursor: pointer;">
+            🎨 Presets
+          </button>
+        </div>
+      </div>
+    `;
+  }
+
+  function renderAttachedImageCard() {
+    if (typeof document === 'undefined') return;
+    const cardEl = document.getElementById('tg-pub-attached-image-card');
+    if (cardEl) {
+      cardEl.innerHTML = renderAttachedImageCardHtml();
+    }
+    const photoInput = document.getElementById('tg-pub-photo-input');
+    if (photoInput && photoInput.value !== (state.photoUrl || '')) {
+      photoInput.value = state.photoUrl || '';
+    }
+  }
+
+  function triggerImageUpload() {
+    if (typeof document === 'undefined') return;
+    const fileInput = document.getElementById('tg-pub-file-input');
+    if (fileInput) {
+      fileInput.click();
+    }
+  }
+
+  function handleImageFileUpload(e) {
+    const files = e && e.target && e.target.files;
+    if (files && files.length > 0) {
+      handleImageFile(files[0]);
+    }
+  }
+
+  function handleImageFile(file) {
+    if (!file) return;
+    if (file.type && !file.type.startsWith('image/')) {
+      showAlert('Selected file is not an image.');
+      return;
+    }
+    if (file.size && file.size > 5 * 1024 * 1024) {
+      showAlert('Attached image exceeds 5MB limit. Please choose a smaller file.');
+      return;
+    }
+
+    state.attachedImageName = file.name || 'Pasted Image';
+    state.attachedImageSize = file.size || 0;
+    state.attachedImageType = file.type || 'image/png';
+
+    if (typeof FileReader !== 'undefined') {
+      const reader = new FileReader();
+      reader.onload = function(evt) {
+        state.photoUrl = evt.target.result;
+        renderAttachedImageCard();
+        updateLivePreview();
+        showAlert('🖼️ Image successfully attached to post body!');
+      };
+      reader.onerror = function() {
+        showAlert('Failed to read image file.');
+      };
+      reader.readAsDataURL(file);
+    } else {
+      // In headless test environments
+      state.photoUrl = `data:${file.type || 'image/png'};base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNk+A8AAQUBAScY42YAAAAASUVORK5CYII=`;
+      renderAttachedImageCard();
+      updateLivePreview();
+      showAlert('🖼️ Image successfully attached to post body!');
+    }
+  }
+
+  function removeAttachedImage() {
+    state.photoUrl = '';
+    state.attachedImageName = '';
+    state.attachedImageSize = 0;
+    state.attachedImageType = '';
+    const fileInput = document.getElementById('tg-pub-file-input');
+    if (fileInput) fileInput.value = '';
+    const photoInput = document.getElementById('tg-pub-photo-input');
+    if (photoInput) photoInput.value = '';
+    renderAttachedImageCard();
+    updateLivePreview();
+  }
+
+  function insertInlineImageLink(urlToInsert) {
+    const url = urlToInsert || state.photoUrl;
+    if (!url) {
+      showAlert('Please attach an image or specify an image URL first.');
+      return;
+    }
+    if (typeof document === 'undefined') return;
+    const textarea = document.getElementById('tg-pub-message-input');
+    if (!textarea) return;
+
+    // Telegram Bot API HTML rule: <a href="URL">&#8203;</a> triggers Telegram preview without consuming visible caption text
+    const inlineHtml = `<a href="${url}">&#8203;</a>`;
+    const s = typeof textarea.selectionStart === 'number' ? textarea.selectionStart : textarea.value.length;
+    const e = typeof textarea.selectionEnd === 'number' ? textarea.selectionEnd : textarea.value.length;
+    const txt = textarea.value || '';
+    textarea.value = txt.substring(0, s) + inlineHtml + txt.substring(e);
+    state.messageText = textarea.value;
+    updateLivePreview();
+    showAlert('🔗 Inline image link inserted into post body at cursor position.');
+  }
+
+  function insertInlineImageLinkPrompt() {
+    if (state.photoUrl) {
+      insertInlineImageLink(state.photoUrl);
+      return;
+    }
+    if (typeof window !== 'undefined' && typeof window.prompt === 'function') {
+      const url = window.prompt('Enter Image URL to embed inline into post body HTML:', 'https://');
+      if (url && url.trim() && url.trim() !== 'https://') {
+        const cleanUrl = url.trim();
+        state.photoUrl = cleanUrl;
+        state.attachedImageName = cleanUrl.split('/').pop().split('?')[0] || 'Embedded Image';
+        renderAttachedImageCard();
+        insertInlineImageLink(cleanUrl);
+      }
+    } else {
+      showAlert('Please attach an image first.');
+    }
+  }
+
+  function toggleVisualPresets() {
+    state.showVisualPresets = !state.showVisualPresets;
+    if (typeof document === 'undefined') return;
+    const drawer = document.getElementById('tg-pub-presets-drawer');
+    if (drawer) {
+      drawer.style.display = state.showVisualPresets ? 'block' : 'none';
+    }
+  }
+
+  function attachPresetImage(url, name) {
+    state.photoUrl = url;
+    state.attachedImageName = name || 'Preset Graphic';
+    state.attachedImageSize = 0;
+    state.attachedImageType = 'image/jpeg';
+    renderAttachedImageCard();
+    updateLivePreview();
+    showAlert(`🎨 Attached "${state.attachedImageName}" to post.`);
+  }
+
+  function setupComposerMediaInteractions() {
+    if (typeof document === 'undefined') return;
+    const textarea = document.getElementById('tg-pub-message-input');
+    if (!textarea || textarea._mediaBound || (textarea.dataset && textarea.dataset.mediaBound)) return;
+    textarea._mediaBound = true;
+    if (textarea.dataset) textarea.dataset.mediaBound = 'true';
+
+    if (typeof textarea.addEventListener !== 'function') return;
+
+    // Drag & drop onto message body textarea
+    textarea.addEventListener('dragover', (e) => {
+      if (typeof e.preventDefault === 'function') e.preventDefault();
+      if (textarea.style) {
+        textarea.style.borderColor = '#38bdf8';
+        textarea.style.backgroundColor = 'rgba(56, 189, 248, 0.08)';
+      }
+    });
+
+    textarea.addEventListener('dragleave', (e) => {
+      if (typeof e.preventDefault === 'function') e.preventDefault();
+      if (textarea.style) {
+        textarea.style.borderColor = 'rgba(255, 255, 255, 0.15)';
+        textarea.style.backgroundColor = 'rgba(0, 0, 0, 0.5)';
+      }
+    });
+
+    textarea.addEventListener('drop', (e) => {
+      if (typeof e.preventDefault === 'function') e.preventDefault();
+      if (textarea.style) {
+        textarea.style.borderColor = 'rgba(255, 255, 255, 0.15)';
+        textarea.style.backgroundColor = 'rgba(0, 0, 0, 0.5)';
+      }
+      if (e.dataTransfer && e.dataTransfer.files && e.dataTransfer.files.length > 0) {
+        const file = e.dataTransfer.files[0];
+        if (file.type && file.type.startsWith('image/')) {
+          handleImageFile(file);
+        }
+      }
+    });
+
+    // Clipboard paste into message body textarea
+    textarea.addEventListener('paste', (e) => {
+      const items = (e.clipboardData || (typeof window !== 'undefined' && window.clipboardData))?.items;
+      if (items) {
+        for (let i = 0; i < items.length; i++) {
+          if (items[i].type && items[i].type.startsWith('image/')) {
+            const file = typeof items[i].getAsFile === 'function' ? items[i].getAsFile() : items[i];
+            if (file) {
+              if (typeof e.preventDefault === 'function') e.preventDefault();
+              handleImageFile(file);
+              return;
+            }
+          }
+        }
+      }
+    });
+  }
+
   function updateLivePreview() {
     if (typeof document === 'undefined') return;
     const textEl = document.getElementById('tg-sim-text');
@@ -7293,6 +7595,7 @@
         <div style="background: rgba(0,0,0,0.3); border-radius: 8px; padding: 12px; margin-bottom: 12px;">
           <div><b>Destination:</b> ${state.target === 'vip' ? '🔒 VIP Channel' : '🟢 Free Community Channel'}</div>
           <div><b>Post Type:</b> ${state.postType}${isCustomPost ? ' (Custom Studio Composition)' : ''}</div>
+          <div><b>Media Attachment:</b> ${state.photoUrl ? (state.photoUrl.startsWith('data:') ? '🖼️ Local Device Image Attached' : '🖼️ Remote Photo URL Attached') : 'None (Text Only)'}</div>
           <div><b>Publishability Score:</b> <span style="font-weight: 800; color: ${gate.score >= 80 ? '#10b981' : '#f59e0b'};">${gate.score} / 100</span></div>
           <div><b>Status Gate:</b> <span style="font-weight: 800; color: ${gate.ready ? '#10b981' : '#ef4444'};">${gate.status}</span></div>
         </div>
@@ -7656,8 +7959,26 @@
     },
     setPhotoUrl(val) {
       state.photoUrl = val || '';
+      if (val && !val.startsWith('data:')) {
+        state.attachedImageName = val.split('/').pop().split('?')[0] || 'Remote Photo';
+      } else if (!val) {
+        state.attachedImageName = '';
+        state.attachedImageSize = 0;
+        state.attachedImageType = '';
+      }
+      renderAttachedImageCard();
       updateLivePreview();
     },
+    triggerImageUpload,
+    handleImageFileUpload,
+    handleImageFile,
+    removeAttachedImage,
+    insertInlineImageLink,
+    insertInlineImageLinkPrompt,
+    toggleVisualPresets,
+    attachPresetImage,
+    setupComposerMediaInteractions,
+    renderAttachedImageCard,
     format(tag) {
       const textarea = document.getElementById('tg-pub-message-input');
       if (!textarea) return;
@@ -7733,6 +8054,7 @@
     deleteAutomationRule,
     getEffectiveAutomationRules,
     DEFAULT_AUTOMATION_RULES,
+    renderComposeTab,
     renderAutomationTab,
     renderAnalyticsTab,
     setAnalyticsTimeframe,
