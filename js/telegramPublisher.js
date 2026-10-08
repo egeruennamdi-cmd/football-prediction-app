@@ -433,6 +433,168 @@
   { name: "Euro Championship",       emoji: "🏆", country: "Europe" }
 ];
 
+  const CANONICAL_CLUBS_CATALOG = [
+    // Premier League (England - 20 official clubs)
+    { name: "Arsenal", country: "England", flag: "🏴󠁧󠁢󠁥󠁮󠁧󠁿", league: "Premier League", logo: "🔴" },
+    { name: "Aston Villa", country: "England", flag: "🏴󠁧󠁢󠁥󠁮󠁧󠁿", league: "Premier League", logo: "🦁🟣" },
+    { name: "Bournemouth", country: "England", flag: "🏴󠁧󠁢󠁥󠁮󠁧󠁿", league: "Premier League", logo: "🍒" },
+    { name: "Brentford", country: "England", flag: "🏴󠁧󠁢󠁥󠁮󠁧󠁿", league: "Premier League", logo: "🐝" },
+    { name: "Brighton", country: "England", flag: "🏴󠁧󠁢󠁥󠁮󠁧󠁿", league: "Premier League", logo: "🕊️" },
+    { name: "Chelsea", country: "England", flag: "🏴󠁧󠁢󠁥󠁮󠁧󠁿", league: "Premier League", logo: "🦁" },
+    { name: "Crystal Palace", country: "England", flag: "🏴󠁧󠁢󠁥󠁮󠁧󠁿", league: "Premier League", logo: "🦅🔴🔵" },
+    { name: "Everton", country: "England", flag: "🏴󠁧󠁢󠁥󠁮󠁧󠁿", league: "Premier League", logo: "🔵🦁" },
+    { name: "Fulham", country: "England", flag: "🏴󠁧󠁢󠁥󠁮󠁧󠁿", league: "Premier League", logo: "⚫⚪" },
+    { name: "Hull City", country: "England", flag: "🏴󠁧󠁢󠁥󠁮󠁧󠁿", league: "Premier League", logo: "🐯" },
+    { name: "Leeds United", country: "England", flag: "🏴󠁧󠁢󠁥󠁮󠁧󠁿", league: "Premier League", logo: "⚪🦚" },
+    { name: "Leicester City", country: "England", flag: "🏴󠁧󠁢󠁥󠁮󠁧󠁿", league: "Premier League", logo: "🦊" },
+    { name: "Liverpool", country: "England", flag: "🏴󠁧󠁢󠁥󠁮󠁧󠁿", league: "Premier League", logo: "🔴🛡️" },
+    { name: "Manchester City", country: "England", flag: "🏴󠁧󠁢󠁥󠁮󠁧󠁿", league: "Premier League", logo: "🔵" },
+    { name: "Manchester United", country: "England", flag: "🏴󠁧󠁢󠁥󠁮󠁧󠁿", league: "Premier League", logo: "👿" },
+    { name: "Newcastle United", country: "England", flag: "🏴󠁧󠁢󠁥󠁮󠁧󠁿", league: "Premier League", logo: "🦓" },
+    { name: "Nottingham Forest", country: "England", flag: "🏴󠁧󠁢󠁥󠁮󠁧󠁿", league: "Premier League", logo: "🌲🔴" },
+    { name: "Southampton", country: "England", flag: "🏴󠁧󠁢󠁥󠁮󠁧󠁿", league: "Premier League", logo: "⚪🔴🧣" },
+    { name: "Spurs (Tottenham)", country: "England", flag: "🏴󠁧󠁢󠁥󠁮󠁧󠁿", league: "Premier League", logo: "⚪🐓" },
+    { name: "West Ham", country: "England", flag: "🏴󠁧󠁢󠁥󠁮󠁧󠁿", league: "Premier League", logo: "⚒️" },
+
+    // Championship (England - 24 official clubs)
+    { name: "Blackburn Rovers", country: "England", flag: "🏴󠁧󠁢󠁥󠁮󠁧󠁿", league: "Championship", logo: "🔵⚪🌹" },
+    { name: "Bristol City", country: "England", flag: "🏴󠁧󠁢󠁥󠁮󠁧󠁿", league: "Championship", logo: "🔴⚪🐦" },
+    { name: "Burnley", country: "England", flag: "🏴󠁧󠁢󠁥󠁮󠁧󠁿", league: "Championship", logo: "🍷🦁" },
+    { name: "Cardiff City", country: "England", flag: "🏴󠁧󠁢󠁥󠁮󠁧󠁿", league: "Championship", logo: "🔵🐦" },
+    { name: "Coventry City", country: "England", flag: "🏴󠁧󠁢󠁥󠁮󠁧󠁿", league: "Championship", logo: "🐘🩵" },
+    { name: "Derby County", country: "England", flag: "🏴󠁧󠁢󠁥󠁮󠁧󠁿", league: "Championship", logo: "🐏⚫⚪" },
+    { name: "Hull City (Hall)", country: "England", flag: "🏴󠁧󠁢󠁥󠁮󠁧󠁿", league: "Championship", logo: "🐯🟠" },
+    { name: "Leeds United", country: "England", flag: "🏴󠁧󠁢󠁥󠁮󠁧󠁿", league: "Championship", logo: "⚪🦚" },
+    { name: "Luton Town", country: "England", flag: "🏴󠁧󠁢󠁥󠁮󠁧󠁿", league: "Championship", logo: "🟠🎩" },
+    { name: "Middlesbrough", country: "England", flag: "🏴󠁧󠁢󠁥󠁮󠁧󠁿", league: "Championship", logo: "🔴🦁" },
+    { name: "Millwall", country: "England", flag: "🏴󠁧󠁢󠁥󠁮󠁧󠁿", league: "Championship", logo: "🦁🔵" },
+    { name: "Norwich City", country: "England", flag: "🏴󠁧󠁢󠁥󠁮󠁧󠁿", league: "Championship", logo: "🟡🟢🐥" },
+    { name: "Oxford United", country: "England", flag: "🏴󠁧󠁢󠁥󠁮󠁧󠁿", league: "Championship", logo: "🟡🐂" },
+    { name: "Plymouth Argyle", country: "England", flag: "🏴󠁧󠁢󠁥󠁮󠁧󠁿", league: "Championship", logo: "🟢⛵" },
+    { name: "Portsmouth", country: "England", flag: "🏴󠁧󠁢󠁥󠁮󠁧󠁿", league: "Championship", logo: "🔵⭐🌙" },
+    { name: "Preston North End", country: "England", flag: "🏴󠁧󠁢󠁥󠁮󠁧󠁿", league: "Championship", logo: "⚪🐑" },
+    { name: "Queens Park Rangers", country: "England", flag: "🏴󠁧󠁢󠁥󠁮󠁧󠁿", league: "Championship", logo: "🔵⚪" },
+    { name: "Sheffield United", country: "England", flag: "🏴󠁧󠁢󠁥󠁮󠁧󠁿", league: "Championship", logo: "⚔️🔴⚪" },
+    { name: "Sheffield Wednesday", country: "England", flag: "🏴󠁧󠁢󠁥󠁮󠁧󠁿", league: "Championship", logo: "🦉🔵⚪" },
+    { name: "Stoke City", country: "England", flag: "🏴󠁧󠁢󠁥󠁮󠁧󠁿", league: "Championship", logo: "🔴⚪🏺" },
+    { name: "Sunderland", country: "England", flag: "🏴󠁧󠁢󠁥󠁮󠁧󠁿", league: "Championship", logo: "🔴⚪🐱" },
+    { name: "Swansea City", country: "England", flag: "🏴󠁧󠁢󠁥󠁮󠁧󠁿", league: "Championship", logo: "⚪🦢" },
+    { name: "Watford", country: "England", flag: "🏴󠁧󠁢󠁥󠁮󠁧󠁿", league: "Championship", logo: "🟡🔴🦌" },
+    { name: "West Brom", country: "England", flag: "🏴󠁧󠁢󠁥󠁮󠁧󠁿", league: "Championship", logo: "🔵⚪🐦" },
+
+    // La Liga (Spain - 20 official clubs)
+    { name: "Alaves", country: "Spain", flag: "🇪🇸", league: "La Liga", logo: "🔵⚪" },
+    { name: "Athletic Bilbao", country: "Spain", flag: "🇪🇸", league: "La Liga", logo: "🦁🔴" },
+    { name: "Atletico Madrid", country: "Spain", flag: "🇪🇸", league: "La Liga", logo: "🔴⚪🐻" },
+    { name: "Barcelona", country: "Spain", flag: "🇪🇸", league: "La Liga", logo: "🔵🔴" },
+    { name: "Celta Vigo", country: "Spain", flag: "🇪🇸", league: "La Liga", logo: "🩵👑" },
+    { name: "Espanyol", country: "Spain", flag: "🇪🇸", league: "La Liga", logo: "🔵⚪🦜" },
+    { name: "Getafe", country: "Spain", flag: "🇪🇸", league: "La Liga", logo: "🔵" },
+    { name: "Girona", country: "Spain", flag: "🇪🇸", league: "La Liga", logo: "🔴⚪" },
+    { name: "Las Palmas", country: "Spain", flag: "🇪🇸", league: "La Liga", logo: "🟡🔵🌴" },
+    { name: "Leganes", country: "Spain", flag: "🇪🇸", league: "La Liga", logo: "🥒🔵⚪" },
+    { name: "Mallorca", country: "Spain", flag: "🇪🇸", league: "La Liga", logo: "🔴⚫👹" },
+    { name: "Osasuna", country: "Spain", flag: "🇪🇸", league: "La Liga", logo: "🔴🐂" },
+    { name: "Rayo Vallecano", country: "Spain", flag: "🇪🇸", league: "La Liga", logo: "⚡⚪🔴" },
+    { name: "Real Betis", country: "Spain", flag: "🇪🇸", league: "La Liga", logo: "🟢⚪" },
+    { name: "Real Madrid", country: "Spain", flag: "🇪🇸", league: "La Liga", logo: "⚪" },
+    { name: "Real Sociedad", country: "Spain", flag: "🇪🇸", league: "La Liga", logo: "🔵⚪👑" },
+    { name: "Real Valladolid", country: "Spain", flag: "🇪🇸", league: "La Liga", logo: "🟣⚪" },
+    { name: "Sevilla", country: "Spain", flag: "🇪🇸", league: "La Liga", logo: "⚪🔴" },
+    { name: "Valencia", country: "Spain", flag: "🇪🇸", league: "La Liga", logo: "🦇⚪⚫" },
+    { name: "Villarreal", country: "Spain", flag: "🇪🇸", league: "La Liga", logo: "🟡🛸" },
+
+    // Serie A (Italy - 20 official clubs)
+    { name: "AC Milan", country: "Italy", flag: "🇮🇹", league: "Serie A", logo: "🔴⚫" },
+    { name: "Atalanta", country: "Italy", flag: "🇮🇹", league: "Serie A", logo: "🔵⚫" },
+    { name: "Bologna", country: "Italy", flag: "🇮🇹", league: "Serie A", logo: "🔴🔵" },
+    { name: "Cagliari", country: "Italy", flag: "🇮🇹", league: "Serie A", logo: "🔴🔵" },
+    { name: "Como", country: "Italy", flag: "🇮🇹", league: "Serie A", logo: "🔵⚪" },
+    { name: "Empoli", country: "Italy", flag: "🇮🇹", league: "Serie A", logo: "🔵" },
+    { name: "Fiorentina", country: "Italy", flag: "🇮🇹", league: "Serie A", logo: "🟣⚜️" },
+    { name: "Genoa", country: "Italy", flag: "🇮🇹", league: "Serie A", logo: "🔴🔵" },
+    { name: "Hellas Verona", country: "Italy", flag: "🇮🇹", league: "Serie A", logo: "🟡🔵" },
+    { name: "Inter Milan", country: "Italy", flag: "🇮🇹", league: "Serie A", logo: "🔵⚫" },
+    { name: "Juventus", country: "Italy", flag: "🇮🇹", league: "Serie A", logo: "⚪⚫" },
+    { name: "Lazio", country: "Italy", flag: "🇮🇹", league: "Serie A", logo: "🦅🩵" },
+    { name: "Lecce", country: "Italy", flag: "🇮🇹", league: "Serie A", logo: "🟡🔴" },
+    { name: "Monza", country: "Italy", flag: "🇮🇹", league: "Serie A", logo: "🔴⚪" },
+    { name: "Napoli", country: "Italy", flag: "🇮🇹", league: "Serie A", logo: "🔵" },
+    { name: "Parma", country: "Italy", flag: "🇮🇹", league: "Serie A", logo: "🟡🔵" },
+    { name: "Roma", country: "Italy", flag: "🇮🇹", league: "Serie A", logo: "🟡🔴🐺" },
+    { name: "Torino", country: "Italy", flag: "🇮🇹", league: "Serie A", logo: "🐂🟤" },
+    { name: "Udinese", country: "Italy", flag: "🇮🇹", league: "Serie A", logo: "⚪⚫🦓" },
+    { name: "Venezia", country: "Italy", flag: "🇮🇹", league: "Serie A", logo: "🟠🟢⚫" },
+
+    // Bundesliga (Germany - 18 official clubs)
+    { name: "1. FC Heidenheim", country: "Germany", flag: "🇩🇪", league: "Bundesliga", logo: "🔴⚫" },
+    { name: "1. FC Union Berlin", country: "Germany", flag: "🇩🇪", league: "Bundesliga", logo: "🔴⚪" },
+    { name: "Bayer 04 Leverkusen", country: "Germany", flag: "🇩🇪", league: "Bundesliga", logo: "🔴⚫" },
+    { name: "Borussia Dortmund", country: "Germany", flag: "🇩🇪", league: "Bundesliga", logo: "🟡⚫" },
+    { name: "Borussia Monchengladbach", country: "Germany", flag: "🇩🇪", league: "Bundesliga", logo: "🟢⚪⚫" },
+    { name: "Eintracht Frankfurt", country: "Germany", flag: "🇩🇪", league: "Bundesliga", logo: "🦅🔴⚫" },
+    { name: "FC Augsburg", country: "Germany", flag: "🇩🇪", league: "Bundesliga", logo: "🔴🟢⚪" },
+    { name: "FC Bayern Munich", country: "Germany", flag: "🇩🇪", league: "Bundesliga", logo: "🔴⚪" },
+    { name: "FC St. Pauli", country: "Germany", flag: "🇩🇪", league: "Bundesliga", logo: "☠️🟤⚪" },
+    { name: "Holstein Kiel", country: "Germany", flag: "🇩🇪", league: "Bundesliga", logo: "🔵⚪🔴" },
+    { name: "Mainz 05", country: "Germany", flag: "🇩🇪", league: "Bundesliga", logo: "🔴⚪" },
+    { name: "RB Leipzig", country: "Germany", flag: "🇩🇪", league: "Bundesliga", logo: "🔴⚪🐂" },
+    { name: "SC Freiburg", country: "Germany", flag: "🇩🇪", league: "Bundesliga", logo: "⚪⚫" },
+    { name: "TSG Hoffenheim", country: "Germany", flag: "🇩🇪", league: "Bundesliga", logo: "🔵⚪" },
+    { name: "VfB Stuttgart", country: "Germany", flag: "🇩🇪", league: "Bundesliga", logo: "⚪🔴" },
+    { name: "VfL Bochum", country: "Germany", flag: "🇩🇪", league: "Bundesliga", logo: "🔵⚪" },
+    { name: "VfL Wolfsburg", country: "Germany", flag: "🇩🇪", league: "Bundesliga", logo: "🟢⚪🐺" },
+    { name: "Werder Bremen", country: "Germany", flag: "🇩🇪", league: "Bundesliga", logo: "🟢⚪" },
+
+    // Ligue 1 (France - 18 official clubs)
+    { name: "Angers SCO", country: "France", flag: "🇫🇷", league: "Ligue 1", logo: "⚫⚪" },
+    { name: "AS Monaco", country: "France", flag: "🇫🇷", league: "Ligue 1", logo: "🔴⚪🇲🇨" },
+    { name: "Auxerre", country: "France", flag: "🇫🇷", league: "Ligue 1", logo: "🔵⚪" },
+    { name: "Brest", country: "France", flag: "🇫🇷", league: "Ligue 1", logo: "🔴⚪🏴‍☠️" },
+    { name: "Le Havre", country: "France", flag: "🇫🇷", league: "Ligue 1", logo: "🔵🩵" },
+    { name: "Lille OSC", country: "France", flag: "🇫🇷", league: "Ligue 1", logo: "🔴⚪🐕" },
+    { name: "Montpellier", country: "France", flag: "🇫🇷", league: "Ligue 1", logo: "🔵🟠" },
+    { name: "Nantes", country: "France", flag: "🇫🇷", league: "Ligue 1", logo: "🟡🟢🐥" },
+    { name: "Nice", country: "France", flag: "🇫🇷", league: "Ligue 1", logo: "🔴⚫🦅" },
+    { name: "Olympique de Marseille", country: "France", flag: "🇫🇷", league: "Ligue 1", logo: "⚪🩵" },
+    { name: "Olympique Lyonnais", country: "France", flag: "🇫🇷", league: "Ligue 1", logo: "🔴🔵🦁" },
+    { name: "Paris Saint-Germain", country: "France", flag: "🇫🇷", league: "Ligue 1", logo: "🗼🔵🔴" },
+    { name: "RC Lens", country: "France", flag: "🇫🇷", league: "Ligue 1", logo: "🔴🟡🩸" },
+    { name: "Reims", country: "France", flag: "🇫🇷", league: "Ligue 1", logo: "🔴⚪" },
+    { name: "Rennes", country: "France", flag: "🇫🇷", league: "Ligue 1", logo: "🔴⚫" },
+    { name: "Saint-Etienne", country: "France", flag: "🇫🇷", league: "Ligue 1", logo: "🟢⚪" },
+    { name: "Strasbourg", country: "France", flag: "🇫🇷", league: "Ligue 1", logo: "🔵⚪" },
+    { name: "Toulouse", country: "France", flag: "🇫🇷", league: "Ligue 1", logo: "🟣⚪" },
+
+    // Eredivisie & Primeira Liga & Other Continental Elite
+    { name: "Ajax", country: "Netherlands", flag: "🇳🇱", league: "Eredivisie", logo: "⚪🔴⚪" },
+    { name: "AZ Alkmaar", country: "Netherlands", flag: "🇳🇱", league: "Eredivisie", logo: "🔴⚪" },
+    { name: "Feyenoord", country: "Netherlands", flag: "🇳🇱", league: "Eredivisie", logo: "🔴⚪" },
+    { name: "FC Twente", country: "Netherlands", flag: "🇳🇱", league: "Eredivisie", logo: "🔴🐎" },
+    { name: "PSV Eindhoven", country: "Netherlands", flag: "🇳🇱", league: "Eredivisie", logo: "🔴⚪" },
+    { name: "Benfica", country: "Portugal", flag: "🇵🇹", league: "Primeira Liga", logo: "🦅🔴⚪" },
+    { name: "FC Porto", country: "Portugal", flag: "🇵🇹", league: "Primeira Liga", logo: "🐉🔵⚪" },
+    { name: "Sporting CP", country: "Portugal", flag: "🇵🇹", league: "Primeira Liga", logo: "🦁🟢⚪" },
+    { name: "SC Braga", country: "Portugal", flag: "🇵🇹", league: "Primeira Liga", logo: "🔴⚪" },
+    { name: "Besiktas", country: "Turkey", flag: "🇹🇷", league: "Süper Lig", logo: "🦅⚫⚪" },
+    { name: "Fenerbahce", country: "Turkey", flag: "🇹🇷", league: "Süper Lig", logo: "🟡🔵" },
+    { name: "Galatasaray", country: "Turkey", flag: "🇹🇷", league: "Süper Lig", logo: "🦁🟡🔴" },
+    { name: "Celtic", country: "Scotland", flag: "🏴󠁧󠁢󠁥󠁮󠁧󠁿", league: "Scottish Premiership", logo: "🍀🟢⚪" },
+    { name: "Rangers", country: "Scotland", flag: "🏴󠁧󠁢󠁥󠁮󠁧󠁿", league: "Scottish Premiership", logo: "🔵🔴⚪" },
+    { name: "Club Brugge", country: "Belgium", flag: "🇧🇪", league: "Belgian Pro League", logo: "🔵⚫" },
+    { name: "Anderlecht", country: "Belgium", flag: "🇧🇪", league: "Belgian Pro League", logo: "🟣⚪" },
+    { name: "Botafogo", country: "Brazil", flag: "🇧🇷", league: "Brasileirao", logo: "⭐⚫⚪" },
+    { name: "Flamengo", country: "Brazil", flag: "🇧🇷", league: "Brasileirao", logo: "🔴⚫🦅" },
+    { name: "Palmeiras", country: "Brazil", flag: "🇧🇷", league: "Brasileirao", logo: "🟢⚪🐷" },
+    { name: "Boca Juniors", country: "Argentina", flag: "🇦🇷", league: "Liga Profesional", logo: "🟡🔵" },
+    { name: "River Plate", country: "Argentina", flag: "🇦🇷", league: "Liga Profesional", logo: "⚪🔴" },
+    { name: "Inter Miami", country: "USA", flag: "🇺🇸", league: "MLS", logo: "🦩🌸" },
+    { name: "Al-Hilal", country: "Saudi Arabia", flag: "🇸🇦", league: "Saudi Pro League", logo: "🔵⚪🌊" },
+    { name: "Al-Nassr", country: "Saudi Arabia", flag: "🇸🇦", league: "Saudi Pro League", logo: "🟡🔵⚔️" },
+    { name: "Enyimba", country: "Nigeria", flag: "🇳🇬", league: "NPFL", logo: "🐘🔵" },
+    { name: "Mamelodi Sundowns", country: "South Africa", flag: "🇿🇦", league: "DStv Premiership", logo: "🟡🟢👆" },
+    { name: "Al Ahly", country: "Egypt", flag: "🇪🇬", league: "Egyptian Premier", logo: "🦅🔴" }
+  ];
 
   const CANONICAL_COUNTRY_DIRECTORY_CATALOG = [
   { country: "Africa", emoji: "🌍", leagues: ["CAF Champions League", "CAF Confederation Cup", "Africa Cup of Nations"] },
@@ -1368,6 +1530,254 @@
     return base;
   }
 
+  /**
+   * Dynamically resolves the authoritative clubs pool.
+   * Merges CANONICAL_CLUBS_CATALOG, window.GLOBAL_CLUBS, and raw matches.
+   */
+  function getAuthoritativeClubsPool() {
+    const root = typeof window !== 'undefined' ? window : (typeof globalThis !== 'undefined' ? globalThis : null);
+    const clubsMap = new Map();
+
+    const addClub = (club) => {
+      if (!club || !club.name) return;
+      const key = club.name.trim().toLowerCase();
+      if (!clubsMap.has(key)) {
+        clubsMap.set(key, {
+          name: club.name.trim(),
+          logo: club.logo || club.badge || club.flag || '⚽',
+          flag: club.flag || club.logo || '⚽',
+          country: club.country || '',
+          league: club.league || ''
+        });
+      } else {
+        const existing = clubsMap.get(key);
+        if (!existing.league && club.league) existing.league = club.league;
+        if (!existing.country && club.country) existing.country = club.country;
+        if ((!existing.logo || existing.logo === '⚽') && club.logo && club.logo !== '⚽') existing.logo = club.logo;
+      }
+    };
+
+    // 1. Built-in CANONICAL clubs catalog
+    if (typeof CANONICAL_CLUBS_CATALOG !== 'undefined' && Array.isArray(CANONICAL_CLUBS_CATALOG)) {
+      CANONICAL_CLUBS_CATALOG.forEach(addClub);
+    }
+
+    // 2. GLOBAL_CLUBS in root / global
+    if (root && Array.isArray(root.GLOBAL_CLUBS)) {
+      root.GLOBAL_CLUBS.forEach(addClub);
+    } else if (typeof GLOBAL_CLUBS !== 'undefined' && Array.isArray(GLOBAL_CLUBS)) {
+      GLOBAL_CLUBS.forEach(addClub);
+    }
+
+    // 3. Extract clubs from Match Pool
+    try {
+      const pool = getRawMatchPool();
+      if (Array.isArray(pool)) {
+        pool.forEach(m => {
+          if (m && m.homeTeam && m.homeTeam.name) {
+            addClub({
+              name: m.homeTeam.name,
+              logo: m.homeTeam.logo || '⚽',
+              country: m.country || '',
+              league: m.league || ''
+            });
+          }
+          if (m && m.awayTeam && m.awayTeam.name) {
+            addClub({
+              name: m.awayTeam.name,
+              logo: m.awayTeam.logo || '⚽',
+              country: m.country || '',
+              league: m.league || ''
+            });
+          }
+        });
+      }
+    } catch (e) {}
+
+    return Array.from(clubsMap.values()).sort((a, b) => a.name.localeCompare(b.name));
+  }
+
+  /**
+   * Resolves individual clubs belonging to a selected league.
+   * If leagueName is 'all' or empty, returns all authoritative clubs (optionally scoped by country).
+   */
+  function getClubsForLeague(leagueName, countryName) {
+    const pool = getAuthoritativeClubsPool();
+    if (!leagueName || leagueName === 'all') {
+      if (countryName && countryName !== 'all') {
+        const cleanC = countryName.trim().toLowerCase();
+        return pool.filter(c => (c.country || '').toLowerCase() === cleanC || (c.country || '').toLowerCase().includes(cleanC));
+      }
+      return pool;
+    }
+
+    const clean = leagueName
+      .replace(/[\uD800-\uDBFF][\uDC00-\uDFFF]/g, '')
+      .replace(/\s*\([^)]*\)/g, '')
+      .trim()
+      .toLowerCase();
+
+    const cleanCountry = (countryName || '').trim().toLowerCase();
+    const clubMap = new Map();
+
+    const register = (c) => {
+      if (!c || !c.name) return;
+      const k = c.name.trim().toLowerCase();
+      if (!clubMap.has(k)) {
+        clubMap.set(k, {
+          name: c.name.trim(),
+          logo: c.logo || c.badge || c.flag || '⚽',
+          flag: c.flag || c.logo || '⚽',
+          country: c.country || '',
+          league: c.league || leagueName
+        });
+      }
+    };
+
+    // 1. Check window.getClubsForLeague if in browser
+    const root = typeof window !== 'undefined' ? window : (typeof globalThis !== 'undefined' ? globalThis : null);
+    if (root && typeof root.getClubsForLeague === 'function') {
+      try {
+        const res = root.getClubsForLeague(leagueName, countryName);
+        if (Array.isArray(res) && res.length > 0) {
+          res.forEach(register);
+        }
+      } catch (e) {}
+    }
+
+    // 2. Check CANONICAL_CLUBS_CATALOG directly for this league
+    if (typeof CANONICAL_CLUBS_CATALOG !== 'undefined' && Array.isArray(CANONICAL_CLUBS_CATALOG)) {
+      CANONICAL_CLUBS_CATALOG.forEach(c => {
+        const cLg = (c.league || '').toLowerCase();
+        if (cLg === clean || cLg.includes(clean) || clean.includes(cLg)) {
+          register(c);
+        }
+      });
+    }
+
+    // 3. Check GLOBAL_CLUBS directly for this league
+    let globalClubs = [];
+    if (root && Array.isArray(root.GLOBAL_CLUBS)) globalClubs = root.GLOBAL_CLUBS;
+    else if (typeof GLOBAL_CLUBS !== 'undefined' && Array.isArray(GLOBAL_CLUBS)) globalClubs = GLOBAL_CLUBS;
+    if (Array.isArray(globalClubs)) {
+      globalClubs.forEach(c => {
+        const cLg = (c.league || '').toLowerCase();
+        if (cLg === clean || cLg.includes(clean) || clean.includes(cLg)) {
+          register(c);
+        }
+      });
+    }
+
+    // 4. Filter from authoritative pool by league
+    pool.forEach(c => {
+      const cLg = (c.league || '').toLowerCase();
+      const cCnt = (c.country || '').toLowerCase();
+
+      let matched = false;
+      if (cLg === clean || cLg.includes(clean) || clean.includes(cLg)) {
+        matched = true;
+      }
+
+      if (matched && cleanCountry && cleanCountry !== 'all') {
+        if (cCnt && cCnt !== cleanCountry && !cCnt.includes(cleanCountry) && !cleanCountry.includes(cCnt)) {
+          matched = false;
+        }
+      }
+
+      if (matched) register(c);
+    });
+
+    // 3. Fallback for cup/tournament names
+    if (clubMap.size === 0) {
+      if (clean.includes('premier league') || clean.includes('fa cup') || clean.includes('efl')) {
+        pool.filter(c => (c.country || '').toLowerCase() === 'england').forEach(register);
+      } else if (clean.includes('la liga') || clean.includes('copa del rey')) {
+        pool.filter(c => (c.country || '').toLowerCase() === 'spain').forEach(register);
+      } else if (clean.includes('serie a') || clean.includes('coppa italia')) {
+        pool.filter(c => (c.country || '').toLowerCase() === 'italy').forEach(register);
+      } else if (clean.includes('bundesliga') || clean.includes('dfb')) {
+        pool.filter(c => (c.country || '').toLowerCase() === 'germany').forEach(register);
+      } else if (clean.includes('ligue 1') || clean.includes('coupe de france')) {
+        pool.filter(c => (c.country || '').toLowerCase() === 'france').forEach(register);
+      }
+    }
+
+    return Array.from(clubMap.values()).sort((a, b) => a.name.localeCompare(b.name));
+  }
+
+  /**
+   * Generates HTML option tags for the individual clubs dropdown.
+   */
+  function renderClubSelectOptionsHtml(competitionFilter, countryFilter, selectedClub = 'all') {
+    const clubs = getClubsForLeague(competitionFilter, countryFilter);
+    const count = clubs.length;
+    const isAll = !competitionFilter || competitionFilter === 'all';
+    const leagueLabel = isAll
+      ? (countryFilter && countryFilter !== 'all' ? `${countryFilter} Clubs` : 'Clubs')
+      : (competitionFilter.toLowerCase().endsWith('clubs') ? competitionFilter : `${competitionFilter} Clubs`);
+
+    let html = `<option value="all" ${(!selectedClub || selectedClub === 'all') ? 'selected' : ''}>All ${leagueLabel} (${count})</option>`;
+    clubs.forEach(c => {
+      const isSelected = selectedClub && selectedClub.toLowerCase() === c.name.toLowerCase();
+      html += `<option value="${c.name}" ${isSelected ? 'selected' : ''}>${c.logo || '⚽'} ${c.name}</option>`;
+    });
+    return html;
+  }
+
+  /**
+   * Generates interactive showcase ribbon/strip displaying individual clubs below the league dropdown.
+   */
+  function renderClubsStripHtml(competitionFilter, countryFilter, selectedClub = 'all') {
+    const clubs = getClubsForLeague(competitionFilter, countryFilter);
+    if (!clubs || clubs.length === 0) {
+      return '';
+    }
+
+    const isAll = !competitionFilter || competitionFilter === 'all';
+    const leagueLabel = isAll
+      ? (countryFilter && countryFilter !== 'all' ? `${countryFilter} Clubs` : 'All Elite Clubs')
+      : competitionFilter;
+
+    const activeClubName = (selectedClub && selectedClub !== 'all') ? selectedClub : null;
+
+    return `
+      <div style="background: rgba(15,23,42,0.65); border: 1px solid rgba(255,255,255,0.08); border-radius: 10px; padding: 10px 14px; margin-bottom: 14px;">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; flex-wrap: wrap; gap: 8px;">
+          <div style="display: flex; align-items: center; gap: 8px;">
+            <span style="font-size: 0.74rem; font-weight: 800; color: #38bdf8; text-transform: uppercase; letter-spacing: 0.5px; display: inline-flex; align-items: center; gap: 6px;">
+              <span>⚽</span> Individual Clubs &bull; ${leagueLabel} (${clubs.length})
+            </span>
+          </div>
+          ${activeClubName ? `
+            <button type="button" onclick="window.TelegramPublisher.setClubFilter('all')" style="background: rgba(239,68,68,0.15); border: 1px solid rgba(239,68,68,0.35); color: #f87171; padding: 3px 10px; border-radius: 6px; font-size: 0.72rem; font-weight: 700; cursor: pointer; transition: all 0.15s ease;">
+              ✕ Reset Club Filter (Viewing: ${activeClubName})
+            </button>
+          ` : ''}
+        </div>
+        <div id="tg-cc-clubs-pills-list" style="display: flex; gap: 6px; flex-wrap: wrap; max-height: 130px; overflow-y: auto; padding: 2px 2px 4px 2px;">
+          <button type="button"
+            onclick="window.TelegramPublisher.setClubFilter('all')"
+            style="display: inline-flex; align-items: center; gap: 5px; padding: 5px 12px; border-radius: 20px; font-size: 0.74rem; font-weight: ${!activeClubName ? '800' : '600'}; cursor: pointer; transition: all 0.15s ease; background: ${!activeClubName ? 'rgba(56,189,248,0.25)' : 'rgba(255,255,255,0.05)'}; border: 1px solid ${!activeClubName ? '#38bdf8' : 'rgba(255,255,255,0.12)'}; color: ${!activeClubName ? '#ffffff' : '#94a3b8'}; box-shadow: ${!activeClubName ? '0 0 10px rgba(56,189,248,0.35)' : 'none'};">
+            <span>🏆</span> All Clubs (${clubs.length})
+          </button>
+          ${clubs.map(c => {
+            const isSel = activeClubName && activeClubName.toLowerCase() === c.name.toLowerCase();
+            const safeName = c.name.replace(/'/g, "\\'");
+            return `
+              <button type="button"
+                onclick="window.TelegramPublisher.setClubFilter('${safeName}')"
+                style="display: inline-flex; align-items: center; gap: 6px; padding: 5px 12px; border-radius: 20px; font-size: 0.74rem; font-weight: ${isSel ? '800' : '600'}; cursor: pointer; transition: all 0.15s ease; background: ${isSel ? 'rgba(56,189,248,0.25)' : 'rgba(255,255,255,0.05)'}; border: 1px solid ${isSel ? '#38bdf8' : 'rgba(255,255,255,0.12)'}; color: ${isSel ? '#ffffff' : '#e2e8f0'}; box-shadow: ${isSel ? '0 0 10px rgba(56,189,248,0.35)' : 'none'};"
+                title="Filter matches for ${c.name} (${c.country || ''})">
+                <span style="font-size: 0.85rem;">${c.logo || '⚽'}</span>
+                <span>${c.name}</span>
+              </button>
+            `;
+          }).join('')}
+        </div>
+      </div>
+    `;
+  }
+
   // --- MATCH × MARKET MATRIX HELPERS ---
   const matchMarketMatrixStore = new Map();
 
@@ -2274,6 +2684,21 @@
 
       return true;
     });
+
+    // 3b. Individual Club Filter
+    const clubFilter = (criteria.clubFilter || 'all').trim().toLowerCase();
+    if (clubFilter && clubFilter !== 'all') {
+      candidates = candidates.filter(m => {
+        const hName = (m.homeTeam?.name || m.home || '').toLowerCase();
+        const aName = (m.awayTeam?.name || m.away || '').toLowerCase();
+        return hName === clubFilter ||
+               aName === clubFilter ||
+               hName.includes(clubFilter) ||
+               aName.includes(clubFilter) ||
+               clubFilter.includes(hName) ||
+               clubFilter.includes(aName);
+      });
+    }
 
     // 4. Consensus Engine Filter
     if (minConsensus > 0) {
@@ -3291,6 +3716,7 @@
     countryFilter: 'all',
     compTypeFilter: 'all',
     competitionFilter: 'all',
+    clubFilter: 'all',
     minConsensus: 0,
     sortBy: 'toptips_rank',
     rangeLimit: 10,
@@ -3533,27 +3959,25 @@
       MATCH_DATA.forEach(addCandidate);
     }
 
-    // Fallback: If external stores have low volume or zero upcoming fixtures, draw from GLOBAL_CLUBS pairings
-    // (exact same pattern used by TopTipsTrackerEngine and app.js)
-    let candidateList = Array.from(uniqueMap.values());
-    const upcomingCount = candidateList.filter(m => isMatchUpcomingEligible(m)).length;
+    // Fallback: Ensure all top leagues and clubs have upcoming fixtures in match pool
+    const clubsPool = getAuthoritativeClubsPool();
+    if (clubsPool.length > 0) {
+      const leagueClubsMap = {};
+      clubsPool.forEach(c => {
+        if (!c.league) return;
+        if (!leagueClubsMap[c.league]) leagueClubsMap[c.league] = [];
+        leagueClubsMap[c.league].push(c);
+      });
 
-    if (upcomingCount < 30) {
-      let globalClubs = [];
-      if (root && Array.isArray(root.GLOBAL_CLUBS)) globalClubs = root.GLOBAL_CLUBS;
-      else if (typeof GLOBAL_CLUBS !== 'undefined' && Array.isArray(GLOBAL_CLUBS)) globalClubs = GLOBAL_CLUBS;
+      const futureBaseMs = Date.now() + 24 * 3600 * 1000;
+      let synId = 5000;
+      Object.keys(leagueClubsMap).forEach((lg, lgIdx) => {
+        const existingCount = Array.from(uniqueMap.values()).filter(m =>
+          (m.league || '').toLowerCase().trim() === lg.toLowerCase().trim() && isMatchUpcomingEligible(m)
+        ).length;
 
-      if (globalClubs.length > 0) {
-        const leagueClubsMap = {};
-        globalClubs.forEach(c => {
-          if (!c.league) return;
-          if (!leagueClubsMap[c.league]) leagueClubsMap[c.league] = [];
-          leagueClubsMap[c.league].push(c);
-        });
-
-        const futureBaseMs = Date.now() + 24 * 3600 * 1000;
-        let synId = 5000;
-        Object.keys(leagueClubsMap).forEach((lg, lgIdx) => {
+        // If fewer than 2 upcoming matches exist for this league, generate pairings for clubs
+        if (existingCount < 2) {
           const clubs = leagueClubsMap[lg];
           for (let i = 0; i < clubs.length - 1; i += 2) {
             const hClub = clubs[i];
@@ -3580,8 +4004,8 @@
               topTips: ['uo15', 'uo25', 'btts']
             });
           }
-        });
-      }
+        }
+      });
     }
 
     // Synchronize league normalization on all fixtures
@@ -3837,6 +4261,14 @@
               </select>
             </div>
 
+            <!-- Individual Clubs / Teams Selector -->
+            <div id="tg-cc-club-select-wrap">
+              <label style="display: block; font-size: 0.72rem; font-weight: 700; color: #94a3b8; margin-bottom: 4px;">⚽ INDIVIDUAL CLUBS / TEAMS</label>
+              <select id="tg-cc-club-select" onchange="window.TelegramPublisher.setClubFilter(this.value)" style="width: 100%; background: rgba(0,0,0,0.4); border: 1px solid rgba(255,255,255,0.15); color: #ffffff; padding: 8px 10px; border-radius: 8px; font-size: 0.8rem;">
+                ${renderClubSelectOptionsHtml(state.competitionFilter, state.countryFilter, state.clubFilter)}
+              </select>
+            </div>
+
             <!-- Markets Suite Filter -->
             <div>
               <label style="display: block; font-size: 0.72rem; font-weight: 700; color: #94a3b8; margin-bottom: 4px;">📊 MARKETS ▼ (16 CATS / 78 OPTS)</label>
@@ -3903,6 +4335,11 @@
           </div>
         </div>
 
+        <!-- Individual Clubs Showcase Ribbon -->
+        <div id="tg-cc-clubs-strip-container">
+          ${renderClubsStripHtml(state.competitionFilter, state.countryFilter, state.clubFilter)}
+        </div>
+
         <!-- Discovered Matches Table Container -->
         <div id="tg-cc-discover-table-container"></div>
       </div>
@@ -3921,6 +4358,7 @@
       countryFilter: state.countryFilter,
       compTypeFilter: state.compTypeFilter,
       competitionFilter: state.competitionFilter,
+      clubFilter: state.clubFilter,
       minConsensus: state.minConsensus,
       sortBy: state.sortBy,
       rangeLimit: state.rangeLimit,
@@ -3934,6 +4372,7 @@
       if (state.regionFilter !== 'all') activeFilters.push(`Region: ${state.regionFilter}`);
       if (state.countryFilter !== 'all') activeFilters.push(`Country: ${state.countryFilter}`);
       if (state.competitionFilter !== 'all') activeFilters.push(`League: ${state.competitionFilter}`);
+      if (state.clubFilter && state.clubFilter !== 'all') activeFilters.push(`Club: ${state.clubFilter}`);
       if (state.compTypeFilter !== 'all') activeFilters.push(`Type: ${state.compTypeFilter}`);
       if (state.minConsensus > 0) activeFilters.push(`Consensus ≥ ${state.minConsensus}/5`);
 
@@ -7963,6 +8402,7 @@
     },
     setCompetitionFilter(val) {
       state.competitionFilter = val;
+      state.clubFilter = 'all';
       // Harmonize region and country if user selected a specific top league
       if (val && val !== 'all') {
         const cleanVal = val.replace(/[\uD800-\uDBFF][\uDC00-\uDFFF]/g, '').replace(/\s*\([^)]*\)/g, '').trim().toLowerCase();
@@ -7978,7 +8418,31 @@
           }
         }
       }
-      if (typeof document !== 'undefined') renderDiscoverMatchTable();
+      if (typeof document !== 'undefined') {
+        const clubSel = document.getElementById('tg-cc-club-select');
+        if (clubSel) {
+          clubSel.innerHTML = renderClubSelectOptionsHtml(state.competitionFilter, state.countryFilter, state.clubFilter);
+        }
+        const stripCont = document.getElementById('tg-cc-clubs-strip-container');
+        if (stripCont) {
+          stripCont.innerHTML = renderClubsStripHtml(state.competitionFilter, state.countryFilter, state.clubFilter);
+        }
+        renderDiscoverMatchTable();
+      }
+    },
+    setClubFilter(val) {
+      state.clubFilter = val || 'all';
+      if (typeof document !== 'undefined') {
+        const clubSel = document.getElementById('tg-cc-club-select');
+        if (clubSel && clubSel.value !== state.clubFilter) {
+          clubSel.value = state.clubFilter;
+        }
+        const stripCont = document.getElementById('tg-cc-clubs-strip-container');
+        if (stripCont) {
+          stripCont.innerHTML = renderClubsStripHtml(state.competitionFilter, state.countryFilter, state.clubFilter);
+        }
+        renderDiscoverMatchTable();
+      }
     },
     resetDiscoverFilters() {
       state.dateRange = 'all_upcoming';
@@ -7987,6 +8451,7 @@
       state.countryFilter = 'all';
       state.compTypeFilter = 'all';
       state.competitionFilter = 'all';
+      state.clubFilter = 'all';
       state.marketFilter = 'all';
       state.minConsensus = 0;
       state.rangeLimit = 30;
@@ -7999,6 +8464,14 @@
           container.innerHTML = renderDiscoverTab();
           renderDiscoverMatchTable();
         } else {
+          const clubSel = document.getElementById('tg-cc-club-select');
+          if (clubSel) {
+            clubSel.innerHTML = renderClubSelectOptionsHtml(state.competitionFilter, state.countryFilter, state.clubFilter);
+          }
+          const stripCont = document.getElementById('tg-cc-clubs-strip-container');
+          if (stripCont) {
+            stripCont.innerHTML = renderClubsStripHtml(state.competitionFilter, state.countryFilter, state.clubFilter);
+          }
           renderDiscoverMatchTable();
         }
       }
@@ -8057,6 +8530,7 @@
     },
     setCountryFilter(val) {
       state.countryFilter = val;
+      state.clubFilter = 'all';
       if (val && val !== 'all' && state.competitionFilter !== 'all') {
         const cleanComp = state.competitionFilter.replace(/[\uD800-\uDBFF][\uDC00-\uDFFF]/g, '').replace(/\s*\([^)]*\)/g, '').trim().toLowerCase();
         const topLeague = getAuthoritativeTopLeagues().find(l =>
@@ -8068,7 +8542,17 @@
           if (lSel) lSel.value = 'all';
         }
       }
-      if (typeof document !== 'undefined') renderDiscoverMatchTable();
+      if (typeof document !== 'undefined') {
+        const clubSel = document.getElementById('tg-cc-club-select');
+        if (clubSel) {
+          clubSel.innerHTML = renderClubSelectOptionsHtml(state.competitionFilter, state.countryFilter, state.clubFilter);
+        }
+        const stripCont = document.getElementById('tg-cc-clubs-strip-container');
+        if (stripCont) {
+          stripCont.innerHTML = renderClubsStripHtml(state.competitionFilter, state.countryFilter, state.clubFilter);
+        }
+        renderDiscoverMatchTable();
+      }
     },
     setCompTypeFilter(val) { state.compTypeFilter = val; renderDiscoverMatchTable(); },
     setMinConsensus(val) { state.minConsensus = parseInt(val, 10) || 0; renderDiscoverMatchTable(); },
@@ -8201,6 +8685,10 @@
     refreshData: fetchPublishData,
     getAdminSessionToken,
     adminFetch,
+    getAuthoritativeClubsPool,
+    getClubsForLeague,
+    renderClubSelectOptionsHtml,
+    renderClubsStripHtml,
     openModal() {
       const el = document.getElementById('telegram-command-center-section') || document.getElementById('telegram-publisher-section');
       if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });

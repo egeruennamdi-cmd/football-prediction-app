@@ -4180,6 +4180,125 @@ async function runTests() {
     origState.schedules = [];
   });
 
+  await testAsync('Section 58.42: Dynamic League-to-Club Resolution, Individual Clubs Dropdown & Interactive Showcase Strip', async () => {
+    // 1. Authoritative League Clubs Resolution
+    const plClubs = telegramPublisher.getClubsForLeague('Premier League');
+    assert.strictEqual(plClubs.length, 20, 'Premier League must resolve exactly 20 official clubs');
+    const plNames = plClubs.map(c => c.name);
+    assert.ok(plNames.includes('Arsenal'), 'PL clubs must include Arsenal');
+    assert.ok(plNames.includes('Manchester City'), 'PL clubs must include Manchester City');
+    assert.ok(plNames.includes('Liverpool'), 'PL clubs must include Liverpool');
+    assert.ok(plNames.includes('Chelsea'), 'PL clubs must include Chelsea');
+
+    const laLigaClubs = telegramPublisher.getClubsForLeague('La Liga');
+    assert.strictEqual(laLigaClubs.length, 20, 'La Liga must resolve exactly 20 official clubs');
+    const laLigaNames = laLigaClubs.map(c => c.name);
+    assert.ok(laLigaNames.includes('Real Madrid'), 'La Liga clubs must include Real Madrid');
+    assert.ok(laLigaNames.includes('Barcelona'), 'La Liga clubs must include Barcelona');
+    assert.ok(laLigaNames.includes('Atletico Madrid'), 'La Liga clubs must include Atletico Madrid');
+
+    const serieAClubs = telegramPublisher.getClubsForLeague('Serie A');
+    assert.strictEqual(serieAClubs.length, 20, 'Serie A must resolve exactly 20 official clubs');
+    const serieANames = serieAClubs.map(c => c.name);
+    assert.ok(serieANames.includes('Inter Milan'), 'Serie A clubs must include Inter Milan');
+    assert.ok(serieANames.includes('Juventus'), 'Serie A clubs must include Juventus');
+
+    const bundesligaClubs = telegramPublisher.getClubsForLeague('Bundesliga');
+    assert.strictEqual(bundesligaClubs.length, 18, 'Bundesliga must resolve exactly 18 official clubs');
+    const bndNames = bundesligaClubs.map(c => c.name);
+    assert.ok(bndNames.includes('FC Bayern Munich'), 'Bundesliga clubs must include FC Bayern Munich');
+    assert.ok(bndNames.includes('Bayer 04 Leverkusen'), 'Bundesliga clubs must include Bayer 04 Leverkusen');
+
+    const ligue1Clubs = telegramPublisher.getClubsForLeague('Ligue 1');
+    assert.strictEqual(ligue1Clubs.length, 18, 'Ligue 1 must resolve exactly 18 official clubs');
+    const l1Names = ligue1Clubs.map(c => c.name);
+    assert.ok(l1Names.includes('Paris Saint-Germain'), 'Ligue 1 clubs must include PSG');
+
+    const champClubs = telegramPublisher.getClubsForLeague('Championship');
+    assert.strictEqual(champClubs.length, 24, 'Championship must resolve exactly 24 official clubs');
+
+    const allClubs = telegramPublisher.getClubsForLeague('all');
+    assert.ok(allClubs.length >= 100, `All clubs catalog must resolve comprehensive registry (found: ${allClubs.length})`);
+
+    // 2. Club Select Options HTML Generation
+    const plOptionsHtml = telegramPublisher.renderClubSelectOptionsHtml('Premier League', 'all', 'all');
+    assert.ok(plOptionsHtml.includes('All Premier League Clubs (20)'), 'Options must contain header option with total count');
+    assert.ok(plOptionsHtml.includes('value="Arsenal"'), 'Options must contain Arsenal');
+    assert.ok(plOptionsHtml.includes('🔴'), 'Options must contain club badge/logo');
+
+    // 3. Interactive Clubs Showcase Strip HTML Generation
+    const stripHtmlAll = telegramPublisher.renderClubsStripHtml('Premier League', 'all', 'all');
+    assert.ok(stripHtmlAll.includes('Individual Clubs &bull; Premier League (20)'), 'Strip header must show league name and count');
+    assert.ok(stripHtmlAll.includes('All Clubs (20)'), 'Strip must include All Clubs button');
+    assert.ok(stripHtmlAll.includes('Arsenal'), 'Strip must include Arsenal button');
+    assert.ok(stripHtmlAll.includes('Manchester City'), 'Strip must include Manchester City button');
+
+    const stripHtmlSelected = telegramPublisher.renderClubsStripHtml('Premier League', 'all', 'Arsenal');
+    assert.ok(stripHtmlSelected.includes('Reset Club Filter (Viewing: Arsenal)'), 'Strip must show reset button when club is selected');
+
+    // 4. State Integration & DOM Synchronization
+    const origDoc = global.document;
+    const domStore = {
+      'tg-cc-league-select': { value: 'all' },
+      'tg-cc-club-select': { innerHTML: '', value: 'all' },
+      'tg-cc-clubs-strip-container': { innerHTML: '' },
+      'tg-cc-discover-table-container': { innerHTML: '' }
+    };
+
+    global.document = {
+      getElementById(id) {
+        if (!domStore[id]) {
+          domStore[id] = { innerHTML: '', value: '', style: {} };
+        }
+        return domStore[id];
+      },
+      querySelectorAll() { return []; }
+    };
+
+    // Selecting a top league updates competitionFilter and populates clubs below
+    telegramPublisher.setCompetitionFilter('Premier League');
+    assert.strictEqual(telegramPublisher.getState().competitionFilter, 'Premier League');
+    assert.strictEqual(telegramPublisher.getState().clubFilter, 'all', 'Selecting new league must reset club filter to all');
+    assert.ok(domStore['tg-cc-club-select'].innerHTML.includes('All Premier League Clubs (20)'), 'Club select dropdown must be updated for Premier League');
+    assert.ok(domStore['tg-cc-clubs-strip-container'].innerHTML.includes('Premier League (20)'), 'Clubs showcase strip must be updated for Premier League');
+
+    // Selecting an individual club filters state and updates UI
+    telegramPublisher.setClubFilter('Arsenal');
+    assert.strictEqual(telegramPublisher.getState().clubFilter, 'Arsenal', 'setClubFilter must update state.clubFilter');
+    assert.strictEqual(domStore['tg-cc-club-select'].value, 'Arsenal', 'Club select value must sync');
+    assert.ok(domStore['tg-cc-clubs-strip-container'].innerHTML.includes('Reset Club Filter (Viewing: Arsenal)'), 'Clubs strip must show reset button for active club');
+
+    // Match filtering strictly isolates fixtures featuring the chosen club
+    const mockMatches = [
+      { id: 'm-1', homeTeam: { name: 'Arsenal' }, awayTeam: { name: 'Chelsea' }, league: 'Premier League', rawDate: '2026-10-25T16:00:00Z', status: 'UPCOMING' },
+      { id: 'm-2', homeTeam: { name: 'Liverpool' }, awayTeam: { name: 'Everton' }, league: 'Premier League', rawDate: '2026-10-25T18:00:00Z', status: 'UPCOMING' },
+      { id: 'm-3', homeTeam: { name: 'Manchester City' }, awayTeam: { name: 'Arsenal' }, league: 'Premier League', rawDate: '2026-10-26T16:00:00Z', status: 'UPCOMING' }
+    ];
+
+    const filtered = telegramPublisher.filterAndSortMatches(mockMatches, {
+      competitionFilter: 'Premier League',
+      clubFilter: 'Arsenal',
+      statusFilter: 'UPCOMING',
+      dateRange: 'all_upcoming'
+    });
+    assert.strictEqual(filtered.matches.length, 2, 'Must match exactly the 2 fixtures featuring Arsenal');
+    assert.ok(filtered.matches.every(m => m.homeTeam.name === 'Arsenal' || m.awayTeam.name === 'Arsenal'), 'Every filtered match must feature Arsenal');
+
+    // Switching to La Liga updates clubs below to La Liga clubs
+    telegramPublisher.setCompetitionFilter('La Liga');
+    assert.strictEqual(telegramPublisher.getState().competitionFilter, 'La Liga');
+    assert.strictEqual(telegramPublisher.getState().clubFilter, 'all', 'Switching league must reset club filter');
+    assert.ok(domStore['tg-cc-club-select'].innerHTML.includes('All La Liga Clubs (20)'), 'Club select must update to La Liga');
+    assert.ok(domStore['tg-cc-clubs-strip-container'].innerHTML.includes('Barcelona'), 'Clubs strip must now show Barcelona');
+
+    // Resetting filters resets club and competition filters
+    telegramPublisher.resetDiscoverFilters();
+    assert.strictEqual(telegramPublisher.getState().competitionFilter, 'all');
+    assert.strictEqual(telegramPublisher.getState().clubFilter, 'all');
+
+    global.document = origDoc;
+  });
+
   // Restore globals
   global.localStorage = originalLocalStorage;
   global.sessionStorage = originalSessionStorage;
