@@ -3769,6 +3769,7 @@ async function runTests() {
     // 1. Initial State & Defaults
     const state = telegramPublisher.getState();
     assert.strictEqual(typeof state.automationMasterEnabled, 'boolean', 'automationMasterEnabled must be a boolean');
+    assert.strictEqual(state.automationMasterEnabled, true, 'Default automationMasterEnabled must be true (Enabled by default)');
     assert.strictEqual(state.automationMode, 'safe', 'Default automation mode must be safe (simulation)');
     assert.strictEqual(typeof telegramPublisher.renderAutomationTab, 'function', 'renderAutomationTab must be exported');
 
@@ -4383,6 +4384,124 @@ async function runTests() {
     assert.strictEqual(telegramPublisher.getSettings().defaultTarget, 'free');
     assert.strictEqual(telegramPublisher.getSettings().minConfidenceGate, 75);
     assert.strictEqual(telegramPublisher.getSettings().minConsensusGate, 3);
+  });
+
+  await testAsync('Section 58.44: Master Automation Enabled Default & Enterprise Channel Distribution & Audience Hub', async () => {
+    // 1. Re-arm Automation Master & enforce safe simulation mode following Section 58.38 & 58.43
+    telegramPublisher.toggleMasterAutomation(true);
+    telegramPublisher.setAutomationMode('safe');
+    const state = telegramPublisher.getState();
+    assert.strictEqual(state.automationMasterEnabled, true, 'Master Automation Distribution Engine must be ENABLED');
+    assert.strictEqual(state.automationMode, 'safe', 'Safe simulation mode must be active for protection');
+    
+    // Verify Automation Badge reflects Active Safe Simulation
+    const autoHtml = telegramPublisher.renderAutomationTab();
+    assert.ok(autoHtml.includes('AUTOMATION: ACTIVE (SAFE SIMULATION MODE)'), 'Must render active simulation badge when enabled');
+    assert.ok(autoHtml.includes('Pause Master Engine'), 'Button must offer to pause master engine');
+
+    // 2. Channels Tab Rendering & Original Elements Preservation
+    assert.strictEqual(typeof telegramPublisher.renderChannelsTab, 'function', 'renderChannelsTab must be exported');
+    const channelsHtml = telegramPublisher.renderChannelsTab();
+    assert.ok(channelsHtml.includes('Channel Management &amp; Content Matrix') || channelsHtml.includes('Channel Management & Content Matrix'), 'Must render Channels header');
+    
+    // 3 Original cards preserved verbatim
+    assert.ok(channelsHtml.includes('🟢 Free Community'), 'Must preserve Free Community card');
+    assert.ok(channelsHtml.includes('@DeepPredictBetFree'), 'Must preserve @DeepPredictBetFree handle');
+    assert.ok(channelsHtml.includes('Content: Top Tips, High-Yield Previews &amp; Conversion CTAs') || channelsHtml.includes('Content: Top Tips, High-Yield Previews & Conversion CTAs'), 'Must preserve Free content description');
+    
+    assert.ok(channelsHtml.includes('🔒 VIP Bankers'), 'Must preserve VIP Bankers card');
+    assert.ok(channelsHtml.includes('Channel ID: TELEGRAM_VIP_CHANNEL_ID'), 'Must preserve VIP Channel ID');
+    assert.ok(channelsHtml.includes('Content: Unredacted Dossiers, 2.5u Stakes, Doctor Audits'), 'Must preserve VIP content description');
+    
+    assert.ok(channelsHtml.includes('🤖 Bot / Linked Users'), 'Must preserve Bot / Linked Users card');
+    assert.ok(channelsHtml.includes('@DeepPredictBetBot'), 'Must preserve @DeepPredictBetBot handle');
+    assert.ok(channelsHtml.includes('Content: Interactive commands, 1-on-1 notifications'), 'Must preserve Bot content description');
+    assert.ok(channelsHtml.includes('ACTIVE'), 'Must preserve ACTIVE badges');
+
+    // Matrix Table & Original 4 rows preserved verbatim
+    assert.ok(channelsHtml.includes('Content Distribution Policy Matrix'), 'Must preserve Content Distribution Policy Matrix header');
+    assert.ok(channelsHtml.includes('Top Tip of the Day'), 'Must preserve Top Tip row');
+    assert.ok(channelsHtml.includes('Full Tip + Teaser'), 'Must preserve Full Tip + Teaser cell');
+    assert.ok(channelsHtml.includes('Full + Staking Units'), 'Must preserve Full + Staking Units cell');
+    assert.ok(channelsHtml.includes('Via /tips command'), 'Must preserve Via /tips command cell');
+
+    assert.ok(channelsHtml.includes('AI Scout Analysis'), 'Must preserve AI Scout row');
+    assert.ok(channelsHtml.includes('Summary Teaser'), 'Must preserve Summary Teaser cell');
+    assert.ok(channelsHtml.includes('Unredacted Tactical xG'), 'Must preserve Unredacted Tactical xG cell');
+    assert.ok(channelsHtml.includes('Via /scout command'), 'Must preserve Via /scout command cell');
+
+    assert.ok(channelsHtml.includes('Value Intelligence'), 'Must preserve Value Intelligence row');
+    assert.ok(channelsHtml.includes('Redacted Margin'), 'Must preserve Redacted Margin cell');
+    assert.ok(channelsHtml.includes('Exact Fair Odds &amp; Edge') || channelsHtml.includes('Exact Fair Odds & Edge'), 'Must preserve Fair Odds & Edge cell');
+    assert.ok(channelsHtml.includes('Via /value command'), 'Must preserve Via /value command cell');
+
+    assert.ok(channelsHtml.includes('Bet Doctor Audit'), 'Must preserve Bet Doctor row');
+    assert.ok(channelsHtml.includes('Not Broadcast'), 'Must preserve Not Broadcast cell');
+    assert.ok(channelsHtml.includes('Full Diagnosis &amp; Adjust') || channelsHtml.includes('Full Diagnosis & Adjust'), 'Must preserve Full Diagnosis cell');
+    assert.ok(channelsHtml.includes('On-Demand'), 'Must preserve On-Demand cell');
+
+    // Additional 3 platform streams
+    assert.ok(channelsHtml.includes('Weekend Accumulator Slip'), 'Must include Weekend Accumulator stream');
+    assert.ok(channelsHtml.includes('Daily Country League Digest'), 'Must include Country League Digest stream');
+    assert.ok(channelsHtml.includes('VIP High-Roller Banker Ticket'), 'Must include VIP High-Roller Banker stream');
+
+    // 3. Routing Matrix Operations & Persistence
+    const matrix = telegramPublisher.getChannelRoutingMatrix();
+    assert.strictEqual(matrix.length, 7, 'Routing matrix must contain all 7 content streams');
+    assert.strictEqual(matrix[0].id, 'top_tip');
+    
+    // Toggle stream routing
+    telegramPublisher.toggleStreamRouting('top_tip', 'free');
+    const updatedMatrix = telegramPublisher.getChannelRoutingMatrix();
+    assert.strictEqual(updatedMatrix[0].freeActive, false, 'Free routing for top_tip must toggle to false');
+    telegramPublisher.resetChannelRouting();
+    const resetMatrix = telegramPublisher.getChannelRoutingMatrix();
+    assert.strictEqual(resetMatrix[0].freeActive, true, 'Reset routing must restore default');
+
+    // Load stream to composer
+    telegramPublisher.loadStreamToComposer('ai_scout');
+    assert.strictEqual(telegramPublisher.getState().activeTab, 'compose', 'loadStreamToComposer must switch tab to compose');
+    assert.strictEqual(telegramPublisher.getState().target, 'vip', 'loadStreamToComposer must configure VIP target');
+
+    // 4. Subscriber Management & Directory Operations
+    const subs = telegramPublisher.getEffectiveSubscribers();
+    assert.ok(Array.isArray(subs) && subs.length >= 5, 'Must return directory with at least 5 subscribers');
+    
+    // Filter subscribers
+    telegramPublisher.setSubscriberFilter('vip');
+    assert.strictEqual(telegramPublisher.getState().channelTabFilter, 'vip', 'Filter must be vip');
+    telegramPublisher.searchSubscribers('alex');
+    assert.strictEqual(telegramPublisher.getState().channelSubscriberSearch, 'alex', 'Search query must be set');
+
+    // Toggle VIP tier
+    const targetSub = subs[0];
+    const prevTier = targetSub.tier;
+    telegramPublisher.toggleUserVipTier(targetSub.telegramId);
+    const updatedSubs = telegramPublisher.getEffectiveSubscribers();
+    const updatedTarget = updatedSubs.find(u => String(u.telegramId) === String(targetSub.telegramId));
+    assert.notStrictEqual(updatedTarget.tier, prevTier, 'toggleUserVipTier must toggle tier');
+    telegramPublisher.toggleUserVipTier(targetSub.telegramId); // restore
+
+    // Link new subscriber
+    telegramPublisher.linkNewSubscriber('999888777', 'test_trader_bot', 'VIP');
+    const subsAfterAdd = telegramPublisher.getEffectiveSubscribers();
+    assert.ok(subsAfterAdd.some(u => String(u.telegramId) === '999888777'), 'New subscriber must be in directory');
+
+    // Unlink subscriber
+    telegramPublisher.unlinkSubscriber('999888777');
+    const subsAfterUnlink = telegramPublisher.getEffectiveSubscribers();
+    assert.ok(!subsAfterUnlink.some(u => String(u.telegramId) === '999888777'), 'Unlinked subscriber must be removed');
+
+    // 5. Diagnostics & VIP Invite Link
+    telegramPublisher.generateVipInviteLink();
+    telegramPublisher.sendDirectUserPing(targetSub.telegramId);
+    telegramPublisher.checkChannelHealth();
+    await telegramPublisher.sendChannelPing('free', 'Health Beacon');
+    await telegramPublisher.sendChannelPing('vip', 'Health Beacon');
+
+    // Clear search and filter
+    telegramPublisher.setSubscriberFilter('all');
+    telegramPublisher.searchSubscribers('');
   });
 
   // Restore globals
