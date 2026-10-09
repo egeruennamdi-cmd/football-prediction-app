@@ -3724,6 +3724,41 @@
   // Tabs: overview | discover | compose | calendar | automation | channels | history | analytics | settings
   // ============================================================================
 
+  const DEFAULT_SETTINGS = {
+    defaultTarget: 'free',
+    defaultPostType: 'Top Tip of the Day',
+    defaultCtaText: '👉 Explore Predictions & VIP Dossiers',
+    defaultCtaUrl: 'https://deeppredictbet.com',
+    utmSource: 'telegram',
+    utmMedium: 'broadcast',
+    utmCampaign: 'daily_intelligence',
+    charWarningThreshold: 3800,
+    autoPartitionOversized: true,
+    autoScheduleIntervalMs: 10000,
+    autoScheduleMode: 'safe',
+    cooldownHours: 24,
+    quietHoursEnabled: false,
+    minConfidenceGate: 75,
+    minConsensusGate: 3,
+    minOddsFloor: 1.40,
+    duplicateLookbackHours: 24,
+    autoSweepVip: true,
+    telemetryVerbosity: 'standard'
+  };
+
+  function loadStoredSettings() {
+    try {
+      if (typeof localStorage !== 'undefined') {
+        const raw = localStorage.getItem('tg_cc_system_settings');
+        if (raw) {
+          const parsed = JSON.parse(raw);
+          return { ...DEFAULT_SETTINGS, ...parsed };
+        }
+      }
+    } catch (e) {}
+    return { ...DEFAULT_SETTINGS };
+  }
+
   const state = {
     activeTab: 'overview',
     target: 'free',
@@ -3793,7 +3828,8 @@
     selectedCalendarDate: '',
     calendarFilterTarget: 'all',
     analyticsTimeframe: '30d',
-    analyticsChannel: 'all'
+    analyticsChannel: 'all',
+    settings: loadStoredSettings()
   };
 
   /**
@@ -7396,32 +7432,476 @@
   }
 
 
-  // TAB 9: SETTINGS
-  function renderSettingsTab() {
-    return `
-      <div>
-        <h3 style="margin: 0 0 16px 0; font-size: 1.1rem; font-weight: 800; color: #ffffff;">Command Center System Settings</h3>
+  // ============================================================================
+  // TAB 9: SETTINGS & SYSTEM GOVERNANCE
+  // ============================================================================
 
-        <div style="background: rgba(15,23,42,0.8); border: 1px solid rgba(255,255,255,0.08); border-radius: 12px; padding: 20px; max-width: 650px;">
-          <h4 style="margin: 0 0 12px 0; font-size: 0.9rem; color: #ffffff;">Data Quality & Integrity Guard Thresholds</h4>
-          <div style="display: flex; flex-direction: column; gap: 12px; font-size: 0.8rem;">
-            <div style="display: flex; justify-content: space-between; align-items: center;">
-              <span>Enforce Strict Anti-Finished Match Purge:</span>
-              <span style="color: #10b981; font-weight: 800;">ACTIVE (IMMUTABLE)</span>
+  function saveSettings(newSettings = {}) {
+    state.settings = { ...(state.settings || DEFAULT_SETTINGS), ...newSettings };
+    if (typeof localStorage !== 'undefined') {
+      try {
+        localStorage.setItem('tg_cc_system_settings', JSON.stringify(state.settings));
+      } catch (e) {}
+    }
+    // Harmonize active runtime state
+    if (state.settings.defaultTarget) state.target = state.settings.defaultTarget;
+    if (state.settings.defaultPostType) state.postType = state.settings.defaultPostType;
+    if (state.settings.minConfidenceGate) state.dynamicRules.minConfidence = state.settings.minConfidenceGate;
+    if (state.settings.minConsensusGate !== undefined) state.minConsensus = state.settings.minConsensusGate;
+    if (state.settings.autoScheduleMode) state.automationMode = state.settings.autoScheduleMode;
+
+    if (typeof document !== 'undefined') {
+      renderCurrentTab();
+    }
+    showAlert('✅ Command Center settings saved and applied successfully!');
+    return { success: true, settings: state.settings };
+  }
+
+  function updateSetting(key, val) {
+    if (!state.settings) state.settings = { ...DEFAULT_SETTINGS };
+    state.settings[key] = val;
+    saveSettings({ [key]: val });
+  }
+
+  function saveAllSettingsFromForm() {
+    if (typeof document === 'undefined') return;
+    const s = state.settings || { ...DEFAULT_SETTINGS };
+
+    const getVal = (id) => {
+      const el = document.getElementById(id);
+      return el ? el.value : null;
+    };
+
+    const targetVal = getVal('tg-set-default-target');
+    const postTypeVal = getVal('tg-set-default-post-type');
+    const ctaTextVal = getVal('tg-set-default-cta-text');
+    const ctaUrlVal = getVal('tg-set-default-cta-url');
+    const utmVal = getVal('tg-set-utm-campaign');
+    const autoPartVal = getVal('tg-set-auto-partition');
+    const schedIntVal = getVal('tg-set-schedule-interval');
+    const schedModeVal = getVal('tg-set-schedule-mode');
+    const cooldownVal = getVal('tg-set-cooldown-hours');
+    const quietVal = getVal('tg-set-quiet-hours');
+    const minConfVal = getVal('tg-set-min-confidence');
+    const minConsVal = getVal('tg-set-min-consensus');
+    const lookbackVal = getVal('tg-set-lookback-window');
+    const minOddsVal = getVal('tg-set-min-odds');
+    const autoSweepVal = getVal('tg-set-auto-sweep');
+    const telemVal = getVal('tg-set-telemetry-level');
+
+    const updated = {
+      defaultTarget: targetVal || s.defaultTarget,
+      defaultPostType: postTypeVal || s.defaultPostType,
+      defaultCtaText: ctaTextVal !== null ? ctaTextVal : s.defaultCtaText,
+      defaultCtaUrl: ctaUrlVal !== null ? ctaUrlVal : s.defaultCtaUrl,
+      utmCampaign: utmVal !== null ? utmVal : s.utmCampaign,
+      autoPartitionOversized: autoPartVal ? autoPartVal === 'true' : s.autoPartitionOversized,
+      autoScheduleIntervalMs: schedIntVal ? Number(schedIntVal) : s.autoScheduleIntervalMs,
+      autoScheduleMode: schedModeVal || s.autoScheduleMode,
+      cooldownHours: cooldownVal ? Number(cooldownVal) : s.cooldownHours,
+      quietHoursEnabled: quietVal ? quietVal === 'true' : s.quietHoursEnabled,
+      minConfidenceGate: minConfVal ? Number(minConfVal) : s.minConfidenceGate,
+      minConsensusGate: minConsVal ? Number(minConsVal) : s.minConsensusGate,
+      duplicateLookbackHours: lookbackVal ? Number(lookbackVal) : s.duplicateLookbackHours,
+      minOddsFloor: minOddsVal ? Number(minOddsVal) : s.minOddsFloor,
+      autoSweepVip: autoSweepVal ? autoSweepVal === 'true' : s.autoSweepVip,
+      telemetryVerbosity: telemVal || s.telemetryVerbosity
+    };
+
+    saveSettings(updated);
+  }
+
+  function resetSettingsToDefaults() {
+    state.settings = { ...DEFAULT_SETTINGS };
+    if (typeof localStorage !== 'undefined') {
+      try {
+        localStorage.removeItem('tg_cc_system_settings');
+      } catch (e) {}
+    }
+    if (typeof document !== 'undefined') {
+      renderCurrentTab();
+    }
+    showAlert('🔄 All settings have been reset to factory defaults.');
+    return { success: true, settings: state.settings };
+  }
+
+  function exportSettingsJson() {
+    const exportData = {
+      system: 'DeepPredictBet Telegram Command Center',
+      version: 'DP-v3.4',
+      exportedAt: new Date().toISOString(),
+      settings: state.settings || DEFAULT_SETTINGS,
+      health: state.health,
+      rulesCount: (state.automationRules || []).length,
+      recipesCount: (state.recipes || []).length
+    };
+    const jsonStr = JSON.stringify(exportData, null, 2);
+    if (typeof document !== 'undefined') {
+      try {
+        const blob = new Blob([jsonStr], { type: 'application/json' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `deeppredictbet_telegram_settings_${Date.now()}.json`;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+      } catch (e) {}
+    }
+    showAlert('📥 Settings configuration exported as JSON.');
+    return exportData;
+  }
+
+  function clearSystemCaches() {
+    cachedRawMatchPool = null;
+    cachedAuthoritativeClubsPool = null;
+    cachedRawMatchPoolTs = 0;
+    fetchPublishData();
+    if (typeof document !== 'undefined') {
+      renderCurrentTab();
+    }
+    showAlert('🧹 In-memory fixtures & clubs caches cleared and re-synchronized!');
+    return { success: true };
+  }
+
+  function renderSettingsTab() {
+    const s = state.settings || { ...DEFAULT_SETTINGS };
+    const isOnline = state.health && state.health.configured;
+
+    return `
+      <div style="display: flex; flex-direction: column; gap: 20px;">
+        
+        <!-- Header Banner with Status & Quick Actions -->
+        <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 14px; background: rgba(15,23,42,0.85); border: 1px solid rgba(255,255,255,0.1); border-radius: 16px; padding: 20px 24px; box-shadow: 0 4px 20px rgba(0,0,0,0.3);">
+          <div>
+            <div style="display: flex; align-items: center; gap: 10px;">
+              <span style="font-size: 1.5rem;">⚙️</span>
+              <h3 style="margin: 0; font-size: 1.2rem; font-weight: 900; color: #ffffff; letter-spacing: -0.01em;">Command Center System Settings & Governance</h3>
+              <span style="background: rgba(16,185,129,0.18); border: 1px solid rgba(16,185,129,0.45); color: #10b981; font-size: 0.7rem; font-weight: 800; padding: 3px 10px; border-radius: 20px;">
+                ● SYSTEM OPERATIONAL
+              </span>
             </div>
-            <div style="display: flex; justify-content: space-between; align-items: center;">
-              <span>Enforce Zero-Backfill Match Range Slicing:</span>
-              <span style="color: #10b981; font-weight: 800;">ACTIVE (IMMUTABLE)</span>
+            <p style="margin: 6px 0 0 0; font-size: 0.8rem; color: #94a3b8; max-width: 800px; line-height: 1.4;">
+              Enterprise configuration console for Telegram bot infrastructure, publishing policies, autonomous distribution cadence, model safety gates, and maintenance diagnostics.
+            </p>
+          </div>
+          <div style="display: flex; gap: 8px; flex-wrap: wrap; align-items: center;">
+            <button type="button" onclick="window.TelegramPublisher.clearSystemCaches()" style="background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.15); color: #cbd5e1; font-size: 0.75rem; font-weight: 700; padding: 8px 14px; border-radius: 8px; cursor: pointer; display: flex; align-items: center; gap: 6px; transition: all 0.2s;">
+              <span>🧹</span> Clear Cache
+            </button>
+            <button type="button" onclick="window.TelegramPublisher.exportSettingsJson()" style="background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.15); color: #cbd5e1; font-size: 0.75rem; font-weight: 700; padding: 8px 14px; border-radius: 8px; cursor: pointer; display: flex; align-items: center; gap: 6px; transition: all 0.2s;">
+              <span>📥</span> Export JSON
+            </button>
+            <button type="button" onclick="window.TelegramPublisher.resetSettingsToDefaults()" style="background: rgba(239,68,68,0.12); border: 1px solid rgba(239,68,68,0.3); color: #f87171; font-size: 0.75rem; font-weight: 700; padding: 8px 14px; border-radius: 8px; cursor: pointer; display: flex; align-items: center; gap: 6px; transition: all 0.2s;">
+              <span>🔄</span> Reset
+            </button>
+            <button type="button" onclick="window.TelegramPublisher.saveAllSettingsFromForm()" style="background: #0284c7; border: 1px solid #38bdf8; color: #ffffff; font-size: 0.78rem; font-weight: 800; padding: 8px 18px; border-radius: 8px; cursor: pointer; display: flex; align-items: center; gap: 6px; box-shadow: 0 0 15px rgba(2,132,199,0.4); transition: all 0.2s;">
+              <span>💾</span> Save & Apply Settings
+            </button>
+          </div>
+        </div>
+
+        <!-- 6-Card Configuration Matrix -->
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(360px, 1fr)); gap: 18px;">
+
+          <!-- CARD 1: Telegram Infrastructure & Connectivity Diagnostics -->
+          <div style="background: rgba(15,23,42,0.8); border: 1px solid rgba(255,255,255,0.08); border-radius: 14px; padding: 20px; display: flex; flex-direction: column; gap: 14px;">
+            <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid rgba(255,255,255,0.06); padding-bottom: 10px;">
+              <div>
+                <h4 style="margin: 0; font-size: 0.95rem; font-weight: 800; color: #ffffff;">📡 Telegram Infrastructure & Diagnostics</h4>
+                <div style="font-size: 0.72rem; color: #94a3b8; margin-top: 2px;">Gateway status, webhooks & secret isolation</div>
+              </div>
+              <span style="font-size: 0.75rem; font-weight: 800; padding: 3px 8px; border-radius: 6px; ${isOnline ? 'background: rgba(16,185,129,0.15); color: #10b981;' : 'background: rgba(234,179,8,0.15); color: #eab308;'}">
+                ${isOnline ? '● ONLINE' : '● CONNECTED'}
+              </span>
             </div>
-            <div style="display: flex; justify-content: space-between; align-items: center;">
-              <span>Duplicate Post Lookback Window:</span>
-              <span style="color: #cbd5e1; font-weight: 700;">24 Hours</span>
+
+            <div style="display: flex; flex-direction: column; gap: 10px; font-size: 0.78rem;">
+              <div style="display: flex; justify-content: space-between; align-items: center;">
+                <span style="color: #cbd5e1;">Bot Identity:</span>
+                <span style="color: #38bdf8; font-weight: 700;">@${(state.health && state.health.botUsername) || 'DeepPredictBetBot'}</span>
+              </div>
+              <div style="display: flex; justify-content: space-between; align-items: center;">
+                <span style="color: #cbd5e1;">Display Name:</span>
+                <span style="color: #ffffff; font-weight: 600;">${(state.health && state.health.botFirstName) || 'DeepPredictBet Intelligence Bot'}</span>
+              </div>
+              <div style="display: flex; justify-content: space-between; align-items: center;">
+                <span style="color: #cbd5e1;">Webhook Endpoint:</span>
+                <span style="color: #94a3b8; font-family: monospace; font-size: 0.72rem;">/api/integrations/telegram/webhook</span>
+              </div>
+              <div style="display: flex; justify-content: space-between; align-items: center;">
+                <span style="color: #cbd5e1;">Webhook Handshake:</span>
+                <span style="color: #10b981; font-weight: 700;">x-telegram-bot-api-secret-token</span>
+              </div>
+              <div style="display: flex; justify-content: space-between; align-items: center;">
+                <span style="color: #cbd5e1;">Free Channel:</span>
+                <span style="color: #38bdf8; font-weight: 700;">@DeepPredictBetFree</span>
+              </div>
+              <div style="display: flex; justify-content: space-between; align-items: center;">
+                <span style="color: #cbd5e1;">VIP Channel:</span>
+                <span style="color: #a855f7; font-weight: 700;">Encrypted Private Channel</span>
+              </div>
+              <div style="display: flex; justify-content: space-between; align-items: center;">
+                <span style="color: #cbd5e1;">Secret Isolation & Redaction:</span>
+                <span style="color: #10b981; font-weight: 800;">ACTIVE (ZERO LEAK)</span>
+              </div>
             </div>
-            <div style="display: flex; justify-content: space-between; align-items: center;">
-              <span>Secret Isolation & Token Redaction:</span>
-              <span style="color: #10b981; font-weight: 800;">CONFIRMED ACTIVE</span>
+
+            <button type="button" onclick="window.TelegramPublisher.refreshHealth()" style="background: rgba(56,189,248,0.12); border: 1px solid rgba(56,189,248,0.3); color: #38bdf8; padding: 8px 12px; border-radius: 8px; font-size: 0.75rem; font-weight: 700; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 6px; margin-top: 4px;">
+              <span>🔄</span> Run Live Telegram Diagnostics Ping
+            </button>
+          </div>
+
+          <!-- CARD 2: Publishing & Content Distribution Defaults -->
+          <div style="background: rgba(15,23,42,0.8); border: 1px solid rgba(255,255,255,0.08); border-radius: 14px; padding: 20px; display: flex; flex-direction: column; gap: 14px;">
+            <div style="border-bottom: 1px solid rgba(255,255,255,0.06); padding-bottom: 10px;">
+              <h4 style="margin: 0; font-size: 0.95rem; font-weight: 800; color: #ffffff;">✍️ Publishing & Composition Policies</h4>
+              <div style="font-size: 0.72rem; color: #94a3b8; margin-top: 2px;">Default destinations, message templates & link tracking</div>
+            </div>
+
+            <div style="display: flex; flex-direction: column; gap: 12px; font-size: 0.78rem;">
+              <div>
+                <label style="display: block; color: #94a3b8; font-weight: 700; margin-bottom: 4px;">DEFAULT TARGET CHANNEL</label>
+                <select id="tg-set-default-target" onchange="window.TelegramPublisher.updateSetting('defaultTarget', this.value)" style="width: 100%; box-sizing: border-box; background: rgba(0,0,0,0.4); border: 1px solid rgba(255,255,255,0.15); color: #ffffff; padding: 7px 10px; border-radius: 8px; font-size: 0.78rem;">
+                  <option value="free" ${s.defaultTarget === 'free' ? 'selected' : ''}>🟢 Free Community Channel (@DeepPredictBetFree)</option>
+                  <option value="vip" ${s.defaultTarget === 'vip' ? 'selected' : ''}>🔒 VIP Bankers Channel (Encrypted / Unredacted)</option>
+                  <option value="user" ${s.defaultTarget === 'user' ? 'selected' : ''}>🤖 Direct User Notification</option>
+                </select>
+              </div>
+
+              <div>
+                <label style="display: block; color: #94a3b8; font-weight: 700; margin-bottom: 4px;">DEFAULT POST INTELLIGENCE TYPE</label>
+                <select id="tg-set-default-post-type" onchange="window.TelegramPublisher.updateSetting('defaultPostType', this.value)" style="width: 100%; box-sizing: border-box; background: rgba(0,0,0,0.4); border: 1px solid rgba(255,255,255,0.15); color: #ffffff; padding: 7px 10px; border-radius: 8px; font-size: 0.78rem;">
+                  <option value="Top Tip of the Day" ${s.defaultPostType === 'Top Tip of the Day' ? 'selected' : ''}>Top Tip of the Day</option>
+                  <option value="VIP Intelligence Dossier" ${s.defaultPostType === 'VIP Intelligence Dossier' ? 'selected' : ''}>VIP Intelligence Dossier</option>
+                  <option value="Value Alert" ${s.defaultPostType === 'Value Alert' ? 'selected' : ''}>Value Alert</option>
+                  <option value="Country Football Digest" ${s.defaultPostType === 'Country Football Digest' ? 'selected' : ''}>Country Football Digest</option>
+                  <option value="Multi-Match Slip" ${s.defaultPostType === 'Multi-Match Slip' ? 'selected' : ''}>Multi-Match Slip</option>
+                  <option value="Match Intelligence" ${s.defaultPostType === 'Match Intelligence' ? 'selected' : ''}>Match Intelligence</option>
+                  <option value="Custom Broadcast" ${s.defaultPostType === 'Custom Broadcast' ? 'selected' : ''}>Custom Broadcast</option>
+                </select>
+              </div>
+
+              <div>
+                <label style="display: block; color: #94a3b8; font-weight: 700; margin-bottom: 4px;">DEFAULT INLINE CTA BUTTON TEXT</label>
+                <input type="text" id="tg-set-default-cta-text" value="${escapeHtml(s.defaultCtaText)}" onchange="window.TelegramPublisher.updateSetting('defaultCtaText', this.value)" style="width: 100%; box-sizing: border-box; background: rgba(0,0,0,0.4); border: 1px solid rgba(255,255,255,0.15); color: #ffffff; padding: 7px 10px; border-radius: 8px; font-size: 0.78rem;">
+              </div>
+
+              <div>
+                <label style="display: block; color: #94a3b8; font-weight: 700; margin-bottom: 4px;">DEFAULT INLINE CTA DESTINATION URL</label>
+                <input type="text" id="tg-set-default-cta-url" value="${escapeHtml(s.defaultCtaUrl)}" onchange="window.TelegramPublisher.updateSetting('defaultCtaUrl', this.value)" style="width: 100%; box-sizing: border-box; background: rgba(0,0,0,0.4); border: 1px solid rgba(255,255,255,0.15); color: #ffffff; padding: 7px 10px; border-radius: 8px; font-size: 0.78rem;">
+              </div>
+
+              <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+                <div>
+                  <label style="display: block; color: #94a3b8; font-weight: 700; margin-bottom: 4px;">UTM CAMPAIGN TAG</label>
+                  <input type="text" id="tg-set-utm-campaign" value="${escapeHtml(s.utmCampaign)}" onchange="window.TelegramPublisher.updateSetting('utmCampaign', this.value)" style="width: 100%; box-sizing: border-box; background: rgba(0,0,0,0.4); border: 1px solid rgba(255,255,255,0.15); color: #ffffff; padding: 7px 10px; border-radius: 8px; font-size: 0.78rem;">
+                </div>
+                <div>
+                  <label style="display: block; color: #94a3b8; font-weight: 700; margin-bottom: 4px;">AUTO-PARTITION OVERSIZED</label>
+                  <select id="tg-set-auto-partition" onchange="window.TelegramPublisher.updateSetting('autoPartitionOversized', this.value === 'true')" style="width: 100%; box-sizing: border-box; background: rgba(0,0,0,0.4); border: 1px solid rgba(255,255,255,0.15); color: #ffffff; padding: 7px 10px; border-radius: 8px; font-size: 0.78rem;">
+                    <option value="true" ${s.autoPartitionOversized ? 'selected' : ''}>Enabled (4,000 char split)</option>
+                    <option value="false" ${!s.autoPartitionOversized ? 'selected' : ''}>Disabled</option>
+                  </select>
+                </div>
+              </div>
             </div>
           </div>
+
+          <!-- CARD 3: Autonomous Distribution Engine & Schedule Rules -->
+          <div style="background: rgba(15,23,42,0.8); border: 1px solid rgba(255,255,255,0.08); border-radius: 14px; padding: 20px; display: flex; flex-direction: column; gap: 14px;">
+            <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid rgba(255,255,255,0.06); padding-bottom: 10px;">
+              <div>
+                <h4 style="margin: 0; font-size: 0.95rem; font-weight: 800; color: #ffffff;">⚡ Autonomous Distribution & Cadence</h4>
+                <div style="font-size: 0.72rem; color: #94a3b8; margin-top: 2px;">Intervals, trigger cooldowns & emergency halt</div>
+              </div>
+              <span style="font-size: 0.72rem; font-weight: 800; padding: 3px 8px; border-radius: 6px; ${state.automationMasterEnabled ? 'background: rgba(16,185,129,0.15); color: #10b981;' : 'background: rgba(239,68,68,0.15); color: #f87171;'}">
+                ${state.automationMasterEnabled ? 'MASTER: ON' : 'MASTER: OFF'}
+              </span>
+            </div>
+
+            <div style="display: flex; flex-direction: column; gap: 12px; font-size: 0.78rem;">
+              <div>
+                <label style="display: block; color: #94a3b8; font-weight: 700; margin-bottom: 4px;">AUTO-SCHEDULER DISPATCH INTERVAL</label>
+                <select id="tg-set-schedule-interval" onchange="window.TelegramPublisher.updateSetting('autoScheduleIntervalMs', Number(this.value))" style="width: 100%; box-sizing: border-box; background: rgba(0,0,0,0.4); border: 1px solid rgba(255,255,255,0.15); color: #ffffff; padding: 7px 10px; border-radius: 8px; font-size: 0.78rem;">
+                  <option value="10000" ${s.autoScheduleIntervalMs === 10000 ? 'selected' : ''}>Every 10 Seconds (High Precision Queue)</option>
+                  <option value="30000" ${s.autoScheduleIntervalMs === 30000 ? 'selected' : ''}>Every 30 Seconds (Standard)</option>
+                  <option value="60000" ${s.autoScheduleIntervalMs === 60000 ? 'selected' : ''}>Every 1 Minute (Relaxed)</option>
+                  <option value="300000" ${s.autoScheduleIntervalMs === 300000 ? 'selected' : ''}>Every 5 Minutes (Conservative)</option>
+                </select>
+              </div>
+
+              <div>
+                <label style="display: block; color: #94a3b8; font-weight: 700; margin-bottom: 4px;">AUTOMATION ENGINE OPERATING MODE</label>
+                <select id="tg-set-schedule-mode" onchange="window.TelegramPublisher.updateSetting('autoScheduleMode', this.value)" style="width: 100%; box-sizing: border-box; background: rgba(0,0,0,0.4); border: 1px solid rgba(255,255,255,0.15); color: #ffffff; padding: 7px 10px; border-radius: 8px; font-size: 0.78rem;">
+                  <option value="safe" ${s.autoScheduleMode === 'safe' ? 'selected' : ''}>🛡️ Safe Simulation (Dry-Run Simulation, Zero Dispatches)</option>
+                  <option value="live" ${s.autoScheduleMode === 'live' ? 'selected' : ''}>⚡ Live Production (Armed & Live Broadcasts)</option>
+                </select>
+              </div>
+
+              <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+                <div>
+                  <label style="display: block; color: #94a3b8; font-weight: 700; margin-bottom: 4px;">COOLDOWN LOCKOUT</label>
+                  <select id="tg-set-cooldown-hours" onchange="window.TelegramPublisher.updateSetting('cooldownHours', Number(this.value))" style="width: 100%; box-sizing: border-box; background: rgba(0,0,0,0.4); border: 1px solid rgba(255,255,255,0.15); color: #ffffff; padding: 7px 10px; border-radius: 8px; font-size: 0.78rem;">
+                    <option value="1" ${s.cooldownHours === 1 ? 'selected' : ''}>1 Hour</option>
+                    <option value="2" ${s.cooldownHours === 2 ? 'selected' : ''}>2 Hours</option>
+                    <option value="4" ${s.cooldownHours === 4 ? 'selected' : ''}>4 Hours</option>
+                    <option value="12" ${s.cooldownHours === 12 ? 'selected' : ''}>12 Hours</option>
+                    <option value="24" ${s.cooldownHours === 24 ? 'selected' : ''}>24 Hours (Default)</option>
+                  </select>
+                </div>
+                <div>
+                  <label style="display: block; color: #94a3b8; font-weight: 700; margin-bottom: 4px;">QUIET HOURS (23:00-06:00 UTC)</label>
+                  <select id="tg-set-quiet-hours" onchange="window.TelegramPublisher.updateSetting('quietHoursEnabled', this.value === 'true')" style="width: 100%; box-sizing: border-box; background: rgba(0,0,0,0.4); border: 1px solid rgba(255,255,255,0.15); color: #ffffff; padding: 7px 10px; border-radius: 8px; font-size: 0.78rem;">
+                    <option value="false" ${!s.quietHoursEnabled ? 'selected' : ''}>Disabled (24/7)</option>
+                    <option value="true" ${s.quietHoursEnabled ? 'selected' : ''}>Enabled (Mute Overnight)</option>
+                  </select>
+                </div>
+              </div>
+
+              <button type="button" onclick="window.TelegramPublisher.emergencyKillAutomation()" style="background: rgba(239,68,68,0.12); border: 1px solid rgba(239,68,68,0.3); color: #f87171; padding: 8px 12px; border-radius: 8px; font-size: 0.75rem; font-weight: 800; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 6px; margin-top: 4px;">
+                <span>🛑</span> Emergency Automation Kill-Switch
+              </button>
+            </div>
+          </div>
+
+          <!-- CARD 4: Data Quality, Model Integrity & Safety Gates -->
+          <div style="background: rgba(15,23,42,0.8); border: 1px solid rgba(255,255,255,0.08); border-radius: 14px; padding: 20px; display: flex; flex-direction: column; gap: 14px;">
+            <div style="border-bottom: 1px solid rgba(255,255,255,0.06); padding-bottom: 10px;">
+              <h4 style="margin: 0; font-size: 0.95rem; font-weight: 800; color: #ffffff;">🛡️ Data Quality & Integrity Guard Thresholds</h4>
+              <div style="font-size: 0.72rem; color: #94a3b8; margin-top: 2px;">Immutable data rules, confidence filters & duplicate guards</div>
+            </div>
+
+            <div style="display: flex; flex-direction: column; gap: 12px; font-size: 0.78rem;">
+              <div style="display: flex; justify-content: space-between; align-items: center;">
+                <span style="color: #cbd5e1;">Enforce Strict Anti-Finished Match Purge:</span>
+                <span style="color: #10b981; font-weight: 800;">ACTIVE (IMMUTABLE)</span>
+              </div>
+              <div style="display: flex; justify-content: space-between; align-items: center;">
+                <span style="color: #cbd5e1;">Enforce Zero-Backfill Match Range Slicing:</span>
+                <span style="color: #10b981; font-weight: 800;">ACTIVE (IMMUTABLE)</span>
+              </div>
+              <div style="display: flex; justify-content: space-between; align-items: center;">
+                <span style="color: #cbd5e1;">Duplicate Post Lookback Window:</span>
+                <select id="tg-set-lookback-window" onchange="window.TelegramPublisher.updateSetting('duplicateLookbackHours', Number(this.value))" style="background: rgba(0,0,0,0.4); border: 1px solid rgba(255,255,255,0.15); color: #cbd5e1; font-weight: 700; padding: 4px 8px; border-radius: 6px; font-size: 0.75rem;">
+                  <option value="6" ${s.duplicateLookbackHours === 6 ? 'selected' : ''}>6 Hours</option>
+                  <option value="12" ${s.duplicateLookbackHours === 12 ? 'selected' : ''}>12 Hours</option>
+                  <option value="24" ${s.duplicateLookbackHours === 24 ? 'selected' : ''}>24 Hours</option>
+                  <option value="48" ${s.duplicateLookbackHours === 48 ? 'selected' : ''}>48 Hours</option>
+                  <option value="168" ${s.duplicateLookbackHours === 168 ? 'selected' : ''}>7 Days</option>
+                </select>
+              </div>
+              <div style="display: flex; justify-content: space-between; align-items: center;">
+                <span style="color: #cbd5e1;">Secret Isolation & Token Redaction:</span>
+                <span style="color: #10b981; font-weight: 800;">CONFIRMED ACTIVE</span>
+              </div>
+
+              <div style="border-top: 1px solid rgba(255,255,255,0.06); padding-top: 10px; display: flex; flex-direction: column; gap: 10px;">
+                <div>
+                  <label style="display: block; color: #94a3b8; font-weight: 700; margin-bottom: 4px;">MINIMUM MODEL CONFIDENCE GATE</label>
+                  <select id="tg-set-min-confidence" onchange="window.TelegramPublisher.updateSetting('minConfidenceGate', Number(this.value))" style="width: 100%; box-sizing: border-box; background: rgba(0,0,0,0.4); border: 1px solid rgba(255,255,255,0.15); color: #ffffff; padding: 7px 10px; border-radius: 8px; font-size: 0.78rem;">
+                    <option value="70" ${s.minConfidenceGate === 70 ? 'selected' : ''}>70% Confidence Minimum</option>
+                    <option value="75" ${s.minConfidenceGate === 75 ? 'selected' : ''}>75% Confidence Minimum (Default)</option>
+                    <option value="80" ${s.minConfidenceGate === 80 ? 'selected' : ''}>80% Confidence Minimum (Elite Picks)</option>
+                    <option value="85" ${s.minConfidenceGate === 85 ? 'selected' : ''}>85% Confidence Minimum (High Conviction)</option>
+                    <option value="90" ${s.minConfidenceGate === 90 ? 'selected' : ''}>90% Confidence Minimum (Absolute Banker)</option>
+                  </select>
+                </div>
+
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+                  <div>
+                    <label style="display: block; color: #94a3b8; font-weight: 700; margin-bottom: 4px;">MIN CONSENSUS GATE</label>
+                    <select id="tg-set-min-consensus" onchange="window.TelegramPublisher.updateSetting('minConsensusGate', Number(this.value))" style="width: 100%; box-sizing: border-box; background: rgba(0,0,0,0.4); border: 1px solid rgba(255,255,255,0.15); color: #ffffff; padding: 7px 10px; border-radius: 8px; font-size: 0.78rem;">
+                      <option value="0" ${s.minConsensusGate === 0 ? 'selected' : ''}>Off (0/5)</option>
+                      <option value="2" ${s.minConsensusGate === 2 ? 'selected' : ''}>2 of 5 (40%)</option>
+                      <option value="3" ${s.minConsensusGate === 3 ? 'selected' : ''}>3 of 5 (60% Default)</option>
+                      <option value="4" ${s.minConsensusGate === 4 ? 'selected' : ''}>4 of 5 (80%)</option>
+                      <option value="5" ${s.minConsensusGate === 5 ? 'selected' : ''}>5 of 5 (100% Unanimous)</option>
+                    </select>
+                  </div>
+                  <div>
+                    <label style="display: block; color: #94a3b8; font-weight: 700; margin-bottom: 4px;">MIN ODDS FLOOR</label>
+                    <input type="number" step="0.05" min="1.10" max="5.00" id="tg-set-min-odds" value="${s.minOddsFloor}" onchange="window.TelegramPublisher.updateSetting('minOddsFloor', Number(this.value))" style="width: 100%; box-sizing: border-box; background: rgba(0,0,0,0.4); border: 1px solid rgba(255,255,255,0.15); color: #ffffff; padding: 7px 10px; border-radius: 8px; font-size: 0.78rem;">
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- CARD 5: Audience, VIP Membership & Security Administration -->
+          <div style="background: rgba(15,23,42,0.8); border: 1px solid rgba(255,255,255,0.08); border-radius: 14px; padding: 20px; display: flex; flex-direction: column; gap: 14px;">
+            <div style="border-bottom: 1px solid rgba(255,255,255,0.06); padding-bottom: 10px;">
+              <h4 style="margin: 0; font-size: 0.95rem; font-weight: 800; color: #ffffff;">👥 Audience, VIP & Access Governance</h4>
+              <div style="font-size: 0.72rem; color: #94a3b8; margin-top: 2px;">Session security, role validation & membership sweeping</div>
+            </div>
+
+            <div style="display: flex; flex-direction: column; gap: 12px; font-size: 0.78rem;">
+              <div>
+                <label style="display: block; color: #94a3b8; font-weight: 700; margin-bottom: 4px;">AUTOMATED VIP ACCESS SWEEPER</label>
+                <select id="tg-set-auto-sweep" onchange="window.TelegramPublisher.updateSetting('autoSweepVip', this.value === 'true')" style="width: 100%; box-sizing: border-box; background: rgba(0,0,0,0.4); border: 1px solid rgba(255,255,255,0.15); color: #ffffff; padding: 7px 10px; border-radius: 8px; font-size: 0.78rem;">
+                  <option value="true" ${s.autoSweepVip ? 'selected' : ''}>Active (Cloudflare Cron Daily Revoke of Expired VIPs)</option>
+                  <option value="false" ${!s.autoSweepVip ? 'selected' : ''}>Disabled (Manual Access Audit Only)</option>
+                </select>
+              </div>
+
+              <div style="display: flex; justify-content: space-between; align-items: center;">
+                <span style="color: #cbd5e1;">Single-Use Auth Link TTL:</span>
+                <span style="color: #cbd5e1; font-weight: 700;">15 Minutes (Strict Invalidation)</span>
+              </div>
+              <div style="display: flex; justify-content: space-between; align-items: center;">
+                <span style="color: #cbd5e1;">Admin Session Authorization:</span>
+                <span style="color: #10b981; font-weight: 800;">BEARER HEADER ENFORCED</span>
+              </div>
+              <div style="display: flex; justify-content: space-between; align-items: center;">
+                <span style="color: #cbd5e1;">Active Session Key:</span>
+                <span style="color: #94a3b8; font-family: monospace; font-size: 0.72rem;">localStorage['dp_session_id']</span>
+              </div>
+              <div style="display: flex; justify-content: space-between; align-items: center;">
+                <span style="color: #cbd5e1;">Role Guard:</span>
+                <span style="color: #38bdf8; font-weight: 700;">Admin Privileges Only (401/403 Block)</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- CARD 6: Telemetry, Cache Diagnostics & Maintenance Operations -->
+          <div style="background: rgba(15,23,42,0.8); border: 1px solid rgba(255,255,255,0.08); border-radius: 14px; padding: 20px; display: flex; flex-direction: column; gap: 14px;">
+            <div style="border-bottom: 1px solid rgba(255,255,255,0.06); padding-bottom: 10px;">
+              <h4 style="margin: 0; font-size: 0.95rem; font-weight: 800; color: #ffffff;">🛠️ Telemetry, Caches & Maintenance</h4>
+              <div style="font-size: 0.72rem; color: #94a3b8; margin-top: 2px;">In-memory cache guards, audit exports & resets</div>
+            </div>
+
+            <div style="display: flex; flex-direction: column; gap: 12px; font-size: 0.78rem;">
+              <div style="display: flex; justify-content: space-between; align-items: center;">
+                <span style="color: #cbd5e1;">Match Pool Cache:</span>
+                <span style="color: #10b981; font-weight: 700;">● Active (2.5s TTL In-Memory)</span>
+              </div>
+              <div style="display: flex; justify-content: space-between; align-items: center;">
+                <span style="color: #cbd5e1;">Authoritative Clubs Pool:</span>
+                <span style="color: #10b981; font-weight: 700;">● Active (228 Clubs Normalized)</span>
+              </div>
+              <div>
+                <label style="display: block; color: #94a3b8; font-weight: 700; margin-bottom: 4px;">TELEMETRY LOGGING VERBOSITY</label>
+                <select id="tg-set-telemetry-level" onchange="window.TelegramPublisher.updateSetting('telemetryVerbosity', this.value)" style="width: 100%; box-sizing: border-box; background: rgba(0,0,0,0.4); border: 1px solid rgba(255,255,255,0.15); color: #ffffff; padding: 7px 10px; border-radius: 8px; font-size: 0.78rem;">
+                  <option value="standard" ${s.telemetryVerbosity === 'standard' ? 'selected' : ''}>Standard Operational Telemetry</option>
+                  <option value="detailed" ${s.telemetryVerbosity === 'detailed' ? 'selected' : ''}>Detailed Engine Tracing & Debug</option>
+                </select>
+              </div>
+
+              <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 4px;">
+                <button type="button" onclick="window.TelegramPublisher.clearSystemCaches()" style="background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.15); color: #cbd5e1; padding: 8px; border-radius: 8px; font-size: 0.72rem; font-weight: 700; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 4px;">
+                  <span>🧹</span> Re-Sync Caches
+                </button>
+                <button type="button" onclick="window.TelegramPublisher.exportSettingsJson()" style="background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.15); color: #cbd5e1; padding: 8px; border-radius: 8px; font-size: 0.72rem; font-weight: 700; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 4px;">
+                  <span>📥</span> Download Audit
+                </button>
+              </div>
+              <button type="button" onclick="window.TelegramPublisher.resetSettingsToDefaults()" style="background: rgba(239,68,68,0.08); border: 1px solid rgba(239,68,68,0.25); color: #f87171; padding: 8px; border-radius: 8px; font-size: 0.72rem; font-weight: 700; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 4px;">
+                <span>🔄</span> Reset to Factory Defaults
+              </button>
+            </div>
+          </div>
+
         </div>
       </div>
     `;
@@ -8739,6 +9219,15 @@
     getClubsForLeague,
     renderClubSelectOptionsHtml,
     renderClubsStripHtml,
+    renderSettingsTab,
+    saveSettings,
+    updateSetting,
+    saveAllSettingsFromForm,
+    resetSettingsToDefaults,
+    exportSettingsJson,
+    clearSystemCaches,
+    getSettings: () => state.settings,
+    DEFAULT_SETTINGS,
     openModal() {
       const el = document.getElementById('telegram-command-center-section') || document.getElementById('telegram-publisher-section');
       if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });

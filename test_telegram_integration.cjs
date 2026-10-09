@@ -4299,6 +4299,92 @@ async function runTests() {
     global.document = origDoc;
   });
 
+  test('Section 58.43: Comprehensive System Settings Console, Governance Controls & Cache Diagnostics', () => {
+    // 1. Check API methods existence
+    assert.strictEqual(typeof telegramPublisher.renderSettingsTab, 'function', 'renderSettingsTab function must exist');
+    assert.strictEqual(typeof telegramPublisher.saveSettings, 'function', 'saveSettings function must exist');
+    assert.strictEqual(typeof telegramPublisher.updateSetting, 'function', 'updateSetting function must exist');
+    assert.strictEqual(typeof telegramPublisher.saveAllSettingsFromForm, 'function', 'saveAllSettingsFromForm function must exist');
+    assert.strictEqual(typeof telegramPublisher.resetSettingsToDefaults, 'function', 'resetSettingsToDefaults function must exist');
+    assert.strictEqual(typeof telegramPublisher.exportSettingsJson, 'function', 'exportSettingsJson function must exist');
+    assert.strictEqual(typeof telegramPublisher.clearSystemCaches, 'function', 'clearSystemCaches function must exist');
+    assert.strictEqual(typeof telegramPublisher.getSettings, 'function', 'getSettings function must exist');
+    assert.ok(telegramPublisher.DEFAULT_SETTINGS, 'DEFAULT_SETTINGS object must exist');
+
+    // 2. Initial state verification
+    const initialSettings = telegramPublisher.getSettings();
+    assert.strictEqual(initialSettings.defaultTarget, 'free', 'Default target is free');
+    assert.strictEqual(initialSettings.defaultPostType, 'Top Tip of the Day', 'Default post type is Top Tip');
+    assert.strictEqual(initialSettings.minConfidenceGate, 75, 'Default min confidence gate is 75');
+    assert.strictEqual(initialSettings.minConsensusGate, 3, 'Default min consensus gate is 3');
+    assert.strictEqual(initialSettings.duplicateLookbackHours, 24, 'Default duplicate lookback is 24 hours');
+
+    // 3. Render HTML verification - must contain all 6 cards and immutable thresholds
+    const settingsHtml = telegramPublisher.renderSettingsTab();
+    assert.ok(settingsHtml.includes('Command Center System Settings &amp; Governance') || settingsHtml.includes('Command Center System Settings & Governance'), 'Must render settings header');
+    
+    // Immutable integrity items (verbatim preservation from original screen)
+    assert.ok(settingsHtml.includes('Enforce Strict Anti-Finished Match Purge:'), 'Must preserve Anti-Finished Match Purge label');
+    assert.ok(settingsHtml.includes('ACTIVE (IMMUTABLE)'), 'Must preserve ACTIVE (IMMUTABLE) badge');
+    assert.ok(settingsHtml.includes('Enforce Zero-Backfill Match Range Slicing:'), 'Must preserve Zero-Backfill Match Range Slicing label');
+    assert.ok(settingsHtml.includes('Duplicate Post Lookback Window:'), 'Must preserve Duplicate Post Lookback Window label');
+    assert.ok(settingsHtml.includes('Secret Isolation &amp; Token Redaction:') || settingsHtml.includes('Secret Isolation & Token Redaction:'), 'Must preserve Secret Isolation label');
+    assert.ok(settingsHtml.includes('CONFIRMED ACTIVE'), 'Must preserve CONFIRMED ACTIVE badge');
+
+    // Rich configuration sections
+    assert.ok(settingsHtml.includes('Telegram Infrastructure &amp; Diagnostics') || settingsHtml.includes('Telegram Infrastructure & Diagnostics'), 'Must render Telegram Infrastructure card');
+    assert.ok(settingsHtml.includes('Publishing &amp; Composition Policies') || settingsHtml.includes('Publishing & Composition Policies'), 'Must render Publishing Policies card');
+    assert.ok(settingsHtml.includes('Autonomous Distribution &amp; Cadence') || settingsHtml.includes('Autonomous Distribution & Cadence'), 'Must render Autonomous Distribution card');
+    assert.ok(settingsHtml.includes('Audience, VIP &amp; Access Governance') || settingsHtml.includes('Audience, VIP & Access Governance'), 'Must render Audience & VIP card');
+    assert.ok(settingsHtml.includes('Telemetry, Caches &amp; Maintenance') || settingsHtml.includes('Telemetry, Caches & Maintenance'), 'Must render Maintenance card');
+
+    // Action buttons
+    assert.ok(settingsHtml.includes('clearSystemCaches'), 'Must include clearSystemCaches button');
+    assert.ok(settingsHtml.includes('exportSettingsJson'), 'Must include exportSettingsJson button');
+    assert.ok(settingsHtml.includes('resetSettingsToDefaults'), 'Must include resetSettingsToDefaults button');
+    assert.ok(settingsHtml.includes('saveAllSettingsFromForm'), 'Must include saveAllSettingsFromForm button');
+
+    // 4. Update individual setting
+    telegramPublisher.updateSetting('defaultTarget', 'vip');
+    assert.strictEqual(telegramPublisher.getSettings().defaultTarget, 'vip', 'Setting must update to vip');
+    assert.strictEqual(telegramPublisher.getState().target, 'vip', 'Active state target must synchronize');
+
+    telegramPublisher.updateSetting('minConfidenceGate', 85);
+    assert.strictEqual(telegramPublisher.getSettings().minConfidenceGate, 85, 'Confidence gate must update to 85');
+    assert.strictEqual(telegramPublisher.getState().dynamicRules.minConfidence, 85, 'Dynamic rules confidence must harmonize');
+
+    // 5. Bulk save settings
+    const saveResult = telegramPublisher.saveSettings({
+      defaultPostType: 'Value Alert',
+      minConsensusGate: 4,
+      autoScheduleMode: 'live',
+      duplicateLookbackHours: 48
+    });
+    assert.strictEqual(saveResult.success, true, 'saveSettings must return success');
+    assert.strictEqual(telegramPublisher.getSettings().defaultPostType, 'Value Alert');
+    assert.strictEqual(telegramPublisher.getState().postType, 'Value Alert');
+    assert.strictEqual(telegramPublisher.getState().minConsensus, 4);
+    assert.strictEqual(telegramPublisher.getState().automationMode, 'live');
+    assert.strictEqual(telegramPublisher.getSettings().duplicateLookbackHours, 48);
+
+    // 6. Cache clearance
+    const cacheRes = telegramPublisher.clearSystemCaches();
+    assert.strictEqual(cacheRes.success, true, 'clearSystemCaches must return success');
+
+    // 7. Audit JSON export
+    const exportData = telegramPublisher.exportSettingsJson();
+    assert.strictEqual(exportData.system, 'DeepPredictBet Telegram Command Center');
+    assert.strictEqual(exportData.version, 'DP-v3.4');
+    assert.strictEqual(exportData.settings.defaultPostType, 'Value Alert');
+
+    // 8. Reset to defaults
+    const resetRes = telegramPublisher.resetSettingsToDefaults();
+    assert.strictEqual(resetRes.success, true, 'resetSettingsToDefaults must return success');
+    assert.strictEqual(telegramPublisher.getSettings().defaultTarget, 'free');
+    assert.strictEqual(telegramPublisher.getSettings().minConfidenceGate, 75);
+    assert.strictEqual(telegramPublisher.getSettings().minConsensusGate, 3);
+  });
+
   // Restore globals
   global.localStorage = originalLocalStorage;
   global.sessionStorage = originalSessionStorage;
