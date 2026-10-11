@@ -1962,11 +1962,30 @@
 
     // 1. Explicit user selection for this fixture
     if (state.selectedMatchMarkets) {
-      const selKey = state.selectedMatchMarkets[match.id] || state.selectedMatchMarkets[String(match.id)];
+      const hName = match.homeTeam?.name || (typeof match.homeTeam === 'string' ? match.homeTeam : (match.home || ''));
+      const aName = match.awayTeam?.name || (typeof match.awayTeam === 'string' ? match.awayTeam : (match.away || ''));
+      const altKey = (hName && aName) ? `${hName}-${aName}` : null;
+      const selKey = state.selectedMatchMarkets[match.id] ||
+                     state.selectedMatchMarkets[String(match.id)] ||
+                     (match.matchId ? state.selectedMatchMarkets[match.matchId] : null) ||
+                     (altKey ? state.selectedMatchMarkets[altKey] : null);
       if (selKey && selKey !== 'undefined') {
         const found = pool.find(p => p.id === selKey || p.tip === selKey || p.name === selKey);
         if (found) return found;
         if (typeof selKey === 'object' && selKey.tip) return selKey;
+        const reg = CANONICAL_MARKET_REGISTRY.find(c => c.id === selKey);
+        if (reg) {
+          return {
+            id: reg.id,
+            tip: reg.name,
+            name: reg.name,
+            odds: 1.85,
+            confidence: 75,
+            icon: reg.icon || '🎯',
+            category: reg.category,
+            categoryLabel: reg.categoryLabel
+          };
+        }
       }
     }
 
@@ -2080,14 +2099,83 @@
   function setMatchMarket(matchId, marketId) {
     if (!matchId || !marketId || marketId === 'undefined') return;
     if (!state.selectedMatchMarkets) state.selectedMatchMarkets = {};
+    const strId = String(matchId);
     state.selectedMatchMarkets[matchId] = marketId;
-    state.selectedMatchMarkets[String(matchId)] = marketId;
+    state.selectedMatchMarkets[strId] = marketId;
     selectMarketForMatch(matchId, marketId, true);
+
+    const rawPool = getRawMatchPool();
+    const match = rawPool.find(m => String(m.id) === strId || String(m.matchId) === strId) || { id: matchId };
+    if (match.homeTeam && match.awayTeam) {
+      const altKey = `${match.homeTeam?.name || match.home}-${match.awayTeam?.name || match.away}`;
+      state.selectedMatchMarkets[altKey] = marketId;
+    }
+
+    const pool = getMatchMarketPool(match);
+    const chosen = pool.find(p => p.id === marketId || p.tip === marketId || p.name === marketId) ||
+                   CANONICAL_MARKET_REGISTRY.find(c => c.id === marketId) ||
+                   { id: marketId, tip: marketId, name: marketId, odds: 1.85, confidence: 75 };
+    const labelText = chosen.name || chosen.tip || marketId;
+    const confVal = Math.round(chosen.confidence || 75);
+    const oddsVal = Number(chosen.odds || 1.85).toFixed(2);
+
     if (typeof document !== 'undefined') {
-      renderDiscoverMatchTable();
-      if (state.activeTab === 'calendar') {
-        renderCalendarTab();
+      // 1. Instantaneous direct update of the "MODEL PICK: " label
+      const pickLabelEl = document.getElementById(`cal-model-pick-label-${matchId}`) ||
+                          document.getElementById(`cal-model-pick-label-${strId}`);
+      if (pickLabelEl) {
+        pickLabelEl.textContent = labelText;
+        pickLabelEl.style.color = '#38bdf8';
+        pickLabelEl.style.textShadow = '0 0 10px rgba(56,189,248,0.9)';
+        setTimeout(() => {
+          if (pickLabelEl) pickLabelEl.style.textShadow = 'none';
+        }, 600);
       }
+
+      // 2. Confidence badge update
+      const pickConfEl = document.getElementById(`cal-pick-conf-${matchId}`) ||
+                         document.getElementById(`cal-pick-conf-${strId}`);
+      if (pickConfEl) {
+        pickConfEl.textContent = `${confVal}% Conf`;
+      }
+
+      // 3. Odds badge update
+      const pickOddsEl = document.getElementById(`cal-pick-odds-${matchId}`) ||
+                         document.getElementById(`cal-pick-odds-${strId}`);
+      if (pickOddsEl) {
+        pickOddsEl.textContent = `@${oddsVal}`;
+      }
+
+      // 4. Drawer header active market badge update
+      const selectedBadgeEl = document.getElementById(`cal-market-selected-badge-${matchId}`) ||
+                              document.getElementById(`cal-market-selected-badge-${strId}`);
+      if (selectedBadgeEl) {
+        selectedBadgeEl.textContent = labelText;
+      }
+
+      // 5. Drawer canonical markets dropdown sync
+      const selectEl = document.getElementById(`cal-market-select-${matchId}`) ||
+                       document.getElementById(`cal-market-select-${strId}`);
+      if (selectEl && selectEl.value !== marketId) {
+        selectEl.value = marketId;
+      }
+
+      // 6. Popular shortcut chips active styles
+      const chipsContainer = document.getElementById(`cal-market-chips-${matchId}`) ||
+                             document.getElementById(`cal-market-chips-${strId}`);
+      if (chipsContainer) {
+        const chipBtns = chipsContainer.querySelectorAll('button');
+        chipBtns.forEach(btn => {
+          const btnMarket = btn.getAttribute('data-cal-chip');
+          const isSelected = (btnMarket === marketId) || (btnMarket === chosen.id);
+          btn.style.background = isSelected ? 'rgba(56,189,248,0.3)' : 'rgba(255,255,255,0.06)';
+          btn.style.borderColor = isSelected ? '#38bdf8' : 'rgba(255,255,255,0.12)';
+          btn.style.color = isSelected ? '#ffffff' : '#cbd5e1';
+          btn.style.fontWeight = isSelected ? '800' : '600';
+        });
+      }
+
+      renderDiscoverMatchTable();
     }
   }
 
@@ -2148,21 +2236,6 @@
 
     setMatchMarket(matchId, picked.id);
 
-    // Reactive DOM updates in case calendar is currently rendered
-    if (typeof document !== 'undefined') {
-      const pickLabelEl = document.getElementById(`cal-model-pick-label-${matchId}`);
-      if (pickLabelEl) pickLabelEl.textContent = picked.name || picked.tip;
-
-      const pickConfEl = document.getElementById(`cal-pick-conf-${matchId}`);
-      if (pickConfEl) pickConfEl.textContent = `${Math.round(picked.confidence || 75)}% Conf`;
-
-      const pickOddsEl = document.getElementById(`cal-pick-odds-${matchId}`);
-      if (pickOddsEl) pickOddsEl.textContent = `@${Number(picked.odds || 1.85).toFixed(2)}`;
-
-      const selectEl = document.getElementById(`cal-market-select-${matchId}`);
-      if (selectEl) selectEl.value = picked.id;
-    }
-
     if (typeof showToastNotification === 'function') {
       const hName = match.homeTeam?.name || match.home || 'Fixture';
       showToastNotification(`🎲 Random pick applied for ${hName}: ${picked.name || picked.tip} (@${Number(picked.odds || 1.85).toFixed(2)})`);
@@ -2170,6 +2243,7 @@
 
     return picked;
   }
+
 
 
   // ============================================================================
@@ -5423,7 +5497,7 @@
                             <span>📊</span> Manually Select Market (${pool.length} Available)
                           </span>
                           <span style="font-size: 0.68rem; color: #94a3b8;">
-                            Selected: <b style="color: #38bdf8;">${pick.label || pick.tip}</b>
+                            Selected: <b id="cal-market-selected-badge-${m.id}" style="color: #38bdf8;">${pick.label || pick.tip}</b>
                           </span>
                         </div>
 
@@ -5445,13 +5519,14 @@
                           <div style="font-size: 0.67rem; color: #64748b; font-weight: 700; margin-bottom: 5px;">
                             POPULAR SHORTCUT CHIPS:
                           </div>
-                          <div style="display: flex; gap: 5px; flex-wrap: wrap;">
+                          <div id="cal-market-chips-${m.id}" style="display: flex; gap: 5px; flex-wrap: wrap;">
                             ${['win1', 'draw', 'win2', 'dc1x', 'dcx2', 'dnb', 'uo15', 'uo25', 'uo35', 'btts', 'btts_no'].map(mId => {
                               const item = pool.find(p => p.id === mId);
                               if (!item) return '';
                               const isCurrent = item.id === activeSel.id;
                               return `
                                 <button type="button"
+                                        data-cal-chip="${item.id}"
                                         onclick="window.TelegramPublisher.setMatchMarket('${m.id}', '${item.id}')"
                                         style="background: ${isCurrent ? 'rgba(56,189,248,0.3)' : 'rgba(255,255,255,0.06)'}; border: 1px solid ${isCurrent ? '#38bdf8' : 'rgba(255,255,255,0.12)'}; color: ${isCurrent ? '#ffffff' : '#cbd5e1'}; font-size: 0.68rem; font-weight: ${isCurrent ? '800' : '600'}; padding: 3px 8px; border-radius: 4px; cursor: pointer; transition: all 0.15s ease;">
                                   ${item.shortName || item.tip} (@${Number(item.odds || 1.85).toFixed(2)})

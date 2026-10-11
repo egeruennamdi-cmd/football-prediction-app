@@ -4571,6 +4571,46 @@ async function runTests() {
 
     const distinctPicks = new Set([pick1.id, pick2.id, pick3.id]);
     assert.ok(distinctPicks.size >= 2, `Model picks across diverse fixtures must vary instead of all being Home Win. Got: ${Array.from(distinctPicks).join(', ')}`);
+
+    // 6. Reactive DOM Updates in Calendar Fixture Cards (User Request: MODEL PICK updates immediately)
+    const mockElements = {
+      'cal-model-pick-label-cal-fx-dom': { textContent: 'Initial Pick', style: {} },
+      'cal-pick-conf-cal-fx-dom': { textContent: '75% Conf', style: {} },
+      'cal-pick-odds-cal-fx-dom': { textContent: '@1.85', style: {} },
+      'cal-market-selected-badge-cal-fx-dom': { textContent: 'Initial Pick', style: {} },
+      'cal-market-select-cal-fx-dom': { value: 'win1' },
+      'cal-market-chips-cal-fx-dom': {
+        buttons: [
+          { getAttribute: (attr) => attr === 'data-cal-chip' ? 'btts' : null, style: {} },
+          { getAttribute: (attr) => attr === 'data-cal-chip' ? 'uo25' : null, style: {} }
+        ],
+        querySelectorAll: function(sel) { return this.buttons; }
+      }
+    };
+
+    const prevDoc = global.document;
+    global.document = {
+      getElementById: (id) => mockElements[id] || null,
+      querySelectorAll: (sel) => []
+    };
+
+    try {
+      // User selects BTTS via chip or dropdown
+      telegramPublisher.setMatchMarket('cal-fx-dom', 'btts');
+      assert.ok(mockElements['cal-model-pick-label-cal-fx-dom'].textContent.includes('Both Teams'), 'DOM MODEL PICK label must immediately update to BTTS');
+      assert.strictEqual(mockElements['cal-market-select-cal-fx-dom'].value, 'btts', 'DOM select dropdown must sync value to btts');
+      assert.strictEqual(mockElements['cal-market-selected-badge-cal-fx-dom'].textContent, mockElements['cal-model-pick-label-cal-fx-dom'].textContent, 'DOM drawer selected badge must sync with pick label');
+      assert.strictEqual(mockElements['cal-market-chips-cal-fx-dom'].buttons[0].style.borderColor, '#38bdf8', 'BTTS chip button must be highlighted with cyan border');
+      assert.strictEqual(mockElements['cal-market-chips-cal-fx-dom'].buttons[1].style.borderColor, 'rgba(255,255,255,0.12)', 'Non-selected chip button must have default border');
+
+      // User selects Over 2.5 Goals (uo25)
+      telegramPublisher.setMatchMarket('cal-fx-dom', 'uo25');
+      assert.ok(mockElements['cal-model-pick-label-cal-fx-dom'].textContent.includes('Over 2.5'), 'DOM MODEL PICK label must immediately update to Over 2.5');
+      assert.strictEqual(mockElements['cal-market-select-cal-fx-dom'].value, 'uo25', 'DOM select dropdown must sync value to uo25');
+      assert.strictEqual(mockElements['cal-market-chips-cal-fx-dom'].buttons[1].style.borderColor, '#38bdf8', 'uo25 chip button must be highlighted with cyan border');
+    } finally {
+      global.document = prevDoc;
+    }
   });
 
   // Restore globals
