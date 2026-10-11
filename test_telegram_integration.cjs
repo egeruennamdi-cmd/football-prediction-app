@@ -4504,6 +4504,75 @@ async function runTests() {
     telegramPublisher.searchSubscribers('');
   });
 
+  await testAsync('Section 58.45: Calendar Fixture Card Markets Dropdown Integration, Manual Market Selection & Random Pick Engine', async () => {
+    // 1. Calendar HTML renders Markets button (Attachment 2) and Random Pick button on match fixture cards (Attachment 1)
+    telegramPublisher.setCalendarView('month');
+    telegramPublisher.selectCalendarDate('2026-10-19');
+    const calHtml = telegramPublisher.renderCalendarTab();
+    assert.ok(calHtml.includes('cal-markets-btn-'), 'Calendar match card must render Markets dropdown button');
+    assert.ok(calHtml.includes('cal-random-btn-'), 'Calendar match card must render Random Pick button');
+    assert.ok(calHtml.includes('cal-markets-tray-'), 'Calendar match card must include expandable markets tray');
+    assert.ok(calHtml.includes('cal-market-select-'), 'Calendar match card must include canonical markets select dropdown');
+    assert.ok(calHtml.includes('POPULAR SHORTCUT CHIPS:'), 'Calendar match card must render popular shortcut chips');
+
+    // 2. Interactive Toggle of Markets Tray
+    const testMatchId = 'test-cal-mkt-1';
+    telegramPublisher.toggleMatchMarketsDropdown(testMatchId);
+    assert.ok(telegramPublisher.getState().openCalendarMarketTrays.has(testMatchId), 'toggleMatchMarketsDropdown must open tray');
+    telegramPublisher.toggleMatchMarketsDropdown(testMatchId);
+    assert.ok(!telegramPublisher.getState().openCalendarMarketTrays.has(testMatchId), 'toggleMatchMarketsDropdown must close tray');
+
+    // 3. Manual Market Selection Override on Fixture Card
+    const sampleFixture = {
+      id: 'cal-fx-99',
+      league: 'Premier League',
+      rawDate: '2026-10-19T16:00:00Z',
+      homeTeam: { name: 'Arsenal' },
+      awayTeam: { name: 'Liverpool' },
+      predictions: { home: 48, draw: 28, away: 24 },
+      confidenceVal: 82
+    };
+
+    // User manually selects Over 2.5 Goals (uo25)
+    telegramPublisher.setMatchMarket(sampleFixture.id, 'uo25');
+    assert.strictEqual(telegramPublisher.getState().selectedMatchMarkets[sampleFixture.id], 'uo25', 'State must record manual market');
+
+    let intel = telegramPublisher.extractIntelligenceForMatch(sampleFixture);
+    assert.ok(intel && intel.bestPick, 'extractIntelligenceForMatch must supply bestPick');
+    assert.strictEqual(intel.bestPick.id, 'uo25', 'bestPick id must match manual selection uo25');
+    assert.ok(intel.bestPick.label.includes('Over 2.5'), 'bestPick label must reflect Over 2.5');
+
+    // User manually selects Both Teams To Score (btts)
+    telegramPublisher.setMatchMarket(sampleFixture.id, 'btts');
+    intel = telegramPublisher.extractIntelligenceForMatch(sampleFixture);
+    assert.strictEqual(intel.bestPick.id, 'btts', 'bestPick id must update to btts');
+    assert.ok(intel.bestPick.label.includes('Both Teams'), 'bestPick label must reflect BTTS');
+
+    // User manually selects Double Chance (dc1x)
+    telegramPublisher.setMatchMarket(sampleFixture.id, 'dc1x');
+    intel = telegramPublisher.extractIntelligenceForMatch(sampleFixture);
+    assert.strictEqual(intel.bestPick.id, 'dc1x', 'bestPick id must update to dc1x');
+
+    // 4. Random Pick Functionality (randomizeMatchMarket)
+    const randomized = telegramPublisher.randomizeMatchMarket(sampleFixture.id);
+    assert.ok(randomized && randomized.id, 'randomizeMatchMarket must return a valid market');
+    assert.strictEqual(telegramPublisher.getState().selectedMatchMarkets[sampleFixture.id], randomized.id, 'randomizeMatchMarket must persist selected market');
+    const intelAfterRandom = telegramPublisher.extractIntelligenceForMatch(sampleFixture);
+    assert.strictEqual(intelAfterRandom.bestPick.id, randomized.id, 'extractIntelligenceForMatch bestPick must reflect randomized pick');
+
+    // 5. Dynamic Algorithmic Fixture Model Pick Diversification (No rigid "Home Win" for every fixture)
+    const fixture1 = { id: 'div-1', homeTeam: { name: 'Bayern Munich' }, awayTeam: { name: 'Dortmund' }, stats: { homeXg: 2.2, awayXg: 1.6 }, predictions: { home: 54, draw: 24, away: 22 } };
+    const fixture2 = { id: 'div-2', homeTeam: { name: 'Juventus' }, awayTeam: { name: 'Roma' }, stats: { homeXg: 0.9, awayXg: 0.8 }, predictions: { home: 42, draw: 34, away: 24 } };
+    const fixture3 = { id: 'div-3', homeTeam: { name: 'Southampton' }, awayTeam: { name: 'Manchester City' }, stats: { homeXg: 0.7, awayXg: 2.4 }, predictions: { home: 18, draw: 22, away: 60 } };
+
+    const pick1 = telegramPublisher.getActiveSelectionForMatch(fixture1);
+    const pick2 = telegramPublisher.getActiveSelectionForMatch(fixture2);
+    const pick3 = telegramPublisher.getActiveSelectionForMatch(fixture3);
+
+    const distinctPicks = new Set([pick1.id, pick2.id, pick3.id]);
+    assert.ok(distinctPicks.size >= 2, `Model picks across diverse fixtures must vary instead of all being Home Win. Got: ${Array.from(distinctPicks).join(', ')}`);
+  });
+
   // Restore globals
   global.localStorage = originalLocalStorage;
   global.sessionStorage = originalSessionStorage;

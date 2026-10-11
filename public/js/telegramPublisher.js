@@ -2008,19 +2008,71 @@
       }
     }
 
-    // 5. Probability dominant side
+    // 5. Dynamic Algorithmic Model Selection with Natural Fixture Diversification
+    // (Evaluates goal expectancy, probabilistic edges, and fixture seed so the model
+    // does not stubbornly select 'Home Win' for every single match)
     const pHome = match.predictions?.home || 48;
     const pAway = match.predictions?.away || 26;
-    if (pHome >= 52) {
-      return pool.find(p => p.id === 'win1') || pool[0];
-    } else if (pAway >= 48) {
-      return pool.find(p => p.id === 'win2') || pool[2];
+    const pDraw = match.predictions?.draw || (100 - pHome - pAway);
+
+    const hName = match.homeTeam?.name || (typeof match.homeTeam === 'string' ? match.homeTeam : (match.home || 'Home'));
+    const aName = match.awayTeam?.name || (typeof match.awayTeam === 'string' ? match.awayTeam : (match.away || 'Away'));
+    const seed = Math.abs(String(match.id || `${hName}-${aName}`).split('').reduce((acc, c) => acc + c.charCodeAt(0), 0));
+
+    const candidateIds = [];
+
+    // Goal tempo & scoring markets
+    const goalExp = (match.stats?.homeXg || 1.45) + (match.stats?.awayXg || 1.15);
+    if (goalExp >= 2.6 || (pHome >= 45 && pAway >= 25)) {
+      candidateIds.push('uo25');
+      candidateIds.push('btts');
+    }
+    if (goalExp >= 2.0) {
+      candidateIds.push('uo15');
     }
 
-    const uo15 = pool.find(p => p.id === 'uo15');
-    if (uo15) return uo15;
+    // Match outcome dynamics
+    if (pHome >= 60) {
+      candidateIds.push('win1');
+      candidateIds.push('dc1x');
+    } else if (pHome >= 48) {
+      candidateIds.push('win1');
+      candidateIds.push('dc1x');
+      candidateIds.push('dnb');
+    }
+
+    if (pAway >= 48) {
+      candidateIds.push('win2');
+      candidateIds.push('dcx2');
+    } else if (pAway >= 38) {
+      candidateIds.push('dcx2');
+    }
+
+    // Competitive / tight fixture dynamics
+    if (Math.abs(pHome - pAway) <= 18) {
+      candidateIds.push('dc1x');
+      candidateIds.push('dnb');
+      candidateIds.push('uo25');
+      candidateIds.push('btts');
+    }
+
+    if (candidateIds.length === 0) {
+      candidateIds.push(pHome >= pAway ? 'win1' : 'win2', 'dc1x', 'uo25', 'btts');
+    }
+
+    // Deterministic selection based on fixture seed
+    const chosenCandidateId = candidateIds[seed % candidateIds.length];
+    const picked = pool.find(p => p.id === chosenCandidateId);
+    if (picked) return picked;
+
+    const uo25 = pool.find(p => p.id === 'uo25');
+    if (uo25) return uo25;
+    const btts = pool.find(p => p.id === 'btts');
+    if (btts) return btts;
     const dc1x = pool.find(p => p.id === 'dc1x');
     if (dc1x) return dc1x;
+    const win1 = pool.find(p => p.id === 'win1');
+    if (win1) return win1;
 
     return pool[0];
   }
@@ -2033,7 +2085,90 @@
     selectMarketForMatch(matchId, marketId, true);
     if (typeof document !== 'undefined') {
       renderDiscoverMatchTable();
+      if (state.activeTab === 'calendar') {
+        renderCalendarTab();
+      }
     }
+  }
+
+  /**
+   * Toggles the Markets drawer dropdown on the calendar match card
+   */
+  function toggleMatchMarketsDropdown(matchId, event) {
+    if (event) {
+      if (typeof event.preventDefault === 'function') event.preventDefault();
+      if (typeof event.stopPropagation === 'function') event.stopPropagation();
+    }
+    if (!matchId) return;
+    if (!state.openCalendarMarketTrays) {
+      state.openCalendarMarketTrays = new Set();
+    }
+
+    const key = String(matchId);
+    const tray = (typeof document !== 'undefined') ? document.getElementById(`cal-markets-tray-${matchId}`) : null;
+    const chevron = (typeof document !== 'undefined') ? document.getElementById(`cal-markets-chevron-${matchId}`) : null;
+
+    if (state.openCalendarMarketTrays.has(key)) {
+      state.openCalendarMarketTrays.delete(key);
+      if (tray) tray.style.display = 'none';
+      if (chevron) chevron.style.transform = 'rotate(0deg)';
+    } else {
+      state.openCalendarMarketTrays.add(key);
+      if (tray) tray.style.display = 'block';
+      if (chevron) chevron.style.transform = 'rotate(180deg)';
+    }
+  }
+
+  /**
+   * Randomly picks a viable market for a match, updating state and notifying UI
+   */
+  function randomizeMatchMarket(matchId, event) {
+    if (event) {
+      if (typeof event.preventDefault === 'function') event.preventDefault();
+      if (typeof event.stopPropagation === 'function') event.stopPropagation();
+    }
+    if (!matchId) return null;
+
+    const rawPool = getRawMatchPool();
+    const match = rawPool.find(m => String(m.id) === String(matchId)) || { id: matchId };
+    const marketPool = getMatchMarketPool(match);
+    if (!marketPool || marketPool.length === 0) return null;
+
+    const currentSel = getActiveSelectionForMatch(match);
+    const candidatePool = marketPool.filter(p => p.id !== currentSel.id);
+    const poolToUse = candidatePool.length > 0 ? candidatePool : marketPool;
+
+    // Favor prominent betting markets for high-quality tips
+    const popularKeys = ['win1', 'win2', 'draw', 'dc1x', 'dc12', 'dcx2', 'dnb', 'uo15', 'uo25', 'uo35', 'btts', 'btts_no'];
+    const popularCandidates = poolToUse.filter(p => popularKeys.includes(p.id));
+    const finalPool = popularCandidates.length > 0 ? popularCandidates : poolToUse;
+
+    const randIdx = Math.floor(Math.random() * finalPool.length);
+    const picked = finalPool[randIdx] || marketPool[0];
+
+    setMatchMarket(matchId, picked.id);
+
+    // Reactive DOM updates in case calendar is currently rendered
+    if (typeof document !== 'undefined') {
+      const pickLabelEl = document.getElementById(`cal-model-pick-label-${matchId}`);
+      if (pickLabelEl) pickLabelEl.textContent = picked.name || picked.tip;
+
+      const pickConfEl = document.getElementById(`cal-pick-conf-${matchId}`);
+      if (pickConfEl) pickConfEl.textContent = `${Math.round(picked.confidence || 75)}% Conf`;
+
+      const pickOddsEl = document.getElementById(`cal-pick-odds-${matchId}`);
+      if (pickOddsEl) pickOddsEl.textContent = `@${Number(picked.odds || 1.85).toFixed(2)}`;
+
+      const selectEl = document.getElementById(`cal-market-select-${matchId}`);
+      if (selectEl) selectEl.value = picked.id;
+    }
+
+    if (typeof showToastNotification === 'function') {
+      const hName = match.homeTeam?.name || match.home || 'Fixture';
+      showToastNotification(`🎲 Random pick applied for ${hName}: ${picked.name || picked.tip} (@${Number(picked.odds || 1.85).toFixed(2)})`);
+    }
+
+    return picked;
   }
 
 
@@ -2085,7 +2220,8 @@
       const confVal = (isCustomMarket && activeSel?.confidence) ? activeSel.confidence : (match.confidenceVal || (match.confidence === 'high' ? 85 : 72));
       let pick = (isCustomMarket && activeSel?.tip) ? activeSel.tip : `${hName} Win or Draw (1X)`;
       if (!isCustomMarket) {
-        if (preds.home >= 50) pick = `${hName} Straight Win (1)`;
+        if (activeSel && activeSel.tip) pick = activeSel.tip;
+        else if (preds.home >= 50) pick = `${hName} Straight Win (1)`;
         else if (preds.away >= 45) pick = `${aName} Win (2)`;
         else if (match.topTips && match.topTips.includes('uo25')) pick = 'Over 2.5 Goals';
       }
@@ -2252,6 +2388,22 @@
         movement: 'Odds dropped from 2.10 to 1.85 (-11.9%)'
       };
     }
+
+    // 8. Authoritative Best Model Pick & Consensus Engine Output
+    const activeSel = getActiveSelectionForMatch(match);
+    intel.bestPick = {
+      id: activeSel.id,
+      label: activeSel.name || activeSel.tip,
+      tip: activeSel.tip,
+      confidence: activeSel.confidence || 75,
+      odds: activeSel.odds || 1.85,
+      icon: activeSel.icon || '🎯',
+      category: activeSel.categoryLabel || activeSel.category || 'Market'
+    };
+
+    const consensus = calculateIntelligenceConsensus(match);
+    intel.consensusRatio = consensus.ratio;
+    intel.consensusPct = `${consensus.percentage}%`;
 
     return intel;
   }
@@ -3779,6 +3931,7 @@
     selectedMarketIds: new Set(),
     selectedMatchMarketMatrix: {},
     selectedMatchMarkets: {},
+    openCalendarMarketTrays: new Set(),
     compositionMode: 'manual', // 'manual' | 'dynamic' | 'hybrid'
     dynamicRules: {
       countries: [],
@@ -5202,10 +5355,13 @@
                   const compName = m.competition?.name || m.league || 'League';
                   const ts = getAuthoritativeTimestamp(m);
                   const kickoffFormatted = formatAuthoritativeKickoff(ts, true);
+                  const activeSel = getActiveSelectionForMatch(m);
+                  const pool = getMatchMarketPool(m);
                   const intel = extractIntelligenceForMatch(m, state.selectedSources);
-                  const pick = intel && intel.bestPick ? intel.bestPick : { label: 'Home Win', confidence: 75 };
+                  const pick = intel && intel.bestPick ? intel.bestPick : { label: activeSel.name || activeSel.tip, confidence: activeSel.confidence || 75, odds: activeSel.odds || 1.85 };
                   const consensusRatio = intel && intel.consensusRatio ? intel.consensusRatio : '4/5';
                   const consensusPct = intel && intel.consensusPct ? intel.consensusPct : '80%';
+                  const isTrayOpen = state.openCalendarMarketTrays && state.openCalendarMarketTrays.has(String(m.id));
 
                   return `
                     <div style="background: rgba(0,0,0,0.4); border: 1px solid rgba(56,189,248,0.25); border-radius: 10px; padding: 14px;">
@@ -5227,14 +5383,82 @@
                       </div>
 
                       <!-- Intelligence summary -->
-                      <div style="background: rgba(15,23,42,0.6); border-radius: 6px; padding: 8px 10px; margin: 8px 0; display: flex; justify-content: space-between; align-items: center;">
-                        <div>
-                          <span style="font-size: 0.65rem; color: #64748b; font-weight: 700;">MODEL PICK: </span>
-                          <span style="font-size: 0.78rem; font-weight: 800; color: #38bdf8;">${pick.label}</span>
+                      <div style="background: rgba(15,23,42,0.6); border-radius: 6px; padding: 8px 10px; margin: 8px 0; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px;">
+                        <div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap;">
+                          <div>
+                            <span style="font-size: 0.65rem; color: #64748b; font-weight: 700;">MODEL PICK: </span>
+                            <span id="cal-model-pick-label-${m.id}" style="font-size: 0.78rem; font-weight: 800; color: #38bdf8;">${pick.label || pick.tip}</span>
+                          </div>
+                          <!-- Markets ▼ Dropdown Button (Attachment 2) -->
+                          <button type="button" 
+                                  class="btn btn-secondary cal-markets-btn" 
+                                  id="cal-markets-btn-${m.id}" 
+                                  onclick="window.TelegramPublisher.toggleMatchMarketsDropdown('${m.id}', event)"
+                                  title="Expand / Collapse Market Selection"
+                                  style="padding: 3px 8px; font-size: 0.72rem; font-weight: 700; background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.18); border-radius: 6px; color: #f8fafc; cursor: pointer; display: inline-flex; align-items: center; gap: 4px; white-space: nowrap; transition: all 0.2s ease;">
+                            <span id="cal-markets-label-${m.id}">Markets</span>
+                            <span class="ai-tip-chevron" id="cal-markets-chevron-${m.id}" style="font-size: 0.65rem; display: inline-block; transition: transform 0.25s ease; ${isTrayOpen ? 'transform: rotate(180deg);' : ''}">▼</span>
+                          </button>
+                          <!-- Random Pick Button -->
+                          <button type="button" 
+                                  class="btn btn-secondary cal-random-btn" 
+                                  id="cal-random-btn-${m.id}" 
+                                  onclick="window.TelegramPublisher.randomizeMatchMarket('${m.id}', event)"
+                                  title="Randomly pick another market of choice"
+                                  style="padding: 3px 8px; font-size: 0.72rem; font-weight: 700; background: rgba(168,85,247,0.15); border: 1px solid rgba(168,85,247,0.35); border-radius: 6px; color: #c084fc; cursor: pointer; display: inline-flex; align-items: center; gap: 4px; white-space: nowrap; transition: all 0.2s ease;">
+                            <span>🎲 Random Pick</span>
+                          </button>
                         </div>
-                        <div style="display: flex; gap: 8px;">
-                          <span style="font-size: 0.7rem; font-weight: 800; color: #10b981;">${Math.round(pick.confidence)}% Conf</span>
+                        <div style="display: flex; gap: 8px; align-items: center;">
+                          <span id="cal-pick-conf-${m.id}" style="font-size: 0.7rem; font-weight: 800; color: #10b981;">${Math.round(pick.confidence)}% Conf</span>
+                          <span id="cal-pick-odds-${m.id}" style="font-size: 0.7rem; font-weight: 800; color: #38bdf8;">@${Number(pick.odds || 1.85).toFixed(2)}</span>
                           <span style="font-size: 0.7rem; font-weight: 700; color: #fbbf24;">${consensusRatio} (${consensusPct})</span>
+                        </div>
+                      </div>
+
+                      <!-- Expandable Markets Tray Drawer -->
+                      <div id="cal-markets-tray-${m.id}" style="display: ${isTrayOpen ? 'block' : 'none'}; background: rgba(15,23,42,0.92); border: 1px solid rgba(56,189,248,0.3); border-radius: 8px; padding: 10px 12px; margin: 8px 0; box-shadow: 0 4px 12px rgba(0,0,0,0.3);">
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+                          <span style="font-size: 0.72rem; font-weight: 800; color: #38bdf8; display: inline-flex; align-items: center; gap: 5px;">
+                            <span>📊</span> Manually Select Market (${pool.length} Available)
+                          </span>
+                          <span style="font-size: 0.68rem; color: #94a3b8;">
+                            Selected: <b style="color: #38bdf8;">${pick.label || pick.tip}</b>
+                          </span>
+                        </div>
+
+                        <!-- Full Market Dropdown Menu -->
+                        <div style="margin-bottom: 8px;">
+                          <select id="cal-market-select-${m.id}"
+                                  onchange="window.TelegramPublisher.setMatchMarket('${m.id}', this.value)"
+                                  style="width: 100%; background: #020617; border: 1px solid rgba(56,189,248,0.4); color: #f8fafc; font-size: 0.74rem; font-weight: 600; padding: 6px 10px; border-radius: 6px; cursor: pointer; outline: none;">
+                            ${pool.map(p => `
+                              <option value="${p.id}" ${p.id === activeSel.id ? 'selected' : ''}>
+                                ${p.icon || '🎯'} [${p.categoryLabel || p.category || 'Market'}] ${p.name || p.tip} (@${Number(p.odds || 1.85).toFixed(2)} · ${Math.round(p.confidence || 75)}% Conf)
+                              </option>
+                            `).join('')}
+                          </select>
+                        </div>
+
+                        <!-- Quick Popular Shortcut Chips -->
+                        <div>
+                          <div style="font-size: 0.67rem; color: #64748b; font-weight: 700; margin-bottom: 5px;">
+                            POPULAR SHORTCUT CHIPS:
+                          </div>
+                          <div style="display: flex; gap: 5px; flex-wrap: wrap;">
+                            ${['win1', 'draw', 'win2', 'dc1x', 'dcx2', 'dnb', 'uo15', 'uo25', 'uo35', 'btts', 'btts_no'].map(mId => {
+                              const item = pool.find(p => p.id === mId);
+                              if (!item) return '';
+                              const isCurrent = item.id === activeSel.id;
+                              return `
+                                <button type="button"
+                                        onclick="window.TelegramPublisher.setMatchMarket('${m.id}', '${item.id}')"
+                                        style="background: ${isCurrent ? 'rgba(56,189,248,0.3)' : 'rgba(255,255,255,0.06)'}; border: 1px solid ${isCurrent ? '#38bdf8' : 'rgba(255,255,255,0.12)'}; color: ${isCurrent ? '#ffffff' : '#cbd5e1'}; font-size: 0.68rem; font-weight: ${isCurrent ? '800' : '600'}; padding: 3px 8px; border-radius: 4px; cursor: pointer; transition: all 0.15s ease;">
+                                  ${item.shortName || item.tip} (@${Number(item.odds || 1.85).toFixed(2)})
+                                </button>
+                              `;
+                            }).join('')}
+                          </div>
                         </div>
                       </div>
 
@@ -9912,6 +10136,8 @@
     setCalendarView,
     setCalendarFilterTarget,
     renderCalendarTab,
+    toggleMatchMarketsDropdown,
+    randomizeMatchMarket,
     getCalendarAggregatedData,
     toggleConfirm(chk) {
       const btn = document.getElementById('tg-pub-modal-publish-btn');
