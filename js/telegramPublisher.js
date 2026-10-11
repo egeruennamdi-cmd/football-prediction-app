@@ -4034,6 +4034,8 @@
     attachedImageSize: 0,
     attachedImageType: '',
     showVisualPresets: false,
+    visualPresetCategory: 'all',
+    visualPresetSearch: '',
     buttons: [{ text: '', url: '' }],
     telegramUserId: '',
     linkedUsers: [],
@@ -4870,30 +4872,7 @@
           </div>
 
           <!-- Official Graphic Presets Bar (Collapsible) -->
-          <div id="tg-pub-presets-drawer" style="display: ${state.showVisualPresets ? 'block' : 'none'}; background: rgba(15,23,42,0.85); border: 1px solid rgba(56,189,248,0.25); border-radius: 8px; padding: 10px;">
-            <div style="font-size: 0.72rem; font-weight: 800; color: #38bdf8; margin-bottom: 8px; display: flex; justify-content: space-between; align-items: center;">
-              <span>🎨 DEEPPREDICTBET OFFICIAL GRAPHIC PRESETS</span>
-              <button type="button" onclick="window.TelegramPublisher.toggleVisualPresets()" style="background: transparent; border: none; color: #94a3b8; font-size: 0.72rem; cursor: pointer;">✕ Close</button>
-            </div>
-            <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px;">
-              <button type="button" onclick="window.TelegramPublisher.attachPresetImage('https://images.unsplash.com/photo-1508098682722-e99c43a406b2?w=800&q=80', '👑 Banker Header Slip')" style="background: rgba(0,0,0,0.4); border: 1px solid rgba(255,255,255,0.12); border-radius: 6px; padding: 6px; text-align: left; cursor: pointer; color: #fff; display: flex; flex-direction: column; gap: 4px;">
-                <span style="font-size: 0.75rem; font-weight: 700; color: #facc15;">👑 Banker Banner</span>
-                <span style="font-size: 0.65rem; color: #94a3b8;">High-confidence slip</span>
-              </button>
-              <button type="button" onclick="window.TelegramPublisher.attachPresetImage('https://images.unsplash.com/photo-1574629810360-7efbbe195018?w=800&q=80', '💎 VIP Value Surge Badge')" style="background: rgba(0,0,0,0.4); border: 1px solid rgba(255,255,255,0.12); border-radius: 6px; padding: 6px; text-align: left; cursor: pointer; color: #fff; display: flex; flex-direction: column; gap: 4px;">
-                <span style="font-size: 0.75rem; font-weight: 700; color: #38bdf8;">💎 VIP Value Surge</span>
-                <span style="font-size: 0.65rem; color: #94a3b8;">+EV Edge signal</span>
-              </button>
-              <button type="button" onclick="window.TelegramPublisher.attachPresetImage('https://images.unsplash.com/photo-1518091043644-c1d4457512c6?w=800&q=80', '⚽ Weekend Acca Slip Card')" style="background: rgba(0,0,0,0.4); border: 1px solid rgba(255,255,255,0.12); border-radius: 6px; padding: 6px; text-align: left; cursor: pointer; color: #fff; display: flex; flex-direction: column; gap: 4px;">
-                <span style="font-size: 0.75rem; font-weight: 700; color: #4ade80;">⚽ Matchday Acca</span>
-                <span style="font-size: 0.65rem; color: #94a3b8;">Multi-leg combo slip</span>
-              </button>
-              <button type="button" onclick="window.TelegramPublisher.attachPresetImage('https://images.unsplash.com/photo-1489944440615-453fc2b6a9a9?w=800&q=80', '📊 Tactical Match Radar')" style="background: rgba(0,0,0,0.4); border: 1px solid rgba(255,255,255,0.12); border-radius: 6px; padding: 6px; text-align: left; cursor: pointer; color: #fff; display: flex; flex-direction: column; gap: 4px;">
-                <span style="font-size: 0.75rem; font-weight: 700; color: #e879f9;">📊 Intelligence Radar</span>
-                <span style="font-size: 0.65rem; color: #94a3b8;">AI Scout metrics</span>
-              </button>
-            </div>
-          </div>
+          ${renderVisualPresetsDrawerHtml()}
 
           <!-- Attached Image Preview Chip / Drop Status -->
           <div id="tg-pub-attached-image-card">
@@ -9439,12 +9418,613 @@
     }
   }
 
+  // ============================================================================
+  // OFFICIAL GRAPHIC PRESETS CATALOG (40 World-Class Betting Intelligence Presets)
+  // ============================================================================
+
+  const PRESET_CATEGORIES = [
+    { id: 'all', label: '⭐ All Presets', count: 40 },
+    { id: 'vip', label: '👑 VIP & Bankers', count: 7 },
+    { id: 'acca', label: '⚡ Accas & Slips', count: 7 },
+    { id: 'analytics', label: '📊 Tactical Radar', count: 7 },
+    { id: 'goals', label: '🎯 Goals & Totals', count: 7 },
+    { id: 'props', label: '🧩 Props & Builders', count: 6 },
+    { id: 'live', label: '📡 Live & Specials', count: 6 }
+  ];
+
+  const OFFICIAL_GRAPHIC_PRESETS = [
+    // --- 1. VIP Bankers & High-Stakes (Original 2 + 5 New = 7) ---
+    {
+      id: 'banker-banner',
+      category: 'vip',
+      categoryLabel: 'VIP Banker',
+      icon: '👑',
+      title: 'Banker Banner',
+      subtitle: 'High-confidence slip',
+      color: '#facc15',
+      url: 'https://images.unsplash.com/photo-1508098682722-e99c43a406b2?w=800&q=80',
+      name: '👑 Banker Header Slip'
+    },
+    {
+      id: 'vip-value-surge',
+      category: 'vip',
+      categoryLabel: 'Value Edge',
+      icon: '💎',
+      title: 'VIP Value Surge',
+      subtitle: '+EV Edge signal',
+      color: '#38bdf8',
+      url: 'https://images.unsplash.com/photo-1574629810360-7efbbe195018?w=800&q=80',
+      name: '💎 VIP Value Surge Badge'
+    },
+    {
+      id: 'max-bet-lock',
+      category: 'vip',
+      categoryLabel: 'VIP Banker',
+      icon: '🔒',
+      title: 'Max Bet Banker',
+      subtitle: '5-Star syndicate lock',
+      color: '#fbbf24',
+      url: 'https://images.unsplash.com/photo-1522778119026-d647f0596c20?w=800&q=80',
+      name: '🔒 Max Bet Banker Lock'
+    },
+    {
+      id: 'sharp-money-alert',
+      category: 'vip',
+      categoryLabel: 'Market Flow',
+      icon: '🚨',
+      title: 'Sharp Money Alert',
+      subtitle: 'Heavy institutional volume',
+      color: '#ef4444',
+      url: 'https://images.unsplash.com/photo-1517466787929-bc90951d0974?w=800&q=80',
+      name: '🚨 Sharp Money Inflow Alert'
+    },
+    {
+      id: 'clv-edge',
+      category: 'vip',
+      categoryLabel: 'Sharp Edge',
+      icon: '📈',
+      title: 'Closing Line Value',
+      subtitle: 'Beat the bookmaker margin',
+      color: '#10b981',
+      url: 'https://images.unsplash.com/photo-1560272564-c83b66b1ad12?w=800&q=80',
+      name: '📈 Closing Line Value (CLV) Advantage'
+    },
+    {
+      id: 'surebet-arbitrage',
+      category: 'vip',
+      categoryLabel: 'Arbitrage',
+      icon: '⚖️',
+      title: 'SureBet Arbitrage',
+      subtitle: 'Risk-free market discrepancy',
+      color: '#06b6d4',
+      url: 'https://images.unsplash.com/photo-1551958219-acbc608c6377?w=800&q=80',
+      name: '⚖️ Arbitrage SureBet Guaranteed Spread'
+    },
+    {
+      id: 'high-roller-dossier',
+      category: 'vip',
+      categoryLabel: 'Syndicate',
+      icon: '🎩',
+      title: 'High Roller Dossier',
+      subtitle: 'Confidential syndicate slip',
+      color: '#a855f7',
+      url: 'https://images.unsplash.com/photo-1579952363873-27f3bade9f55?w=800&q=80',
+      name: '🎩 High Roller Syndicate Slip'
+    },
+
+    // --- 2. Accumulators & Combos (Original 1 + 6 New = 7) ---
+    {
+      id: 'matchday-acca',
+      category: 'acca',
+      categoryLabel: 'Combo Slip',
+      icon: '⚽',
+      title: 'Matchday Acca',
+      subtitle: 'Multi-leg combo slip',
+      color: '#4ade80',
+      url: 'https://images.unsplash.com/photo-1518091043644-c1d4457512c6?w=800&q=80',
+      name: '⚽ Weekend Acca Slip Card'
+    },
+    {
+      id: 'weekend-mega-acca',
+      category: 'acca',
+      categoryLabel: 'Mega Acca',
+      icon: '⚡',
+      title: 'Mega Acca 10x+',
+      subtitle: 'High-yield multi-match slip',
+      color: '#f59e0b',
+      url: 'https://images.unsplash.com/photo-1511886929837-354d827aae26?w=800&q=80',
+      name: '⚡ Weekend Mega Acca (10x+ Multiplier)'
+    },
+    {
+      id: 'daily-treble-banker',
+      category: 'acca',
+      categoryLabel: 'Treble Lock',
+      icon: '🎯',
+      title: 'Daily Treble Lock',
+      subtitle: 'Balanced 3-fold multiplier',
+      color: '#10b981',
+      url: 'https://images.unsplash.com/photo-1504305754058-2f08ccd89a0a?w=800&q=80',
+      name: '🎯 Daily Treble Banker Slip'
+    },
+    {
+      id: 'rolling-challenge',
+      category: 'acca',
+      categoryLabel: 'Challenge',
+      icon: '🔄',
+      title: 'Rolling Challenge',
+      subtitle: 'Compound bankroll sequence',
+      color: '#ec4899',
+      url: 'https://images.unsplash.com/photo-1516733725897-1aa73b87c8e8?w=800&q=80',
+      name: '🔄 Compound Bankroll Rolling Acca'
+    },
+    {
+      id: 'super-sunday-showcase',
+      category: 'acca',
+      categoryLabel: 'Showcase',
+      icon: '🌟',
+      title: 'Super Sunday Acca',
+      subtitle: 'Marquee European showdowns',
+      color: '#eab308',
+      url: 'https://images.unsplash.com/photo-1526232761682-d26e03ac148e?w=800&q=80',
+      name: '🌟 Super Sunday Acca Banner'
+    },
+    {
+      id: 'btts-combo-express',
+      category: 'acca',
+      categoryLabel: 'BTTS Express',
+      icon: '🥅',
+      title: 'BTTS Combo Express',
+      subtitle: 'Scoring efficiency multi-leg',
+      color: '#06b6d4',
+      url: 'https://images.unsplash.com/photo-1471295253337-3ceaaedca402?w=800&q=80',
+      name: '🥅 BTTS Goal Blitz Accumulator'
+    },
+    {
+      id: 'safe-double-2x',
+      category: 'acca',
+      categoryLabel: 'Safe Double',
+      icon: '✌️',
+      title: 'Safe Double 2.00x',
+      subtitle: 'Double-money conservative slip',
+      color: '#6366f1',
+      url: 'https://images.unsplash.com/photo-1575361204480-aadea25e6e68?w=800&q=80',
+      name: '✌️ Safe Double 2.00x Slip'
+    },
+
+    // --- 3. Tactical AI Scout & xG Analytics (Original 1 + 6 New = 7) ---
+    {
+      id: 'intel-radar',
+      category: 'analytics',
+      categoryLabel: 'AI Radar',
+      icon: '📊',
+      title: 'Intelligence Radar',
+      subtitle: 'AI Scout metrics',
+      color: '#e879f9',
+      url: 'https://images.unsplash.com/photo-1489944440615-453fc2b6a9a9?w=800&q=80',
+      name: '📊 Tactical Match Radar'
+    },
+    {
+      id: 'xg-matrix',
+      category: 'analytics',
+      categoryLabel: 'xG Metrics',
+      icon: '📐',
+      title: 'xG Model Projections',
+      subtitle: 'Tactical xG & shot quality',
+      color: '#8b5cf6',
+      url: 'https://images.unsplash.com/photo-1536122985607-4fe00b283652?w=800&q=80',
+      name: '📐 Expected Goals (xG) Tactical Matrix'
+    },
+    {
+      id: 'form-momentum-index',
+      category: 'analytics',
+      categoryLabel: 'Form Index',
+      icon: '🔥',
+      title: 'Form & Momentum',
+      subtitle: 'Last 5 matches streak audit',
+      color: '#f97316',
+      url: 'https://images.unsplash.com/photo-1508739773434-c26b3d09e071?w=800&q=80',
+      name: '🔥 Form & Attack Momentum Index'
+    },
+    {
+      id: 'h2h-dossier',
+      category: 'analytics',
+      categoryLabel: 'H2H Battle',
+      icon: '⚔️',
+      title: 'H2H Clash Dossier',
+      subtitle: 'Historical rivalry matchup',
+      color: '#e11d48',
+      url: 'https://images.unsplash.com/photo-1534447677768-be436bb09401?w=800&q=80',
+      name: '⚔️ Head-to-Head Historical Clash Dossier'
+    },
+    {
+      id: 'bet-doctor-rx',
+      category: 'analytics',
+      categoryLabel: 'Doctor Audit',
+      icon: '🩺',
+      title: 'Bet Doctor Rx',
+      subtitle: 'Risk diagnosis & fix',
+      color: '#14b8a6',
+      url: 'https://images.unsplash.com/photo-1546519638-68e109498ffc?w=800&q=80',
+      name: '🩺 AI Bet Doctor Prescription Card'
+    },
+    {
+      id: 'booking-card-index',
+      category: 'analytics',
+      categoryLabel: 'Referee Stats',
+      icon: '🟨',
+      title: 'Card & Booking Index',
+      subtitle: 'Discipline & referee stats',
+      color: '#eab308',
+      url: 'https://images.unsplash.com/photo-1563299796-17596ed6b017?w=800&q=80',
+      name: '🟨 Referee & Booking Index Radar'
+    },
+    {
+      id: 'corner-dominance-map',
+      category: 'analytics',
+      categoryLabel: 'Set Pieces',
+      icon: '🚩',
+      title: 'Corner Dominance',
+      subtitle: 'Wing pressure & set pieces',
+      color: '#0ea5e9',
+      url: 'https://images.unsplash.com/photo-1570498839593-e565b39455fc?w=800&q=80',
+      name: '🚩 Corner Dominance & Set-Piece Map'
+    },
+
+    // --- 4. Goals, Totals & Scorelines (7 New = 7) ---
+    {
+      id: 'goal-gauge-uo',
+      category: 'goals',
+      categoryLabel: 'Goal Gauge',
+      icon: '🎯',
+      title: 'Over/Under Gauge',
+      subtitle: 'Probability distribution curve',
+      color: '#10b981',
+      url: 'https://images.unsplash.com/photo-1577223625816-7546f13df25d?w=800&q=80',
+      name: '🎯 Over/Under 2.5 Goal Gauge'
+    },
+    {
+      id: 'goal-fest-over35',
+      category: 'goals',
+      categoryLabel: 'Over 3.5 Blitz',
+      icon: '💥',
+      title: 'Goal Fest (Over 3.5)',
+      subtitle: 'High-octane attacking clash',
+      color: '#f43f5e',
+      url: 'https://images.unsplash.com/photo-1517927033932-b3d18e61fb3a?w=800&q=80',
+      name: '💥 Goal Fest Over 3.5 Blitz Slip'
+    },
+    {
+      id: 'clean-sheet-lock',
+      category: 'goals',
+      categoryLabel: 'Clean Sheet',
+      icon: '🧤',
+      title: 'Clean Sheet Defense',
+      subtitle: 'Low-conceding backline lock',
+      color: '#0284c7',
+      url: 'https://images.unsplash.com/photo-1540747913346-19e32dc3e97e?w=800&q=80',
+      name: '🧤 Clean Sheet & Under Lock'
+    },
+    {
+      id: 'correct-score-sniper',
+      category: 'goals',
+      categoryLabel: 'Score Sniper',
+      icon: '🎲',
+      title: 'Correct Score Sniper',
+      subtitle: 'Exact scoreline probability',
+      color: '#a855f7',
+      url: 'https://images.unsplash.com/photo-1568194157720-8bbe7114ebe8?w=800&q=80',
+      name: '🎲 Correct Score High-Odds Sniper'
+    },
+    {
+      id: 'htft-transition-matrix',
+      category: 'goals',
+      categoryLabel: 'HT/FT Turnaround',
+      icon: '⏱️',
+      title: 'HT/FT Transition',
+      subtitle: 'Interval turnaround slip',
+      color: '#d97706',
+      url: 'https://images.unsplash.com/photo-1592656094267-764a45160876?w=800&q=80',
+      name: '⏱️ Half-Time / Full-Time Transition Matrix'
+    },
+    {
+      id: 'first-half-blitz',
+      category: 'goals',
+      categoryLabel: '1st Half O0.5',
+      icon: '⚡',
+      title: '1st Half Goal Blitz',
+      subtitle: 'First-half scoring intensity',
+      color: '#e11d48',
+      url: 'https://images.unsplash.com/photo-1606925797300-0b35e9d1794e?w=800&q=80',
+      name: '⚡ First Half Goal Blitz (1H O0.5)'
+    },
+    {
+      id: 'double-chance-fortress',
+      category: 'goals',
+      categoryLabel: 'DC Fortress',
+      icon: '🛡️',
+      title: 'Double Chance Fortress',
+      subtitle: 'Low-risk 1X / X2 banker',
+      color: '#3b82f6',
+      url: 'https://images.unsplash.com/photo-1431324155629-1a6deb1dec8d?w=800&q=80',
+      name: '🛡️ Double Chance Fortress Card'
+    },
+
+    // --- 5. Bet Builder & Player Props (6 New = 6) ---
+    {
+      id: 'bet-builder-sgp',
+      category: 'props',
+      categoryLabel: 'Bet Builder',
+      icon: '🧩',
+      title: 'Bet Builder (SGP)',
+      subtitle: 'Custom single-game accumulator',
+      color: '#8b5cf6',
+      url: 'https://images.unsplash.com/photo-1614632537423-1e6c2e7e0aab?w=800&q=80',
+      name: '🧩 Custom Bet Builder SGP Slip'
+    },
+    {
+      id: 'anytime-goalscorer',
+      category: 'props',
+      categoryLabel: 'Goalscorer',
+      icon: '👟',
+      title: 'Anytime Goalscorer',
+      subtitle: 'In-form forward shot volume',
+      color: '#10b981',
+      url: 'https://images.unsplash.com/photo-1511193311914-0346f16efe90?w=800&q=80',
+      name: '👟 Anytime Goalscorer Spotlight'
+    },
+    {
+      id: 'shots-on-target-prop',
+      category: 'props',
+      categoryLabel: 'Shots on Target',
+      icon: '🎯',
+      title: 'Shots on Target (SoT)',
+      subtitle: 'Player offensive accuracy',
+      color: '#06b6d4',
+      url: 'https://images.unsplash.com/photo-1509042239860-f550ce710b93?w=800&q=80',
+      name: '🎯 Player Shots on Target (SoT) Prop'
+    },
+    {
+      id: 'fouls-booking-prop',
+      category: 'props',
+      categoryLabel: 'Player Fouls',
+      icon: '🟥',
+      title: 'Fouls & Booking Prop',
+      subtitle: 'High-friction duel matchup',
+      color: '#ef4444',
+      url: 'https://images.unsplash.com/photo-1589487391730-58f20eb2c308?w=800&q=80',
+      name: '🟥 High Friction Player Fouls Prop'
+    },
+    {
+      id: 'playmaker-assist-spotlight',
+      category: 'props',
+      categoryLabel: 'Playmaker Assist',
+      icon: '🪄',
+      title: 'Playmaker Assist Prop',
+      subtitle: 'Key passes & chance creation',
+      color: '#ec4899',
+      url: 'https://images.unsplash.com/photo-1556056504-5c7696c4c28d?w=800&q=80',
+      name: '🪄 Playmaker Assist & Key Passes Spotlight'
+    },
+    {
+      id: 'team-total-goals-lock',
+      category: 'props',
+      categoryLabel: 'Team Totals',
+      icon: '🔢',
+      title: 'Team Total Goals',
+      subtitle: 'Single-side scoring expectancy',
+      color: '#3b82f6',
+      url: 'https://images.unsplash.com/photo-1528722828814-77b9b83aafb2?w=800&q=80',
+      name: '🔢 Team Total Goals Over Lock'
+    },
+
+    // --- 6. Live In-Play, Leagues & Community Specials (6 New = 6) ---
+    {
+      id: 'live-in-play-pressure',
+      category: 'live',
+      categoryLabel: 'Live In-Play',
+      icon: '📡',
+      title: 'Live In-Play Alert',
+      subtitle: 'Real-time momentum surge',
+      color: '#22c55e',
+      url: 'https://images.unsplash.com/photo-1533107862482-0e6974b06ec4?w=800&q=80',
+      name: '📡 Live In-Play Pressure Surge Alert'
+    },
+    {
+      id: 'ucl-elite-slip',
+      category: 'live',
+      categoryLabel: 'Champions League',
+      icon: '🏆',
+      title: 'Champions League Night',
+      subtitle: 'Europe elite showcase slip',
+      color: '#38bdf8',
+      url: 'https://images.unsplash.com/photo-1535131749006-b7f58c99034b?w=800&q=80',
+      name: '🏆 UEFA Champions League Elite Slip'
+    },
+    {
+      id: 'epl-marquee-derby',
+      category: 'live',
+      categoryLabel: 'Premier League',
+      icon: '🦁',
+      title: 'Premier League Derby',
+      subtitle: 'Marquee English rivalry',
+      color: '#a855f7',
+      url: 'https://images.unsplash.com/photo-1543326727-cf6c39e8f84c?w=800&q=80',
+      name: '🦁 Premier League Marquee Derby Card'
+    },
+    {
+      id: 'underdog-value-hunter',
+      category: 'live',
+      categoryLabel: 'Underdog Value',
+      icon: '🐺',
+      title: 'Underdog Value Hunt',
+      subtitle: 'Mispriced bookmaker underdog',
+      color: '#f97316',
+      url: 'https://images.unsplash.com/photo-1550881111-7cfde14b8073?w=800&q=80',
+      name: '🐺 Underdog Value Hunting Slip'
+    },
+    {
+      id: 'draw-specialist-radar',
+      category: 'live',
+      categoryLabel: 'Draw Parity',
+      icon: '🤝',
+      title: 'Draw Specialist Radar',
+      subtitle: 'Low-variance parity forecast',
+      color: '#94a3b8',
+      url: 'https://images.unsplash.com/photo-1552667466-07770ae110d0?w=800&q=80',
+      name: '🤝 Draw Specialist Stalemate Radar'
+    },
+    {
+      id: 'morning-intelligence-briefing',
+      category: 'live',
+      categoryLabel: 'Morning Briefing',
+      icon: '🌅',
+      title: 'Morning Briefing Banner',
+      subtitle: 'Daily fixtures roadmap & tips',
+      color: '#f59e0b',
+      url: 'https://images.unsplash.com/photo-1554068865-24cecd4e34b8?w=800&q=80',
+      name: '🌅 Morning Intelligence Briefing Header'
+    }
+  ];
+
+  function getGraphicPresets() {
+    return OFFICIAL_GRAPHIC_PRESETS;
+  }
+
+  function getFilteredVisualPresets() {
+    const cat = state.visualPresetCategory || 'all';
+    const q = (state.visualPresetSearch || '').toLowerCase().trim();
+    return OFFICIAL_GRAPHIC_PRESETS.filter(p => {
+      const matchCat = (cat === 'all') || (p.category === cat);
+      if (!matchCat) return false;
+      if (!q) return true;
+      const haystack = `${p.title} ${p.subtitle} ${p.name} ${p.categoryLabel} ${p.category}`.toLowerCase();
+      return haystack.includes(q);
+    });
+  }
+
+  function renderSinglePresetCardHtml(preset) {
+    const isCurrent = state.photoUrl === preset.url;
+    return `
+      <button type="button"
+              onclick="window.TelegramPublisher.attachPresetImage('${preset.url}', '${preset.name.replace(/'/g, "\\'")}')"
+              title="Attach ${preset.title} to post"
+              style="background: ${isCurrent ? 'rgba(56,189,248,0.18)' : 'rgba(0,0,0,0.45)'}; border: 1px solid ${isCurrent ? '#38bdf8' : 'rgba(255,255,255,0.12)'}; border-radius: 8px; padding: 7px; text-align: left; cursor: pointer; color: #fff; display: flex; flex-direction: column; gap: 6px; position: relative; overflow: hidden; transition: all 0.18s ease; box-shadow: ${isCurrent ? '0 0 12px rgba(56,189,248,0.3)' : 'none'};">
+        <div style="height: 52px; width: 100%; border-radius: 5px; overflow: hidden; background: #020617; position: relative;">
+          <img src="${preset.url}" alt="${preset.title}" loading="lazy" style="width: 100%; height: 100%; object-fit: cover; opacity: 0.82; transition: opacity 0.2s;" onerror="this.style.display='none'">
+          <div style="position: absolute; top: 4px; right: 4px; background: rgba(0,0,0,0.75); backdrop-filter: blur(4px); padding: 1px 6px; border-radius: 4px; font-size: 0.58rem; font-weight: 700; color: #cbd5e1; border: 1px solid rgba(255,255,255,0.12);">
+            ${preset.categoryLabel || preset.category}
+          </div>
+          ${isCurrent ? `
+            <div style="position: absolute; top: 4px; left: 4px; background: rgba(16,185,129,0.92); padding: 1px 6px; border-radius: 4px; font-size: 0.58rem; font-weight: 800; color: #ffffff;">
+              ✓ ATTACHED
+            </div>
+          ` : ''}
+        </div>
+        <div>
+          <div style="font-size: 0.76rem; font-weight: 800; color: ${preset.color || '#facc15'}; display: flex; align-items: center; gap: 5px;">
+            <span>${preset.icon || '🎨'}</span> <span>${preset.title}</span>
+          </div>
+          <div style="font-size: 0.65rem; color: #94a3b8; margin-top: 2px; line-height: 1.25;">
+            ${preset.subtitle}
+          </div>
+        </div>
+      </button>
+    `;
+  }
+
+  function renderVisualPresetsGridHtml() {
+    const filtered = getFilteredVisualPresets();
+    if (filtered.length === 0) {
+      return `<div style="grid-column: 1 / -1; padding: 24px; text-align: center; color: #94a3b8; font-size: 0.78rem;">No graphic presets found matching "${state.visualPresetSearch || ''}".</div>`;
+    }
+    return filtered.map(preset => renderSinglePresetCardHtml(preset)).join('');
+  }
+
+  function renderVisualPresetsDrawerHtml() {
+    const totalCount = OFFICIAL_GRAPHIC_PRESETS.length;
+    return `
+      <!-- Official Graphic Presets Bar (Collapsible) -->
+      <div id="tg-pub-presets-drawer" style="display: ${state.showVisualPresets ? 'block' : 'none'}; background: rgba(15,23,42,0.92); border: 1px solid rgba(56,189,248,0.3); border-radius: 10px; padding: 12px; margin-bottom: 10px; box-shadow: 0 8px 24px rgba(0,0,0,0.4);">
+        <div style="font-size: 0.76rem; font-weight: 800; color: #38bdf8; margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px;">
+          <div style="display: flex; align-items: center; gap: 8px;">
+            <span>🎨 DEEPPREDICTBET OFFICIAL GRAPHIC PRESETS</span>
+            <span id="tg-pub-presets-count" style="font-size: 0.68rem; font-weight: 700; color: #94a3b8; background: rgba(255,255,255,0.06); padding: 1px 7px; border-radius: 4px; border: 1px solid rgba(255,255,255,0.1);">${totalCount} Available</span>
+          </div>
+          <div style="display: flex; align-items: center; gap: 8px;">
+            <input type="text"
+                   id="tg-pub-preset-search"
+                   placeholder="🔍 Search presets (e.g. Banker, CLV, xG, Acca, BTTS)..."
+                   value="${state.visualPresetSearch || ''}"
+                   oninput="window.TelegramPublisher.filterVisualPresets(this.value)"
+                   style="background: #020617; border: 1px solid rgba(56,189,248,0.35); color: #f8fafc; font-size: 0.72rem; padding: 4px 10px; border-radius: 6px; width: 230px; outline: none; transition: border-color 0.2s;">
+            <button type="button" onclick="window.TelegramPublisher.toggleVisualPresets()" style="background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.15); color: #cbd5e1; font-size: 0.72rem; font-weight: 600; cursor: pointer; padding: 3px 8px; border-radius: 4px;">✕ Close</button>
+          </div>
+        </div>
+
+        <div id="tg-pub-presets-categories" style="display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 10px;">
+          ${PRESET_CATEGORIES.map(cat => {
+            const isActive = (state.visualPresetCategory || 'all') === cat.id;
+            return `
+              <button type="button"
+                      data-cat="${cat.id}"
+                      onclick="window.TelegramPublisher.setVisualPresetCategory('${cat.id}')"
+                      style="background: ${isActive ? 'rgba(56,189,248,0.25)' : 'rgba(255,255,255,0.05)'}; border: 1px solid ${isActive ? '#38bdf8' : 'rgba(255,255,255,0.12)'}; color: ${isActive ? '#ffffff' : '#94a3b8'}; font-size: 0.68rem; font-weight: ${isActive ? '800' : '600'}; padding: 3px 8px; border-radius: 5px; cursor: pointer; transition: all 0.15s ease;">
+                ${cat.label} (${cat.count})
+              </button>
+            `;
+          }).join('')}
+        </div>
+
+        <div id="tg-pub-presets-grid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(215px, 1fr)); gap: 8px; max-height: 400px; overflow-y: auto; padding-right: 4px;">
+          ${renderVisualPresetsGridHtml()}
+        </div>
+      </div>
+    `;
+  }
+
+  function renderVisualPresetsGrid() {
+    if (typeof document === 'undefined') return;
+    const gridEl = document.getElementById('tg-pub-presets-grid');
+    if (!gridEl) return;
+    const countEl = document.getElementById('tg-pub-presets-count');
+    const filtered = getFilteredVisualPresets();
+    if (countEl) countEl.textContent = `${filtered.length} of ${OFFICIAL_GRAPHIC_PRESETS.length} Available`;
+
+    const pillsContainer = document.getElementById('tg-pub-presets-categories');
+    if (pillsContainer) {
+      const btns = pillsContainer.querySelectorAll('button');
+      btns.forEach(btn => {
+        const c = btn.getAttribute('data-cat');
+        const isActive = (c === (state.visualPresetCategory || 'all'));
+        btn.style.background = isActive ? 'rgba(56,189,248,0.25)' : 'rgba(255,255,255,0.05)';
+        btn.style.borderColor = isActive ? '#38bdf8' : 'rgba(255,255,255,0.12)';
+        btn.style.color = isActive ? '#ffffff' : '#94a3b8';
+        btn.style.fontWeight = isActive ? '800' : '600';
+      });
+    }
+
+    gridEl.innerHTML = renderVisualPresetsGridHtml();
+  }
+
+  function setVisualPresetCategory(category) {
+    state.visualPresetCategory = category || 'all';
+    renderVisualPresetsGrid();
+  }
+
+  function filterVisualPresets(query) {
+    state.visualPresetSearch = (query || '').toLowerCase().trim();
+    renderVisualPresetsGrid();
+  }
+
   function toggleVisualPresets() {
     state.showVisualPresets = !state.showVisualPresets;
     if (typeof document === 'undefined') return;
     const drawer = document.getElementById('tg-pub-presets-drawer');
     if (drawer) {
       drawer.style.display = state.showVisualPresets ? 'block' : 'none';
+      if (state.showVisualPresets) {
+        renderVisualPresetsGrid();
+      }
     }
   }
 
@@ -9455,6 +10035,7 @@
     state.attachedImageType = 'image/jpeg';
     renderAttachedImageCard();
     updateLivePreview();
+    renderVisualPresetsGrid();
     showAlert(`🎨 Attached "${state.attachedImageName}" to post.`);
   }
 
@@ -10153,6 +10734,10 @@
     insertInlineImageLinkPrompt,
     toggleVisualPresets,
     attachPresetImage,
+    getGraphicPresets,
+    setVisualPresetCategory,
+    filterVisualPresets,
+    renderVisualPresetsGrid,
     setupComposerMediaInteractions,
     renderAttachedImageCard,
     format(tag) {

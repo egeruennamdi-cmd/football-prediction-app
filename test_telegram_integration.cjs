@@ -4058,6 +4058,44 @@ async function runTests() {
     assert.ok(fetchCalls[0].options.body instanceof FormData, 'Data URL photo must trigger multipart/form-data body');
     assert.ok(fetchCalls[0].options.body.has('photo'), 'FormData must contain photo field');
 
+    // 8. Test 36 Additional World-Class Graphic Presets (40 Total)
+    const allPresets = telegramPublisher.getGraphicPresets();
+    assert.strictEqual(allPresets.length, 40, 'Official Graphic Presets catalog must contain exactly 40 world-class presets (4 original + 36 integrated)');
+    
+    // Verify category distribution
+    const categories = ['vip', 'acca', 'analytics', 'goals', 'props', 'live'];
+    categories.forEach(cat => {
+      const count = allPresets.filter(p => p.category === cat).length;
+      assert.ok(count >= 6, `Category "${cat}" must contain at least 6 presets. Found ${count}.`);
+    });
+
+    // Test Category Filtering
+    telegramPublisher.setVisualPresetCategory('vip');
+    assert.strictEqual(telegramPublisher.getState().visualPresetCategory, 'vip', 'Preset category state must update to vip');
+
+    // Test Keyword Search Filtering
+    telegramPublisher.filterVisualPresets('CLV');
+    assert.strictEqual(telegramPublisher.getState().visualPresetSearch, 'clv', 'Preset search query state must update to clv');
+
+    // Reset filters
+    telegramPublisher.setVisualPresetCategory('all');
+    telegramPublisher.filterVisualPresets('');
+
+    // Test Attaching a Newly Integrated Preset (e.g. CLV Advantage)
+    const clvPreset = allPresets.find(p => p.id === 'clv-edge');
+    assert.ok(clvPreset, 'Closing Line Value CLV preset must exist');
+    telegramPublisher.attachPresetImage(clvPreset.url, clvPreset.name);
+    const clvState = telegramPublisher.getState();
+    assert.strictEqual(clvState.photoUrl, clvPreset.url, 'Attaching CLV preset must set photoUrl');
+    assert.strictEqual(clvState.attachedImageName, clvPreset.name, 'Attaching CLV preset must set attachedImageName');
+
+    // Verify Presets Drawer HTML markup contains search input, count, and drawer elements
+    const reloadedCompose = telegramPublisher.renderComposeTab();
+    assert.ok(reloadedCompose.includes('id="tg-pub-presets-drawer"'), 'Presets drawer must render in compose tab');
+    assert.ok(reloadedCompose.includes('id="tg-pub-preset-search"'), 'Presets drawer must render search bar');
+    assert.ok(reloadedCompose.includes('40 Available'), 'Presets drawer must display 40 Available count');
+    assert.ok(reloadedCompose.includes('id="tg-pub-presets-grid"'), 'Presets grid container must exist');
+
     global.document = origDoc;
   });
 
