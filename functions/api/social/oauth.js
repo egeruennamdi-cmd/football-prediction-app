@@ -185,6 +185,17 @@ export async function onRequestPost(context) {
           throw new Error(`Unsupported test platform: ${platform}`);
       }
 
+      if (dispatchRes.status === 'SUCCESS') {
+        const conn = await getPlatformConnection(env, platform);
+        if (conn) {
+          conn.verifiedPublish = true;
+          conn.lastTestPostId = dispatchRes.externalPostId || null;
+          conn.lastTestPostUrl = dispatchRes.publishedUrl || null;
+          conn.lastVerifiedAt = new Date().toISOString();
+          await savePlatformConnection(env, platform, conn);
+        }
+      }
+
       return new Response(JSON.stringify({
         success: dispatchRes.status === 'SUCCESS',
         platform,

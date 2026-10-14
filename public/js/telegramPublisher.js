@@ -7610,13 +7610,22 @@
 
               const acc = state.socialAccounts ? state.socialAccounts[pKey] : null;
               const isConnected = acc && acc.connected;
-              const isExpired = acc && acc.status === 'TOKEN_EXPIRED';
+              const isLive = acc && (acc.isLive || acc.publishingState === 'LIVE');
+              const isExpired = acc && (acc.status === 'TOKEN_EXPIRED' || acc.publishingState === 'TOKEN_EXPIRED');
+              const isReviewPending = acc && (acc.status === 'REVIEW_PENDING' || acc.publishingState === 'REVIEW_PENDING');
+              const isRevoked = acc && (acc.status === 'REVOKED' || acc.publishingState === 'REVOKED');
 
               let badge = `<span style="font-size: 0.65rem; color: #fbbf24; font-weight: 800; background: rgba(245,158,11,0.15); border: 1px solid rgba(245,158,11,0.3); padding: 2px 6px; border-radius: 4px;">AUTH REQUIRED</span>`;
-              if (isConnected) {
-                badge = `<span style="font-size: 0.65rem; color: #34d399; font-weight: 800; background: rgba(16,185,129,0.15); border: 1px solid rgba(16,185,129,0.3); padding: 2px 6px; border-radius: 4px;">🟢 CONNECTED (LIVE)</span>`;
-              } else if (isExpired) {
+              if (isExpired) {
                 badge = `<span style="font-size: 0.65rem; color: #f87171; font-weight: 800; background: rgba(239,68,68,0.15); border: 1px solid rgba(239,68,68,0.3); padding: 2px 6px; border-radius: 4px;">🔴 TOKEN EXPIRED</span>`;
+              } else if (isReviewPending) {
+                badge = `<span style="font-size: 0.65rem; color: #c084fc; font-weight: 800; background: rgba(168,85,247,0.15); border: 1px solid rgba(168,85,247,0.3); padding: 2px 6px; border-radius: 4px;">⏳ APP REVIEW PENDING</span>`;
+              } else if (isRevoked) {
+                badge = `<span style="font-size: 0.65rem; color: #94a3b8; font-weight: 800; background: rgba(148,163,184,0.15); border: 1px solid rgba(148,163,184,0.3); padding: 2px 6px; border-radius: 4px;">⚪ REVOKED</span>`;
+              } else if (isConnected && isLive) {
+                badge = `<span style="font-size: 0.65rem; color: #34d399; font-weight: 800; background: rgba(16,185,129,0.15); border: 1px solid rgba(16,185,129,0.3); padding: 2px 6px; border-radius: 4px;">🟢 LIVE (PUBLISHING ENABLED)</span>`;
+              } else if (isConnected) {
+                badge = `<span style="font-size: 0.65rem; color: #38bdf8; font-weight: 800; background: rgba(56,189,248,0.15); border: 1px solid rgba(56,189,248,0.4); padding: 2px 6px; border-radius: 4px;">🔑 AUTHORIZED (TEST POST REQUIRED)</span>`;
               }
 
               return `
@@ -11137,62 +11146,63 @@
     const guides = {
       x: {
         title: '𝕏 (Twitter) Developer Portal & OAuth 2.0 PKCE Setup',
-        secrets: ['X_API_CLIENT_ID', 'X_API_CLIENT_SECRET'],
+        secrets: ['X_CLIENT_ID', 'X_CLIENT_SECRET'],
         scopes: ['tweet.read', 'tweet.write', 'users.read', 'offline.access'],
         steps: [
-          '1. Visit the X Developer Portal (developer.twitter.com) and create a Project with User Authentication Settings enabled.',
-          '2. Set App Type to "Confidential Client" and Callback URL to "https://deeppredictbet.com/api/social/callback/x".',
-          '3. Request Scopes: tweet.read, tweet.write, users.read, offline.access.',
-          '4. In Cloudflare Pages, add secret environment variables: X_API_CLIENT_ID and X_API_CLIENT_SECRET.',
-          '5. Once configured, authorize the DeepPredictBet account to enable 1-click automated posting.'
+          '1. Visit the X Developer Portal (developer.x.com) and create a Project with User Authentication Settings enabled.',
+          '2. Set App Type to "Confidential Client" and Callback URL to "https://deeppredictbet.com/api/social/oauth?action=callback" (and preview URL "https://deeppredictbet.pages.dev/api/social/oauth?action=callback").',
+          '3. Request Scopes: tweet.read, tweet.write, users.read, offline.access (PKCE S256).',
+          '4. In Cloudflare Pages, add secret environment variables: X_CLIENT_ID and X_CLIENT_SECRET.',
+          '5. Click Connect Account in Command Center and run a controlled test post to enable Live status.'
         ]
       },
       instagram: {
-        title: '📸 Meta for Developers & Instagram Graph API Setup',
-        secrets: ['META_APP_ID', 'META_APP_SECRET', 'INSTAGRAM_ACCOUNT_ID'],
-        scopes: ['instagram_basic', 'instagram_content_publish', 'pages_read_engagement'],
+        title: '📸 Meta for Developers & Instagram Graph API (v21.0) Setup',
+        secrets: ['META_APP_ID', 'META_APP_SECRET'],
+        scopes: ['instagram_basic', 'instagram_content_publish', 'pages_read_engagement', 'pages_show_list'],
         steps: [
           '1. Convert the DeepPredictBet Instagram account to an Instagram Business or Creator account.',
           '2. Connect the Instagram Business account to the official DeepPredictBet Facebook Page.',
-          '3. Register an app on developers.facebook.com and enable the Instagram Graph API.',
-          '4. Generate a long-lived User Access Token and retrieve the connected Instagram Business Account ID.',
-          '5. Add META_APP_ID, META_APP_SECRET, and INSTAGRAM_ACCOUNT_ID to Cloudflare Pages secrets.'
+          '3. Register an app on developers.facebook.com and configure Meta Graph API (v21.0).',
+          '4. Set OAuth Redirect URI to "https://deeppredictbet.com/api/social/oauth?action=callback" (and "https://deeppredictbet.pages.dev/api/social/oauth?action=callback").',
+          '5. Add META_APP_ID and META_APP_SECRET to Cloudflare Pages secrets.',
+          '6. Click Connect Account and run a controlled test post to verify container publishing.'
         ]
       },
       facebook: {
-        title: '👥 Meta for Developers & Facebook Pages API Setup',
-        secrets: ['FACEBOOK_PAGE_ACCESS_TOKEN', 'FACEBOOK_PAGE_ID'],
+        title: '👥 Meta for Developers & Facebook Pages API (v21.0) Setup',
+        secrets: ['META_APP_ID', 'META_APP_SECRET'],
         scopes: ['pages_manage_posts', 'pages_read_engagement', 'pages_show_list'],
         steps: [
           '1. Create the official DeepPredictBet Facebook Page at facebook.com/pages/create.',
-          '2. In Meta App Dashboard, add the Facebook Pages API product.',
-          '3. Grant permissions: pages_manage_posts, pages_read_engagement.',
-          '4. Generate a Permanent Page Access Token via Meta Graph API Explorer.',
-          '5. Add FACEBOOK_PAGE_ACCESS_TOKEN and FACEBOOK_PAGE_ID to Cloudflare Pages secrets.'
+          '2. In Meta App Dashboard, add the Facebook Login for Business and Graph API product.',
+          '3. Set OAuth Redirect URI to "https://deeppredictbet.com/api/social/oauth?action=callback" (and "https://deeppredictbet.pages.dev/api/social/oauth?action=callback").',
+          '4. Add META_APP_ID and META_APP_SECRET to Cloudflare Pages secrets (shared with Instagram).',
+          '5. Click Connect Account and publish a controlled test post to confirm Live status.'
         ]
       },
       tiktok: {
         title: '🎵 TikTok for Developers & Content Posting API Setup',
         secrets: ['TIKTOK_CLIENT_KEY', 'TIKTOK_CLIENT_SECRET'],
-        scopes: ['video.publish', 'video.upload', 'user.info.basic'],
+        scopes: ['video.publish', 'video.upload'],
         steps: [
           '1. Register a developer account at developers.tiktok.com and create a TikTok Commercial App.',
-          '2. Apply for the "Content Posting API" and configure OAuth redirect URI.',
+          '2. Apply for the "Content Posting API" and set Redirect URI to "https://deeppredictbet.com/api/social/oauth?action=callback".',
           '3. Complete App Review and domain verification for deeppredictbet.com.',
           '4. In Cloudflare Pages, add TIKTOK_CLIENT_KEY and TIKTOK_CLIENT_SECRET secrets.',
-          '5. Use 1-Click Manual Posting in the interim until developer app approval is granted.'
+          '5. Authorize account and complete a video upload test to transition from Authorized to Live.'
         ]
       },
       youtube: {
         title: '▶️ Google Cloud Console & YouTube Data API v3 Setup',
-        secrets: ['YOUTUBE_CLIENT_ID', 'YOUTUBE_CLIENT_SECRET', 'YOUTUBE_REFRESH_TOKEN'],
+        secrets: ['GOOGLE_CLIENT_ID', 'GOOGLE_CLIENT_SECRET'],
         scopes: ['https://www.googleapis.com/auth/youtube.upload', 'https://www.googleapis.com/auth/youtube.readonly'],
         steps: [
           '1. Open Google Cloud Console (console.cloud.google.com) and enable YouTube Data API v3.',
           '2. Configure OAuth 2.0 Consent Screen for DeepPredictBet and add scope https://www.googleapis.com/auth/youtube.upload.',
-          '3. Create an OAuth 2.0 Client ID (Web Application) and obtain Client ID & Secret.',
-          '4. Authorize the DeepPredictBet YouTube channel to generate a long-lived Refresh Token.',
-          '5. Add YOUTUBE_CLIENT_ID, YOUTUBE_CLIENT_SECRET, and YOUTUBE_REFRESH_TOKEN to Cloudflare Pages secrets.'
+          '3. Create an OAuth 2.0 Client ID (Web Application) with Authorized Redirect URI: "https://deeppredictbet.com/api/social/oauth?action=callback".',
+          '4. Add GOOGLE_CLIENT_ID and GOOGLE_CLIENT_SECRET to Cloudflare Pages secrets.',
+          '5. Click Connect Account to obtain offline refresh token, then test a Short or video publish.'
         ]
       },
       telegram: {

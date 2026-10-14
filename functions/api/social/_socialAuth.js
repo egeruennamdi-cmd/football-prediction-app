@@ -22,14 +22,14 @@ const STATE_TTL_SECONDS = 900; // 15 minutes
 export const OAUTH_CONFIGS = {
   instagram: {
     name: 'Instagram Business',
-    authUrl: 'https://www.facebook.com/v19.0/dialog/oauth',
-    tokenUrl: 'https://graph.facebook.com/v19.0/oauth/access_token',
+    authUrl: 'https://www.facebook.com/v21.0/dialog/oauth',
+    tokenUrl: 'https://graph.facebook.com/v21.0/oauth/access_token',
     scopes: ['instagram_basic', 'instagram_content_publish', 'pages_read_engagement', 'pages_show_list']
   },
   facebook: {
     name: 'Facebook Pages',
-    authUrl: 'https://www.facebook.com/v19.0/dialog/oauth',
-    tokenUrl: 'https://graph.facebook.com/v19.0/oauth/access_token',
+    authUrl: 'https://www.facebook.com/v21.0/dialog/oauth',
+    tokenUrl: 'https://graph.facebook.com/v21.0/oauth/access_token',
     scopes: ['pages_manage_posts', 'pages_read_engagement', 'pages_show_list']
   },
   x: {
@@ -169,6 +169,11 @@ export async function savePlatformConnection(env, platform, connectionData) {
     scopes: connectionData.scopes || [],
     connectedAt: connectionData.connectedAt || new Date().toISOString(),
     lastVerifiedAt: new Date().toISOString(),
+    verifiedPublish: Boolean(connectionData.verifiedPublish),
+    lastTestPostId: connectionData.lastTestPostId || null,
+    lastTestPostUrl: connectionData.lastTestPostUrl || null,
+    reviewPending: Boolean(connectionData.reviewPending),
+    revoked: Boolean(connectionData.revoked),
     extra: connectionData.extra || {}
   };
   await writeKVJson(env, key, record);
@@ -216,7 +221,7 @@ export async function buildPlatformAuthorizationUrl(env, platform, redirectUri) 
       break;
     }
     case 'x': {
-      const clientId = env.X_CLIENT_ID;
+      const clientId = env.X_CLIENT_ID || env.X_API_CLIENT_ID;
       if (!clientId) {
         throw new Error(`X_CLIENT_ID is not configured in server environment.`);
       }
@@ -242,7 +247,7 @@ export async function buildPlatformAuthorizationUrl(env, platform, redirectUri) 
       break;
     }
     case 'youtube': {
-      const clientId = env.GOOGLE_CLIENT_ID;
+      const clientId = env.GOOGLE_CLIENT_ID || env.YOUTUBE_CLIENT_ID;
       if (!clientId) {
         throw new Error(`GOOGLE_CLIENT_ID is not configured in server environment.`);
       }
@@ -302,7 +307,7 @@ async function exchangeMetaCode(env, platform, code, redirectUri) {
     code
   });
 
-  const tokenRes = await fetch(`https://graph.facebook.com/v19.0/oauth/access_token?${tokenParams.toString()}`);
+  const tokenRes = await fetch(`https://graph.facebook.com/v21.0/oauth/access_token?${tokenParams.toString()}`);
   if (!tokenRes.ok) {
     const errText = await tokenRes.text();
     throw new Error(`Meta token exchange failed (${tokenRes.status}): ${errText}`);
@@ -319,7 +324,7 @@ async function exchangeMetaCode(env, platform, code, redirectUri) {
     fb_exchange_token: shortLivedUserToken
   });
 
-  const longLivedRes = await fetch(`https://graph.facebook.com/v19.0/oauth/access_token?${longLivedParams.toString()}`);
+  const longLivedRes = await fetch(`https://graph.facebook.com/v21.0/oauth/access_token?${longLivedParams.toString()}`);
   let userToken = shortLivedUserToken;
   let expiresIn = tokenData.expires_in || 5184000; // default 60 days
 
@@ -332,7 +337,7 @@ async function exchangeMetaCode(env, platform, code, redirectUri) {
   }
 
   // Step 3: Discover Facebook Pages and connected Instagram Business Accounts
-  const pagesRes = await fetch(`https://graph.facebook.com/v19.0/me/accounts?fields=id,name,access_token,instagram_business_account{id,username,name}&access_token=${userToken}`);
+  const pagesRes = await fetch(`https://graph.facebook.com/v21.0/me/accounts?fields=id,name,access_token,instagram_business_account{id,username,name}&access_token=${userToken}`);
   if (!pagesRes.ok) {
     const errText = await pagesRes.text();
     throw new Error(`Meta pages discovery failed (${pagesRes.status}): ${errText}`);
@@ -388,8 +393,8 @@ async function exchangeMetaCode(env, platform, code, redirectUri) {
  * 𝕏 (Twitter) Token Exchange with PKCE
  */
 async function exchangeXCode(env, code, redirectUri, codeVerifier) {
-  const clientId = env.X_CLIENT_ID;
-  const clientSecret = env.X_CLIENT_SECRET;
+  const clientId = env.X_CLIENT_ID || env.X_API_CLIENT_ID;
+  const clientSecret = env.X_CLIENT_SECRET || env.X_API_CLIENT_SECRET;
 
   if (!clientId) {
     throw new Error('X_CLIENT_ID is not configured in server environment.');
@@ -506,8 +511,8 @@ async function exchangeTikTokCode(env, code, redirectUri) {
  * YouTube (Google OAuth 2.0) Token Exchange
  */
 async function exchangeYouTubeCode(env, code, redirectUri) {
-  const clientId = env.GOOGLE_CLIENT_ID;
-  const clientSecret = env.GOOGLE_CLIENT_SECRET;
+  const clientId = env.GOOGLE_CLIENT_ID || env.YOUTUBE_CLIENT_ID;
+  const clientSecret = env.GOOGLE_CLIENT_SECRET || env.YOUTUBE_CLIENT_SECRET;
 
   if (!clientId || !clientSecret) {
     throw new Error('GOOGLE_CLIENT_ID or GOOGLE_CLIENT_SECRET missing in server environment.');
@@ -586,12 +591,14 @@ export async function refreshPlatformTokenIfNeeded(env, platform) {
     let newExpiresIn = null;
 
     if (platform === 'youtube') {
+      const clientId = env.GOOGLE_CLIENT_ID || env.YOUTUBE_CLIENT_ID;
+      const clientSecret = env.GOOGLE_CLIENT_SECRET || env.YOUTUBE_CLIENT_SECRET;
       const res = await fetch('https://oauth2.googleapis.com/token', {
         method: 'POST',
         headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
         body: new URLSearchParams({
-          client_id: env.GOOGLE_CLIENT_ID,
-          client_secret: env.GOOGLE_CLIENT_SECRET,
+          client_id: clientId,
+          client_secret: clientSecret,
           refresh_token: conn.refreshToken,
           grant_type: 'refresh_token'
         }).toString()
@@ -602,15 +609,17 @@ export async function refreshPlatformTokenIfNeeded(env, platform) {
         newExpiresIn = data.expires_in;
       }
     } else if (platform === 'x') {
+      const clientId = env.X_CLIENT_ID || env.X_API_CLIENT_ID;
+      const clientSecret = env.X_CLIENT_SECRET || env.X_API_CLIENT_SECRET;
       const res = await fetch('https://api.twitter.com/2/oauth2/token', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/x-www-form-urlencoded',
-          ...(env.X_CLIENT_SECRET ? { 'Authorization': `Basic ${btoa(`${env.X_CLIENT_ID}:${env.X_CLIENT_SECRET}`)}` } : {})
+          ...(clientSecret ? { 'Authorization': `Basic ${btoa(`${clientId}:${clientSecret}`)}` } : {})
         },
         body: new URLSearchParams({
           grant_type: 'refresh_token',
-          client_id: env.X_CLIENT_ID,
+          client_id: clientId,
           refresh_token: conn.refreshToken
         }).toString()
       });

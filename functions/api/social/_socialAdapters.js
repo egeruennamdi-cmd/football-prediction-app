@@ -107,10 +107,14 @@ export async function getSocialAccountsHealth(env) {
   if (env && env.TELEGRAM_BOT_TOKEN && env.TELEGRAM_BOT_TOKEN.trim()) {
     accounts.telegram.connected = true;
     accounts.telegram.status = 'CONNECTED';
+    accounts.telegram.publishingState = 'LIVE';
+    accounts.telegram.isLive = true;
     accounts.telegram.accountHandle = '@DeepPredictBetBot';
     accounts.telegram.missingPermissions = [];
     accounts.telegram.reason = 'Telegram Bot API connected and authenticated.';
   } else {
+    accounts.telegram.publishingState = 'NOT_CONNECTED';
+    accounts.telegram.isLive = false;
     accounts.telegram.missingPermissions = ['TELEGRAM_BOT_TOKEN'];
     accounts.telegram.reason = 'TELEGRAM_BOT_TOKEN not configured in environment.';
   }
@@ -126,17 +130,45 @@ export async function getSocialAccountsHealth(env) {
       if (conn.isExpired) {
         accounts[platformKey].connected = false;
         accounts[platformKey].status = 'TOKEN_EXPIRED';
+        accounts[platformKey].publishingState = 'TOKEN_EXPIRED';
+        accounts[platformKey].isLive = false;
         accounts[platformKey].accountHandle = conn.accountHandle || conn.accountName;
         accounts[platformKey].missingPermissions = ['TOKEN_EXPIRED'];
         accounts[platformKey].reason = 'Access token has expired. Please re-authorize or refresh.';
         accounts[platformKey].expiresAt = conn.expiresAt;
         return;
       }
+      if (conn.revoked) {
+        accounts[platformKey].connected = false;
+        accounts[platformKey].status = 'REVOKED';
+        accounts[platformKey].publishingState = 'REVOKED';
+        accounts[platformKey].isLive = false;
+        accounts[platformKey].accountHandle = conn.accountHandle || conn.accountName;
+        accounts[platformKey].missingPermissions = ['REVOKED'];
+        accounts[platformKey].reason = 'Access has been revoked. Re-authorization required.';
+        return;
+      }
+      if (conn.reviewPending) {
+        accounts[platformKey].connected = false;
+        accounts[platformKey].status = 'REVIEW_PENDING';
+        accounts[platformKey].publishingState = 'REVIEW_PENDING';
+        accounts[platformKey].isLive = false;
+        accounts[platformKey].accountHandle = conn.accountHandle || conn.accountName;
+        accounts[platformKey].missingPermissions = ['APP_REVIEW_REQUIRED'];
+        accounts[platformKey].reason = 'Developer application review pending with platform.';
+        return;
+      }
       accounts[platformKey].connected = true;
       accounts[platformKey].status = 'CONNECTED';
+      accounts[platformKey].publishingState = conn.verifiedPublish ? 'LIVE' : 'AUTHORIZED';
+      accounts[platformKey].isLive = Boolean(conn.verifiedPublish);
+      accounts[platformKey].testPublished = Boolean(conn.verifiedPublish);
+      accounts[platformKey].requiresTestPublish = !conn.verifiedPublish;
       accounts[platformKey].accountHandle = conn.accountHandle || conn.accountName || defaultHandle;
       accounts[platformKey].missingPermissions = [];
-      accounts[platformKey].reason = `Authorized via server-side OAuth 2.0 (${conn.scopes ? conn.scopes.join(', ') : 'Active'})`;
+      accounts[platformKey].reason = conn.verifiedPublish
+        ? `Live and verified (${conn.scopes ? conn.scopes.join(', ') : 'Active'})`
+        : `Authorized via server-side OAuth 2.0 (${conn.scopes ? conn.scopes.join(', ') : 'Active'}). Controlled test post required to enable Live status.`;
       accounts[platformKey].expiresAt = conn.expiresAt;
       return;
     }
@@ -148,10 +180,15 @@ export async function getSocialAccountsHealth(env) {
     if (hasToken && hasId) {
       accounts[platformKey].connected = true;
       accounts[platformKey].status = 'CONNECTED';
+      accounts[platformKey].publishingState = 'AUTHORIZED';
+      accounts[platformKey].isLive = false;
+      accounts[platformKey].requiresTestPublish = true;
       accounts[platformKey].accountHandle = (env && env[`${platformKey.toUpperCase()}_ACCOUNT_HANDLE`]) || defaultHandle;
       accounts[platformKey].missingPermissions = [];
-      accounts[platformKey].reason = `${accounts[platformKey].name} credentials active in environment.`;
+      accounts[platformKey].reason = `${accounts[platformKey].name} credentials active in environment. Controlled test post required to enable Live status.`;
     } else {
+      accounts[platformKey].publishingState = 'NOT_CONNECTED';
+      accounts[platformKey].isLive = false;
       accounts[platformKey].reason = fallbackReason;
     }
   };
@@ -367,7 +404,7 @@ export async function dispatchInstagram(env, payload) {
       containerParams.set('image_url', mediaUrl);
     }
 
-    const containerRes = await fetch(`https://graph.facebook.com/v19.0/${igUserId}/media?${containerParams.toString()}`, {
+    const containerRes = await fetch(`https://graph.facebook.com/v21.0/${igUserId}/media?${containerParams.toString()}`, {
       method: 'POST'
     });
 
@@ -380,7 +417,7 @@ export async function dispatchInstagram(env, payload) {
     const creationId = containerData.id;
 
     // Step 2: Publish Container
-    const publishRes = await fetch(`https://graph.facebook.com/v19.0/${igUserId}/media_publish?creation_id=${creationId}&access_token=${pageToken}`, {
+    const publishRes = await fetch(`https://graph.facebook.com/v21.0/${igUserId}/media_publish?creation_id=${creationId}&access_token=${pageToken}`, {
       method: 'POST'
     });
 
@@ -391,7 +428,7 @@ export async function dispatchInstagram(env, payload) {
       // Step 3: Resolve verified permalink
       let permalink = `https://instagram.com/p/${mediaId}`;
       try {
-        const permRes = await fetch(`https://graph.facebook.com/v19.0/${mediaId}?fields=id,permalink&access_token=${pageToken}`);
+        const permRes = await fetch(`https://graph.facebook.com/v21.0/${mediaId}?fields=id,permalink&access_token=${pageToken}`);
         if (permRes.ok) {
           const permData = await permRes.json();
           if (permData.permalink) permalink = permData.permalink;
@@ -448,8 +485,8 @@ export async function dispatchFacebook(env, payload) {
 
   try {
     const postUrl = payload.mediaUrl
-      ? `https://graph.facebook.com/v19.0/${pageId}/photos`
-      : `https://graph.facebook.com/v19.0/${pageId}/feed`;
+      ? `https://graph.facebook.com/v21.0/${pageId}/photos`
+      : `https://graph.facebook.com/v21.0/${pageId}/feed`;
 
     const bodyObj = {
       message: payload.copy || '',
@@ -800,7 +837,7 @@ export async function reconcilePlatformPublication(env, platform, externalPostId
     const token = (conn && conn.accessToken) || (env && env.FACEBOOK_PAGE_ACCESS_TOKEN);
     if (token) {
       try {
-        const res = await fetch(`https://graph.facebook.com/v19.0/${externalPostId}?fields=id,permalink&access_token=${token}`);
+        const res = await fetch(`https://graph.facebook.com/v21.0/${externalPostId}?fields=id,permalink&access_token=${token}`);
         if (res.ok) {
           const data = await res.json();
           return { reconciled: true, exists: true, status: 'CONFIRMED', externalPostId, publishedUrl: data.permalink };
@@ -817,7 +854,7 @@ export async function reconcilePlatformPublication(env, platform, externalPostId
     const token = (conn && conn.accessToken) || (env && env.FACEBOOK_PAGE_ACCESS_TOKEN);
     if (token) {
       try {
-        const res = await fetch(`https://graph.facebook.com/v19.0/${externalPostId}?fields=id,permalink_url&access_token=${token}`);
+        const res = await fetch(`https://graph.facebook.com/v21.0/${externalPostId}?fields=id,permalink_url&access_token=${token}`);
         if (res.ok) {
           const data = await res.json();
           return { reconciled: true, exists: true, status: 'CONFIRMED', externalPostId, publishedUrl: data.permalink_url };

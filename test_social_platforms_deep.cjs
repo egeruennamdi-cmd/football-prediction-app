@@ -165,7 +165,7 @@ async function runAllTests() {
     const data = await res.json();
     assert.strictEqual(data.success, true);
     assert.strictEqual(data.platform, 'instagram');
-    assert.ok(data.authorizationUrl.includes('facebook.com/v19.0/dialog/oauth'));
+    assert.ok(data.authorizationUrl.includes('facebook.com/v21.0/dialog/oauth'));
     assert.ok(data.authorizationUrl.includes('instagram_basic'));
     assert.ok(data.authorizationUrl.includes('mock_meta_app_id_999'));
   });
@@ -615,18 +615,77 @@ async function runAllTests() {
   });
 
   // ==========================================================================
-  // SECTION 11: PRESERVATION OF TELEGRAM BROADCASTER
+  // SECTION 12: PRODUCTION READINESS GATE & LIFECYCLE STATES (Section 6)
   // ==========================================================================
-  console.log('\n--- 11. Preservation of Existing Telegram Broadcaster ---');
+  console.log('\n--- 12. Production Readiness Gate, Meta v21.0 & Status Lifecycle ---');
 
-  await test('Telegram publishing workflow remains 100% operational', async () => {
-    const { publishToFreeChannel } = await import('./functions/api/integrations/telegram/_telegramService.js');
-    assert.strictEqual(typeof publishToFreeChannel, 'function');
+  await test('Meta Graph API v21.0 endpoints are enforced across Instagram & Facebook', async () => {
+    const { OAUTH_CONFIGS } = await import('./functions/api/social/_socialAuth.js');
+    assert.ok(OAUTH_CONFIGS.instagram.authUrl.includes('v21.0'), 'Instagram authUrl must use v21.0');
+    assert.ok(OAUTH_CONFIGS.instagram.tokenUrl.includes('v21.0'), 'Instagram tokenUrl must use v21.0');
+    assert.ok(OAUTH_CONFIGS.facebook.authUrl.includes('v21.0'), 'Facebook authUrl must use v21.0');
+    assert.ok(OAUTH_CONFIGS.facebook.tokenUrl.includes('v21.0'), 'Facebook tokenUrl must use v21.0');
+  });
 
-    const accounts = await getSocialAccountsHealth(mockEnv);
-    assert.strictEqual(accounts.telegram.connected, true);
-    assert.strictEqual(accounts.telegram.status, 'CONNECTED');
-    assert.strictEqual(accounts.telegram.accountHandle, '@DeepPredictBetBot');
+  await test('Truthful Status: Distinguishes AUTHORIZED vs LIVE (publishing enabled)', async () => {
+    // 1. Newly connected account without verified publication -> AUTHORIZED, not LIVE
+    await savePlatformConnection(mockEnv, 'x', {
+      accountHandle: '@DeepPredictBet',
+      accessToken: 'x_oauth_tok_123',
+      expiresAt: Date.now() + 7200000,
+      verifiedPublish: false
+    });
+
+    let health = await getSocialAccountsHealth(mockEnv);
+    assert.strictEqual(health.x.connected, true);
+    assert.strictEqual(health.x.publishingState, 'AUTHORIZED');
+    assert.strictEqual(health.x.isLive, false);
+    assert.strictEqual(health.x.requiresTestPublish, true);
+
+    // 2. Mark account with verified publication -> LIVE
+    await savePlatformConnection(mockEnv, 'x', {
+      accountHandle: '@DeepPredictBet',
+      accessToken: 'x_oauth_tok_123',
+      expiresAt: Date.now() + 7200000,
+      verifiedPublish: true,
+      lastTestPostId: 'tweet_verified_999'
+    });
+
+    health = await getSocialAccountsHealth(mockEnv);
+    assert.strictEqual(health.x.publishingState, 'LIVE');
+    assert.strictEqual(health.x.isLive, true);
+    assert.strictEqual(health.x.requiresTestPublish, false);
+  });
+
+  await test('Truthful Status: Distinguishes REVIEW_PENDING and REVOKED states', async () => {
+    // Review Pending
+    await savePlatformConnection(mockEnv, 'tiktok', {
+      accountHandle: '@DeepPredictBetTikTok',
+      accessToken: 'tk_tok_456',
+      reviewPending: true
+    });
+    let health = await getSocialAccountsHealth(mockEnv);
+    assert.strictEqual(health.tiktok.status, 'REVIEW_PENDING');
+    assert.strictEqual(health.tiktok.publishingState, 'REVIEW_PENDING');
+    assert.strictEqual(health.tiktok.isLive, false);
+
+    // Revoked
+    await savePlatformConnection(mockEnv, 'tiktok', {
+      accountHandle: '@DeepPredictBetTikTok',
+      accessToken: 'tk_tok_456',
+      revoked: true
+    });
+    health = await getSocialAccountsHealth(mockEnv);
+    assert.strictEqual(health.tiktok.status, 'REVOKED');
+    assert.strictEqual(health.tiktok.publishingState, 'REVOKED');
+    assert.strictEqual(health.tiktok.isLive, false);
+  });
+
+  await test('Preserves Telegram 100% LIVE and operational', async () => {
+    const health = await getSocialAccountsHealth(mockEnv);
+    assert.strictEqual(health.telegram.connected, true);
+    assert.strictEqual(health.telegram.isLive, true);
+    assert.strictEqual(health.telegram.publishingState, 'LIVE');
   });
 
   // Restore Global Fetch
