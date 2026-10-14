@@ -240,10 +240,26 @@ export async function onRequestPost(context) {
     }
 
     // 5. ACTION: DISPATCH NOW
-    if (action === 'DISPATCH_NOW') {
+    if (action === 'DISPATCH_NOW' || action === 'publish_now') {
       let itemToPublish = contentId
         ? await getSocialContentById(env, contentId)
         : content;
+
+      if (!itemToPublish && (body.copy || body.channel)) {
+        const targetChannel = body.channel || 'telegram';
+        itemToPublish = {
+          category: body.category || SOCIAL_CONTENT_CATEGORIES.FOOTBALL_INTELLIGENCE_BRIEF,
+          matchId: body.matchId || null,
+          mediaUrl: body.mediaUrl || null,
+          platforms: {
+            [targetChannel]: {
+              enabled: true,
+              copy: body.copy || '',
+              mediaUrl: body.mediaUrl || null
+            }
+          }
+        };
+      }
 
       if (!itemToPublish) {
         return new Response(JSON.stringify({ success: false, error: 'No content payload provided for dispatch.' }), {
@@ -271,11 +287,13 @@ export async function onRequestPost(context) {
       const mediaUrl = (itemToPublish.platforms && itemToPublish.platforms[primaryPlatform] && itemToPublish.platforms[primaryPlatform].mediaUrl) || itemToPublish.mediaUrl || '';
       const fingerprint = await computeContentFingerprint(itemToPublish.category, itemToPublish.matchId, primaryCopy, mediaUrl);
 
-      if (!overrideDuplicate) {
+      const allowDuplicate = overrideDuplicate || body.forceDuplicate;
+      if (!allowDuplicate) {
         const duplicate = await checkDuplicateSocialContent(env, fingerprint, 24 * 60 * 60 * 1000);
         if (duplicate) {
           return new Response(JSON.stringify({
             success: false,
+            duplicateDetected: true,
             error: `DUPLICATE_CONTENT_DETECTED: Identical content was published within the past 24 hours (ID: ${duplicate.id}, publishedAt: ${duplicate.publishedAt || duplicate.updatedAt}).`,
             duplicateItem: duplicate
           }), {
@@ -325,7 +343,8 @@ export async function onRequestPost(context) {
         success: finalState === SOCIAL_LIFECYCLE_STATES.PUBLISHED || finalState === SOCIAL_LIFECYCLE_STATES.UNCERTAIN,
         state: finalState,
         platformResults,
-        content: publishedItem
+        content: publishedItem,
+        item: publishedItem
       }), {
         status: finalState === SOCIAL_LIFECYCLE_STATES.FAILED ? 502 : 200,
         headers: adminCorsHeaders()

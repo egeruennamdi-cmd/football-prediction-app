@@ -7599,115 +7599,76 @@
           </div>
 
           <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 14px;">
-            <!-- X (Twitter) Card -->
-            <div style="background: rgba(15,23,42,0.8); border: 1px solid rgba(255,255,255,0.08); border-radius: 12px; padding: 16px; display: flex; flex-direction: column; justify-content: space-between;">
-              <div>
-                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
-                  <span style="font-weight: 800; color: #ffffff; font-size: 0.9rem;">𝕏 X (Twitter)</span>
-                  <span style="font-size: 0.65rem; color: #fbbf24; font-weight: 800; background: rgba(245,158,11,0.15); border: 1px solid rgba(245,158,11,0.3); padding: 2px 6px; border-radius: 4px;">AUTH REQUIRED</span>
-                </div>
-                <div style="font-size: 0.72rem; color: #94a3b8; margin-bottom: 8px;">API: X API v2 (OAuth 2.0 PKCE)</div>
-                <div style="font-size: 0.7rem; color: #cbd5e1; margin-bottom: 10px; line-height: 1.4;">
-                  Missing Scopes: <span style="font-family: monospace; color: #38bdf8;">tweet.read, tweet.write, users.read</span>
-                </div>
-              </div>
-              <div style="display: flex; gap: 6px;">
-                <button type="button" onclick="window.TelegramPublisher.openSocialPrerequisitesModal('x')" style="flex: 1; background: rgba(56,189,248,0.15); border: 1px solid rgba(56,189,248,0.3); color: #38bdf8; font-size: 0.7rem; font-weight: 700; padding: 6px; border-radius: 6px; cursor: pointer;">
-                  ⚙️ Setup Guide
-                </button>
-                <button type="button" onclick="window.TelegramPublisher.setActiveChannel('x'); window.TelegramPublisher.switchTab('compose');" style="flex: 1; background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.12); color: #cbd5e1; font-size: 0.7rem; font-weight: 700; padding: 6px; border-radius: 6px; cursor: pointer;">
-                  📝 Manual Copy
-                </button>
-              </div>
-            </div>
+            ${['x', 'instagram', 'facebook', 'tiktok', 'youtube'].map(pKey => {
+              const info = {
+                x: { name: '𝕏 X (Twitter)', api: 'X API v2 (OAuth 2.0 PKCE)' },
+                instagram: { name: '📸 Instagram', api: 'Instagram Graph API (Business)' },
+                facebook: { name: '👥 Facebook Pages', api: 'Meta Graph API / Pages Feed' },
+                tiktok: { name: '🎵 TikTok', api: 'TikTok Content Posting API (v2)' },
+                youtube: { name: '▶️ YouTube', api: 'YouTube Data API v3 (Shorts)' }
+              }[pKey];
 
-            <!-- Instagram Card -->
-            <div style="background: rgba(15,23,42,0.8); border: 1px solid rgba(255,255,255,0.08); border-radius: 12px; padding: 16px; display: flex; flex-direction: column; justify-content: space-between;">
-              <div>
-                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
-                  <span style="font-weight: 800; color: #ffffff; font-size: 0.9rem;">📸 Instagram</span>
-                  <span style="font-size: 0.65rem; color: #fbbf24; font-weight: 800; background: rgba(245,158,11,0.15); border: 1px solid rgba(245,158,11,0.3); padding: 2px 6px; border-radius: 4px;">AUTH REQUIRED</span>
-                </div>
-                <div style="font-size: 0.72rem; color: #94a3b8; margin-bottom: 8px;">API: Instagram Graph API (Business)</div>
-                <div style="font-size: 0.7rem; color: #cbd5e1; margin-bottom: 10px; line-height: 1.4;">
-                  Missing: <span style="font-family: monospace; color: #38bdf8;">META_APP_ID, Linked Facebook Page</span>
-                </div>
-              </div>
-              <div style="display: flex; gap: 6px;">
-                <button type="button" onclick="window.TelegramPublisher.openSocialPrerequisitesModal('instagram')" style="flex: 1; background: rgba(56,189,248,0.15); border: 1px solid rgba(56,189,248,0.3); color: #38bdf8; font-size: 0.7rem; font-weight: 700; padding: 6px; border-radius: 6px; cursor: pointer;">
-                  ⚙️ Setup Guide
-                </button>
-                <button type="button" onclick="window.TelegramPublisher.setActiveChannel('instagram'); window.TelegramPublisher.switchTab('compose');" style="flex: 1; background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.12); color: #cbd5e1; font-size: 0.7rem; font-weight: 700; padding: 6px; border-radius: 6px; cursor: pointer;">
-                  📝 Manual Copy
-                </button>
-              </div>
-            </div>
+              const acc = state.socialAccounts ? state.socialAccounts[pKey] : null;
+              const isConnected = acc && acc.connected;
+              const isExpired = acc && acc.status === 'TOKEN_EXPIRED';
 
-            <!-- Facebook Pages Card -->
-            <div style="background: rgba(15,23,42,0.8); border: 1px solid rgba(255,255,255,0.08); border-radius: 12px; padding: 16px; display: flex; flex-direction: column; justify-content: space-between;">
-              <div>
-                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
-                  <span style="font-weight: 800; color: #ffffff; font-size: 0.9rem;">👥 Facebook Pages</span>
-                  <span style="font-size: 0.65rem; color: #fbbf24; font-weight: 800; background: rgba(245,158,11,0.15); border: 1px solid rgba(245,158,11,0.3); padding: 2px 6px; border-radius: 4px;">AUTH REQUIRED</span>
-                </div>
-                <div style="font-size: 0.72rem; color: #94a3b8; margin-bottom: 8px;">API: Graph API / Feed Post</div>
-                <div style="font-size: 0.7rem; color: #cbd5e1; margin-bottom: 10px; line-height: 1.4;">
-                  Missing: <span style="font-family: monospace; color: #38bdf8;">FACEBOOK_PAGE_ACCESS_TOKEN</span>
-                </div>
-              </div>
-              <div style="display: flex; gap: 6px;">
-                <button type="button" onclick="window.TelegramPublisher.openSocialPrerequisitesModal('facebook')" style="flex: 1; background: rgba(56,189,248,0.15); border: 1px solid rgba(56,189,248,0.3); color: #38bdf8; font-size: 0.7rem; font-weight: 700; padding: 6px; border-radius: 6px; cursor: pointer;">
-                  ⚙️ Setup Guide
-                </button>
-                <button type="button" onclick="window.TelegramPublisher.setActiveChannel('facebook'); window.TelegramPublisher.switchTab('compose');" style="flex: 1; background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.12); color: #cbd5e1; font-size: 0.7rem; font-weight: 700; padding: 6px; border-radius: 6px; cursor: pointer;">
-                  📝 Manual Copy
-                </button>
-              </div>
-            </div>
+              let badge = `<span style="font-size: 0.65rem; color: #fbbf24; font-weight: 800; background: rgba(245,158,11,0.15); border: 1px solid rgba(245,158,11,0.3); padding: 2px 6px; border-radius: 4px;">AUTH REQUIRED</span>`;
+              if (isConnected) {
+                badge = `<span style="font-size: 0.65rem; color: #34d399; font-weight: 800; background: rgba(16,185,129,0.15); border: 1px solid rgba(16,185,129,0.3); padding: 2px 6px; border-radius: 4px;">🟢 CONNECTED (LIVE)</span>`;
+              } else if (isExpired) {
+                badge = `<span style="font-size: 0.65rem; color: #f87171; font-weight: 800; background: rgba(239,68,68,0.15); border: 1px solid rgba(239,68,68,0.3); padding: 2px 6px; border-radius: 4px;">🔴 TOKEN EXPIRED</span>`;
+              }
 
-            <!-- TikTok Card -->
-            <div style="background: rgba(15,23,42,0.8); border: 1px solid rgba(255,255,255,0.08); border-radius: 12px; padding: 16px; display: flex; flex-direction: column; justify-content: space-between;">
-              <div>
-                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
-                  <span style="font-weight: 800; color: #ffffff; font-size: 0.9rem;">🎵 TikTok</span>
-                  <span style="font-size: 0.65rem; color: #fbbf24; font-weight: 800; background: rgba(245,158,11,0.15); border: 1px solid rgba(245,158,11,0.3); padding: 2px 6px; border-radius: 4px;">AUTH REQUIRED</span>
+              return `
+                <div style="background: rgba(15,23,42,0.8); border: 1px solid ${isConnected ? 'rgba(16,185,129,0.35)' : 'rgba(255,255,255,0.08)'}; border-radius: 12px; padding: 16px; display: flex; flex-direction: column; justify-content: space-between;">
+                  <div>
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
+                      <span style="font-weight: 800; color: #ffffff; font-size: 0.9rem;">${info.name}</span>
+                      ${badge}
+                    </div>
+                    <div style="font-size: 0.72rem; color: #94a3b8; margin-bottom: 8px;">API: ${info.api}</div>
+                    ${isConnected ? `
+                      <div style="font-size: 0.75rem; color: #38bdf8; font-weight: 700; margin-bottom: 4px;">${acc.accountHandle || 'Connected Account'}</div>
+                      <div style="font-size: 0.7rem; color: #94a3b8; margin-bottom: 10px;">${acc.reason || 'Authorized'}</div>
+                    ` : `
+                      <div style="font-size: 0.7rem; color: #cbd5e1; margin-bottom: 10px; line-height: 1.4;">
+                        ${acc?.reason || 'Account credentials not yet configured.'}
+                      </div>
+                    `}
+                  </div>
+                  <div style="display: flex; gap: 6px; flex-wrap: wrap;">
+                    ${isConnected ? `
+                      <button type="button" onclick="window.TelegramPublisher.testPublishSocial('${pKey}')" style="flex: 1; background: rgba(16,185,129,0.18); border: 1px solid rgba(16,185,129,0.4); color: #34d399; font-size: 0.7rem; font-weight: 800; padding: 6px; border-radius: 6px; cursor: pointer;">
+                        🚀 Test Post
+                      </button>
+                      <button type="button" onclick="window.TelegramPublisher.disconnectSocialAccount('${pKey}')" style="background: rgba(239,68,68,0.15); border: 1px solid rgba(239,68,68,0.35); color: #f87171; font-size: 0.7rem; font-weight: 700; padding: 6px 10px; border-radius: 6px; cursor: pointer;">
+                        🛑 Disconnect
+                      </button>
+                      <button type="button" onclick="window.TelegramPublisher.setActiveChannel('${pKey}'); window.TelegramPublisher.switchTab('compose');" style="flex: 1; background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.12); color: #cbd5e1; font-size: 0.7rem; font-weight: 700; padding: 6px; border-radius: 6px; cursor: pointer;">
+                        ✍️ Compose
+                      </button>
+                    ` : isExpired ? `
+                      <button type="button" onclick="window.TelegramPublisher.connectSocialAccount('${pKey}')" style="flex: 1.5; background: rgba(56,189,248,0.2); border: 1px solid rgba(56,189,248,0.5); color: #38bdf8; font-size: 0.7rem; font-weight: 800; padding: 6px; border-radius: 6px; cursor: pointer;">
+                        🔄 Reconnect
+                      </button>
+                      <button type="button" onclick="window.TelegramPublisher.disconnectSocialAccount('${pKey}')" style="background: rgba(239,68,68,0.15); border: 1px solid rgba(239,68,68,0.35); color: #f87171; font-size: 0.7rem; font-weight: 700; padding: 6px 10px; border-radius: 6px; cursor: pointer;">
+                        🛑 Disconnect
+                      </button>
+                    ` : `
+                      <button type="button" onclick="window.TelegramPublisher.connectSocialAccount('${pKey}')" style="flex: 1.2; background: rgba(56,189,248,0.18); border: 1.5px solid #38bdf8; color: #38bdf8; font-size: 0.7rem; font-weight: 800; padding: 6px; border-radius: 6px; cursor: pointer;">
+                        🔗 Connect
+                      </button>
+                      <button type="button" onclick="window.TelegramPublisher.openSocialPrerequisitesModal('${pKey}')" style="flex: 1; background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.12); color: #cbd5e1; font-size: 0.7rem; font-weight: 700; padding: 6px; border-radius: 6px; cursor: pointer;">
+                        ⚙️ Setup
+                      </button>
+                      <button type="button" onclick="window.TelegramPublisher.setActiveChannel('${pKey}'); window.TelegramPublisher.switchTab('compose');" style="flex: 1; background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.12); color: #cbd5e1; font-size: 0.7rem; font-weight: 700; padding: 6px; border-radius: 6px; cursor: pointer;">
+                        📝 Copy
+                      </button>
+                    `}
+                  </div>
                 </div>
-                <div style="font-size: 0.72rem; color: #94a3b8; margin-bottom: 8px;">API: TikTok Content Posting API</div>
-                <div style="font-size: 0.7rem; color: #cbd5e1; margin-bottom: 10px; line-height: 1.4;">
-                  Missing: <span style="font-family: monospace; color: #38bdf8;">TIKTOK_CLIENT_KEY, App Review</span>
-                </div>
-              </div>
-              <div style="display: flex; gap: 6px;">
-                <button type="button" onclick="window.TelegramPublisher.openSocialPrerequisitesModal('tiktok')" style="flex: 1; background: rgba(56,189,248,0.15); border: 1px solid rgba(56,189,248,0.3); color: #38bdf8; font-size: 0.7rem; font-weight: 700; padding: 6px; border-radius: 6px; cursor: pointer;">
-                  ⚙️ Setup Guide
-                </button>
-                <button type="button" onclick="window.TelegramPublisher.setActiveChannel('tiktok'); window.TelegramPublisher.switchTab('compose');" style="flex: 1; background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.12); color: #cbd5e1; font-size: 0.7rem; font-weight: 700; padding: 6px; border-radius: 6px; cursor: pointer;">
-                  📝 Manual Copy
-                </button>
-              </div>
-            </div>
-
-            <!-- YouTube Card -->
-            <div style="background: rgba(15,23,42,0.8); border: 1px solid rgba(255,255,255,0.08); border-radius: 12px; padding: 16px; display: flex; flex-direction: column; justify-content: space-between;">
-              <div>
-                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
-                  <span style="font-weight: 800; color: #ffffff; font-size: 0.9rem;">▶️ YouTube</span>
-                  <span style="font-size: 0.65rem; color: #fbbf24; font-weight: 800; background: rgba(245,158,11,0.15); border: 1px solid rgba(245,158,11,0.3); padding: 2px 6px; border-radius: 4px;">AUTH REQUIRED</span>
-                </div>
-                <div style="font-size: 0.72rem; color: #94a3b8; margin-bottom: 8px;">API: YouTube Data API v3</div>
-                <div style="font-size: 0.7rem; color: #cbd5e1; margin-bottom: 10px; line-height: 1.4;">
-                  Missing: <span style="font-family: monospace; color: #38bdf8;">YOUTUBE_CLIENT_ID, youtube.upload</span>
-                </div>
-              </div>
-              <div style="display: flex; gap: 6px;">
-                <button type="button" onclick="window.TelegramPublisher.openSocialPrerequisitesModal('youtube')" style="flex: 1; background: rgba(56,189,248,0.15); border: 1px solid rgba(56,189,248,0.3); color: #38bdf8; font-size: 0.7rem; font-weight: 700; padding: 6px; border-radius: 6px; cursor: pointer;">
-                  ⚙️ Setup Guide
-                </button>
-                <button type="button" onclick="window.TelegramPublisher.setActiveChannel('youtube'); window.TelegramPublisher.switchTab('compose');" style="flex: 1; background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.12); color: #cbd5e1; font-size: 0.7rem; font-weight: 700; padding: 6px; border-radius: 6px; cursor: pointer;">
-                  📝 Manual Copy
-                </button>
-              </div>
-            </div>
+              `;
+            }).join('')}
           </div>
         </div>
 
@@ -11086,6 +11047,86 @@
     }
   }
 
+  async function connectSocialAccount(platform) {
+    const targetPlatform = platform || state.activeChannel || 'x';
+    try {
+      showAlert(`Initiating secure OAuth flow for ${targetPlatform.toUpperCase()}...`);
+      const res = await adminFetch(`/api/social/oauth?action=authorize&platform=${targetPlatform}`);
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({}));
+        showAlert(err.error || `Failed to initiate OAuth for ${targetPlatform}`);
+        return;
+      }
+      const data = await res.json();
+      if (data.authorizationUrl && typeof window !== 'undefined') {
+        const width = 640, height = 750;
+        const left = (window.innerWidth - width) / 2;
+        const top = (window.innerHeight - height) / 2;
+        window.open(data.authorizationUrl, `Connect_${targetPlatform}`, `width=${width},height=${height},top=${top},left=${left}`);
+      }
+    } catch (e) {
+      showAlert(`OAuth error: ${e.message}`);
+    }
+  }
+
+  async function disconnectSocialAccount(platform) {
+    const targetPlatform = platform || state.activeChannel || 'x';
+    if (typeof confirm !== 'undefined' && !confirm(`Disconnect ${targetPlatform.toUpperCase()} account? Automated publishing to this channel will be disabled.`)) {
+      return;
+    }
+    try {
+      const res = await adminFetch('/api/social/oauth', {
+        method: 'POST',
+        body: JSON.stringify({ action: 'disconnect', platform: targetPlatform })
+      });
+      if (res.ok) {
+        showAlert(`✅ ${targetPlatform.toUpperCase()} account successfully disconnected.`);
+        await fetchSocialData();
+        renderTabContent();
+      } else {
+        const err = await res.json().catch(() => ({}));
+        showAlert(err.error || `Failed to disconnect ${targetPlatform}`);
+      }
+    } catch (e) {
+      showAlert(`Disconnect error: ${e.message}`);
+    }
+  }
+
+  async function testPublishSocial(platform) {
+    const targetPlatform = platform || state.activeChannel || 'x';
+    try {
+      showAlert(`🚀 Dispatching controlled test beacon to ${targetPlatform.toUpperCase()}...`);
+      const res = await adminFetch('/api/social/oauth', {
+        method: 'POST',
+        body: JSON.stringify({ action: 'test-publish', platform: targetPlatform })
+      });
+      const data = await res.json().catch(() => ({}));
+      if (data.success) {
+        const resObj = data.result || {};
+        showAlert(`✅ ${targetPlatform.toUpperCase()} test post successful!\nID: ${resObj.externalPostId}\nURL: ${resObj.publishedUrl || 'N/A'}`);
+      } else {
+        const errMsg = (data.result && data.result.error) || data.error || 'Provider rejected test post';
+        showAlert(`❌ Test post to ${targetPlatform.toUpperCase()} failed:\n${errMsg}`);
+      }
+    } catch (e) {
+      showAlert(`Test dispatch error: ${e.message}`);
+    }
+  }
+
+  if (typeof window !== 'undefined') {
+    window.addEventListener('message', async (e) => {
+      if (e.data && e.data.type === 'DP_SOCIAL_OAUTH_COMPLETE') {
+        if (e.data.success) {
+          showAlert('🎉 Social account connected successfully!');
+          await fetchSocialData();
+          renderTabContent();
+        } else {
+          showAlert('❌ Social account authorization was cancelled or failed.');
+        }
+      }
+    });
+  }
+
   function openSocialPrerequisitesModal(platform) {
     const targetPlatform = platform || state.activeChannel || 'x';
     if (typeof document === 'undefined') return;
@@ -11626,6 +11667,9 @@
     openSocialPrerequisitesModal,
     closeSocialPrerequisitesModal,
     generateCampaignUrl,
+    connectSocialAccount,
+    disconnectSocialAccount,
+    testPublishSocial,
 
     openModal() {
       const el = document.getElementById('telegram-command-center-section') || document.getElementById('telegram-publisher-section');
