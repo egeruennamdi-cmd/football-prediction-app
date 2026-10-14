@@ -2360,6 +2360,7 @@
       el.scrollIntoView({ behavior: 'smooth', block: 'start' });
     }
   };
+  window.scrollToSocialPublisher = window.scrollToTelegramPublisher;
 
   window.quickFounderLogin = function () {
     if (typeof window.isAdmin === 'function' && window.isAdmin()) {
@@ -2741,8 +2742,8 @@
               <!-- Action Buttons -->
               <button type="button" id="founder-tg-publisher-btn" onclick="window.scrollToTelegramPublisher ? window.scrollToTelegramPublisher() : (window.TelegramPublisher && window.TelegramPublisher.openModal())" class="btn btn-secondary founder-tg-publisher-btn"
                 style="font-size: 0.78rem; padding: 8px 16px; font-weight: 800; display: flex; align-items: center; gap: 6px; background: rgba(56,189,248,0.18); border: 1.5px solid rgba(56,189,248,0.55); color: #38bdf8; border-radius: 20px; cursor: pointer; box-shadow: 0 2px 12px rgba(56,189,248,0.25); transition: all 0.2s ease;"
-                title="Telegram Command Center: Intelligence discovery, studio, calendar & automation">
-                <span style="font-size: 0.9rem;">📢</span> <span>Telegram Command Center</span>
+                title="Social Media & Telegram Command Center: Multi-network intelligence, calendar, studio & automation">
+                <span style="font-size: 0.9rem;">🌐</span> <span>Social & Telegram Command Center</span>
               </button>
               <button type="button" id="founder-vip-manage-btn" onclick="window.openVipFeatureManager()" class="btn btn-secondary founder-vip-manage-btn"
                 style="font-size: 0.78rem; padding: 8px 16px; font-weight: 800; display: flex; align-items: center; gap: 6px; background: rgba(168,85,247,0.18); border: 1.5px solid rgba(168,85,247,0.55); color: #d8b4fe; border-radius: 20px; cursor: pointer; box-shadow: 0 2px 12px rgba(168,85,247,0.25); transition: all 0.2s ease;"
@@ -3554,7 +3555,26 @@
           </div>
         </div>
 
-        <!-- SECTION 14: 📢 TELEGRAM CONTENT PUBLISHER -->
+        <!-- SECTION 14: 🌐 OMNI-CHANNEL SOCIAL MEDIA & TELEGRAM COMMAND CENTER -->
+        <div id="telegram-command-center-section" style="margin-top: 36px; margin-bottom: 18px; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 12px; background: linear-gradient(135deg, rgba(15,23,42,0.95) 0%, rgba(14,116,144,0.2) 100%); border: 1.5px solid rgba(56,189,248,0.4); border-radius: 16px; padding: 18px 22px; box-shadow: 0 8px 32px rgba(0,0,0,0.5);">
+          <div>
+            <div style="display: flex; align-items: center; gap: 12px;">
+              <span style="font-size: 1.8rem; background: rgba(56,189,248,0.15); border: 1.5px solid rgba(56,189,248,0.4); border-radius: 12px; padding: 6px 12px;">🌐</span>
+              <div>
+                <h3 style="font-family: var(--font-display); font-size: 1.25rem; font-weight: 900; color: #ffffff; margin: 0; display: flex; align-items: center; gap: 8px;">
+                  Omni-Channel Social Media & Telegram Command Center
+                  <span style="background: rgba(56,189,248,0.2); color: #38bdf8; font-size: 0.68rem; font-weight: 800; padding: 3px 8px; border-radius: 20px; border: 1px solid rgba(56,189,248,0.4);">FOUNDER BI EXCLUSIVE</span>
+                </h3>
+                <div style="font-size: 0.78rem; color: #94a3b8; margin-top: 3px;">
+                  Multi-network broadcast distribution &bull; Telegram, X (Twitter), Instagram, Facebook, TikTok, YouTube
+                </div>
+              </div>
+            </div>
+          </div>
+          <button type="button" onclick="window.scrollTo({ top: 0, behavior: 'smooth' })" class="btn btn-secondary" style="font-size: 0.75rem; padding: 7px 14px; font-weight: 700; background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.15); color: #cbd5e1; border-radius: 8px; cursor: pointer; transition: all 0.2s ease;">
+            ↑ Back to Founder Overview
+          </button>
+        </div>
         <div id="founder-telegram-publisher-container"></div>
 
       </div>
@@ -3570,7 +3590,7 @@
       window.TelegramPublisher.render(document.getElementById('founder-telegram-publisher-container'));
     }
 
-    if (window.location.hash && window.location.hash.toLowerCase().includes('publisher')) {
+    if (window.location.hash && (window.location.hash.toLowerCase().includes('publisher') || window.location.hash.toLowerCase().includes('social'))) {
       setTimeout(() => {
         if (typeof window.scrollToTelegramPublisher === 'function') {
           window.scrollToTelegramPublisher();

@@ -234,18 +234,16 @@
       redirect: '/admin'
     },
     '/social': {
-      viewId: 'view-social-command-center',
-      title: 'DeepPredictBet — Social Media & Telegram Command Center',
-      navKey: 'social'
+      redirect: '/admin'
     },
     '/social-publisher': {
-      redirect: '/social'
+      redirect: '/admin'
     },
     '/telegram-publisher': {
-      redirect: '/social'
+      redirect: '/admin'
     },
     '/social-command-center': {
-      redirect: '/social'
+      redirect: '/admin'
     }
   };
 
@@ -290,11 +288,11 @@
     '#admin': '/admin',
     '#admin/analytics': '/admin/analytics',
     '#founder-analytics': '/admin',
-    '#social': '/social',
-    '#social-publisher': '/social',
-    '#telegram-publisher': '/social',
-    '#social-command-center': '/social',
-    '#publisher': '/social',
+    '#social': '/admin',
+    '#social-publisher': '/admin',
+    '#telegram-publisher': '/admin',
+    '#social-command-center': '/admin',
+    '#publisher': '/admin',
     '#predictions': '/predictions',
     '#home': '/'
   };
@@ -590,19 +588,6 @@
       }
     }
 
-    // Handle Social Media & Telegram Command Center standalone view initializer
-    if (targetViewId === 'view-social-command-center') {
-      const renderSocial = () => {
-        const container = document.getElementById('standalone-social-publisher-container') || document.getElementById('view-social-command-center');
-        if (container && window.TelegramPublisher && typeof window.TelegramPublisher.render === 'function') {
-          window.TelegramPublisher.render(container);
-        }
-      };
-      renderSocial();
-      setTimeout(renderSocial, 60);
-      setTimeout(renderSocial, 250);
-    }
-
     // Handle in-page subsection anchor scroll (e.g. #telegram-vip-section)
     if (window.location.hash) {
       const targetAnchorId = window.location.hash.slice(1);
@@ -758,7 +743,10 @@
       'my-deeppredict': '/dashboard',
       'admin': '/admin',
       'admin/analytics': '/admin/analytics',
-      'founder-analytics': '/admin'
+      'founder-analytics': '/admin',
+      'social': '/admin#publisher',
+      'social-publisher': '/admin#publisher',
+      'telegram-publisher': '/admin#publisher'
     };
     navigateTo(map[routeId] || '/' + routeId);
   };
