@@ -232,6 +232,20 @@
     },
     '/founder-analytics': {
       redirect: '/admin'
+    },
+    '/social': {
+      viewId: 'view-social-command-center',
+      title: 'DeepPredictBet — Social Media & Telegram Command Center',
+      navKey: 'social'
+    },
+    '/social-publisher': {
+      redirect: '/social'
+    },
+    '/telegram-publisher': {
+      redirect: '/social'
+    },
+    '/social-command-center': {
+      redirect: '/social'
     }
   };
 
@@ -276,6 +290,11 @@
     '#admin': '/admin',
     '#admin/analytics': '/admin/analytics',
     '#founder-analytics': '/admin',
+    '#social': '/social',
+    '#social-publisher': '/social',
+    '#telegram-publisher': '/social',
+    '#social-command-center': '/social',
+    '#publisher': '/social',
     '#predictions': '/predictions',
     '#home': '/'
   };
@@ -379,34 +398,14 @@
 
     const targetViewId = config.viewId || 'view-command-center';
 
-    // STRICT ROLE-BASED ACCESS CONTROL (RBAC) FOR FOUNDER / ADMIN CONSOLE
+    // ROLE-BASED ACCESS CONTROL (RBAC) FOR FOUNDER / ADMIN CONSOLE
+    // If user is not yet signed in as admin, allow view-founder-analytics to mount so the
+    // Founder Passkey Auth Gate (renderFounderAuthGate) is displayed directly without disruptive redirects.
     if (!options.skipAuthCheck && (targetViewId === 'view-founder-analytics' || path === '/admin' || path === '/admin/analytics' || path === '/founder-analytics')) {
-      const isLoggedIn = typeof localStorage !== 'undefined' && localStorage.getItem('userLoggedIn') === 'true';
+      const isFounderAuth = typeof localStorage !== 'undefined' && (localStorage.getItem('dp_founder_authenticated') === 'true' || sessionStorage.getItem('dp_founder_authenticated') === 'true');
       const isUserAdmin = typeof window.isAdmin === 'function' ? window.isAdmin() : false;
-
-      if (!isLoggedIn) {
-        console.warn('[Router RBAC Guard] Unauthorized attempt to access admin view without authentication.');
-        if (typeof showToast === 'function') {
-          showToast('🔒 Please log in with an Administrator account to access the Founder Console.', 'warning');
-        } else if (typeof showAppNotification === 'function') {
-          showAppNotification('🔒 Administrator login required.');
-        }
-        window.history.replaceState(null, '', '/dashboard');
-        if (typeof openAuthModal === 'function') {
-          openAuthModal('login');
-        }
-        return navigateTo('/dashboard', true, { skipAuthCheck: true });
-      }
-
-      if (!isUserAdmin) {
-        console.warn('[Router RBAC Guard] Forbidden attempt to access admin view by non-admin user.');
-        if (typeof showToast === 'function') {
-          showToast('⛔ Access Denied: The Founder Analytics & BI Console is restricted to verified Administrators.', 'error');
-        } else if (typeof showAppNotification === 'function') {
-          showAppNotification('⛔ Access Denied: Administrator role required.');
-        }
-        window.history.replaceState(null, '', '/dashboard');
-        return navigateTo('/dashboard', true, { skipAuthCheck: true });
+      if (!isUserAdmin && !isFounderAuth) {
+        console.info('[Router] Founder passkey verification gate active for /admin view.');
       }
     }
 
@@ -589,6 +588,19 @@
           }
         }, 50);
       }
+    }
+
+    // Handle Social Media & Telegram Command Center standalone view initializer
+    if (targetViewId === 'view-social-command-center') {
+      const renderSocial = () => {
+        const container = document.getElementById('standalone-social-publisher-container') || document.getElementById('view-social-command-center');
+        if (container && window.TelegramPublisher && typeof window.TelegramPublisher.render === 'function') {
+          window.TelegramPublisher.render(container);
+        }
+      };
+      renderSocial();
+      setTimeout(renderSocial, 60);
+      setTimeout(renderSocial, 250);
     }
 
     // Handle in-page subsection anchor scroll (e.g. #telegram-vip-section)
