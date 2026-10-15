@@ -4058,28 +4058,51 @@ async function runTests() {
     assert.ok(fetchCalls[0].options.body instanceof FormData, 'Data URL photo must trigger multipart/form-data body');
     assert.ok(fetchCalls[0].options.body.has('photo'), 'FormData must contain photo field');
 
-    // 8. Test 36 Additional World-Class Graphic Presets (40 Total)
+    // 8. Test 60 Additional World-Class Graphic Presets (100 Total)
     const allPresets = telegramPublisher.getGraphicPresets();
-    assert.strictEqual(allPresets.length, 40, 'Official Graphic Presets catalog must contain exactly 40 world-class presets (4 original + 36 integrated)');
+    assert.strictEqual(allPresets.length, 100, 'Official Graphic Presets catalog must contain exactly 100 world-class presets (40 original + 60 newly integrated)');
     
     // Verify category distribution
-    const categories = ['vip', 'acca', 'analytics', 'goals', 'props', 'live'];
+    const categories = ['legends', 'vip', 'acca', 'analytics', 'goals', 'props', 'live'];
     categories.forEach(cat => {
       const count = allPresets.filter(p => p.category === cat).length;
-      assert.ok(count >= 6, `Category "${cat}" must contain at least 6 presets. Found ${count}.`);
+      assert.ok(count >= 11, `Category "${cat}" must contain at least 11 presets. Found ${count}.`);
     });
 
+    const legendsCount = allPresets.filter(p => p.category === 'legends').length;
+    assert.strictEqual(legendsCount, 30, 'Legends & Superstars category must contain exactly 30 world-class player presets');
+
     // Test Category Filtering
+    telegramPublisher.setVisualPresetCategory('legends');
+    assert.strictEqual(telegramPublisher.getState().visualPresetCategory, 'legends', 'Preset category state must update to legends');
+    const filteredLegends = telegramPublisher.getFilteredVisualPresets();
+    assert.strictEqual(filteredLegends.length, 30, 'Filtering by legends category must return exactly 30 presets');
+
     telegramPublisher.setVisualPresetCategory('vip');
     assert.strictEqual(telegramPublisher.getState().visualPresetCategory, 'vip', 'Preset category state must update to vip');
 
-    // Test Keyword Search Filtering
+    // Test Keyword Search Filtering (e.g. Messi, Ronaldo, Mbappé)
+    telegramPublisher.setVisualPresetCategory('all');
+    telegramPublisher.filterVisualPresets('Messi');
+    assert.strictEqual(telegramPublisher.getState().visualPresetSearch, 'messi', 'Preset search query state must update to messi');
+    const messiResults = telegramPublisher.getFilteredVisualPresets();
+    assert.ok(messiResults.length >= 1, 'Search for Messi must return at least one preset');
+    assert.ok(messiResults.some(p => p.id === 'messi-goat-champion'), 'Search results must include messi-goat-champion');
+
     telegramPublisher.filterVisualPresets('CLV');
     assert.strictEqual(telegramPublisher.getState().visualPresetSearch, 'clv', 'Preset search query state must update to clv');
 
     // Reset filters
     telegramPublisher.setVisualPresetCategory('all');
     telegramPublisher.filterVisualPresets('');
+
+    // Test Attaching Football Legend Preset (e.g. Lionel Messi GOAT)
+    const messiPreset = allPresets.find(p => p.id === 'messi-goat-champion');
+    assert.ok(messiPreset, 'Messi GOAT preset must exist');
+    telegramPublisher.attachPresetImage(messiPreset.url, messiPreset.name);
+    const messiState = telegramPublisher.getState();
+    assert.strictEqual(messiState.photoUrl, messiPreset.url, 'Attaching Messi preset must set photoUrl');
+    assert.strictEqual(messiState.attachedImageName, messiPreset.name, 'Attaching Messi preset must set attachedImageName');
 
     // Test Attaching a Newly Integrated Preset (e.g. CLV Advantage)
     const clvPreset = allPresets.find(p => p.id === 'clv-edge');
@@ -4093,7 +4116,7 @@ async function runTests() {
     const reloadedCompose = telegramPublisher.renderComposeTab();
     assert.ok(reloadedCompose.includes('id="tg-pub-presets-drawer"'), 'Presets drawer must render in compose tab');
     assert.ok(reloadedCompose.includes('id="tg-pub-preset-search"'), 'Presets drawer must render search bar');
-    assert.ok(reloadedCompose.includes('40 Available'), 'Presets drawer must display 40 Available count');
+    assert.ok(reloadedCompose.includes('100 Available'), 'Presets drawer must display 100 Available count');
     assert.ok(reloadedCompose.includes('id="tg-pub-presets-grid"'), 'Presets grid container must exist');
 
     global.document = origDoc;
@@ -4545,7 +4568,9 @@ async function runTests() {
   await testAsync('Section 58.45: Calendar Fixture Card Markets Dropdown Integration, Manual Market Selection & Random Pick Engine', async () => {
     // 1. Calendar HTML renders Markets button (Attachment 2) and Random Pick button on match fixture cards (Attachment 1)
     telegramPublisher.setCalendarView('month');
-    telegramPublisher.selectCalendarDate('2026-10-19');
+    const calAgg = telegramPublisher.getCalendarAggregatedData(2026, 9);
+    const dateWithMatches = Object.keys(calAgg.matchesByDate)[0] || '2026-10-19';
+    telegramPublisher.selectCalendarDate(dateWithMatches);
     const calHtml = telegramPublisher.renderCalendarTab();
     assert.ok(calHtml.includes('cal-markets-btn-'), 'Calendar match card must render Markets dropdown button');
     assert.ok(calHtml.includes('cal-random-btn-'), 'Calendar match card must render Random Pick button');

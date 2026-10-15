@@ -9792,17 +9792,18 @@
   }
 
   // ============================================================================
-  // OFFICIAL GRAPHIC PRESETS CATALOG (40 World-Class Betting Intelligence Presets)
+  // OFFICIAL GRAPHIC PRESETS CATALOG (100 World-Class Betting Intelligence Presets)
   // ============================================================================
 
   const PRESET_CATEGORIES = [
-    { id: 'all', label: '⭐ All Presets', count: 40 },
-    { id: 'vip', label: '👑 VIP & Bankers', count: 7 },
-    { id: 'acca', label: '⚡ Accas & Slips', count: 7 },
-    { id: 'analytics', label: '📊 Tactical Radar', count: 7 },
-    { id: 'goals', label: '🎯 Goals & Totals', count: 7 },
-    { id: 'props', label: '🧩 Props & Builders', count: 6 },
-    { id: 'live', label: '📡 Live & Specials', count: 6 }
+    { id: 'all', label: '⭐ All Presets', count: 100 },
+    { id: 'legends', label: '👑 Legends & Stars', count: 30 },
+    { id: 'vip', label: '💎 VIP & Bankers', count: 12 },
+    { id: 'acca', label: '⚡ Accas & Slips', count: 12 },
+    { id: 'analytics', label: '📊 Tactical Radar', count: 12 },
+    { id: 'goals', label: '🎯 Goals & Totals', count: 12 },
+    { id: 'props', label: '🧩 Props & Builders', count: 11 },
+    { id: 'live', label: '📡 Live & Derbies', count: 11 }
   ];
 
   const OFFICIAL_GRAPHIC_PRESETS = [
@@ -10256,6 +10257,694 @@
       color: '#f59e0b',
       url: 'https://images.unsplash.com/photo-1554068865-24cecd4e34b8?w=800&q=80',
       name: '🌅 Morning Intelligence Briefing Header'
+    },
+
+    // ========================================================================
+    // --- 7. GREATEST FOOTBALLERS & MODERN SUPERSTARS (30 World-Class Presets) ---
+    // ========================================================================
+    {
+      id: 'messi-goat-champion',
+      category: 'legends',
+      categoryLabel: 'GOAT Legend',
+      icon: '🐐',
+      title: 'Lionel Messi GOAT',
+      subtitle: 'World Champion & Playmaker Peak',
+      color: '#38bdf8',
+      url: 'https://images.unsplash.com/photo-1579952363873-27f3bade9f55?w=800&q=80',
+      name: '🐐 Lionel Messi World Champion Graphic'
+    },
+    {
+      id: 'cr7-ucl-king',
+      category: 'legends',
+      categoryLabel: 'UCL King',
+      icon: '👑',
+      title: 'Cristiano Ronaldo CR7',
+      subtitle: 'All-Time UCL Top Scorer & Clutch Finisher',
+      color: '#facc15',
+      url: 'https://images.unsplash.com/photo-1508098682722-e99c43a406b2?w=800&q=80',
+      name: '👑 Cristiano Ronaldo UCL Icon Graphic'
+    },
+    {
+      id: 'mbappe-world-cup-golden-boot',
+      category: 'legends',
+      categoryLabel: 'Speed Finisher',
+      icon: '⚡',
+      title: 'Kylian Mbappé Blitz',
+      subtitle: 'World Cup Final Hat-Trick & Explosive Pace',
+      color: '#e11d48',
+      url: 'https://images.unsplash.com/photo-1518091043644-c1d4457512c6?w=800&q=80',
+      name: '⚡ Kylian Mbappé Electric Speed Graphic'
+    },
+    {
+      id: 'haaland-cyborg-machine',
+      category: 'legends',
+      categoryLabel: 'Goal Machine',
+      icon: '🤖',
+      title: 'Erling Haaland Machine',
+      subtitle: 'Premier League Record Penalty Box Poacher',
+      color: '#0ea5e9',
+      url: 'https://images.unsplash.com/photo-1511886929837-354d827aae26?w=800&q=80',
+      name: '🤖 Erling Haaland Cybernetic Striker Graphic'
+    },
+    {
+      id: 'bellingham-golden-boy',
+      category: 'legends',
+      categoryLabel: 'Golden Boy',
+      icon: '🌟',
+      title: 'Jude Bellingham 90+',
+      subtitle: 'Box-to-Box Dominance & Clutch 90+ Winner',
+      color: '#fbbf24',
+      url: 'https://images.unsplash.com/photo-1522778119026-d647f0596c20?w=800&q=80',
+      name: '🌟 Jude Bellingham Clutch Matchwinner Graphic'
+    },
+    {
+      id: 'vinicius-samba-dribble',
+      category: 'legends',
+      categoryLabel: '1v1 Magician',
+      icon: '🕺',
+      title: 'Vinicius Jr Samba Wing',
+      subtitle: 'Champions League Decider & 1v1 Take-On',
+      color: '#22c55e',
+      url: 'https://images.unsplash.com/photo-1574629810360-7efbbe195018?w=800&q=80',
+      name: '🕺 Vinicius Jr Samba Dribbler Graphic'
+    },
+    {
+      id: 'kdb-assist-king',
+      category: 'legends',
+      categoryLabel: 'Assist King',
+      icon: '🪄',
+      title: 'Kevin De Bruyne Vision',
+      subtitle: 'The Assist King & Precision Half-Spaces',
+      color: '#38bdf8',
+      url: 'https://images.unsplash.com/photo-1504305754058-2f08ccd89a0a?w=800&q=80',
+      name: '🪄 Kevin De Bruyne Master Playmaker Graphic'
+    },
+    {
+      id: 'salah-egyptian-king',
+      category: 'legends',
+      categoryLabel: 'Egyptian King',
+      icon: '👑',
+      title: 'Mohamed Salah King',
+      subtitle: 'Anfield Golden Boot & Inverted Curler',
+      color: '#ef4444',
+      url: 'https://images.unsplash.com/photo-1517466787929-bc90951d0974?w=800&q=80',
+      name: '👑 Mohamed Salah Egyptian King Graphic'
+    },
+    {
+      id: 'kane-golden-shoe',
+      category: 'legends',
+      categoryLabel: 'Golden Shoe',
+      icon: '🎯',
+      title: 'Harry Kane Golden Shoe',
+      subtitle: 'European Golden Shoe Clinical Striker',
+      color: '#dc2626',
+      url: 'https://images.unsplash.com/photo-1560272564-c83b66b1ad12?w=800&q=80',
+      name: '🎯 Harry Kane European Golden Shoe Graphic'
+    },
+    {
+      id: 'yamal-wonderkid-phenom',
+      category: 'legends',
+      categoryLabel: 'Wonderkid',
+      icon: '💎',
+      title: 'Lamine Yamal Prodigy',
+      subtitle: 'Euro 2024 Champion & Wonderkid Phenom',
+      color: '#a855f7',
+      url: 'https://images.unsplash.com/photo-1551958219-acbc608c6377?w=800&q=80',
+      name: '💎 Lamine Yamal Wonderkid Phenom Graphic'
+    },
+    {
+      id: 'saka-starboy-arsenal',
+      category: 'legends',
+      categoryLabel: 'Starboy',
+      icon: '⭐',
+      title: 'Bukayo Saka Starboy',
+      subtitle: 'Arsenal Inverted Wing Threat & Precision Delivery',
+      color: '#f43f5e',
+      url: 'https://images.unsplash.com/photo-1516733725897-1aa73b87c8e8?w=800&q=80',
+      name: '⭐ Bukayo Saka Arsenal Starboy Graphic'
+    },
+    {
+      id: 'foden-premier-league-poty',
+      category: 'legends',
+      categoryLabel: 'Player of Year',
+      icon: '🎯',
+      title: 'Phil Foden POTY',
+      subtitle: 'Premier League Player of Year Half-Volleys',
+      color: '#06b6d4',
+      url: 'https://images.unsplash.com/photo-1526232761682-d26e03ac148e?w=800&q=80',
+      name: '🎯 Phil Foden Premier League POTY Graphic'
+    },
+    {
+      id: 'rodri-ballon-dor-midfield',
+      category: 'legends',
+      categoryLabel: 'Ballon d\'Or',
+      icon: '🏆',
+      title: 'Rodri Ballon d\'Or Anchor',
+      subtitle: 'World Best Midfielder & Unbeaten Streak',
+      color: '#f59e0b',
+      url: 'https://images.unsplash.com/photo-1471295253337-3ceaaedca402?w=800&q=80',
+      name: '🏆 Rodri Ballon d\'Or Mastermind Graphic'
+    },
+    {
+      id: 'palmer-cold-chelsea',
+      category: 'legends',
+      categoryLabel: 'Ice Finisher',
+      icon: '🥶',
+      title: 'Cold Palmer Ice Finisher',
+      subtitle: '100% Penalty Record & Playmaking Spark',
+      color: '#38bdf8',
+      url: 'https://images.unsplash.com/photo-1575361204480-aadea25e6e68?w=800&q=80',
+      name: '🥶 Cole Palmer Cold Finish Graphic'
+    },
+    {
+      id: 'lewandowski-box-master',
+      category: 'legends',
+      categoryLabel: 'Elite Striker',
+      icon: '🏹',
+      title: 'Lewandowski 600+',
+      subtitle: 'Masterclass Striker & European Golden Shoe',
+      color: '#f43f5e',
+      url: 'https://images.unsplash.com/photo-1489944440615-453fc2b6a9a9?w=800&q=80',
+      name: '🏹 Robert Lewandowski 600+ Goals Graphic'
+    },
+    {
+      id: 'modric-trivela-legend',
+      category: 'legends',
+      categoryLabel: 'Maestro',
+      icon: '🎩',
+      title: 'Luka Modrić Trivela',
+      subtitle: 'Ballon d\'Or Maestro & Outside-Foot Wizard',
+      color: '#fbbf24',
+      url: 'https://images.unsplash.com/photo-1536122985607-4fe00b283652?w=800&q=80',
+      name: '🎩 Luka Modrić Trivela Maestro Graphic'
+    },
+    {
+      id: 'wirtz-invincible-playmaker',
+      category: 'legends',
+      categoryLabel: 'Bundesliga MVP',
+      icon: '🌟',
+      title: 'Florian Wirtz Invincible',
+      subtitle: 'Undefeated Bundesliga Champion Creator',
+      color: '#10b981',
+      url: 'https://images.unsplash.com/photo-1508739773434-c26b3d09e071?w=800&q=80',
+      name: '🌟 Florian Wirtz Invincible Playmaker Graphic'
+    },
+    {
+      id: 'musiala-space-wizard',
+      category: 'legends',
+      categoryLabel: 'Solo Wizard',
+      icon: '🪄',
+      title: 'Jamal Musiala Dribbler',
+      subtitle: 'Tight-Space Houdini & Solo Run Finisher',
+      color: '#e11d48',
+      url: 'https://images.unsplash.com/photo-1534447677768-be436bb09401?w=800&q=80',
+      name: '🪄 Jamal Musiala Solo Wizard Graphic'
+    },
+    {
+      id: 'griezmann-tactical-iq',
+      category: 'legends',
+      categoryLabel: 'Tactical IQ',
+      icon: '🧠',
+      title: 'Antoine Griezmann IQ',
+      subtitle: 'World Cup Winner & Free-Role Playmaking',
+      color: '#ef4444',
+      url: 'https://images.unsplash.com/photo-1546519638-68e109498ffc?w=800&q=80',
+      name: '🧠 Antoine Griezmann Tactical IQ Graphic'
+    },
+    {
+      id: 'lautaro-el-toro',
+      category: 'legends',
+      categoryLabel: 'Capocannoniere',
+      icon: '🐂',
+      title: 'Lautaro El Toro',
+      subtitle: 'Serie A Capocannoniere & Copa América Decider',
+      color: '#3b82f6',
+      url: 'https://images.unsplash.com/photo-1563299796-17596ed6b017?w=800&q=80',
+      name: '🐂 Lautaro Martínez El Toro Graphic'
+    },
+    {
+      id: 'son-ambipedal-sniper',
+      category: 'legends',
+      categoryLabel: 'Two-Footed',
+      icon: '🚀',
+      title: 'Son Heung-min Sniper',
+      subtitle: 'Two-Footed Lethal Counter-Attack Master',
+      color: '#06b6d4',
+      url: 'https://images.unsplash.com/photo-1570498839593-e565b39455fc?w=800&q=80',
+      name: '🚀 Son Heung-min Counter Sniper Graphic'
+    },
+    {
+      id: 'osimhen-aerial-power',
+      category: 'legends',
+      categoryLabel: 'African PotY',
+      icon: '🦅',
+      title: 'Victor Osimhen Power',
+      subtitle: 'African Footballer of the Year Aerial Threat',
+      color: '#f97316',
+      url: 'https://images.unsplash.com/photo-1577223625816-7546f13df25d?w=800&q=80',
+      name: '🦅 Victor Osimhen Aerial Power Striker Graphic'
+    },
+    {
+      id: 'dibu-penalty-wall',
+      category: 'legends',
+      categoryLabel: 'Yashin Trophy',
+      icon: '🧤',
+      title: 'Dibu Martínez Wall',
+      subtitle: 'Yashin Trophy Winner & Penalty Shootout Lock',
+      color: '#14b8a6',
+      url: 'https://images.unsplash.com/photo-1517927033932-b3d18e61fb3a?w=800&q=80',
+      name: '🧤 Emiliano Martínez Penalty Wall Graphic'
+    },
+    {
+      id: 'courtois-ucl-titan',
+      category: 'legends',
+      categoryLabel: 'UCL Titan',
+      icon: '🧱',
+      title: 'Thibaut Courtois Titan',
+      subtitle: 'UCL Final Shot-Stopping Miracle Goalkeeper',
+      color: '#8b5cf6',
+      url: 'https://images.unsplash.com/photo-1540747913346-19e32dc3e97e?w=800&q=80',
+      name: '🧱 Thibaut Courtois UCL Final Titan Graphic'
+    },
+    {
+      id: 'van-dijk-defensive-wall',
+      category: 'legends',
+      categoryLabel: 'Commander',
+      icon: '🛡️',
+      title: 'Virgil van Dijk Tower',
+      subtitle: '1v1 Impenetrable Wall & Aerial Commander',
+      color: '#e11d48',
+      url: 'https://images.unsplash.com/photo-1568194157720-8bbe7114ebe8?w=800&q=80',
+      name: '🛡️ Virgil van Dijk Defensive Tower Graphic'
+    },
+    {
+      id: 'zidane-legend-masterclass',
+      category: 'legends',
+      categoryLabel: 'All-Time Icon',
+      icon: '👑',
+      title: 'Zinedine Zidane Volley',
+      subtitle: 'Iconic Hampden Park Volley & World Cup Master',
+      color: '#facc15',
+      url: 'https://images.unsplash.com/photo-1592656094267-764a45160876?w=800&q=80',
+      name: '👑 Zinedine Zidane Masterclass Graphic'
+    },
+    {
+      id: 'ronaldinho-joga-bonito-magic',
+      category: 'legends',
+      categoryLabel: 'Joga Bonito',
+      icon: '🤙',
+      title: 'Ronaldinho Joga Bonito',
+      subtitle: 'Ballon d\'Or Samba Joy & Elastico Sorcery',
+      color: '#f59e0b',
+      url: 'https://images.unsplash.com/photo-1606925797300-0b35e9d1794e?w=800&q=80',
+      name: '🤙 Ronaldinho Gaúcho Joga Bonito Graphic'
+    },
+    {
+      id: 'r9-il-fenomeno-striker',
+      category: 'legends',
+      categoryLabel: 'Il Fenomeno',
+      icon: '⚡',
+      title: 'Ronaldo R9 Fenômeno',
+      subtitle: '2x World Cup Champion & Unstoppable Speed',
+      color: '#eab308',
+      url: 'https://images.unsplash.com/photo-1431324155629-1a6deb1dec8d?w=800&q=80',
+      name: '⚡ Ronaldo Nazário R9 Il Fenômeno Graphic'
+    },
+    {
+      id: 'henry-invincible-highbury',
+      category: 'legends',
+      categoryLabel: 'Invincible',
+      icon: '🏹',
+      title: 'Thierry Henry King',
+      subtitle: 'Arsenal Invincible & Highbury Far-Post Curler',
+      color: '#dc2626',
+      url: 'https://images.unsplash.com/photo-1614632537423-1e6c2e7e0aab?w=800&q=80',
+      name: '🏹 Thierry Henry Highbury King Graphic'
+    },
+    {
+      id: 'maradona-eternal-no10',
+      category: 'legends',
+      categoryLabel: 'World Cup 86',
+      icon: '🏆',
+      title: 'Diego Maradona Legend',
+      subtitle: '1986 World Cup Solo & Eternal No. 10',
+      color: '#38bdf8',
+      url: 'https://images.unsplash.com/photo-1511193311914-0346f16efe90?w=800&q=80',
+      name: '🏆 Diego Maradona Eternal No. 10 Graphic'
+    },
+
+    // ========================================================================
+    // --- 8. EXPANDED VIP BANKERS & HIGH-STAKES (5 Additional = 12 Total) ---
+    // ========================================================================
+    {
+      id: 'syndicate-whale-order',
+      category: 'vip',
+      categoryLabel: 'Whale Order',
+      icon: '🐋',
+      title: 'Syndicate Whale Order',
+      subtitle: 'High-volume institutional line movement',
+      color: '#0284c7',
+      url: 'https://images.unsplash.com/photo-1509042239860-f550ce710b93?w=800&q=80',
+      name: '🐋 Syndicate Whale Order Slip'
+    },
+    {
+      id: 'vip-odds-boost-blitz',
+      category: 'vip',
+      categoryLabel: 'Super Boost',
+      icon: '🚀',
+      title: 'VIP Odds Boost Blitz',
+      subtitle: 'Enhanced price promo with +EV advantage',
+      color: '#f59e0b',
+      url: 'https://images.unsplash.com/photo-1589487391730-58f20eb2c308?w=800&q=80',
+      name: '🚀 VIP Super Boost Enhanced Odds Slip'
+    },
+    {
+      id: 'asian-handicap-lock',
+      category: 'vip',
+      categoryLabel: 'Asian Handicap',
+      icon: '⚖️',
+      title: 'Asian Handicap -1.0 Lock',
+      subtitle: 'Draw refund safety buffer on favorites',
+      color: '#10b981',
+      url: 'https://images.unsplash.com/photo-1556056504-5c7696c4c28d?w=800&q=80',
+      name: '⚖️ Asian Handicap -1.0 Safety Lock'
+    },
+    {
+      id: 'steam-odds-drop-alert',
+      category: 'vip',
+      categoryLabel: 'Steam Drop',
+      icon: '📉',
+      title: 'Market Steam Drop Alert',
+      subtitle: 'Rapid plummeting odds on Asian exchanges',
+      color: '#ef4444',
+      url: 'https://images.unsplash.com/photo-1528722828814-77b9b83aafb2?w=800&q=80',
+      name: '📉 Sharp Market Steam Drop Alert'
+    },
+    {
+      id: 'five-star-banker-lock',
+      category: 'vip',
+      categoryLabel: '5-Star Lock',
+      icon: '⭐',
+      title: '5-Star Model Banker',
+      subtitle: '88%+ Machine learning win probability',
+      color: '#fbbf24',
+      url: 'https://images.unsplash.com/photo-1533107862482-0e6974b06ec4?w=800&q=80',
+      name: '⭐ 5-Star Statistical Model Banker Lock'
+    },
+
+    // ========================================================================
+    // --- 9. EXPANDED ACCUMULATORS & SLIPS (5 Additional = 12 Total) ---
+    // ========================================================================
+    {
+      id: 'european-five-fold-slip',
+      category: 'acca',
+      categoryLabel: '5-Fold Acca',
+      icon: '🌍',
+      title: 'European 5-Fold Power',
+      subtitle: 'Cross-league weekend multi-leg multiplier',
+      color: '#38bdf8',
+      url: 'https://images.unsplash.com/photo-1535131749006-b7f58c99034b?w=800&q=80',
+      name: '🌍 European 5-Fold Weekend Power Slip'
+    },
+    {
+      id: 'acca-insurance-shield',
+      category: 'acca',
+      categoryLabel: 'Acca Shield',
+      icon: '🛡️',
+      title: 'Acca Insurance Shield',
+      subtitle: '1-leg failure money-back security slip',
+      color: '#10b981',
+      url: 'https://images.unsplash.com/photo-1543326727-cf6c39e8f84c?w=800&q=80',
+      name: '🛡️ Acca Insurance Money-Back Shield Card'
+    },
+    {
+      id: 'btts-and-win-multiplier',
+      category: 'acca',
+      categoryLabel: 'BTTS & Win',
+      icon: '🤝',
+      title: 'BTTS & Win Multiplier',
+      subtitle: 'Both score + match winner high-odds combo',
+      color: '#f97316',
+      url: 'https://images.unsplash.com/photo-1550881111-7cfde14b8073?w=800&q=80',
+      name: '🤝 Both Teams to Score & Win Multiplier'
+    },
+    {
+      id: 'both-halves-scoring-acca',
+      category: 'acca',
+      categoryLabel: 'Both Halves',
+      icon: '⏱️',
+      title: 'Goals in Both Halves Acca',
+      subtitle: '1st & 2nd half continuous high-pace action',
+      color: '#ec4899',
+      url: 'https://images.unsplash.com/photo-1552667466-07770ae110d0?w=800&q=80',
+      name: '⏱️ Goals in Both Halves Multi-Match Acca'
+    },
+    {
+      id: 'sunday-super-treble-slip',
+      category: 'acca',
+      categoryLabel: 'Super Treble',
+      icon: '⚡',
+      title: 'Sunday Super Treble',
+      subtitle: '3 European marquee favorites for 4x+',
+      color: '#eab308',
+      url: 'https://images.unsplash.com/photo-1554068865-24cecd4e34b8?w=800&q=80',
+      name: '⚡ Super Sunday Triple Threat Treble Slip'
+    },
+
+    // ========================================================================
+    // --- 10. EXPANDED AI SCOUT & xG ANALYTICS (5 Additional = 12 Total) ---
+    // ========================================================================
+    {
+      id: 'xg-shot-map-golden-zone',
+      category: 'analytics',
+      categoryLabel: 'xG Shot Map',
+      icon: '📍',
+      title: 'xG Shot Map Golden Zone',
+      subtitle: 'Central danger zone shot quality model',
+      color: '#8b5cf6',
+      url: 'https://images.unsplash.com/photo-1489944440615-453fc2b6a9a9?w=800&q=80',
+      name: '📍 Expected Goals (xG) Shot Map Golden Zone'
+    },
+    {
+      id: 'high-press-ppda-turnover',
+      category: 'analytics',
+      categoryLabel: 'PPDA Pressing',
+      icon: '⚡',
+      title: 'High-Press PPDA Radar',
+      subtitle: 'Defensive intensity & high turnover edge',
+      color: '#ef4444',
+      url: 'https://images.unsplash.com/photo-1536122985607-4fe00b283652?w=800&q=80',
+      name: '⚡ High-Press PPDA Defensive Intensity Radar'
+    },
+    {
+      id: 'expected-assists-xa-hub',
+      category: 'analytics',
+      categoryLabel: 'Expected Assists',
+      icon: '🪄',
+      title: 'Expected Assists (xA) Radar',
+      subtitle: 'Open-play chance creation & key passes',
+      color: '#06b6d4',
+      url: 'https://images.unsplash.com/photo-1508739773434-c26b3d09e071?w=800&q=80',
+      name: '🪄 Expected Assists (xA) Playmaker Radar'
+    },
+    {
+      id: 'box-dominance-territory',
+      category: 'analytics',
+      categoryLabel: 'Box Touches',
+      icon: '📦',
+      title: 'Box Dominance Territory',
+      subtitle: 'Attacking third touches & territorial lock',
+      color: '#10b981',
+      url: 'https://images.unsplash.com/photo-1534447677768-be436bb09401?w=800&q=80',
+      name: '📦 Penalty Box Dominance & Territory Index'
+    },
+    {
+      id: 'post-shot-xg-psxg-chart',
+      category: 'analytics',
+      categoryLabel: 'PSxG Saves',
+      icon: '🧤',
+      title: 'Post-Shot xG (PSxG) Wall',
+      subtitle: 'Keeper shot-stopping above expectation',
+      color: '#0284c7',
+      url: 'https://images.unsplash.com/photo-1546519638-68e109498ffc?w=800&q=80',
+      name: '🧤 Post-Shot xG (PSxG) Goalkeeper Wall'
+    },
+
+    // ========================================================================
+    // --- 11. EXPANDED GOALS, TOTALS & BTTS (5 Additional = 12 Total) ---
+    // ========================================================================
+    {
+      id: 'late-goal-strike-75-90',
+      category: 'goals',
+      categoryLabel: 'Late Goal',
+      icon: '⏱️',
+      title: '75-90+ Min Late Strike',
+      subtitle: 'Late substitution momentum & fatigue goals',
+      color: '#f43f5e',
+      url: 'https://images.unsplash.com/photo-1563299796-17596ed6b017?w=800&q=80',
+      name: '⏱️ 75-90+ Min Late Goal Drama Radar'
+    },
+    {
+      id: 'asian-split-goal-line',
+      category: 'goals',
+      categoryLabel: 'Asian Split Line',
+      icon: '⚖️',
+      title: 'Asian Goal Line 2.75 Split',
+      subtitle: 'Half-win half-refund protection line',
+      color: '#38bdf8',
+      url: 'https://images.unsplash.com/photo-1570498839593-e565b39455fc?w=800&q=80',
+      name: '⚖️ Asian Goal Line Over/Under 2.75 Split'
+    },
+    {
+      id: 'win-to-nil-clean-sheet',
+      category: 'goals',
+      categoryLabel: 'Win to Nil',
+      icon: '🏰',
+      title: 'Win to Nil (W2N) Fortress',
+      subtitle: 'High-clean-sheet backline shutout victory',
+      color: '#0ea5e9',
+      url: 'https://images.unsplash.com/photo-1577223625816-7546f13df25d?w=800&q=80',
+      name: '🏰 Win to Nil (W2N) Defensive Clean Sheet'
+    },
+    {
+      id: 'over25-btts-yes-gold',
+      category: 'goals',
+      categoryLabel: 'Over 2.5 & BTTS',
+      icon: '🥇',
+      title: 'Over 2.5 & BTTS Golden Ticket',
+      subtitle: 'World highest-converting dual goal market',
+      color: '#facc15',
+      url: 'https://images.unsplash.com/photo-1517927033932-b3d18e61fb3a?w=800&q=80',
+      name: '🥇 Over 2.5 & BTTS Yes Golden Ticket'
+    },
+    {
+      id: 'early-goal-surge-0-15',
+      category: 'goals',
+      categoryLabel: 'Early Blitz',
+      icon: '🚀',
+      title: 'Fast Start 0-15 Min Surge',
+      subtitle: 'High-tempo opening blitz goal alert',
+      color: '#e11d48',
+      url: 'https://images.unsplash.com/photo-1540747913346-19e32dc3e97e?w=800&q=80',
+      name: '🚀 Fast Start 0-15 Min Early Goal Blitz'
+    },
+
+    // ========================================================================
+    // --- 12. EXPANDED BET BUILDER & PROPS (5 Additional = 11 Total) ---
+    // ========================================================================
+    {
+      id: 'tactical-fouls-drawn',
+      category: 'props',
+      categoryLabel: 'Fouls Drawn',
+      icon: '🟨',
+      title: 'Fouls Drawn & Booking Prop',
+      subtitle: 'Isolated 1v1 wingers drawing yellow cards',
+      color: '#eab308',
+      url: 'https://images.unsplash.com/photo-1568194157720-8bbe7114ebe8?w=800&q=80',
+      name: '🟨 Player Tactical Fouls Drawn & Booking Prop'
+    },
+    {
+      id: 'playmaker-passes-completed',
+      category: 'props',
+      categoryLabel: 'Passes 70+',
+      icon: '🧭',
+      title: '70+ Passes Completed Prop',
+      subtitle: 'Deep midfield tempo controller distribution',
+      color: '#14b8a6',
+      url: 'https://images.unsplash.com/photo-1592656094267-764a45160876?w=800&q=80',
+      name: '🧭 Deep Playmaker 70+ Passes Completed Prop'
+    },
+    {
+      id: 'aerial-headed-threat',
+      category: 'props',
+      categoryLabel: 'Aerial Threat',
+      icon: '🦘',
+      title: 'Aerial Threat & Headed Goal',
+      subtitle: 'Set-piece corner kick tall target specialist',
+      color: '#f97316',
+      url: 'https://images.unsplash.com/photo-1606925797300-0b35e9d1794e?w=800&q=80',
+      name: '🦘 Set-Piece Aerial Threat & Headed Goal Prop'
+    },
+    {
+      id: 'tackles-interceptions-wall',
+      category: 'props',
+      categoryLabel: 'Tackles 3.5+',
+      icon: '🛡️',
+      title: 'Tackles & Interceptions Prop',
+      subtitle: 'Defensive anchor ball-recovery specialist',
+      color: '#3b82f6',
+      url: 'https://images.unsplash.com/photo-1431324155629-1a6deb1dec8d?w=800&q=80',
+      name: '🛡️ Ball Recovery Tackles & Interceptions Prop'
+    },
+    {
+      id: 'first-goalscorer-sniper',
+      category: 'props',
+      categoryLabel: 'First Goalscorer',
+      icon: '🎯',
+      title: 'First Goalscorer Value Prop',
+      subtitle: 'Opening goal breakdown and striker value',
+      color: '#a855f7',
+      url: 'https://images.unsplash.com/photo-1614632537423-1e6c2e7e0aab?w=800&q=80',
+      name: '🎯 First Goalscorer High-Multiplier Prop'
+    },
+
+    // ========================================================================
+    // --- 13. EXPANDED LIVE IN-PLAY & DERBIES (5 Additional = 11 Total) ---
+    // ========================================================================
+    {
+      id: 'cash-out-profit-trigger',
+      category: 'live',
+      categoryLabel: 'Cash-Out Lock',
+      icon: '💰',
+      title: 'Live Cash-Out Optimizer',
+      subtitle: 'Mathematical peak profit settlement trigger',
+      color: '#22c55e',
+      url: 'https://images.unsplash.com/photo-1511193311914-0346f16efe90?w=800&q=80',
+      name: '💰 Live Cash-Out Mathematical Peak Optimizer'
+    },
+    {
+      id: 'red-card-tactical-shift',
+      category: 'live',
+      categoryLabel: 'Red Card Shift',
+      icon: '🟥',
+      title: 'Red Card Advantage Exploiter',
+      subtitle: '10-man defensive shape overload live trigger',
+      color: '#ef4444',
+      url: 'https://images.unsplash.com/photo-1509042239860-f550ce710b93?w=800&q=80',
+      name: '🟥 Red Card Structural Imbalance Live Alert'
+    },
+    {
+      id: 'title-race-heavyweight',
+      category: 'live',
+      categoryLabel: 'Title Clash',
+      icon: '🥊',
+      title: 'Title Race 6-Pointer Battle',
+      subtitle: 'High-stakes championship decider banner',
+      color: '#f59e0b',
+      url: 'https://images.unsplash.com/photo-1589487391730-58f20eb2c308?w=800&q=80',
+      name: '🥊 Title Race 6-Pointer Heavyweight Battle'
+    },
+    {
+      id: 'derby-day-rivalry-night',
+      category: 'live',
+      categoryLabel: 'Derby Day',
+      icon: '⚔️',
+      title: 'Derby Day Rivalry Clash',
+      subtitle: 'Continental grudge match super-card',
+      color: '#dc2626',
+      url: 'https://images.unsplash.com/photo-1556056504-5c7696c4c28d?w=800&q=80',
+      name: '⚔️ Derby Day High-Tension Rivalry Clash Card'
+    },
+    {
+      id: 'verified-settlement-profit',
+      category: 'live',
+      categoryLabel: 'Profit Settlement',
+      icon: '✅',
+      title: '100% Verified Profit Settlement',
+      subtitle: 'Post-match green tick betting slip summary',
+      color: '#10b981',
+      url: 'https://images.unsplash.com/photo-1528722828814-77b9b83aafb2?w=800&q=80',
+      name: '✅ Verified Post-Match Green Tick Profit Card'
     }
   ];
 
@@ -10270,7 +10959,7 @@
       const matchCat = (cat === 'all') || (p.category === cat);
       if (!matchCat) return false;
       if (!q) return true;
-      const haystack = `${p.title} ${p.subtitle} ${p.name} ${p.categoryLabel} ${p.category}`.toLowerCase();
+      const haystack = `${p.title} ${p.subtitle} ${p.name} ${p.categoryLabel} ${p.category} ${p.id}`.toLowerCase();
       return haystack.includes(q);
     });
   }
@@ -10326,7 +11015,7 @@
           <div style="display: flex; align-items: center; gap: 8px;">
             <input type="text"
                    id="tg-pub-preset-search"
-                   placeholder="🔍 Search presets (e.g. Banker, CLV, xG, Acca, BTTS)..."
+                   placeholder="🔍 Search presets (e.g. Messi, CR7, Mbappé, Banker, CLV, xG, Acca)..."
                    value="${state.visualPresetSearch || ''}"
                    oninput="window.TelegramPublisher.filterVisualPresets(this.value)"
                    style="background: #020617; border: 1px solid rgba(56,189,248,0.35); color: #f8fafc; font-size: 0.72rem; padding: 4px 10px; border-radius: 6px; width: 230px; outline: none; transition: border-color 0.2s;">
@@ -10337,12 +11026,15 @@
         <div id="tg-pub-presets-categories" style="display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 10px;">
           ${PRESET_CATEGORIES.map(cat => {
             const isActive = (state.visualPresetCategory || 'all') === cat.id;
+            const count = cat.id === 'all'
+              ? OFFICIAL_GRAPHIC_PRESETS.length
+              : OFFICIAL_GRAPHIC_PRESETS.filter(p => p.category === cat.id).length;
             return `
               <button type="button"
                       data-cat="${cat.id}"
                       onclick="window.TelegramPublisher.setVisualPresetCategory('${cat.id}')"
                       style="background: ${isActive ? 'rgba(56,189,248,0.25)' : 'rgba(255,255,255,0.05)'}; border: 1px solid ${isActive ? '#38bdf8' : 'rgba(255,255,255,0.12)'}; color: ${isActive ? '#ffffff' : '#94a3b8'}; font-size: 0.68rem; font-weight: ${isActive ? '800' : '600'}; padding: 3px 8px; border-radius: 5px; cursor: pointer; transition: all 0.15s ease;">
-                ${cat.label} (${cat.count})
+                ${cat.label} (${count})
               </button>
             `;
           }).join('')}
@@ -11542,6 +12234,8 @@
     toggleVisualPresets,
     attachPresetImage,
     getGraphicPresets,
+    getFilteredVisualPresets,
+    PRESET_CATEGORIES,
     setVisualPresetCategory,
     filterVisualPresets,
     renderVisualPresetsGrid,
