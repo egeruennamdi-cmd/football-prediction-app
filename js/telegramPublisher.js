@@ -3235,9 +3235,9 @@
       const h = intel.homeTeam;
       const a = intel.awayTeam;
       const lg = intel.league;
-      const p = intel.sources.toptips?.market || intel.sources.predictions?.pick || `${h} Win`;
-      const odds = intel.sources.toptips?.odds || 1.65;
-      const conf = intel.sources.predictions?.confidenceVal || 80;
+      const p = intel.bestPick?.label || intel.bestPick?.tip || intel.sources.toptips?.market || intel.sources.predictions?.pick || `${h} Win`;
+      const odds = Number(intel.bestPick?.odds || intel.sources.toptips?.odds || 1.65);
+      const conf = Math.round(Number(intel.bestPick?.confidence || intel.sources.predictions?.confidenceVal || 80));
       combinedOdds *= odds;
 
       blocks.push(`${idx + 1}️⃣ <b>${h} vs ${a}</b> (${lg})`);
@@ -4845,10 +4845,87 @@
   }
 
   function updateSelectedCounter() {
+    if (typeof document === 'undefined') return;
     const el = document.getElementById('tg-cc-selected-counter');
     if (el) {
       el.textContent = `${state.selectedMatchIds.size} selected`;
     }
+  }
+
+  function renderComposeActiveMatchesRibbonHtml() {
+    const totalCount = state.selectedMatchIds ? state.selectedMatchIds.size : 0;
+    if (totalCount === 0) {
+      return `
+        <div id="tg-compose-fixtures-ribbon" style="background: rgba(15,23,42,0.5); border: 1px dashed rgba(56,189,248,0.25); border-radius: 8px; padding: 8px 12px; margin-bottom: 14px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px;">
+          <div style="display: flex; align-items: center; gap: 8px;">
+            <span style="font-size: 0.9rem;">⚽</span>
+            <span style="font-size: 0.73rem; color: #94a3b8; font-weight: 600;">
+              No match fixtures currently attached. Compose a general broadcast, or select fixtures from <b>Discover Fixtures</b> or <b>Calendar</b>.
+            </span>
+          </div>
+          <div style="display: flex; gap: 6px;">
+            <button type="button" onclick="window.TelegramPublisher.switchTab('discover')" style="background: rgba(56,189,248,0.15); border: 1px solid rgba(56,189,248,0.3); color: #38bdf8; font-size: 0.7rem; font-weight: 700; padding: 4px 8px; border-radius: 5px; cursor: pointer;">
+              🔍 Browse Fixtures
+            </button>
+            <button type="button" onclick="window.TelegramPublisher.switchTab('calendar')" style="background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.15); color: #cbd5e1; font-size: 0.7rem; font-weight: 700; padding: 4px 8px; border-radius: 5px; cursor: pointer;">
+              📅 Content Calendar
+            </button>
+          </div>
+        </div>
+      `;
+    }
+
+    const rawPool = getRawMatchPool();
+    const selectedMatches = rawPool.filter(m => state.selectedMatchIds.has(m.id) || state.selectedMatchIds.has(String(m.id)));
+
+    return `
+      <div id="tg-compose-fixtures-ribbon" style="background: linear-gradient(135deg, rgba(15,23,42,0.85), rgba(2,132,199,0.15)); border: 1px solid rgba(56,189,248,0.4); border-radius: 10px; padding: 10px 14px; margin-bottom: 14px; box-shadow: 0 4px 14px rgba(0,0,0,0.25);">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; flex-wrap: wrap; gap: 6px;">
+          <div style="display: flex; align-items: center; gap: 8px;">
+            <span style="font-size: 1rem;">🎯</span>
+            <span style="font-size: 0.78rem; font-weight: 800; color: #ffffff;">
+              ACTIVE FIXTURES ATTACHED (<span style="color: #38bdf8;">${selectedMatches.length} Selected</span>)
+            </span>
+            <span style="font-size: 0.68rem; font-weight: 700; background: ${selectedMatches.length > 1 ? 'rgba(56,189,248,0.25)' : 'rgba(16,185,129,0.2)'}; color: ${selectedMatches.length > 1 ? '#38bdf8' : '#34d399'}; padding: 2px 6px; border-radius: 4px;">
+              ${selectedMatches.length > 1 ? 'MULTI-MATCH SLIP' : 'SINGLE TIP'}
+            </span>
+          </div>
+          <div style="display: flex; align-items: center; gap: 6px; flex-wrap: wrap;">
+            <button type="button" onclick="window.TelegramPublisher.generateFromSelection()" style="background: rgba(56,189,248,0.2); border: 1px solid rgba(56,189,248,0.4); color: #38bdf8; font-size: 0.7rem; font-weight: 800; padding: 4px 8px; border-radius: 5px; cursor: pointer; display: inline-flex; align-items: center; gap: 4px;">
+              <span>🔄 Re-generate Post</span>
+            </button>
+            <button type="button" onclick="window.TelegramPublisher.switchTab('calendar')" style="background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.15); color: #cbd5e1; font-size: 0.7rem; font-weight: 700; padding: 4px 8px; border-radius: 5px; cursor: pointer;">
+              + Add from Calendar
+            </button>
+            <button type="button" onclick="window.TelegramPublisher.clearMatchSelection()" style="background: rgba(239,68,68,0.15); border: 1px solid rgba(239,68,68,0.3); color: #f87171; font-size: 0.7rem; font-weight: 700; padding: 4px 8px; border-radius: 5px; cursor: pointer;">
+              ✕ Clear All
+            </button>
+          </div>
+        </div>
+
+        <!-- Fixture Pills -->
+        <div style="display: flex; gap: 6px; flex-wrap: wrap;">
+          ${selectedMatches.map(m => {
+            const h = m.homeTeam?.name || m.home || 'Home';
+            const a = m.awayTeam?.name || m.away || 'Away';
+            const intel = extractIntelligenceForMatch(m, state.selectedSources);
+            const activeSel = getActiveSelectionForMatch(m);
+            const pick = intel && intel.bestPick ? intel.bestPick : { label: activeSel.name || activeSel.tip, odds: activeSel.odds || 1.85 };
+            return `
+              <div style="display: inline-flex; align-items: center; gap: 6px; background: rgba(0,0,0,0.5); border: 1px solid rgba(56,189,248,0.3); border-radius: 6px; padding: 4px 8px; font-size: 0.72rem; color: #f8fafc;">
+                <span style="font-weight: 700;">${h} vs ${a}</span>
+                <span style="background: rgba(56,189,248,0.2); color: #38bdf8; font-weight: 800; padding: 1px 5px; border-radius: 3px; font-size: 0.68rem;">
+                  ${pick.label || pick.tip} @${Number(pick.odds || 1.85).toFixed(2)}
+                </span>
+                <button type="button" onclick="window.TelegramPublisher.removeMatchFromSelection('${m.id}')" title="Remove fixture from post" style="background: transparent; border: none; color: #94a3b8; font-weight: 800; cursor: pointer; padding: 0 2px; font-size: 0.75rem; line-height: 1;" onmouseover="this.style.color='#f87171'" onmouseout="this.style.color='#94a3b8'">
+                  ✕
+                </button>
+              </div>
+            `;
+          }).join('')}
+        </div>
+      </div>
+    `;
   }
 
   // TAB 3: COMPOSE / STUDIO
@@ -4892,6 +4969,9 @@
           <span style="background: rgba(16,185,129,0.25); color: #10b981; font-weight: 800; font-size: 0.65rem; padding: 2px 6px; border-radius: 4px;">QUALITY GATE PASSED</span>
         </div>
       </div>
+
+      <!-- Active Fixtures Attached to Post Ribbon (Multi-Match Slip Support) -->
+      ${renderComposeActiveMatchesRibbonHtml()}
 
       <div style="display: grid; grid-template-columns: 1.3fr 1fr; gap: 20px;">
         <!-- Left Column: Composer Controls & Message Input -->
@@ -5415,6 +5495,9 @@
   function renderSelectedDayDetails(selectedDateStr, agg) {
     const matchesOnDay = agg.matchesByDate[selectedDateStr] || [];
     const schedulesOnDay = agg.schedulesByDate[selectedDateStr] || [];
+    const selectedMatchesOnDay = matchesOnDay.filter(m => state.selectedMatchIds.has(m.id) || state.selectedMatchIds.has(String(m.id)));
+    const allSelectedOnDay = matchesOnDay.length > 0 && selectedMatchesOnDay.length === matchesOnDay.length;
+    const totalSelectedCount = state.selectedMatchIds.size;
 
     // Parse selected date for display
     const parts = (selectedDateStr || '2026-10-19').split('-');
@@ -5485,6 +5568,49 @@
               <span style="font-size: 0.72rem; color: #64748b; font-weight: 600;">Zero Backfill Active</span>
             </h5>
 
+            ${matchesOnDay.length > 0 ? `
+              <!-- Multi-Match Selection & Bulk Action Bar -->
+              <div id="cal-selection-bar" style="background: rgba(15,23,42,0.85); border: 1px solid rgba(56,189,248,0.3); border-radius: 8px; padding: 10px 12px; margin-bottom: 12px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.25);">
+                <div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap;">
+                  <button type="button"
+                          id="cal-select-all-btn"
+                          onclick="window.TelegramPublisher.selectAllCalendarMatches('${selectedDateStr}')"
+                          style="background: ${allSelectedOnDay ? 'rgba(56,189,248,0.25)' : 'rgba(255,255,255,0.06)'}; border: 1px solid ${allSelectedOnDay ? '#38bdf8' : 'rgba(255,255,255,0.15)'}; color: ${allSelectedOnDay ? '#38bdf8' : '#ffffff'}; padding: 5px 10px; border-radius: 6px; font-size: 0.72rem; font-weight: 700; cursor: pointer; display: inline-flex; align-items: center; gap: 4px;">
+                    <span>${allSelectedOnDay ? '✓ Deselect Day' : `☑ Select All (${matchesOnDay.length})`}</span>
+                  </button>
+                  ${totalSelectedCount > 0 ? `
+                    <button type="button"
+                            id="cal-clear-selection-btn"
+                            onclick="window.TelegramPublisher.clearCalendarMatchSelection()"
+                            style="background: rgba(239,68,68,0.15); border: 1px solid rgba(239,68,68,0.3); color: #f87171; padding: 5px 8px; border-radius: 6px; font-size: 0.72rem; font-weight: 700; cursor: pointer;">
+                      ✕ Clear (${totalSelectedCount})
+                    </button>
+                  ` : ''}
+                  <span id="cal-selected-counter" style="font-size: 0.74rem; font-weight: 700; color: ${totalSelectedCount > 0 ? '#38bdf8' : '#94a3b8'};">
+                    ${totalSelectedCount > 0 ? `<b>${totalSelectedCount}</b> Fixture${totalSelectedCount === 1 ? '' : 's'} Selected` : '0 Selected (Click checkboxes to select multiple)'}
+                  </span>
+                </div>
+                <div style="display: flex; align-items: center; gap: 6px; flex-wrap: wrap;">
+                  <button type="button"
+                          id="cal-send-selected-studio-btn"
+                          onclick="window.TelegramPublisher.loadSelectedMatchesToStudio()"
+                          ${totalSelectedCount === 0 ? 'disabled' : ''}
+                          title="${totalSelectedCount > 0 ? 'Send all selected fixtures to Studio Composer' : 'Select at least one fixture to send to Studio'}"
+                          style="background: ${totalSelectedCount > 0 ? 'linear-gradient(135deg, #0284c7, #38bdf8)' : 'rgba(255,255,255,0.05)'}; border: none; color: ${totalSelectedCount > 0 ? '#ffffff' : '#64748b'}; padding: 6px 12px; border-radius: 6px; font-size: 0.74rem; font-weight: 800; cursor: ${totalSelectedCount > 0 ? 'pointer' : 'not-allowed'}; display: inline-flex; align-items: center; gap: 4px; box-shadow: ${totalSelectedCount > 0 ? '0 2px 8px rgba(2,132,199,0.35)' : 'none'};">
+                    <span>⚡ Send Selected (${totalSelectedCount}) to Studio</span>
+                  </button>
+                  <button type="button"
+                          id="cal-schedule-selected-btn"
+                          onclick="window.TelegramPublisher.openScheduleModalForSelected('${selectedDateStr}T14:00')"
+                          ${totalSelectedCount === 0 ? 'disabled' : ''}
+                          title="${totalSelectedCount > 0 ? 'Schedule a combined broadcast with all selected fixtures' : 'Select at least one fixture to schedule'}"
+                          style="background: ${totalSelectedCount > 0 ? 'rgba(245,158,11,0.2)' : 'rgba(255,255,255,0.05)'}; border: 1px solid ${totalSelectedCount > 0 ? 'rgba(245,158,11,0.45)' : 'rgba(255,255,255,0.1)'}; color: ${totalSelectedCount > 0 ? '#fbbf24' : '#64748b'}; padding: 6px 10px; border-radius: 6px; font-size: 0.74rem; font-weight: 800; cursor: ${totalSelectedCount > 0 ? 'pointer' : 'not-allowed'}; display: inline-flex; align-items: center; gap: 4px;">
+                    <span>📅 Schedule Selected (${totalSelectedCount})</span>
+                  </button>
+                </div>
+              </div>
+            ` : ''}
+
             ${matchesOnDay.length === 0 ? `
               <div style="background: rgba(0,0,0,0.3); border: 1px dashed rgba(255,255,255,0.1); border-radius: 10px; padding: 24px; text-align: center; color: #94a3b8;">
                 <div style="font-size: 1.4rem; margin-bottom: 6px;">☕</div>
@@ -5506,24 +5632,40 @@
                   const consensusRatio = intel && intel.consensusRatio ? intel.consensusRatio : '4/5';
                   const consensusPct = intel && intel.consensusPct ? intel.consensusPct : '80%';
                   const isTrayOpen = state.openCalendarMarketTrays && state.openCalendarMarketTrays.has(String(m.id));
+                  const isSelected = state.selectedMatchIds.has(m.id) || state.selectedMatchIds.has(String(m.id));
 
                   return `
-                    <div style="background: rgba(0,0,0,0.4); border: 1px solid rgba(56,189,248,0.25); border-radius: 10px; padding: 14px;">
+                    <div id="cal-fixture-card-${m.id}" style="background: ${isSelected ? 'rgba(56,189,248,0.08)' : 'rgba(0,0,0,0.4)'}; border: ${isSelected ? '1px solid #38bdf8' : '1px solid rgba(56,189,248,0.25)'}; border-radius: 10px; padding: 14px; transition: all 0.2s ease; box-shadow: ${isSelected ? '0 0 16px rgba(56,189,248,0.2)' : 'none'};">
                       <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 8px;">
-                        <div>
-                          <span style="background: rgba(56,189,248,0.15); border: 1px solid rgba(56,189,248,0.3); color: #38bdf8; font-size: 0.65rem; font-weight: 800; padding: 2px 8px; border-radius: 4px;">
-                            ${compName}
-                          </span>
-                          <h6 style="margin: 6px 0 2px 0; font-size: 0.95rem; font-weight: 900; color: #ffffff;">
-                            ${hName} vs ${aName}
-                          </h6>
-                          <div style="font-size: 0.72rem; color: #94a3b8;">
-                            Kickoff: ${kickoffFormatted}
+                        <div style="display: flex; align-items: flex-start; gap: 10px;">
+                          <input type="checkbox"
+                                 id="cal-match-chk-${m.id}"
+                                 class="cal-match-select-checkbox"
+                                 data-match-id="${m.id}"
+                                 ${isSelected ? 'checked' : ''}
+                                 onchange="window.TelegramPublisher.toggleCalendarMatchSelection('${m.id}', this.checked)"
+                                 title="Select / Deselect this fixture for multi-match publishing"
+                                 style="width: 18px; height: 18px; margin-top: 3px; cursor: pointer; accent-color: #38bdf8;">
+                          <div>
+                            <span style="background: rgba(56,189,248,0.15); border: 1px solid rgba(56,189,248,0.3); color: #38bdf8; font-size: 0.65rem; font-weight: 800; padding: 2px 8px; border-radius: 4px;">
+                              ${compName}
+                            </span>
+                            <h6 style="margin: 6px 0 2px 0; font-size: 0.95rem; font-weight: 900; color: #ffffff;">
+                              ${hName} vs ${aName}
+                            </h6>
+                            <div style="font-size: 0.72rem; color: #94a3b8;">
+                              Kickoff: ${kickoffFormatted}
+                            </div>
                           </div>
                         </div>
-                        <span style="font-size: 0.65rem; font-weight: 800; background: rgba(16,185,129,0.2); color: #34d399; padding: 2px 6px; border-radius: 4px;">
-                          UPCOMING
-                        </span>
+                        <div style="display: flex; align-items: center; gap: 6px;">
+                          <span id="cal-match-selected-pill-${m.id}" style="display: ${isSelected ? 'inline-block' : 'none'}; font-size: 0.65rem; font-weight: 800; background: rgba(56,189,248,0.25); color: #38bdf8; padding: 2px 8px; border-radius: 4px; border: 1px solid rgba(56,189,248,0.4);">
+                            ✓ SELECTED
+                          </span>
+                          <span style="font-size: 0.65rem; font-weight: 800; background: rgba(16,185,129,0.2); color: #34d399; padding: 2px 6px; border-radius: 4px;">
+                            UPCOMING
+                          </span>
+                        </div>
                       </div>
 
                       <!-- Intelligence summary -->
@@ -5917,14 +6059,19 @@
     const matchSelect = document.getElementById('tg-sched-match');
     if (matchSelect) {
       const rawPool = getRawMatchPool();
-      let optionsHtml = '<option value="">None (Custom / Multi-Match)</option>';
+      let optionsHtml = '';
+      if (state.selectedMatchIds && state.selectedMatchIds.size > 1 && !initialMatchId) {
+        optionsHtml += `<option value="multi" selected>🎯 Multi-Match Slip (${state.selectedMatchIds.size} Fixtures Selected)</option>`;
+      }
+      optionsHtml += '<option value="">None (Custom Broadcast)</option>';
       rawPool.forEach(m => {
         const hName = m.homeTeam?.name || m.home || 'Home';
         const aName = m.awayTeam?.name || m.away || 'Away';
         const comp = m.competition?.name || m.league || '';
         const ts = getAuthoritativeTimestamp(m);
         const watKickoff = formatAuthoritativeKickoff(ts, false);
-        const sel = initialMatchId && String(m.id) === String(initialMatchId) ? 'selected' : '';
+        const isSel = initialMatchId ? String(m.id) === String(initialMatchId) : (state.selectedMatchIds.size === 1 && (state.selectedMatchIds.has(m.id) || state.selectedMatchIds.has(String(m.id))));
+        const sel = isSel ? 'selected' : '';
         optionsHtml += `<option value="${m.id}" ${sel}>${hName} vs ${aName} (${comp} · ${watKickoff})</option>`;
       });
       matchSelect.innerHTML = optionsHtml;
@@ -5935,7 +6082,13 @@
     if (targetSelect) targetSelect.value = state.target || 'free';
 
     const typeSelect = document.getElementById('tg-sched-type');
-    if (typeSelect) typeSelect.value = state.postType || 'Top Tip of the Day';
+    if (typeSelect) {
+      if (state.selectedMatchIds && state.selectedMatchIds.size > 1 && !initialMatchId) {
+        typeSelect.value = 'Multi-Match Slip';
+      } else {
+        typeSelect.value = state.postType || 'Top Tip of the Day';
+      }
+    }
 
     // Set message text
     const textEl = document.getElementById('tg-sched-text');
@@ -5951,6 +6104,22 @@
             selectedSources: state.selectedSources
           });
           textEl.value = compPost.text || '';
+        }
+      } else if (state.selectedMatchIds && state.selectedMatchIds.size > 1) {
+        const rawPool = getRawMatchPool();
+        const selectedMatches = rawPool.filter(m => state.selectedMatchIds.has(m.id) || state.selectedMatchIds.has(String(m.id)));
+        if (selectedMatches.length > 0) {
+          const compPost = composeTelegramPost({
+            matches: selectedMatches,
+            target: state.target || 'free',
+            postType: 'Multi-Match Slip',
+            selectedSources: state.selectedSources
+          });
+          textEl.value = compPost.text || '';
+        } else if (state.messageText && state.messageText.trim()) {
+          textEl.value = state.messageText;
+        } else {
+          textEl.value = '';
         }
       } else if (state.messageText && state.messageText.trim()) {
         textEl.value = state.messageText;
@@ -5992,6 +6161,23 @@
   function onScheduleMatchChange(matchId) {
     if (typeof document === 'undefined') return;
     if (!matchId) return;
+    if (matchId === 'multi') {
+      const rawPool = getRawMatchPool();
+      const selectedMatches = rawPool.filter(m => state.selectedMatchIds.has(m.id) || state.selectedMatchIds.has(String(m.id)));
+      const textEl = document.getElementById('tg-sched-text');
+      const typeEl = document.getElementById('tg-sched-type');
+      if (typeEl) typeEl.value = 'Multi-Match Slip';
+      if (textEl && selectedMatches.length > 0) {
+        const compPost = composeTelegramPost({
+          matches: selectedMatches,
+          target: state.target || 'free',
+          postType: 'Multi-Match Slip',
+          selectedSources: state.selectedSources
+        });
+        textEl.value = compPost.text || '';
+      }
+      return;
+    }
     const rawPool = getRawMatchPool();
     const found = rawPool.find(m => String(m.id) === String(matchId));
     if (!found) return;
@@ -6091,7 +6277,10 @@
       buttons: [],
       scheduledAt: scheduledAtIso,
       createdAt: new Date().toISOString(),
-      matchId: schedMatchId || null
+      matchId: (schedMatchId === 'multi' ? null : (schedMatchId || null)),
+      matchIds: (schedMatchId === 'multi' || (state.selectedMatchIds && state.selectedMatchIds.size > 1))
+        ? Array.from(state.selectedMatchIds)
+        : (schedMatchId ? [schedMatchId] : [])
     };
 
     state.schedules.push(newSchedule);
@@ -6293,8 +6482,190 @@
     }
   }
 
+  function updateCalendarSelectionUi() {
+    if (typeof document === 'undefined') return;
+    const totalCount = state.selectedMatchIds ? state.selectedMatchIds.size : 0;
+
+    // Update counter
+    const counterEl = document.getElementById('cal-selected-counter');
+    if (counterEl) {
+      if (totalCount > 0) {
+        counterEl.innerHTML = `<b>${totalCount}</b> Fixture${totalCount === 1 ? '' : 's'} Selected`;
+        counterEl.style.color = '#38bdf8';
+      } else {
+        counterEl.innerHTML = '0 Selected (Click checkboxes to select multiple)';
+        counterEl.style.color = '#94a3b8';
+      }
+    }
+
+    // Update Studio send button
+    const sendBtn = document.getElementById('cal-send-selected-studio-btn');
+    if (sendBtn) {
+      if (totalCount > 0) {
+        sendBtn.disabled = false;
+        sendBtn.style.background = 'linear-gradient(135deg, #0284c7, #38bdf8)';
+        sendBtn.style.color = '#ffffff';
+        sendBtn.style.cursor = 'pointer';
+        sendBtn.style.boxShadow = '0 2px 8px rgba(2,132,199,0.35)';
+        sendBtn.title = 'Send all selected fixtures to Studio Composer';
+        sendBtn.innerHTML = `<span>⚡ Send Selected (${totalCount}) to Studio</span>`;
+      } else {
+        sendBtn.disabled = true;
+        sendBtn.style.background = 'rgba(255,255,255,0.05)';
+        sendBtn.style.color = '#64748b';
+        sendBtn.style.cursor = 'not-allowed';
+        sendBtn.style.boxShadow = 'none';
+        sendBtn.title = 'Select at least one fixture to send to Studio';
+        sendBtn.innerHTML = `<span>⚡ Send Selected (0) to Studio</span>`;
+      }
+    }
+
+    // Update Schedule button
+    const schedBtn = document.getElementById('cal-schedule-selected-btn');
+    if (schedBtn) {
+      if (totalCount > 0) {
+        schedBtn.disabled = false;
+        schedBtn.style.background = 'rgba(245,158,11,0.2)';
+        schedBtn.style.border = '1px solid rgba(245,158,11,0.45)';
+        schedBtn.style.color = '#fbbf24';
+        schedBtn.style.cursor = 'pointer';
+        schedBtn.title = 'Schedule a combined broadcast with all selected fixtures';
+        schedBtn.innerHTML = `<span>📅 Schedule Selected (${totalCount})</span>`;
+      } else {
+        schedBtn.disabled = true;
+        schedBtn.style.background = 'rgba(255,255,255,0.05)';
+        schedBtn.style.border = '1px solid rgba(255,255,255,0.1)';
+        schedBtn.style.color = '#64748b';
+        schedBtn.style.cursor = 'not-allowed';
+        schedBtn.title = 'Select at least one fixture to schedule';
+        schedBtn.innerHTML = `<span>📅 Schedule Selected (0)</span>`;
+      }
+    }
+
+    // Update Clear button
+    const clearBtn = document.getElementById('cal-clear-selection-btn');
+    if (clearBtn) {
+      if (totalCount > 0) {
+        clearBtn.style.display = 'inline-block';
+        clearBtn.innerText = `✕ Clear (${totalCount})`;
+      } else {
+        clearBtn.style.display = 'none';
+      }
+    }
+  }
+
+  function toggleCalendarMatchSelection(matchId, isChecked) {
+    if (isChecked) {
+      state.selectedMatchIds.add(matchId);
+    } else {
+      state.selectedMatchIds.delete(matchId);
+      state.selectedMatchIds.delete(String(matchId));
+      state.selectedMatchIds.delete(Number(matchId));
+    }
+
+    if (typeof document !== 'undefined') {
+      const card = document.getElementById(`cal-fixture-card-${matchId}`);
+      const pill = document.getElementById(`cal-match-selected-pill-${matchId}`);
+      const chk = document.getElementById(`cal-match-chk-${matchId}`);
+      if (chk) chk.checked = isChecked;
+      if (card) {
+        card.style.background = isChecked ? 'rgba(56,189,248,0.08)' : 'rgba(0,0,0,0.4)';
+        card.style.border = isChecked ? '1px solid #38bdf8' : '1px solid rgba(56,189,248,0.25)';
+        card.style.boxShadow = isChecked ? '0 0 16px rgba(56,189,248,0.2)' : 'none';
+      }
+      if (pill) {
+        pill.style.display = isChecked ? 'inline-block' : 'none';
+      }
+    }
+    updateCalendarSelectionUi();
+    updateSelectedCounter();
+  }
+
+  function selectAllCalendarMatches(dateStr) {
+    const rawPool = getRawMatchPool();
+    const targetDate = dateStr || state.selectedCalendarDate || '2026-10-19';
+    const matchesOnDay = rawPool.filter(m => {
+      const ts = getAuthoritativeTimestamp(m);
+      if (!ts) return false;
+      const d = new Date(ts);
+      const watD = new Date(d.getTime() + 3600 * 1000);
+      const y = watD.getUTCFullYear();
+      const mo = String(watD.getUTCMonth() + 1).padStart(2, '0');
+      const da = String(watD.getUTCDate()).padStart(2, '0');
+      return `${y}-${mo}-${da}` === targetDate;
+    });
+
+    const allSelected = matchesOnDay.length > 0 && matchesOnDay.every(m => state.selectedMatchIds.has(m.id) || state.selectedMatchIds.has(String(m.id)));
+
+    if (allSelected) {
+      matchesOnDay.forEach(m => {
+        state.selectedMatchIds.delete(m.id);
+        state.selectedMatchIds.delete(String(m.id));
+      });
+    } else {
+      matchesOnDay.forEach(m => {
+        state.selectedMatchIds.add(m.id);
+      });
+    }
+    renderCurrentTab();
+  }
+
+  function clearCalendarMatchSelection() {
+    state.selectedMatchIds.clear();
+    renderCurrentTab();
+  }
+
+  function clearMatchSelection() {
+    state.selectedMatchIds.clear();
+    renderCurrentTab();
+  }
+
+  function removeMatchFromSelection(matchId) {
+    state.selectedMatchIds.delete(matchId);
+    state.selectedMatchIds.delete(String(matchId));
+    state.selectedMatchIds.delete(Number(matchId));
+    if (state.selectedMatchIds.size > 0) {
+      generateFromSelectedMatches();
+    } else {
+      renderCurrentTab();
+    }
+  }
+
+  function loadSelectedMatchesToStudio() {
+    if (!state.selectedMatchIds || state.selectedMatchIds.size === 0) {
+      showAlert('Please select at least one fixture to send to Studio Composer.');
+      return;
+    }
+    if (state.selectedMatchIds.size === 1) {
+      const singleId = state.selectedMatchIds.values().next().value;
+      generateSingleMatchPost(singleId);
+    } else {
+      generateFromSelectedMatches();
+    }
+    switchTab('compose');
+  }
+
+  function openScheduleModalForSelected(dateStr) {
+    if (!state.selectedMatchIds || state.selectedMatchIds.size === 0) {
+      showAlert('Please select at least one fixture to schedule.');
+      return;
+    }
+    if (state.selectedMatchIds.size === 1) {
+      const singleId = state.selectedMatchIds.values().next().value;
+      openScheduleModal(dateStr, singleId);
+    } else {
+      openScheduleModal(dateStr, null);
+    }
+  }
+
   function loadMatchToStudio(matchId) {
-    generateSingleMatchPost(matchId);
+    if (state.selectedMatchIds && state.selectedMatchIds.has(matchId) && state.selectedMatchIds.size > 1) {
+      generateFromSelectedMatches();
+    } else {
+      state.selectedMatchIds.clear();
+      state.selectedMatchIds.add(matchId);
+      generateSingleMatchPost(matchId);
+    }
     switchTab('compose');
   }
 
@@ -11245,7 +11616,7 @@
       return;
     }
     const rawPool = getRawMatchPool();
-    const selectedMatches = rawPool.filter(m => state.selectedMatchIds.has(m.id));
+    const selectedMatches = rawPool.filter(m => state.selectedMatchIds.has(m.id) || state.selectedMatchIds.has(String(m.id)));
 
     // Consistency check
     const check = validateIntelligenceConsistency(selectedMatches);
@@ -11270,8 +11641,13 @@
 
   function generateSingleMatchPost(matchId) {
     const rawPool = getRawMatchPool();
-    const match = rawPool.find(m => m.id === matchId);
+    const match = rawPool.find(m => String(m.id) === String(matchId));
     if (!match) return;
+
+    if (!state.selectedMatchIds.has(match.id) && !state.selectedMatchIds.has(String(match.id))) {
+      state.selectedMatchIds.clear();
+      state.selectedMatchIds.add(match.id);
+    }
 
     const check = validateIntelligenceConsistency([match]);
     if (!check.valid) {
@@ -12288,6 +12664,14 @@
     stopAutonomousScheduleDispatcher,
     loadScheduleToStudio,
     loadMatchToStudio,
+    loadSelectedMatchesToStudio,
+    openScheduleModalForSelected,
+    toggleCalendarMatchSelection,
+    selectAllCalendarMatches,
+    clearCalendarMatchSelection,
+    clearMatchSelection,
+    removeMatchFromSelection,
+    updateCalendarSelectionUi,
     prevCalendarMonth,
     nextCalendarMonth,
     prevCalendarWeek,

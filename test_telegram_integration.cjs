@@ -4676,6 +4676,104 @@ async function runTests() {
     }
   });
 
+  await testAsync('Section 58.46: Multi-Fixture Selection, Bulk Action Bar, Multi-Match Slip Composition & Dispatch', async () => {
+    // 1. Calendar view renders Bulk Selection Bar and fixture card checkboxes
+    telegramPublisher.setCalendarView('month');
+    const calAgg = telegramPublisher.getCalendarAggregatedData(2026, 9);
+    const dateWithMatches = Object.keys(calAgg.matchesByDate)[0] || '2026-10-19';
+    telegramPublisher.selectCalendarDate(dateWithMatches);
+    telegramPublisher.clearCalendarMatchSelection();
+    
+    const calHtml = telegramPublisher.renderCalendarTab();
+    assert.ok(calHtml.includes('id="cal-selection-bar"'), 'Calendar must render bulk selection bar');
+    assert.ok(calHtml.includes('id="cal-select-all-btn"'), 'Bulk selection bar must contain Select All button');
+    assert.ok(calHtml.includes('id="cal-send-selected-studio-btn"'), 'Bulk selection bar must contain Send Selected to Studio button');
+    assert.ok(calHtml.includes('id="cal-schedule-selected-btn"'), 'Bulk selection bar must contain Schedule Selected button');
+    assert.ok(calHtml.includes('class="cal-match-select-checkbox"'), 'Fixture cards must contain multi-selection checkboxes');
+
+    // 2. Multi-match selection via toggleCalendarMatchSelection
+    const dayMatches = calAgg.matchesByDate[dateWithMatches] || [];
+    assert.ok(dayMatches.length >= 2, 'Selected test date must have at least 2 matches');
+    const match1 = dayMatches[0];
+    const match2 = dayMatches[1];
+
+    telegramPublisher.toggleCalendarMatchSelection(match1.id, true);
+    telegramPublisher.toggleCalendarMatchSelection(match2.id, true);
+
+    const st = telegramPublisher.getState();
+    assert.strictEqual(st.selectedMatchIds.has(match1.id), true, 'Match 1 must be selected');
+    assert.strictEqual(st.selectedMatchIds.has(match2.id), true, 'Match 2 must be selected');
+    assert.ok(st.selectedMatchIds.size >= 2, 'State must record multiple selected fixtures');
+
+    // 3. Load Selected Matches to Studio Composer
+    telegramPublisher.loadSelectedMatchesToStudio();
+    const studioState = telegramPublisher.getState();
+    assert.strictEqual(studioState.activeTab, 'compose', 'loadSelectedMatchesToStudio must switch to compose tab');
+    assert.ok(studioState.messageText.includes(match1.homeTeam?.name || match1.home), 'Message text must include Match 1');
+    assert.ok(studioState.messageText.includes(match2.homeTeam?.name || match2.home), 'Message text must include Match 2');
+    assert.ok(studioState.messageText.includes('ACCUMULATOR') || studioState.messageText.includes('SLIP') || studioState.messageText.includes('Combined Odds'), 'Message text must compile into multi-match slip with combined odds');
+
+    // 4. Compose tab renders Active Fixtures Ribbon with fixture chips and remove controls
+    const composeHtml = telegramPublisher.renderComposeTab();
+    assert.ok(composeHtml.includes('id="tg-compose-fixtures-ribbon"'), 'Compose tab must render active fixtures ribbon');
+    assert.ok(composeHtml.includes('ACTIVE FIXTURES ATTACHED'), 'Active fixtures ribbon must show attached title');
+    assert.ok(composeHtml.includes('MULTI-MATCH SLIP'), 'Active fixtures ribbon must reflect Multi-Match Slip mode');
+    assert.ok(composeHtml.includes('removeMatchFromSelection'), 'Fixture chips must include remove buttons');
+
+    // 5. Select All & Deselect All on Calendar Day
+    telegramPublisher.clearCalendarMatchSelection();
+    assert.strictEqual(telegramPublisher.getState().selectedMatchIds.size, 0, 'Clear selection must reset selected match count to 0');
+
+    telegramPublisher.selectAllCalendarMatches(dateWithMatches);
+    assert.strictEqual(telegramPublisher.getState().selectedMatchIds.size, dayMatches.length, 'selectAllCalendarMatches must select all matches on that day');
+
+    telegramPublisher.selectAllCalendarMatches(dateWithMatches);
+    assert.strictEqual(telegramPublisher.getState().selectedMatchIds.size, 0, 'Calling selectAllCalendarMatches again must toggle and deselect all matches on that day');
+
+    // 6. Multi-Match Scheduling Modal
+    telegramPublisher.toggleCalendarMatchSelection(match1.id, true);
+    telegramPublisher.toggleCalendarMatchSelection(match2.id, true);
+
+    const mockModalElements = {
+      'tg-pub-schedule-modal': { style: {} },
+      'tg-sched-match': { innerHTML: '', value: 'multi' },
+      'tg-sched-target': { value: 'free' },
+      'tg-sched-type': { value: 'Multi-Match Slip' },
+      'tg-sched-text': { value: '' },
+      'tg-sched-time': { value: `${dateWithMatches}T14:00` },
+      'tg-sched-photo': { value: '' }
+    };
+
+    const prevDoc = global.document;
+    global.document = {
+      getElementById: (id) => mockModalElements[id] || null,
+      querySelectorAll: (sel) => []
+    };
+
+    try {
+      telegramPublisher.openScheduleModalForSelected(`${dateWithMatches}T14:00`);
+      assert.ok(mockModalElements['tg-sched-match'].innerHTML.includes('Multi-Match Slip'), 'Schedule modal match dropdown must include Multi-Match Slip option');
+      assert.ok(mockModalElements['tg-sched-text'].value.includes(match1.homeTeam?.name || match1.home), 'Schedule modal text must prefill with Multi-Match text');
+      assert.ok(mockModalElements['tg-sched-text'].value.includes(match2.homeTeam?.name || match2.home), 'Schedule modal text must prefill with Match 2');
+
+      // Submit Schedule
+      await telegramPublisher.submitSchedule({
+        scheduledAt: `${dateWithMatches}T14:00:00.000Z`,
+        target: 'free',
+        postType: 'Multi-Match Slip',
+        text: mockModalElements['tg-sched-text'].value
+      });
+
+      const scheds = telegramPublisher.getState().schedules;
+      const latest = scheds[scheds.length - 1];
+      assert.ok(latest, 'New schedule must be added to state');
+      assert.strictEqual(latest.postType, 'Multi-Match Slip', 'Post type must be Multi-Match Slip');
+      assert.ok(Array.isArray(latest.matchIds) && latest.matchIds.length >= 2, 'Schedule record must retain matchIds array with all selected fixtures');
+    } finally {
+      global.document = prevDoc;
+    }
+  });
+
   // Restore globals
   global.localStorage = originalLocalStorage;
   global.sessionStorage = originalSessionStorage;
