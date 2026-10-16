@@ -206,6 +206,36 @@
     '/faq': {
       redirect: '/help'
     },
+    '/terms': {
+      viewId: 'view-command-center',
+      supportModalTab: 'terms',
+      title: 'Terms and Conditions of Use — DeepPredictBet',
+      navKey: 'legal'
+    },
+    '/terms-of-service': {
+      redirect: '/terms'
+    },
+    '/privacy': {
+      viewId: 'view-command-center',
+      supportModalTab: 'privacy',
+      title: 'Privacy Policy & Data Security — DeepPredictBet',
+      navKey: 'legal'
+    },
+    '/privacy-policy': {
+      redirect: '/privacy'
+    },
+    '/disclaimer': {
+      viewId: 'view-command-center',
+      supportModalTab: 'disclaimer',
+      title: 'Analytical & Statistical Disclaimer — DeepPredictBet',
+      navKey: 'legal'
+    },
+    '/responsible-gambling': {
+      viewId: 'view-command-center',
+      anchor: 'homepage-responsible-gambling',
+      title: 'Responsible Gambling Policy (18+) — DeepPredictBet',
+      navKey: 'legal'
+    },
     '/dashboard': {
       viewId: 'view-my-deeppredict',
       title: 'My DeepPredict — Personal Betting Command Center',
@@ -283,6 +313,12 @@
     '#vip': '/pricing',
     '#help': '/help',
     '#faq': '/help',
+    '#terms': '/terms',
+    '#terms-of-service': '/terms',
+    '#privacy': '/privacy',
+    '#privacy-policy': '/privacy',
+    '#disclaimer': '/disclaimer',
+    '#responsible-gambling': '/responsible-gambling',
     '#dashboard': '/dashboard',
     '#my-deeppredict': '/dashboard',
     '#admin': '/admin',
@@ -588,8 +624,36 @@
       }
     }
 
-    // Handle in-page subsection anchor scroll (e.g. #telegram-vip-section)
-    if (window.location.hash) {
+    // Handle Legal & Support Modal routing (e.g. /terms, /privacy, /disclaimer)
+    if (config.supportModalTab) {
+      const openModalTab = () => {
+        if (typeof window.openSupportModal === 'function') {
+          window.openSupportModal(config.supportModalTab);
+        }
+      };
+      if (typeof document !== 'undefined') {
+        if (document.readyState === 'loading') {
+          document.addEventListener('DOMContentLoaded', openModalTab, { once: true });
+        } else {
+          setTimeout(openModalTab, 50);
+        }
+      }
+    }
+
+    // Handle in-page subsection anchor scroll (e.g. #homepage-responsible-gambling or #telegram-vip-section)
+    if (config.anchor) {
+      const scrollToAnchor = () => {
+        const el = document.getElementById(config.anchor);
+        if (el) el.scrollIntoView({ behavior: 'smooth' });
+      };
+      if (typeof document !== 'undefined') {
+        if (document.readyState === 'loading') {
+          document.addEventListener('DOMContentLoaded', scrollToAnchor, { once: true });
+        } else {
+          setTimeout(scrollToAnchor, 100);
+        }
+      }
+    } else if (window.location.hash) {
       const targetAnchorId = window.location.hash.slice(1);
       const targetAnchorEl = document.getElementById(targetAnchorId);
       if (targetAnchorEl) {
@@ -600,8 +664,8 @@
       }
     }
 
-    // Smooth scroll to top unless options.noScroll is set
-    if (!options.noScroll) {
+    // Smooth scroll to top unless options.noScroll is set or anchor route
+    if (!options.noScroll && !config.anchor) {
       window.scrollTo({ top: 0, behavior: 'smooth' });
     }
   }

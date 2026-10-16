@@ -6626,22 +6626,22 @@
         <h4 class="footer-col-title-5col">LEGAL</h4>
         <ul class="footer-links-5col">
           <li>
-            <a href="#" class="footer-link-item" onclick="event.preventDefault(); openSupportModal('terms');">
+            <a href="/terms" class="footer-link-item" onclick="if(!event.ctrlKey && !event.metaKey && !event.shiftKey){ event.preventDefault(); if(typeof navigateTo==='function'){navigateTo('/terms');}else{openSupportModal('terms'); history.pushState(null,'','/terms');} }">
               <span>Terms</span>
             </a>
           </li>
           <li>
-            <a href="#" class="footer-link-item" onclick="event.preventDefault(); openSupportModal('privacy');">
+            <a href="/privacy" class="footer-link-item" onclick="if(!event.ctrlKey && !event.metaKey && !event.shiftKey){ event.preventDefault(); if(typeof navigateTo==='function'){navigateTo('/privacy');}else{openSupportModal('privacy'); history.pushState(null,'','/privacy');} }">
               <span>Privacy</span>
             </a>
           </li>
           <li>
-            <a href="#homepage-responsible-gambling" class="footer-link-item" onclick="document.getElementById('homepage-responsible-gambling')?.scrollIntoView({behavior:'smooth'}); window.location.hash='#homepage-responsible-gambling';">
+            <a href="/responsible-gambling" class="footer-link-item" onclick="if(!event.ctrlKey && !event.metaKey && !event.shiftKey){ event.preventDefault(); if(typeof navigateTo==='function'){navigateTo('/responsible-gambling');}else{document.getElementById('homepage-responsible-gambling')?.scrollIntoView({behavior:'smooth'}); window.location.hash='#homepage-responsible-gambling';} }">
               <span>Responsible Gambling</span>
             </a>
           </li>
           <li>
-            <a href="#" class="footer-link-item" onclick="event.preventDefault(); openSupportModal('terms');">
+            <a href="/disclaimer" class="footer-link-item" onclick="if(!event.ctrlKey && !event.metaKey && !event.shiftKey){ event.preventDefault(); if(typeof navigateTo==='function'){navigateTo('/disclaimer');}else{openSupportModal('disclaimer'); history.pushState(null,'','/disclaimer');} }">
               <span>Disclaimer</span>
             </a>
           </li>
@@ -6911,22 +6911,22 @@
           <div class="mf-accordion-panel" id="mf-panel-legal" role="region" aria-labelledby="mf-btn-legal">
             <ul class="mf-accordion-list">
               <li>
-                <a href="#" class="mf-accordion-link" onclick="event.preventDefault(); openSupportModal('terms');">
+                <a href="/terms" class="mf-accordion-link" onclick="if(!event.ctrlKey && !event.metaKey && !event.shiftKey){ event.preventDefault(); if(typeof navigateTo==='function'){navigateTo('/terms');}else{openSupportModal('terms'); history.pushState(null,'','/terms');} }">
                   <span>Terms of Service</span>
                 </a>
               </li>
               <li>
-                <a href="#" class="mf-accordion-link" onclick="event.preventDefault(); openSupportModal('privacy');">
+                <a href="/privacy" class="mf-accordion-link" onclick="if(!event.ctrlKey && !event.metaKey && !event.shiftKey){ event.preventDefault(); if(typeof navigateTo==='function'){navigateTo('/privacy');}else{openSupportModal('privacy'); history.pushState(null,'','/privacy');} }">
                   <span>Privacy Policy</span>
                 </a>
               </li>
               <li>
-                <a href="#homepage-responsible-gambling" class="mf-accordion-link" onclick="document.getElementById('homepage-responsible-gambling')?.scrollIntoView({behavior:'smooth'}); window.location.hash='#homepage-responsible-gambling';">
+                <a href="/responsible-gambling" class="mf-accordion-link" onclick="if(!event.ctrlKey && !event.metaKey && !event.shiftKey){ event.preventDefault(); if(typeof navigateTo==='function'){navigateTo('/responsible-gambling');}else{document.getElementById('homepage-responsible-gambling')?.scrollIntoView({behavior:'smooth'}); window.location.hash='#homepage-responsible-gambling';} }">
                   <span>Responsible Gambling Policy</span>
                 </a>
               </li>
               <li>
-                <a href="#" class="mf-accordion-link" onclick="event.preventDefault(); openSupportModal('terms');">
+                <a href="/disclaimer" class="mf-accordion-link" onclick="if(!event.ctrlKey && !event.metaKey && !event.shiftKey){ event.preventDefault(); if(typeof navigateTo==='function'){navigateTo('/disclaimer');}else{openSupportModal('disclaimer'); history.pushState(null,'','/disclaimer');} }">
                   <span>Analytical Disclaimer</span>
                 </a>
               </li>
@@ -8421,6 +8421,8 @@
           style="padding: 6px 12px; font-size: 0.8rem;">Terms & Conditions</button>
         <button class="tab-btn" id="supp-tab-privacy" onclick="switchSupportTab('privacy')"
           style="padding: 6px 12px; font-size: 0.8rem;">Privacy Policy</button>
+        <button class="tab-btn" id="supp-tab-disclaimer" onclick="switchSupportTab('disclaimer')"
+          style="padding: 6px 12px; font-size: 0.8rem;">Disclaimer</button>
       </div>
 
       <!-- FAQ Pane -->
@@ -8538,6 +8540,39 @@
           3. Local Client Storage & Data Ownership</h5>
         <p style="font-size: 0.78rem; color: var(--text-muted); line-height: 1.4; margin-bottom: 0;">
           Your personal watchlist, custom slip history, and user preferences remain securely in your local browser storage. You retain total control over your device data at all times.
+        </p>
+      </div>
+
+      <!-- Disclaimer Pane -->
+      <div id="supp-pane-disclaimer" class="modal-tab-pane"
+        style="display: none; padding: 0 20px 20px; max-height: 380px; overflow-y: auto;">
+        <h4 style="font-size: 0.95rem; font-weight: 700; color: var(--primary); margin-bottom: 8px;">Analytical &amp; Statistical Disclaimer</h4>
+        <p style="font-size: 0.8rem; color: var(--text-secondary); line-height: 1.5; margin-bottom: 10px;">
+          DeepPredictBet operates exclusively as an independent sports data analytics platform, mathematical research laboratory, and algorithmic intelligence suite.
+        </p>
+        <h5
+          style="font-size: 0.85rem; font-weight: 700; color: var(--text-primary); margin-top: 10px; margin-bottom: 4px;">
+          1. Informational &amp; Research Purpose Only</h5>
+        <p style="font-size: 0.78rem; color: var(--text-muted); line-height: 1.4; margin-bottom: 10px;">
+          DeepPredictBet is <b>not a bookmaker, sportsbook, or betting operator</b>. We do not accept wagers, handle betting deposits, process sports bets, or act as a gambling broker. All mathematical projections, Poisson xG distributions, Value Bet ratings, and AI Scout simulations are strictly educational and informational tools designed to demonstrate data science applications in sports.
+        </p>
+        <h5
+          style="font-size: 0.85rem; font-weight: 700; color: var(--text-primary); margin-top: 10px; margin-bottom: 4px;">
+          2. No Guarantee of Future Outcomes</h5>
+        <p style="font-size: 0.78rem; color: var(--text-muted); line-height: 1.4; margin-bottom: 10px;">
+          Past algorithmic performance, historical backtesting yields, and statistical win-rates do not guarantee future match outcomes. Sports events are subject to inherent real-world variance, tactical unpredictability, referee decisions, injuries, and weather conditions. Never treat statistical probabilities as certainties or investment advice.
+        </p>
+        <h5
+          style="font-size: 0.85rem; font-weight: 700; color: var(--text-primary); margin-top: 10px; margin-bottom: 4px;">
+          3. Responsible Gambling &amp; Jurisdictional Compliance (18+)</h5>
+        <p style="font-size: 0.78rem; color: var(--text-muted); line-height: 1.4; margin-bottom: 10px;">
+          Betting involves substantial financial risk and the potential to lose money. DeepPredictBet strictly requires users to be 18 years of age or older (or the legal age of majority in their jurisdiction). It is your sole responsibility to ensure that sports betting is legal in your location. Only wager what you can afford to lose. If gambling is causing you distress, please contact BeGambleAware (0808 8020 133), GamCare, or the National Council on Problem Gambling.
+        </p>
+        <h5
+          style="font-size: 0.85rem; font-weight: 700; color: var(--text-primary); margin-top: 10px; margin-bottom: 4px;">
+          4. Limitation of Liability</h5>
+        <p style="font-size: 0.78rem; color: var(--text-muted); line-height: 1.4; margin-bottom: 0;">
+          DeepPredictBet and its engineers, operators, and contributors accept zero liability for any financial losses, wagering outcomes, or damages incurred as a result of using the platform's analytical software, APIs, tips, or odds comparison feeds.
         </p>
       </div>
     </div>

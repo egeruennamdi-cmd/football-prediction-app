@@ -4200,8 +4200,9 @@ function openSupportModal(activeTab) {
   document.body.style.overflow = "hidden";
 
   let targetTab = 'faq';
-  if (activeTab === 'terms' || activeTab === 'disclaimer') targetTab = 'terms';
+  if (activeTab === 'terms') targetTab = 'terms';
   else if (activeTab === 'privacy') targetTab = 'privacy';
+  else if (activeTab === 'disclaimer') targetTab = 'disclaimer';
   else if (activeTab === 'ticket' || activeTab === 'contact' || activeTab === 'feedback') targetTab = 'ticket';
   else if (activeTab === 'faq') targetTab = 'faq';
 
@@ -4224,11 +4225,21 @@ function closeSupportModal(event, force) {
       modal.style.visibility = "hidden";
     }
     document.body.style.overflow = "";
+
+    // If browser URL was set to legal routes, restore clean root route without page refresh
+    if (typeof window !== 'undefined' && window.location) {
+      const p = window.location.pathname;
+      if (['/terms', '/privacy', '/disclaimer', '/terms-of-service', '/privacy-policy'].includes(p)) {
+        if (window.history && window.history.pushState) {
+          window.history.pushState(null, '', '/');
+        }
+      }
+    }
   }
 }
 
 function switchSupportTab(tab) {
-  const tabs = ["faq", "ticket", "terms", "privacy"];
+  const tabs = ["faq", "ticket", "terms", "privacy", "disclaimer"];
   tabs.forEach(t => {
     const btn = document.getElementById(`supp-tab-${t}`);
     const pane = document.getElementById(`supp-pane-${t}`);

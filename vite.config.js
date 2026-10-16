@@ -66,7 +66,11 @@ export default defineConfig({
     } : null,
     rollupOptions: {
       input: {
-        main: resolve(process.cwd(), 'index.html')
+        main: resolve(process.cwd(), 'index.html'),
+        terms: resolve(process.cwd(), 'terms.html'),
+        privacy: resolve(process.cwd(), 'privacy.html'),
+        disclaimer: resolve(process.cwd(), 'disclaimer.html'),
+        responsibleGambling: resolve(process.cwd(), 'responsible-gambling.html')
       },
       output: {
         entryFileNames: 'assets/[name]-[hash].js',
@@ -76,7 +80,11 @@ export default defineConfig({
     },
     rolldownOptions: {
       input: {
-        main: resolve(process.cwd(), 'index.html')
+        main: resolve(process.cwd(), 'index.html'),
+        terms: resolve(process.cwd(), 'terms.html'),
+        privacy: resolve(process.cwd(), 'privacy.html'),
+        disclaimer: resolve(process.cwd(), 'disclaimer.html'),
+        responsibleGambling: resolve(process.cwd(), 'responsible-gambling.html')
       }
     }
   }
