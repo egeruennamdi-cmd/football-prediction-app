@@ -339,14 +339,20 @@ export async function onRequestPost(context) {
         user: userEmail
       });
 
+      const isSuccess = finalState === SOCIAL_LIFECYCLE_STATES.PUBLISHED || finalState === SOCIAL_LIFECYCLE_STATES.UNCERTAIN;
+      const primaryPlatformKey = Object.keys(platformResults)[0] || 'telegram';
+      const primaryResult = platformResults[primaryPlatformKey] || {};
+      const errorMessage = primaryResult.error || (primaryResult.status === 'MANUAL_REQUIRED' ? primaryResult.message : null);
+
       return new Response(JSON.stringify({
-        success: finalState === SOCIAL_LIFECYCLE_STATES.PUBLISHED || finalState === SOCIAL_LIFECYCLE_STATES.UNCERTAIN,
+        success: isSuccess,
         state: finalState,
+        error: !isSuccess ? (errorMessage || 'Social publishing dispatch failed.') : undefined,
         platformResults,
         content: publishedItem,
         item: publishedItem
       }), {
-        status: finalState === SOCIAL_LIFECYCLE_STATES.FAILED ? 502 : 200,
+        status: 200,
         headers: adminCorsHeaders()
       });
     }

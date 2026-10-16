@@ -334,10 +334,21 @@ export async function dispatchX(env, payload) {
       };
     } else {
       const errText = await res.text();
+      let parsedErr = null;
+      try { parsedErr = JSON.parse(errText); } catch (_) {}
+      const isCreditsDepleted = res.status === 402 || errText.includes('credits-depleted') || (parsedErr && parsedErr.title === 'Payment Required');
+      const errSummary = isCreditsDepleted
+        ? '𝕏 Developer API post credits depleted (HTTP 402 Payment Required). Please top up on developer.x.com or use 1-click Web Intent publishing.'
+        : `X API HTTP ${res.status}: ${errText}`;
+
       return {
         status: 'FAILED',
         platform: 'x',
-        error: `X API HTTP ${res.status}: ${errText}`,
+        error: errSummary,
+        rawError: errText,
+        statusCode: res.status,
+        isCreditsDepleted,
+        manualPayload: formatManualCopyForX(payload),
         dispatchedAt: new Date().toISOString()
       };
     }

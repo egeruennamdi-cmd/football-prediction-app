@@ -11801,6 +11801,15 @@
       }
     }
 
+    // Instant character length pre-validation for 𝕏 (Twitter)
+    if (state.activeChannel === 'x') {
+      const textLen = (state.messageText || '').trim().length;
+      if (textLen > 280) {
+        showAlert(`⚠️ Content exceeds 𝕏 (Twitter) 280 character limit (${textLen}/280 characters).\n\nPlease trim ${textLen - 280} characters before publishing to 𝕏.`);
+        return;
+      }
+    }
+
     const token = getAdminSessionToken();
     if (!token) {
       showAlert('Your admin session has expired. Please sign in again.');
@@ -11821,17 +11830,80 @@
             forceDuplicate
           })
         });
-        const data = await res.json();
-        if (res.status === 409 && data.duplicateDetected) {
-          showAlert(`Duplicate detected: ${data.message || 'Identical post already submitted within 24h.'}`);
+
+        if (res.status === 401 || res.status === 403) {
+          showAlert('Your admin session has expired or authorization failed. Please sign in again.');
           return;
         }
-        if (data.success) {
-          showAlert(`✅ Content processed for ${state.activeChannel.toUpperCase()}! Status: ${data.item.status}.`);
-          fetchPublishData();
-        } else {
-          showAlert(`Notice: ${data.error || 'Failed to dispatch'}`);
+
+        let data = null;
+        const resText = await res.text();
+        try {
+          data = JSON.parse(resText);
+        } catch (_) {}
+
+        if (!data) {
+          showAlert(`Server dispatch notice (${res.status}): ${resText.slice(0, 160) || 'Unable to process dispatch.'}`);
+          return;
         }
+
+        if (res.status === 409 && data.duplicateDetected) {
+          showAlert(`Duplicate detected: ${data.message || data.error || 'Identical post already submitted within 24h.'}`);
+          return;
+        }
+
+        const channelResult = (data.platformResults && data.platformResults[state.activeChannel]) || {};
+
+        if (data.success && channelResult.status === 'SUCCESS') {
+          const postUrl = channelResult.publishedUrl ? `\nURL: ${channelResult.publishedUrl}` : '';
+          showAlert(`✅ Content published to ${state.activeChannel.toUpperCase()} successfully!${postUrl}`);
+          fetchPublishData();
+          return;
+        }
+
+        // Special handling for X (Twitter) HTTP 402 Credits Depleted
+        if (state.activeChannel === 'x' && (channelResult.isCreditsDepleted || channelResult.statusCode === 402 || (channelResult.error && (channelResult.error.includes('credits depleted') || channelResult.error.includes('Payment Required'))))) {
+          const manualPayload = channelResult.manualPayload;
+          const tweetText = (manualPayload && manualPayload.text) || (state.messageText || '').slice(0, 270);
+          const shareUrl = (manualPayload && manualPayload.shareUrl) || `https://twitter.com/intent/tweet?text=${encodeURIComponent(tweetText)}`;
+
+          const confirmIntent = typeof confirm !== 'undefined' ? confirm(
+            `⚠️ 𝕏 (Twitter) API Credits Depleted (HTTP 402 Payment Required):\n\n` +
+            `Your 𝕏 Developer App has exhausted its monthly API post credits on developer.x.com.\n\n` +
+            `Would you like to open 𝕏 right now with this post pre-filled to publish it directly in 1 click?`
+          ) : false;
+
+          if (confirmIntent && typeof window !== 'undefined') {
+            window.open(shareUrl, '_blank', 'noopener,noreferrer');
+          }
+          fetchPublishData();
+          return;
+        }
+
+        // Manual Required (e.g. Account not connected yet)
+        if (channelResult.status === 'MANUAL_REQUIRED') {
+          const manualPayload = channelResult.manualPayload;
+          const shareUrl = manualPayload && manualPayload.shareUrl;
+          if (shareUrl && typeof confirm !== 'undefined') {
+            const openWeb = confirm(
+              `ℹ️ ${state.activeChannel.toUpperCase()} Publishing Notice:\n\n` +
+              `${channelResult.message || 'Direct API posting requires account connection.'}\n\n` +
+              `Would you like to open 𝕏 with your post pre-filled to publish it directly in 1 click?`
+            );
+            if (openWeb && typeof window !== 'undefined') {
+              window.open(shareUrl, '_blank', 'noopener,noreferrer');
+            }
+          } else {
+            showAlert(`Notice: ${channelResult.message || 'Manual publishing required.'}`);
+          }
+          fetchPublishData();
+          return;
+        }
+
+        // General failure reporting
+        const failureReason = channelResult.error || data.error || 'Failed to dispatch';
+        showAlert(`Notice (${state.activeChannel.toUpperCase()}): ${failureReason}`);
+        fetchPublishData();
       } catch (err) {
         showAlert(`Dispatch error: ${err.message}`);
       }
@@ -11860,7 +11932,17 @@
         return;
       }
 
-      const data = await res.json();
+      let data = null;
+      const resText = await res.text();
+      try {
+        data = JSON.parse(resText);
+      } catch (_) {}
+
+      if (!data) {
+        showAlert(`Server response notice (${res.status}): ${resText.slice(0, 160) || 'Unable to parse server response.'}`);
+        return;
+      }
+
       if (res.status === 409 && data.duplicateDetected) {
         const dupModal = document.getElementById('tg-pub-duplicate-modal');
         const dupMsg = document.getElementById('tg-pub-duplicate-msg');
