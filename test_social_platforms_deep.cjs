@@ -712,6 +712,112 @@ async function runAllTests() {
     assert.strictEqual(health.telegram.publishingState, 'LIVE');
   });
 
+  await test('UI / Omni-Channel: setActiveChannel("x") switches to Compose tab, updates simulator pill, highlights channel chip, and provides 1-click Web Intent & auto-population', async () => {
+    await import('./js/telegramPublisher.js');
+    const publisher = globalThis.TelegramPublisher;
+    assert.ok(publisher, 'TelegramPublisher module must be defined');
+
+    const channelChips = [
+      { attrs: { 'data-channel': 'telegram' }, getAttribute(n) { return this.attrs[n]; }, style: {} },
+      { attrs: { 'data-channel': 'x' }, getAttribute(n) { return this.attrs[n]; }, style: {} },
+      { attrs: { 'data-channel': 'instagram' }, getAttribute(n) { return this.attrs[n]; }, style: {} },
+      { attrs: { 'data-channel': 'facebook' }, getAttribute(n) { return this.attrs[n]; }, style: {} },
+      { attrs: { 'data-channel': 'tiktok' }, getAttribute(n) { return this.attrs[n]; }, style: {} },
+      { attrs: { 'data-channel': 'youtube' }, getAttribute(n) { return this.attrs[n]; }, style: {} }
+    ];
+
+    const simButtons = [
+      { attrs: { 'data-channel': 'telegram' }, getAttribute(n) { return this.attrs[n]; }, style: {} },
+      { attrs: { 'data-channel': 'x' }, getAttribute(n) { return this.attrs[n]; }, style: {} }
+    ];
+
+    const tabButtons = [
+      { attrs: { 'data-tab': 'overview' }, getAttribute(n) { return this.attrs[n]; }, style: {} },
+      { attrs: { 'data-tab': 'compose' }, getAttribute(n) { return this.attrs[n]; }, style: {} }
+    ];
+
+    const mockElements = {
+      'tg-sim-platform-pill': { textContent: '' },
+      'tg-pub-copy-manual-btn': { innerHTML: '' },
+      'tg-pub-x-intent-btn': { style: { display: 'none' } },
+      'tg-cc-char-counter': { textContent: '', style: {} },
+      'tg-sim-text': { textContent: '', style: {} },
+      'tg-pub-message-input': { value: '' },
+      'tg-cc-tab-content': { innerHTML: '', scrollIntoView: () => {} },
+      'tg-social-prereq-modal': { style: { display: 'none' } },
+      'tg-social-prereq-body': { innerHTML: '' },
+      'tg-pub-buttons-container': { innerHTML: '' }
+    };
+
+    const prevDoc = global.document;
+    const prevWin = global.window;
+    let openedUrl = null;
+
+    global.document = {
+      getElementById: (id) => mockElements[id] || null,
+      querySelectorAll: (sel) => {
+        if (sel.includes('.tg-cc-channel-chip') || sel.includes('.tg-channel-pill')) return channelChips;
+        if (sel.includes('.tg-sim-channel-btn')) return simButtons;
+        if (sel.includes('.tg-cc-tab-btn')) return tabButtons;
+        return [];
+      }
+    };
+
+    global.window = {
+      ...global.window,
+      open: (url) => { openedUrl = url; return true; },
+      innerHeight: 900
+    };
+
+    try {
+      // 1. Reset state to overview with empty message
+      publisher.switchTab('overview');
+      publisher.setMessageText('');
+
+      // 2. Click on 𝕏 X (Twitter) channel chip
+      publisher.setActiveChannel('x');
+
+      const state = publisher.getState();
+      assert.strictEqual(state.activeChannel, 'x', 'Active channel must be updated to x');
+      assert.strictEqual(state.charLimit, 280, 'Character limit for x must be 280');
+      assert.strictEqual(state.activeTab, 'compose', 'setActiveChannel must switch active tab to compose so simulator and output are visible');
+
+      // 3. Channel chip styling
+      assert.strictEqual(channelChips[1].style.color, '#38bdf8', 'X channel chip must be highlighted with cyan color');
+      assert.strictEqual(channelChips[1].style.borderColor, '#38bdf8', 'X channel chip must have cyan border');
+      assert.strictEqual(channelChips[0].style.color, '#cbd5e1', 'Telegram chip must be unhighlighted');
+
+      // 4. Simulator Mini Buttons
+      assert.strictEqual(simButtons[1].style.color, '#38bdf8', 'Simulator mini X button must be highlighted with cyan');
+      assert.strictEqual(simButtons[0].style.color, '#94a3b8', 'Simulator mini Telegram button must be muted');
+
+      // 5. Simulator Pill & Buttons
+      assert.strictEqual(mockElements['tg-sim-platform-pill'].textContent, 'X SIMULATOR', 'Platform pill must display X SIMULATOR');
+      assert.ok(mockElements['tg-pub-copy-manual-btn'].innerHTML.includes('X Manual Post'), 'Manual copy button must specify X');
+      assert.strictEqual(mockElements['tg-pub-x-intent-btn'].style.display, 'flex', '1-Click X intent button must be visible');
+
+      // 6. Output auto-population
+      assert.ok(state.messageText && state.messageText.length > 0, 'Post message must be auto-populated so simulator has immediate output');
+
+      // 7. 1-Click Twitter Intent Trigger
+      publisher.openTwitterIntent();
+      assert.ok(openedUrl, 'openTwitterIntent must invoke window.open');
+      assert.ok(openedUrl.startsWith('https://twitter.com/intent/tweet?text='), 'Intent URL must target twitter.com/intent/tweet');
+      assert.ok(openedUrl.includes('deeppredictbet.com'), 'Intent URL must include deeppredictbet.com reference');
+
+      // 8. Prerequisites Modal Open & Close
+      publisher.openSocialPrerequisitesModal('x');
+      assert.strictEqual(mockElements['tg-social-prereq-modal'].style.display, 'flex', 'Prerequisites modal must open');
+      assert.ok(mockElements['tg-social-prereq-body'].innerHTML.includes('X_CLIENT_ID'), 'Prerequisites modal body must show X secrets');
+
+      publisher.closeSocialPrerequisitesModal();
+      assert.strictEqual(mockElements['tg-social-prereq-modal'].style.display, 'none', 'Prerequisites modal must close');
+    } finally {
+      global.document = prevDoc;
+      global.window = prevWin;
+    }
+  });
+
   // Restore Global Fetch
   global.fetch = originalFetch;
 

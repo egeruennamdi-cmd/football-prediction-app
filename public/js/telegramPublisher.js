@@ -5139,12 +5139,12 @@
             <!-- Channel Simulator Switcher Header -->
             <div style="background: #242f3d; padding: 8px 12px; display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid rgba(0,0,0,0.3); flex-wrap: wrap; gap: 6px;">
               <div style="display: flex; align-items: center; gap: 4px;">
-                <button type="button" onclick="window.TelegramPublisher.setActiveChannel('telegram')" style="background: ${state.activeChannel === 'telegram' ? 'rgba(56,189,248,0.3)' : 'transparent'}; border: none; color: ${state.activeChannel === 'telegram' ? '#38bdf8' : '#94a3b8'}; padding: 3px 7px; border-radius: 4px; font-size: 0.68rem; font-weight: 700; cursor: pointer;">✈️ Telegram</button>
-                <button type="button" onclick="window.TelegramPublisher.setActiveChannel('x')" style="background: ${state.activeChannel === 'x' ? 'rgba(56,189,248,0.3)' : 'transparent'}; border: none; color: ${state.activeChannel === 'x' ? '#38bdf8' : '#94a3b8'}; padding: 3px 7px; border-radius: 4px; font-size: 0.68rem; font-weight: 700; cursor: pointer;">𝕏 X</button>
-                <button type="button" onclick="window.TelegramPublisher.setActiveChannel('instagram')" style="background: ${state.activeChannel === 'instagram' ? 'rgba(56,189,248,0.3)' : 'transparent'}; border: none; color: ${state.activeChannel === 'instagram' ? '#38bdf8' : '#94a3b8'}; padding: 3px 7px; border-radius: 4px; font-size: 0.68rem; font-weight: 700; cursor: pointer;">📸 Instagram</button>
-                <button type="button" onclick="window.TelegramPublisher.setActiveChannel('facebook')" style="background: ${state.activeChannel === 'facebook' ? 'rgba(56,189,248,0.3)' : 'transparent'}; border: none; color: ${state.activeChannel === 'facebook' ? '#38bdf8' : '#94a3b8'}; padding: 3px 7px; border-radius: 4px; font-size: 0.68rem; font-weight: 700; cursor: pointer;">👥 FB</button>
-                <button type="button" onclick="window.TelegramPublisher.setActiveChannel('tiktok')" style="background: ${state.activeChannel === 'tiktok' ? 'rgba(56,189,248,0.3)' : 'transparent'}; border: none; color: ${state.activeChannel === 'tiktok' ? '#38bdf8' : '#94a3b8'}; padding: 3px 7px; border-radius: 4px; font-size: 0.68rem; font-weight: 700; cursor: pointer;">🎵 TikTok</button>
-                <button type="button" onclick="window.TelegramPublisher.setActiveChannel('youtube')" style="background: ${state.activeChannel === 'youtube' ? 'rgba(56,189,248,0.3)' : 'transparent'}; border: none; color: ${state.activeChannel === 'youtube' ? '#38bdf8' : '#94a3b8'}; padding: 3px 7px; border-radius: 4px; font-size: 0.68rem; font-weight: 700; cursor: pointer;">▶️ YT</button>
+                <button type="button" class="tg-sim-channel-btn" data-channel="telegram" onclick="window.TelegramPublisher.setActiveChannel('telegram')" style="background: ${state.activeChannel === 'telegram' ? 'rgba(56,189,248,0.3)' : 'transparent'}; border: none; color: ${state.activeChannel === 'telegram' ? '#38bdf8' : '#94a3b8'}; padding: 3px 7px; border-radius: 4px; font-size: 0.68rem; font-weight: ${state.activeChannel === 'telegram' ? '800' : '700'}; cursor: pointer;">✈️ Telegram</button>
+                <button type="button" class="tg-sim-channel-btn" data-channel="x" onclick="window.TelegramPublisher.setActiveChannel('x')" style="background: ${state.activeChannel === 'x' ? 'rgba(56,189,248,0.3)' : 'transparent'}; border: none; color: ${state.activeChannel === 'x' ? '#38bdf8' : '#94a3b8'}; padding: 3px 7px; border-radius: 4px; font-size: 0.68rem; font-weight: ${state.activeChannel === 'x' ? '800' : '700'}; cursor: pointer;">𝕏 X</button>
+                <button type="button" class="tg-sim-channel-btn" data-channel="instagram" onclick="window.TelegramPublisher.setActiveChannel('instagram')" style="background: ${state.activeChannel === 'instagram' ? 'rgba(56,189,248,0.3)' : 'transparent'}; border: none; color: ${state.activeChannel === 'instagram' ? '#38bdf8' : '#94a3b8'}; padding: 3px 7px; border-radius: 4px; font-size: 0.68rem; font-weight: ${state.activeChannel === 'instagram' ? '800' : '700'}; cursor: pointer;">📸 Instagram</button>
+                <button type="button" class="tg-sim-channel-btn" data-channel="facebook" onclick="window.TelegramPublisher.setActiveChannel('facebook')" style="background: ${state.activeChannel === 'facebook' ? 'rgba(56,189,248,0.3)' : 'transparent'}; border: none; color: ${state.activeChannel === 'facebook' ? '#38bdf8' : '#94a3b8'}; padding: 3px 7px; border-radius: 4px; font-size: 0.68rem; font-weight: ${state.activeChannel === 'facebook' ? '800' : '700'}; cursor: pointer;">👥 FB</button>
+                <button type="button" class="tg-sim-channel-btn" data-channel="tiktok" onclick="window.TelegramPublisher.setActiveChannel('tiktok')" style="background: ${state.activeChannel === 'tiktok' ? 'rgba(56,189,248,0.3)' : 'transparent'}; border: none; color: ${state.activeChannel === 'tiktok' ? '#38bdf8' : '#94a3b8'}; padding: 3px 7px; border-radius: 4px; font-size: 0.68rem; font-weight: ${state.activeChannel === 'tiktok' ? '800' : '700'}; cursor: pointer;">🎵 TikTok</button>
+                <button type="button" class="tg-sim-channel-btn" data-channel="youtube" onclick="window.TelegramPublisher.setActiveChannel('youtube')" style="background: ${state.activeChannel === 'youtube' ? 'rgba(56,189,248,0.3)' : 'transparent'}; border: none; color: ${state.activeChannel === 'youtube' ? '#38bdf8' : '#94a3b8'}; padding: 3px 7px; border-radius: 4px; font-size: 0.68rem; font-weight: ${state.activeChannel === 'youtube' ? '800' : '700'}; cursor: pointer;">▶️ YT</button>
               </div>
               <span id="tg-sim-platform-pill" style="font-size: 0.65rem; color: #38bdf8; font-weight: 800; background: rgba(56,189,248,0.15); padding: 2px 6px; border-radius: 4px;">
                 ${state.activeChannel.toUpperCase()} SIMULATOR
@@ -5170,6 +5170,10 @@
           <div style="margin-top: 14px; display: flex; flex-direction: column; gap: 8px;">
             <button type="button" id="tg-pub-copy-manual-btn" onclick="window.TelegramPublisher.copyManualPayload(window.TelegramPublisher.state ? window.TelegramPublisher.state.activeChannel : 'telegram')" style="width: 100%; background: linear-gradient(135deg, #0284c7, #38bdf8); border: none; color: #ffffff; padding: 10px 14px; border-radius: 8px; font-size: 0.8rem; font-weight: 800; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 6px; box-shadow: 0 4px 14px rgba(2,132,199,0.3);">
               <span>📋 Copy Formatted for ${state.activeChannel.toUpperCase()} Manual Post</span>
+            </button>
+            <button type="button" id="tg-pub-x-intent-btn" onclick="window.TelegramPublisher.openTwitterIntent()" style="display: ${state.activeChannel === 'x' ? 'flex' : 'none'}; width: 100%; background: #000000; border: 1px solid rgba(255,255,255,0.25); color: #ffffff; padding: 10px 14px; border-radius: 8px; font-size: 0.8rem; font-weight: 800; cursor: pointer; align-items: center; justify-content: center; gap: 8px; box-shadow: 0 4px 14px rgba(0,0,0,0.5);">
+              <span style="font-size: 1rem;">𝕏</span>
+              <span>Open in 𝕏 (1-Click Web Intent)</span>
             </button>
             <div style="display: flex; gap: 8px;">
               <button type="button" onclick="window.TelegramPublisher.openSocialPrerequisitesModal(window.TelegramPublisher.state ? window.TelegramPublisher.state.activeChannel : 'x')" style="flex: 1; background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.12); color: #cbd5e1; padding: 7px 10px; border-radius: 6px; font-size: 0.72rem; font-weight: 700; cursor: pointer; text-align: center;">
@@ -12181,8 +12185,8 @@
     return { valid: isValid, errors };
   }
 
-  function setActiveChannel(channel) {
-    state.activeChannel = channel || 'telegram';
+  function setActiveChannel(channel, options = {}) {
+    state.activeChannel = (channel || 'telegram').toLowerCase();
     const limits = {
       telegram: 4096,
       x: 280,
@@ -12193,28 +12197,112 @@
     };
     state.charLimit = limits[state.activeChannel] || 4096;
 
+    // Auto-populate post message if empty, so the simulator has immediate rich prediction output
+    if (!state.messageText || !state.messageText.trim()) {
+      try {
+        const rawPool = typeof getRawMatchPool === 'function' ? getRawMatchPool() : [];
+        if (rawPool && rawPool.length > 0) {
+          const eligible = rawPool.filter(m => isMatchUpcomingEligible(m));
+          const candidate = eligible.length > 0 ? eligible[0] : rawPool[0];
+          if (candidate) {
+            if (!state.selectedMatchIds.size) {
+              state.selectedMatchIds.add(candidate.id);
+            }
+            const post = composeTelegramPost({
+              matches: [candidate],
+              target: state.target || 'free',
+              postType: 'Top Tip of the Day',
+              selectedSources: state.selectedSources
+            });
+            if (post && post.text) {
+              state.messageText = post.text;
+              state.lastLineage = post.lineage;
+              if (post.btnText && post.btnUrl) {
+                state.buttons = [{ text: post.btnText, url: post.btnUrl }];
+              }
+            }
+          }
+        }
+      } catch (err) {
+        console.warn('[TelegramPublisher] Auto-populating post on channel switch notice:', err);
+      }
+    }
+
+    // Switch to Studio / Compose tab so the user immediately sees the simulator, editor, and character counter
+    if (state.activeTab !== 'compose' && !options.preventTabSwitch) {
+      switchTab('compose');
+    }
+
     if (typeof document !== 'undefined') {
-      const pill = document.getElementById('tg-sim-platform-pill');
-      if (pill) {
-        pill.textContent = `${state.activeChannel.toUpperCase()} SIMULATOR`;
-      }
-      const copyBtn = document.getElementById('tg-pub-copy-manual-btn');
-      if (copyBtn) {
-        copyBtn.innerHTML = `<span>📋 Copy Formatted for ${state.activeChannel.toUpperCase()} Manual Post</span>`;
-      }
-      document.querySelectorAll('.tg-channel-pill').forEach(el => {
-        const ch = el.getAttribute('data-channel');
+      // 1. Update Omni-Channel distribution header chips
+      const chips = document.querySelectorAll('.tg-cc-channel-chip, .tg-channel-pill');
+      chips.forEach(el => {
+        const ch = (el.getAttribute('data-channel') || '').toLowerCase();
         if (ch === state.activeChannel) {
           el.style.background = 'rgba(56,189,248,0.25)';
           el.style.borderColor = '#38bdf8';
           el.style.color = '#38bdf8';
+          el.style.boxShadow = '0 0 12px rgba(56,189,248,0.35)';
         } else {
           el.style.background = 'rgba(255,255,255,0.04)';
           el.style.borderColor = 'rgba(255,255,255,0.1)';
-          el.style.color = '#94a3b8';
+          el.style.color = '#cbd5e1';
+          el.style.boxShadow = 'none';
         }
       });
+
+      // 2. Update mini simulator header buttons
+      const simBtns = document.querySelectorAll('.tg-sim-channel-btn');
+      simBtns.forEach(btn => {
+        const ch = (btn.getAttribute('data-channel') || '').toLowerCase();
+        if (ch === state.activeChannel) {
+          btn.style.background = 'rgba(56,189,248,0.3)';
+          btn.style.color = '#38bdf8';
+          btn.style.fontWeight = '800';
+        } else {
+          btn.style.background = 'transparent';
+          btn.style.color = '#94a3b8';
+          btn.style.fontWeight = '700';
+        }
+      });
+
+      // 3. Update simulator platform title pill
+      const pill = document.getElementById('tg-sim-platform-pill');
+      if (pill) {
+        pill.textContent = `${state.activeChannel.toUpperCase()} SIMULATOR`;
+      }
+
+      // 4. Update manual copy button text
+      const copyBtn = document.getElementById('tg-pub-copy-manual-btn');
+      if (copyBtn) {
+        copyBtn.innerHTML = `<span>📋 Copy Formatted for ${state.activeChannel.toUpperCase()} Manual Post</span>`;
+      }
+
+      // 5. Update 1-Click 𝕏 Web Intent button visibility
+      const xIntentBtn = document.getElementById('tg-pub-x-intent-btn');
+      if (xIntentBtn) {
+        xIntentBtn.style.display = state.activeChannel === 'x' ? 'flex' : 'none';
+      }
+
+      // 6. Sync textarea value if it was newly populated
+      const msgInput = document.getElementById('tg-pub-message-input');
+      if (msgInput && msgInput.value !== (state.messageText || '')) {
+        msgInput.value = state.messageText || '';
+      }
+
+      // 7. Update character count & simulator preview
       updateLivePreview();
+
+      // 8. Smoothly scroll simulator / studio into view if requested or if tab just switched
+      const simSection = document.getElementById('tg-cc-tab-content');
+      if (simSection && typeof simSection.scrollIntoView === 'function' && !options.preventScroll) {
+        if (typeof simSection.getBoundingClientRect === 'function') {
+          const rect = simSection.getBoundingClientRect();
+          if (rect && (rect.top < 0 || rect.bottom > (window.innerHeight || 800))) {
+            simSection.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+          }
+        }
+      }
     }
   }
 
@@ -12266,6 +12354,19 @@
       });
     } else {
       showAlert(`Formatted copy for ${targetPlatform.toUpperCase()}:\n\n${formattedCopy}`);
+    }
+  }
+
+  function openTwitterIntent() {
+    const rawText = state.messageText || '';
+    let cleanText = stripHtmlForSocial(rawText);
+    if (cleanText.length > 250) {
+      cleanText = cleanText.substring(0, 247) + '...';
+    }
+    const finalTweet = cleanText + '\n\nFull intelligence & models: deeppredictbet.com\n#FootballPredictions #BettingTips #EPL';
+    const intentUrl = `https://twitter.com/intent/tweet?text=${encodeURIComponent(finalTweet)}`;
+    if (typeof window !== 'undefined' && window.open) {
+      window.open(intentUrl, '_blank', 'noopener,noreferrer');
     }
   }
 
@@ -12352,8 +12453,8 @@
   function openSocialPrerequisitesModal(platform) {
     const targetPlatform = platform || state.activeChannel || 'x';
     if (typeof document === 'undefined') return;
-    const modal = document.getElementById('tg-cc-social-prereq-modal');
-    const content = document.getElementById('tg-cc-social-prereq-content');
+    const modal = document.getElementById('tg-cc-social-prereq-modal') || document.getElementById('tg-social-prereq-modal');
+    const content = document.getElementById('tg-cc-social-prereq-content') || document.getElementById('tg-social-prereq-body');
     if (!modal || !content) return;
 
     const guides = {
@@ -12472,7 +12573,7 @@
 
   function closeSocialPrerequisitesModal() {
     if (typeof document === 'undefined') return;
-    const modal = document.getElementById('tg-cc-social-prereq-modal');
+    const modal = document.getElementById('tg-cc-social-prereq-modal') || document.getElementById('tg-social-prereq-modal');
     if (modal) modal.style.display = 'none';
   }
 
@@ -12898,6 +12999,7 @@
     setActiveChannel,
     setContentCategory,
     copyManualPayload,
+    openTwitterIntent,
     openSocialPrerequisitesModal,
     closeSocialPrerequisitesModal,
     generateCampaignUrl,
