@@ -373,6 +373,30 @@ async function runAllTests() {
     assert.ok(res.publishedUrl.includes('x.com/DeepPredictBet/status/tweet_id_177298371928'));
   });
 
+  await test('𝕏: Strips HTML formatting tags before dispatching to Twitter API', async () => {
+    let capturedBody = null;
+    global.fetch = async (url, options) => {
+      if (url.toString().includes('api.twitter.com/2/tweets')) {
+        capturedBody = JSON.parse(options.body);
+        return new Response(JSON.stringify({
+          data: { id: 'tweet_id_999888', text: capturedBody.text }
+        }), { status: 201 });
+      }
+      return originalFetch(url, options);
+    };
+
+    const htmlCopy = '👑 <b>TOP TIP OF THE DAY: Brentford vs Liverpool</b>\n🏆 <i>Premier League</i>\n🎯 <b>Official AI Selection:</b> Draw';
+    const res = await dispatchX(mockEnv, { copy: htmlCopy });
+
+    assert.strictEqual(res.status, 'SUCCESS');
+    assert.ok(capturedBody);
+    assert.strictEqual(capturedBody.text.includes('<b>'), false);
+    assert.strictEqual(capturedBody.text.includes('</b>'), false);
+    assert.strictEqual(capturedBody.text.includes('<i>'), false);
+    assert.strictEqual(capturedBody.text.includes('</i>'), false);
+    assert.ok(capturedBody.text.includes('👑 TOP TIP OF THE DAY: Brentford vs Liverpool'));
+  });
+
   // ==========================================================================
   // SECTION 6: TIKTOK CONTENT POSTING API INTEGRATION
   // ==========================================================================

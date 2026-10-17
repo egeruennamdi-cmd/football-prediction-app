@@ -361,6 +361,26 @@ async function runTests() {
     assert.strictEqual(health.youtube.status, 'NOT_CONNECTED');
   });
 
+  test('stripHtmlForSocial: Strips HTML tags, preserves emojis and decodes entities', () => {
+    const rawHtml = '👑 <b>TOP TIP OF THE DAY: Brentford vs Liverpool</b>\n🏆 <i>Premier League | 17 Oct 2026 · 15:00 WAT</i>\n🎯 <b>Official AI Selection:</b> HT/FT: X/1 (Draw/Home)\n📊 <b>Confidence Score:</b> 60% &amp; Value';
+    const clean = socialAdapters.stripHtmlForSocial(rawHtml);
+    assert.strictEqual(clean.includes('<b>'), false);
+    assert.strictEqual(clean.includes('</b>'), false);
+    assert.strictEqual(clean.includes('<i>'), false);
+    assert.strictEqual(clean.includes('</i>'), false);
+    assert.ok(clean.includes('👑 TOP TIP OF THE DAY: Brentford vs Liverpool'));
+    assert.ok(clean.includes('🏆 Premier League'));
+    assert.ok(clean.includes('60% & Value'));
+  });
+
+  test('stripHtmlForSocial: Converts anchor links cleanly for social posts', () => {
+    const htmlWithLink = 'Check AI odds: <a href="https://deeppredictbet.com">DeepPredictBet</a> &amp; join <a href="https://t.me/DeepPredictBetFree">https://t.me/DeepPredictBetFree</a>';
+    const clean = socialAdapters.stripHtmlForSocial(htmlWithLink);
+    assert.ok(clean.includes('DeepPredictBet (https://deeppredictbet.com)'));
+    assert.ok(clean.includes('https://t.me/DeepPredictBetFree'));
+    assert.strictEqual(clean.includes('<a'), false);
+  });
+
   test('Generates copy-ready manual publishing payload for X (under 280 chars)', () => {
     const payload = { copy: 'Real Madrid vs Barcelona: Poisson model favours Real Madrid at 52% probability. Full tactical brief at DeepPredictBet. #ElClasico' };
     const manualX = socialAdapters.formatManualCopyForX(payload);

@@ -4186,6 +4186,60 @@
     }
   }
 
+  /**
+   * Strips HTML tags, converts line breaks and anchor tags into clean social copy,
+   * and decodes HTML entities for social networks that do not support HTML markup (𝕏, Facebook, Instagram, etc.).
+   */
+  function stripHtmlForSocial(html) {
+    if (!html || typeof html !== 'string') return '';
+
+    let text = html;
+
+    // Convert line breaks and paragraph closings to newlines
+    text = text.replace(/<br\s*\/?>/gi, '\n');
+    text = text.replace(/<\/p\s*>/gi, '\n\n');
+    text = text.replace(/<p\s*>/gi, '');
+
+    // Convert <a href="URL">TEXT</a> into clean text
+    text = text.replace(/<a\s+[^>]*href=["']([^"']*)["'][^>]*>([\s\S]*?)<\/a>/gi, function(match, href, anchorText) {
+      const cleanHref = (href || '').trim();
+      const cleanAnchor = (anchorText || '').replace(/<[^>]+>/g, '').trim();
+      if (!cleanHref) return cleanAnchor;
+      if (!cleanAnchor) return cleanHref;
+
+      const normAnchor = cleanAnchor.replace(/^https?:\/\//i, '').replace(/\/$/, '').toLowerCase();
+      const normHref = cleanHref.replace(/^https?:\/\//i, '').replace(/\/$/, '').toLowerCase();
+      if (normAnchor === normHref) {
+        return cleanHref;
+      }
+      return cleanAnchor + ' (' + cleanHref + ')';
+    });
+
+    // Strip all other HTML tags (<b>, </b>, <i>, </i>, <code>, </code>, <strong>, etc.)
+    text = text.replace(/<[^>]+>/g, '');
+
+    // Decode standard HTML entities
+    text = text
+      .replace(/&amp;/gi, '&')
+      .replace(/&lt;/gi, '<')
+      .replace(/&gt;/gi, '>')
+      .replace(/&quot;/gi, '"')
+      .replace(/&#39;|&apos;/gi, "'")
+      .replace(/&nbsp;/gi, ' ')
+      .replace(/&#(\d+);/g, function(_, dec) { return String.fromCharCode(dec); })
+      .replace(/&#x([0-9a-fA-F]+);/g, function(_, hex) { return String.fromCharCode(parseInt(hex, 16)); });
+
+    // Normalize excess newlines (max 2 consecutive newlines) and trim trailing line whitespace
+    text = text
+      .split('\n')
+      .map(function(line) { return line.trimEnd(); })
+      .join('\n')
+      .replace(/\n{3,}/g, '\n\n')
+      .trim();
+
+    return text;
+  }
+
   async function fetchSocialData() {
     try {
       const accRes = await adminFetch('/api/social/accounts');
@@ -11542,7 +11596,14 @@
     const charCounter = document.getElementById('tg-cc-char-counter');
 
     if (textEl) {
-      textEl.innerHTML = state.messageText || '<i>Type message or select matches...</i>';
+      if (state.activeChannel === 'telegram') {
+        textEl.style.whiteSpace = 'normal';
+        textEl.innerHTML = state.messageText || '<i>Type message or select matches...</i>';
+      } else {
+        textEl.style.whiteSpace = 'pre-wrap';
+        const clean = stripHtmlForSocial(state.messageText || '');
+        textEl.textContent = clean || 'Type message or select matches...';
+      }
     }
 
     if (photoWrap && photoEl) {
@@ -11556,7 +11617,7 @@
 
     if (btnsWrap) {
       const activeBtns = state.buttons.filter(b => b.text && b.url);
-      if (activeBtns.length > 0) {
+      if (activeBtns.length > 0 && state.activeChannel === 'telegram') {
         btnsWrap.innerHTML = activeBtns.map(b => `
           <div style="background: rgba(255,255,255,0.12); color: #ffffff; text-align: center; padding: 7px 12px; border-radius: 8px; font-size: 0.75rem; font-weight: 700; margin-top: 4px; cursor: pointer;">
             ${b.text}
@@ -11568,7 +11629,9 @@
     }
 
     if (charCounter) {
-      const len = (state.messageText || '').length;
+      const isPlainChannel = state.activeChannel && state.activeChannel !== 'telegram';
+      const effectiveText = isPlainChannel ? stripHtmlForSocial(state.messageText || '') : (state.messageText || '');
+      const len = effectiveText.length;
       charCounter.textContent = `${len} / ${state.charLimit}`;
       charCounter.style.color = len > state.charLimit ? '#ef4444' : '#64748b';
     }
@@ -11803,9 +11866,9 @@
 
     // Instant character length pre-validation for 𝕏 (Twitter)
     if (state.activeChannel === 'x') {
-      const textLen = (state.messageText || '').trim().length;
-      if (textLen > 280) {
-        showAlert(`⚠️ Content exceeds 𝕏 (Twitter) 280 character limit (${textLen}/280 characters).\n\nPlease trim ${textLen - 280} characters before publishing to 𝕏.`);
+      const cleanLen = stripHtmlForSocial(state.messageText || '').length;
+      if (cleanLen > 280) {
+        showAlert(`⚠️ Content exceeds 𝕏 (Twitter) 280 character limit (${cleanLen}/280 characters).\n\nPlease trim ${cleanLen - 280} characters before publishing to 𝕏.`);
         return;
       }
     }
@@ -11825,7 +11888,7 @@
             action: 'publish_now',
             channel: state.activeChannel,
             category: state.socialContentCategory || 'FOOTBALL_INTELLIGENCE_BRIEF',
-            copy: state.messageText,
+            copy: stripHtmlForSocial(state.messageText || ''),
             mediaUrl: state.photoUrl || undefined,
             forceDuplicate
           })
@@ -11864,7 +11927,7 @@
         // Special handling for X (Twitter) HTTP 402 Credits Depleted
         if (state.activeChannel === 'x' && (channelResult.isCreditsDepleted || channelResult.statusCode === 402 || (channelResult.error && (channelResult.error.includes('credits depleted') || channelResult.error.includes('Payment Required'))))) {
           const manualPayload = channelResult.manualPayload;
-          const tweetText = (manualPayload && manualPayload.text) || (state.messageText || '').slice(0, 270);
+          const tweetText = (manualPayload && manualPayload.text) || stripHtmlForSocial(state.messageText || '').slice(0, 270);
           const shareUrl = (manualPayload && manualPayload.shareUrl) || `https://twitter.com/intent/tweet?text=${encodeURIComponent(tweetText)}`;
 
           const confirmIntent = typeof confirm !== 'undefined' ? confirm(
@@ -11883,7 +11946,7 @@
         // Manual Required (e.g. Account not connected yet)
         if (channelResult.status === 'MANUAL_REQUIRED') {
           const manualPayload = channelResult.manualPayload;
-          const shareUrl = manualPayload && manualPayload.shareUrl;
+          const shareUrl = (manualPayload && manualPayload.shareUrl) || (state.activeChannel === 'x' ? `https://twitter.com/intent/tweet?text=${encodeURIComponent(stripHtmlForSocial(state.messageText || '').slice(0, 270))}` : null);
           if (shareUrl && typeof confirm !== 'undefined') {
             const openWeb = confirm(
               `ℹ️ ${state.activeChannel.toUpperCase()} Publishing Notice:\n\n` +
@@ -12177,7 +12240,7 @@
   function copyManualPayload(platform) {
     const targetPlatform = platform || state.activeChannel || 'telegram';
     const text = state.messageText || '';
-    const cleanText = text.replace(/<[^>]*>?/gm, '');
+    const cleanText = targetPlatform === 'telegram' ? text : stripHtmlForSocial(text);
     let formattedCopy = cleanText;
 
     if (targetPlatform === 'x') {
@@ -12830,6 +12893,7 @@
     DEFAULT_SETTINGS,
 
     // Omni-Channel Social Media Command Center Methods
+    stripHtmlForSocial,
     validateCurrentContent,
     setActiveChannel,
     setContentCategory,

@@ -251,11 +251,16 @@ export function validateSocialContentFacts(item, nowEpoch = Date.now()) {
     const copy = config.copy || '';
     const limits = PLATFORM_LIMITS[platformKey];
 
-    if (limits && copy.length > limits.maxChars) {
-      errors.push(`Character Limit Exceeded: ${platformKey} copy is ${copy.length} characters (max allowed: ${limits.maxChars}).`);
+    // For non-telegram platforms (like X), measure plain text length with HTML tags stripped
+    const effectiveLength = platformKey === 'telegram'
+      ? copy.length
+      : copy.replace(/<[^>]+>/g, '').replace(/&[a-z0-9#]+;/gi, 'X').trim().length;
+
+    if (limits && effectiveLength > limits.maxChars) {
+      errors.push(`Character Limit Exceeded: ${platformKey} copy is ${effectiveLength} characters (max allowed: ${limits.maxChars}).`);
     }
 
-    if (platformKey === 'x' && copy.length > 280) {
+    if (platformKey === 'x' && effectiveLength > 280) {
       errors.push(`X (Twitter) Payload Error: Exceeds 280 characters without thread configuration.`);
     }
 

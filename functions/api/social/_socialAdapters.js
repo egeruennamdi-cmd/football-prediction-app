@@ -226,6 +226,64 @@ export async function getSocialAccountsHealth(env) {
 }
 
 // ============================================================================
+// 1B. SOCIAL TEXT SANITIZATION & HTML STRIPPER
+// ============================================================================
+
+/**
+ * Strips HTML tags, converts line breaks and anchor tags into clean social copy,
+ * and decodes HTML entities for social networks that do not support HTML markup (𝕏, Facebook, Instagram, etc.).
+ */
+export function stripHtmlForSocial(html) {
+  if (!html || typeof html !== 'string') return '';
+
+  let text = html;
+
+  // Convert line breaks and paragraph closings to newlines
+  text = text.replace(/<br\s*\/?>/gi, '\n');
+  text = text.replace(/<\/p\s*>/gi, '\n\n');
+  text = text.replace(/<p\s*>/gi, '');
+
+  // Convert <a href="URL">TEXT</a> into clean text
+  text = text.replace(/<a\s+[^>]*href=["']([^"']*)["'][^>]*>([\s\S]*?)<\/a>/gi, (match, href, anchorText) => {
+    const cleanHref = (href || '').trim();
+    const cleanAnchor = (anchorText || '').replace(/<[^>]+>/g, '').trim();
+    if (!cleanHref) return cleanAnchor;
+    if (!cleanAnchor) return cleanHref;
+
+    const normAnchor = cleanAnchor.replace(/^https?:\/\//i, '').replace(/\/$/, '').toLowerCase();
+    const normHref = cleanHref.replace(/^https?:\/\//i, '').replace(/\/$/, '').toLowerCase();
+    if (normAnchor === normHref) {
+      return cleanHref;
+    }
+    return `${cleanAnchor} (${cleanHref})`;
+  });
+
+  // Strip all other HTML tags (<b>, </b>, <i>, </i>, <code>, </code>, <strong>, etc.)
+  text = text.replace(/<[^>]+>/g, '');
+
+  // Decode standard HTML entities
+  text = text
+    .replace(/&amp;/gi, '&')
+    .replace(/&lt;/gi, '<')
+    .replace(/&gt;/gi, '>')
+    .replace(/&quot;/gi, '"')
+    .replace(/&#39;|&apos;/gi, "'")
+    .replace(/&nbsp;/gi, ' ')
+    .replace(/&#(\d+);/g, (_, dec) => String.fromCharCode(dec))
+    .replace(/&#x([0-9a-fA-F]+);/g, (_, hex) => String.fromCharCode(parseInt(hex, 16)));
+
+  // Normalize excess newlines (max 2 consecutive newlines) and trim trailing line whitespace
+  text = text
+    .split('\n')
+    .map(line => line.trimEnd())
+    .join('\n')
+    .replace(/\n{3,}/g, '\n\n')
+    .trim();
+
+  return text;
+}
+
+// ============================================================================
 // 2. PLATFORM-SPECIFIC DISPATCH & REAL API ADAPTERS
 // ============================================================================
 
@@ -297,8 +355,11 @@ export async function dispatchX(env, payload) {
     token = env.X_BEARER_TOKEN || env.X_ACCESS_TOKEN;
   }
 
+  // Sanitize text for 𝕏: strip HTML tags and decode entities
+  const rawCopy = payload.copy || payload.text || '';
+  const text = stripHtmlForSocial(rawCopy);
+
   // Validate character limit (280 chars)
-  const text = (payload.copy || '').trim();
   if (text.length > 280) {
     return {
       status: 'FAILED',
@@ -403,7 +464,7 @@ export async function dispatchInstagram(env, payload) {
   try {
     // Step 1: Create Container
     const containerParams = new URLSearchParams({
-      caption: payload.copy || '',
+      caption: stripHtmlForSocial(payload.copy || payload.caption || ''),
       access_token: pageToken
     });
 
@@ -500,7 +561,7 @@ export async function dispatchFacebook(env, payload) {
       : `https://graph.facebook.com/v21.0/${pageId}/feed`;
 
     const bodyObj = {
-      message: payload.copy || '',
+      message: stripHtmlForSocial(payload.copy || payload.message || ''),
       access_token: pageToken
     };
     if (payload.mediaUrl) {
@@ -577,7 +638,7 @@ export async function dispatchTikTok(env, payload) {
     // Initiate Direct Video Post
     const initBody = {
       post_info: {
-        title: (payload.copy || '').slice(0, 2200),
+        title: stripHtmlForSocial(payload.copy || payload.title || '').slice(0, 2200),
         privacy_level: payload.privacyLevel || 'PUBLIC_TO_EVERYONE',
         disable_duet: false,
         disable_stitch: false,
@@ -648,7 +709,7 @@ export async function dispatchYouTube(env, payload) {
   }
 
   const title = (payload.title || 'DeepPredictBet Tactical Match Analysis | AI Football Model').slice(0, 100);
-  const description = (payload.copy || '').slice(0, 5000);
+  const description = stripHtmlForSocial(payload.copy || payload.description || '').slice(0, 5000);
 
   try {
     const res = await fetch('https://www.googleapis.com/youtube/v3/videos?part=snippet,status', {
@@ -701,7 +762,7 @@ export async function dispatchYouTube(env, payload) {
 // ============================================================================
 
 export function formatManualCopyForX(payload) {
-  let copy = (payload.copy || '').trim();
+  let copy = stripHtmlForSocial(payload.copy || payload.text || '');
   if (copy.length > 270) {
     copy = copy.slice(0, 267) + '...';
   }
@@ -716,7 +777,7 @@ export function formatManualCopyForX(payload) {
 }
 
 export function formatManualCopyForInstagram(payload) {
-  const base = (payload.copy || '').trim();
+  const base = stripHtmlForSocial(payload.copy || payload.caption || '');
   const hashtags = '\n\n.\n.\n#DeepPredictBet #FootballPredictions #AIStats #PremierLeague #ChampionsLeague #BettingTips #FootballAnalytics #ValueBetting';
   const fullText = (base + hashtags).slice(0, 2200);
 
@@ -731,7 +792,7 @@ export function formatManualCopyForInstagram(payload) {
 }
 
 export function formatManualCopyForFacebook(payload) {
-  const base = (payload.copy || '').trim();
+  const base = stripHtmlForSocial(payload.copy || payload.message || '');
   const footer = '\n\n👉 Analyze full predictive metrics at https://deeppredictbet.com\n18+ | Gamble Responsibly | T&Cs Apply';
   const fullText = base + footer;
 
@@ -745,7 +806,7 @@ export function formatManualCopyForFacebook(payload) {
 }
 
 export function formatManualCopyForTikTok(payload) {
-  const base = (payload.copy || '').trim();
+  const base = stripHtmlForSocial(payload.copy || '');
   const tags = '\n\n#FootballTikTok #DeepPredictBet #SoccerPredictions #PremierLeague #StatsAnalysis #BettingTok';
   const fullText = (base + tags).slice(0, 2200);
 
@@ -762,7 +823,8 @@ export function formatManualCopyForTikTok(payload) {
 
 export function formatManualCopyForYouTube(payload) {
   const title = (payload.title || 'DeepPredictBet Tactical Match Analysis | AI Football Model').slice(0, 100);
-  const description = `${payload.copy || ''}\n\n⏱️ Timestamps:\n0:00 Tactical Overview\n0:30 Expected Goals & Poisson Probabilities\n1:00 Final Statistical Consensus\n\n🔗 Test the DeepPredictBet Prediction Engine: https://deeppredictbet.com\n\n#FootballPredictions #Shorts #SoccerAnalytics #DeepPredictBet`;
+  const cleanCopy = stripHtmlForSocial(payload.copy || payload.description || '');
+  const description = `${cleanCopy}\n\n⏱️ Timestamps:\n0:00 Tactical Overview\n0:30 Expected Goals & Poisson Probabilities\n1:00 Final Statistical Consensus\n\n🔗 Test the DeepPredictBet Prediction Engine: https://deeppredictbet.com\n\n#FootballPredictions #Shorts #SoccerAnalytics #DeepPredictBet`;
 
   return {
     platform: 'youtube',
