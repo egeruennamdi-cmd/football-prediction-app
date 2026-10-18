@@ -4680,7 +4680,7 @@ async function runTests() {
     // 1. Calendar view renders Bulk Selection Bar and fixture card checkboxes
     telegramPublisher.setCalendarView('month');
     const calAgg = telegramPublisher.getCalendarAggregatedData(2026, 9);
-    const dateWithMatches = Object.keys(calAgg.matchesByDate)[0] || '2026-10-19';
+    const dateWithMatches = Object.keys(calAgg.matchesByDate).find(d => (calAgg.matchesByDate[d] || []).length >= 2) || Object.keys(calAgg.matchesByDate)[0] || '2026-10-19';
     telegramPublisher.selectCalendarDate(dateWithMatches);
     telegramPublisher.clearCalendarMatchSelection();
     
