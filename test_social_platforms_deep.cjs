@@ -203,6 +203,145 @@ async function runAllTests() {
   });
 
   // ==========================================================================
+  // SECTION 2B: TIKTOK CLEAN REDIRECT URI & OAUTH SECURITY
+  // ==========================================================================
+  console.log('\n--- 2b. TikTok Clean Redirect URI & OAuth Callback Security ---');
+
+  await test('TikTok Authorization URL: Constructs clean redirect URI without query parameters', async () => {
+    const res = await oauthGet({
+      request: new Request('https://deeppredictbet.com/api/social/oauth?action=authorize&platform=tiktok', {
+        headers: adminHeaders
+      }),
+      env: mockEnv
+    });
+    assert.strictEqual(res.status, 200);
+    const data = await res.json();
+    assert.strictEqual(data.success, true);
+    assert.strictEqual(data.platform, 'tiktok');
+
+    // Verify authorization URL has clean redirect URI (URL encoded https://deeppredictbet.com/api/social/oauth)
+    assert.ok(data.authorizationUrl.includes('redirect_uri=https%3A%2F%2Fdeeppredictbet.com%2Fapi%2Fsocial%2Foauth'), 'Redirect URI in auth URL must be clean without query parameters');
+    assert.strictEqual(data.authorizationUrl.includes('action=callback'), false, 'TikTok auth URL must NOT contain action=callback');
+
+    // Verify stored state record has clean redirect URI
+    const rawState = await mockEnv.USERS_KV.get(`social_oauth_state_${data.state}`);
+    assert.ok(rawState, 'OAuth state record must exist in KV');
+    const parsedState = JSON.parse(rawState);
+    assert.strictEqual(parsedState.redirectUri, 'https://deeppredictbet.com/api/social/oauth', 'Stored state redirect URI must be clean');
+  });
+
+  await test('Non-TikTok Authorization URL: Preserves ?action=callback redirect URI for all other platforms', async () => {
+    const platforms = ['x', 'instagram', 'facebook', 'youtube'];
+    for (const plat of platforms) {
+      const res = await oauthGet({
+        request: new Request(`https://deeppredictbet.com/api/social/oauth?action=authorize&platform=${plat}`, {
+          headers: adminHeaders
+        }),
+        env: mockEnv
+      });
+      assert.strictEqual(res.status, 200);
+      const data = await res.json();
+      assert.strictEqual(data.success, true);
+      assert.ok(data.authorizationUrl.includes('redirect_uri=https%3A%2F%2Fdeeppredictbet.com%2Fapi%2Fsocial%2Foauth%3Faction%3Dcallback'), `Platform ${plat} must preserve ?action=callback in redirect_uri`);
+    }
+  });
+
+  await test('TikTok OAuth Callback: Successfully exchanges code with clean redirect URI from state and persists connection', async () => {
+    const stateRecord = await createOAuthStateRecord(mockEnv, 'tiktok', {
+      redirectUri: 'https://deeppredictbet.com/api/social/oauth'
+    });
+
+    let capturedPostUrl = null;
+    let capturedBodyParams = null;
+
+    global.fetch = async (url, options) => {
+      const urlStr = url.toString();
+      if (urlStr.includes('open.tiktokapis.com/v2/oauth/token/')) {
+        capturedPostUrl = urlStr;
+        capturedBodyParams = new URLSearchParams(options.body);
+        return new Response(JSON.stringify({
+          data: {
+            access_token: 'mock_tt_access_token_clean_123',
+            refresh_token: 'mock_tt_refresh_token_clean_456',
+            open_id: 'tt_clean_open_id_789',
+            expires_in: 86400,
+            scope: 'video.publish,video.upload'
+          }
+        }), { status: 200, headers: { 'Content-Type': 'application/json' } });
+      }
+      return originalFetch(url, options);
+    };
+
+    try {
+      // Clean callback URL invoked by TikTok redirect (no action=callback in query)
+      const res = await oauthGet({
+        request: new Request(`https://deeppredictbet.com/api/social/oauth?code=mock_tt_auth_code_clean&state=${stateRecord.state}`),
+        env: mockEnv
+      });
+
+      assert.strictEqual(res.status, 200);
+      const html = await res.text();
+      assert.ok(html.includes('Successfully connected'), 'Callback HTML should indicate success');
+      assert.ok(html.includes('DeepPredictBet Official'), 'Callback HTML should show account name');
+
+      // Verify token exchange request parameters sent to TikTok API
+      assert.ok(capturedPostUrl, 'Token endpoint must have been called');
+      assert.strictEqual(capturedBodyParams.get('redirect_uri'), 'https://deeppredictbet.com/api/social/oauth', 'TikTok token exchange must use clean redirect URI');
+      assert.strictEqual(capturedBodyParams.get('code'), 'mock_tt_auth_code_clean');
+      assert.strictEqual(capturedBodyParams.get('grant_type'), 'authorization_code');
+
+      // Verify connection in KV
+      const conn = await getPlatformConnection(mockEnv, 'tiktok');
+      assert.ok(conn, 'TikTok connection must be saved to KV');
+      assert.strictEqual(conn.accessToken, 'mock_tt_access_token_clean_123');
+      assert.strictEqual(conn.accountId, 'tt_clean_open_id_789');
+    } finally {
+      global.fetch = originalFetch;
+    }
+  });
+
+  await test('TikTok OAuth Callback: Rejects mismatched redirect URI stored in state record', async () => {
+    // State record has non-clean redirect URI (tampered or legacy ?action=callback)
+    const stateRecord = await createOAuthStateRecord(mockEnv, 'tiktok', {
+      redirectUri: 'https://deeppredictbet.com/api/social/oauth?action=callback'
+    });
+
+    let tokenEndpointCalled = false;
+    global.fetch = async (url, options) => {
+      if (url.toString().includes('open.tiktokapis.com')) {
+        tokenEndpointCalled = true;
+      }
+      return originalFetch(url, options);
+    };
+
+    try {
+      const res = await oauthGet({
+        request: new Request(`https://deeppredictbet.com/api/social/oauth?code=mock_tt_code&state=${stateRecord.state}`),
+        env: mockEnv
+      });
+
+      assert.strictEqual(res.status, 200);
+      const html = await res.text();
+      assert.ok(html.includes('Invalid OAuth redirect URI for TikTok'), 'Must reject mismatched redirect URI');
+      assert.ok(html.includes('Expected &quot;https://deeppredictbet.com/api/social/oauth&quot;') || html.includes('Expected "https://deeppredictbet.com/api/social/oauth"'), 'Must mention expected clean URL');
+      assert.strictEqual(tokenEndpointCalled, false, 'Must never call TikTok token endpoint if redirect URI validation fails');
+    } finally {
+      global.fetch = originalFetch;
+    }
+  });
+
+  await test('TikTok OAuth Callback: Rejects unknown, missing, or consumed state', async () => {
+    const res = await oauthGet({
+      request: new Request('https://deeppredictbet.com/api/social/oauth?code=mock_code&state=tiktok_nonexistent_state_999'),
+      env: mockEnv
+    });
+
+    assert.strictEqual(res.status, 200);
+    const html = await res.text();
+    assert.ok(html.includes('Invalid or unrecognized OAuth state') || html.includes('state parameter'), 'Must reject invalid state');
+  });
+
+  // ==========================================================================
   // SECTION 3: INSTAGRAM GRAPH API INTEGRATION & LIFECYCLE
   // ==========================================================================
   console.log('\n--- 3. Instagram Professional Graph API Integration ---');

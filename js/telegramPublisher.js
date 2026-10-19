@@ -12501,7 +12501,7 @@
         scopes: ['video.publish', 'video.upload'],
         steps: [
           '1. Register a developer account at developers.tiktok.com and create a TikTok Commercial App.',
-          '2. Apply for the "Content Posting API" and set Redirect URI to "https://deeppredictbet.com/api/social/oauth?action=callback".',
+          '2. Apply for the "Content Posting API" and set Redirect URI to "https://deeppredictbet.com/api/social/oauth".',
           '3. Complete App Review and domain verification for deeppredictbet.com.',
           '4. In Cloudflare Pages, add TIKTOK_CLIENT_KEY and TIKTOK_CLIENT_SECRET secrets.',
           '5. Authorize account and complete a video upload test to transition from Authorized to Live.'

@@ -58,8 +58,24 @@ export async function onRequestGet(context) {
       return renderOAuthResultHtml(false, stateVerification.error);
     }
 
+    // Resolve redirectUri strictly from the validated server-side state record
+    const storedRedirectUri = stateVerification.record && stateVerification.record.redirectUri;
+    let redirectUri = storedRedirectUri;
+
+    if (platform === 'tiktok') {
+      const expectedCleanCallback = `${url.origin}/api/social/oauth`;
+      if (!storedRedirectUri || storedRedirectUri !== expectedCleanCallback) {
+        return renderOAuthResultHtml(false, `Invalid OAuth redirect URI for TikTok. Expected "${expectedCleanCallback}".`);
+      }
+      redirectUri = storedRedirectUri;
+    } else {
+      const defaultCallback = `${url.origin}/api/social/oauth?action=callback`;
+      if (!redirectUri) {
+        redirectUri = defaultCallback;
+      }
+    }
+
     try {
-      const redirectUri = `${url.origin}/api/social/oauth?action=callback`;
       const tokens = await exchangeOAuthCodeForTokens(env, platform, code, redirectUri, stateVerification.record);
 
       await savePlatformConnection(env, platform, tokens);
@@ -91,7 +107,9 @@ export async function onRequestGet(context) {
   }
 
   try {
-    const redirectUri = `${url.origin}/api/social/oauth?action=callback`;
+    const redirectUri = platform === 'tiktok'
+      ? `${url.origin}/api/social/oauth`
+      : `${url.origin}/api/social/oauth?action=callback`;
     const { authorizationUrl, state } = await buildPlatformAuthorizationUrl(env, platform, redirectUri);
 
     return new Response(JSON.stringify({
