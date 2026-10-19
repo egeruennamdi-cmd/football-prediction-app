@@ -588,6 +588,96 @@ async function runAllTests() {
   // ==========================================================================
   console.log('\n--- 7. YouTube Data API v3 Shorts & Videos Integration ---');
 
+  await test('YouTube OAuth: Missing GOOGLE_CLIENT_ID produces controlled 500 error without exposing secrets', async () => {
+    const envWithoutGoogle = { ...mockEnv, GOOGLE_CLIENT_ID: undefined, YOUTUBE_CLIENT_ID: undefined };
+    const res = await oauthGet({
+      request: new Request('https://deeppredictbet.com/api/social/oauth?action=authorize&platform=youtube', {
+        headers: adminHeaders
+      }),
+      env: envWithoutGoogle
+    });
+    assert.strictEqual(res.status, 500);
+    const data = await res.json();
+    assert.strictEqual(data.success, false);
+    assert.strictEqual(data.error, 'Failed to generate authorization URL: GOOGLE_CLIENT_ID is not configured in server environment.');
+  });
+
+  await test('YouTube OAuth: Configured GOOGLE_CLIENT_ID generates valid authorization URL with callback URI & scopes', async () => {
+    const res = await oauthGet({
+      request: new Request('https://deeppredictbet.com/api/social/oauth?action=authorize&platform=youtube', {
+        headers: adminHeaders
+      }),
+      env: mockEnv
+    });
+    assert.strictEqual(res.status, 200);
+    const data = await res.json();
+    assert.strictEqual(data.success, true);
+    assert.strictEqual(data.platform, 'youtube');
+    assert.ok(data.authorizationUrl.startsWith('https://accounts.google.com/o/oauth2/v2/auth'));
+    assert.ok(data.authorizationUrl.includes('client_id=mock_google_client_id_333'));
+    assert.ok(data.authorizationUrl.includes('redirect_uri=https%3A%2F%2Fdeeppredictbet.com%2Fapi%2Fsocial%2Foauth%3Faction%3Dcallback'));
+    assert.ok(data.authorizationUrl.includes('access_type=offline'));
+    assert.ok(data.authorizationUrl.includes('prompt=consent'));
+    assert.ok(data.authorizationUrl.includes('youtube.upload'));
+    assert.ok(data.authorizationUrl.includes('youtube.readonly'));
+  });
+
+  await test('YouTube OAuth: Token exchange rejects missing GOOGLE_CLIENT_SECRET with controlled error', async () => {
+    const stateRecord = await createOAuthStateRecord(mockEnv, 'youtube', {
+      redirectUri: 'https://deeppredictbet.com/api/social/oauth?action=callback'
+    });
+    const envWithoutSecret = { ...mockEnv, GOOGLE_CLIENT_SECRET: undefined, YOUTUBE_CLIENT_SECRET: undefined };
+    const res = await oauthGet({
+      request: new Request(`https://deeppredictbet.com/api/social/oauth?action=callback&code=mock_code&state=${stateRecord.state}`),
+      env: envWithoutSecret
+    });
+    assert.strictEqual(res.status, 200);
+    const html = await res.text();
+    assert.ok(html.includes('GOOGLE_CLIENT_ID or GOOGLE_CLIENT_SECRET missing in server environment'));
+  });
+
+  await test('YouTube OAuth: Successful token exchange discovers channel and stores connection in KV', async () => {
+    const stateRecord = await createOAuthStateRecord(mockEnv, 'youtube', {
+      redirectUri: 'https://deeppredictbet.com/api/social/oauth?action=callback'
+    });
+
+    global.fetch = async (url) => {
+      const urlStr = url.toString();
+      if (urlStr.includes('oauth2.googleapis.com/token')) {
+        return new Response(JSON.stringify({
+          access_token: 'mock_google_access_token_valid',
+          refresh_token: 'mock_google_refresh_token_valid',
+          expires_in: 3600
+        }), { status: 200, headers: { 'Content-Type': 'application/json' } });
+      }
+      if (urlStr.includes('googleapis.com/youtube/v3/channels')) {
+        return new Response(JSON.stringify({
+          items: [{ id: 'UC_mock_channel_live_777', snippet: { title: 'DeepPredictBet TV' } }]
+        }), { status: 200, headers: { 'Content-Type': 'application/json' } });
+      }
+      return originalFetch(url);
+    };
+
+    try {
+      const res = await oauthGet({
+        request: new Request(`https://deeppredictbet.com/api/social/oauth?action=callback&code=mock_google_auth_code&state=${stateRecord.state}`),
+        env: mockEnv
+      });
+      assert.strictEqual(res.status, 200);
+      const html = await res.text();
+      assert.ok(html.includes('Successfully connected DeepPredictBet TV'));
+
+      const conn = await getPlatformConnection(mockEnv, 'youtube');
+      assert.ok(conn);
+      assert.strictEqual(conn.accountHandle, 'DeepPredictBet TV');
+      assert.strictEqual(conn.accessToken, 'mock_google_access_token_valid');
+      assert.strictEqual(conn.refreshToken, 'mock_google_refresh_token_valid');
+      assert.strictEqual(conn.accountId, 'UC_mock_channel_live_777');
+    } finally {
+      global.fetch = originalFetch;
+    }
+  });
+
   await test('YouTube: Connects channel via Google OAuth tokens', async () => {
     await savePlatformConnection(mockEnv, 'youtube', {
       accountHandle: 'DeepPredictBet TV',
