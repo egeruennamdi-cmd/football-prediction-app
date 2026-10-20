@@ -179,7 +179,8 @@ export async function onRequestPost(context) {
       const testPayload = {
         copy: body.copy || `⚡ [DeepPredictBet Test Beacon] Statistical AI Engine sync verified at ${new Date().toLocaleTimeString()} UTC. 18+ gamble responsibly.`,
         mediaUrl: body.mediaUrl || 'https://deeppredictbet.com/assets/logo-3d.png',
-        title: 'DeepPredictBet AI Engine Beacon Test'
+        title: 'DeepPredictBet AI Engine Beacon Test',
+        isTestBeacon: true
       };
 
       let dispatchRes;
@@ -207,7 +208,7 @@ export async function onRequestPost(context) {
         const conn = await getPlatformConnection(env, platform);
         if (conn) {
           conn.verifiedPublish = true;
-          conn.lastTestPostId = dispatchRes.externalPostId || null;
+          conn.lastTestPostId = dispatchRes.externalPostId || dispatchRes.channelId || null;
           conn.lastTestPostUrl = dispatchRes.publishedUrl || null;
           conn.lastVerifiedAt = new Date().toISOString();
           await savePlatformConnection(env, platform, conn);

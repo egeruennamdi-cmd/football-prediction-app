@@ -8077,7 +8077,7 @@
                   <div style="display: flex; gap: 6px; flex-wrap: wrap;">
                     ${isConnected ? `
                       <button type="button" onclick="window.TelegramPublisher.testPublishSocial('${pKey}')" style="flex: 1; background: rgba(16,185,129,0.18); border: 1px solid rgba(16,185,129,0.4); color: #34d399; font-size: 0.7rem; font-weight: 800; padding: 6px; border-radius: 6px; cursor: pointer;">
-                        🚀 Test Post
+                        ${pKey === 'youtube' ? '⚡ Verify Channel' : '🚀 Test Post'}
                       </button>
                       <button type="button" onclick="window.TelegramPublisher.disconnectSocialAccount('${pKey}')" style="background: rgba(239,68,68,0.15); border: 1px solid rgba(239,68,68,0.35); color: #f87171; font-size: 0.7rem; font-weight: 700; padding: 6px 10px; border-radius: 6px; cursor: pointer;">
                         🛑 Disconnect
@@ -12418,7 +12418,9 @@
   async function testPublishSocial(platform) {
     const targetPlatform = platform || state.activeChannel || 'x';
     try {
-      showAlert(`🚀 Dispatching controlled test beacon to ${targetPlatform.toUpperCase()}...`);
+      const isVideoOnly = targetPlatform === 'youtube';
+      const actionMsg = isVideoOnly ? 'Verifying YouTube Channel & API connection...' : `Dispatching controlled test beacon to ${targetPlatform.toUpperCase()}...`;
+      showAlert(`🚀 ${actionMsg}`);
       const res = await adminFetch('/api/social/oauth', {
         method: 'POST',
         body: JSON.stringify({ action: 'test-publish', platform: targetPlatform })
@@ -12426,7 +12428,11 @@
       const data = await res.json().catch(() => ({}));
       if (data.success) {
         const resObj = data.result || {};
-        showAlert(`✅ ${targetPlatform.toUpperCase()} test post successful!\nID: ${resObj.externalPostId}\nURL: ${resObj.publishedUrl || 'N/A'}`);
+        if (resObj.isConnectionVerified) {
+          showAlert(`✅ ${targetPlatform.toUpperCase()} Connection Verified!\nChannel: ${resObj.channelTitle || 'Connected'}\nChannel ID: ${resObj.channelId || resObj.externalPostId}\nURL: ${resObj.publishedUrl || 'N/A'}\n\nNote: ${resObj.message || 'YouTube Data API active. Direct video uploads require an approved .mp4 video asset.'}`);
+        } else {
+          showAlert(`✅ ${targetPlatform.toUpperCase()} test post successful!\nID: ${resObj.externalPostId}\nURL: ${resObj.publishedUrl || 'N/A'}`);
+        }
       } else {
         const errMsg = (data.result && data.result.error) || data.error || 'Provider rejected test post';
         showAlert(`❌ Test post to ${targetPlatform.toUpperCase()} failed:\n${errMsg}`);

@@ -695,9 +695,48 @@ async function runAllTests() {
     assert.strictEqual(accounts.youtube.accountHandle, 'DeepPredictBet TV');
   });
 
+  await test('YouTube: Connection verification beacon checks channel endpoint and returns verified channel details', async () => {
+    global.fetch = async (url) => {
+      if (url.toString().includes('googleapis.com/youtube/v3/channels')) {
+        return new Response(JSON.stringify({
+          kind: 'youtube#channelListResponse',
+          items: [{
+            id: 'UC_deeppredictbet_mock_123',
+            snippet: { title: 'DeepPredictBet TV', customUrl: '@deeppredictbet' }
+          }]
+        }), { status: 200 });
+      }
+      return originalFetch(url);
+    };
+
+    const res = await dispatchYouTube(mockEnv, {
+      title: 'Beacon Test',
+      copy: 'Connection beacon',
+      isTestBeacon: true
+    });
+
+    assert.strictEqual(res.status, 'SUCCESS');
+    assert.strictEqual(res.platform, 'youtube');
+    assert.strictEqual(res.isConnectionVerified, true);
+    assert.strictEqual(res.channelId, 'UC_deeppredictbet_mock_123');
+    assert.strictEqual(res.channelTitle, 'DeepPredictBet TV');
+    assert.strictEqual(res.publishedUrl, 'https://youtube.com/@deeppredictbet');
+  });
+
+  await test('YouTube: Requires video asset for direct publishing (returns MANUAL_REQUIRED without video)', async () => {
+    const res = await dispatchYouTube(mockEnv, {
+      title: 'Arsenal vs Chelsea Breakdown',
+      copy: 'Shorts text without video asset'
+    });
+    assert.strictEqual(res.status, 'MANUAL_REQUIRED');
+    assert.strictEqual(res.platform, 'youtube');
+    assert.ok(res.manualPayload);
+    assert.strictEqual(res.manualPayload.title, 'Arsenal vs Chelsea Breakdown');
+  });
+
   await test('YouTube: Successfully posts video metadata and captures video ID', async () => {
     global.fetch = async (url) => {
-      if (url.toString().includes('googleapis.com/youtube/v3/videos')) {
+      if (url.toString().includes('googleapis.com/youtube/v3/videos') || url.toString().includes('upload/youtube/v3/videos')) {
         return new Response(JSON.stringify({
           id: 'yt_vid_abc987xyz',
           snippet: { title: 'Arsenal vs Chelsea AI Match Breakdown' }
@@ -708,7 +747,8 @@ async function runAllTests() {
 
     const res = await dispatchYouTube(mockEnv, {
       title: 'Arsenal vs Chelsea AI Match Breakdown #Shorts',
-      copy: 'Expected goals, tactical analysis and statistical probabilities from DeepPredictBet.'
+      copy: 'Expected goals, tactical analysis and statistical probabilities from DeepPredictBet.',
+      videoUrl: 'https://deeppredictbet.com/assets/match-breakdown.mp4'
     });
 
     assert.strictEqual(res.status, 'SUCCESS');
