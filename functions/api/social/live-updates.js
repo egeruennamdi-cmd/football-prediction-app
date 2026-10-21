@@ -309,11 +309,14 @@ export async function onRequestPost(context) {
 
         // Format channel-specific payload
         const rawCopy = copy || '';
+        const resolvedVideoUrl = body.videoUrl || (mediaUrl && (/\.(mp4|mov|webm|m4v)(\?.*)?$/i.test(mediaUrl) || mediaUrl.startsWith('data:video/')) ? mediaUrl : null);
         const payload = {
           copy: rawCopy,
           text: rawCopy,
           mediaUrl,
-          photoUrl: mediaUrl,
+          photoUrl: !resolvedVideoUrl ? mediaUrl : undefined,
+          videoUrl: resolvedVideoUrl || undefined,
+          mediaType: resolvedVideoUrl ? 'VIDEO' : (mediaUrl ? 'IMAGE' : undefined),
           title: `⚽ ${competition}: ${homeTeam} ${scoreStr} ${awayTeam} (${minute || status})`,
           target: 'free'
         };

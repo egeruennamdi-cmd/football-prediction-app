@@ -62,7 +62,8 @@ export async function processDueSchedules(env) {
         const text = s.text || '';
         const options = {
           parseMode: 'HTML',
-          photoUrl: s.photoUrl || undefined
+          photoUrl: s.photoUrl || undefined,
+          videoUrl: s.videoUrl || undefined
         };
 
         if (Array.isArray(s.buttons) && s.buttons.length > 0) {
@@ -413,6 +414,7 @@ export async function onRequestPost(context) {
     const target = (body.target || 'free').toLowerCase(); // 'free', 'vip', 'user'
     const text = (body.text || body.message || '').trim();
     const photoUrl = (body.photoUrl || '').trim();
+    const videoUrl = (body.videoUrl || (body.mediaUrl && /\.(mp4|mov|webm|m4v)(\?.*)?$/i.test(body.mediaUrl) ? body.mediaUrl : '')).trim();
     const postType = (body.postType || 'Custom Post').trim();
     const forceDuplicate = !!body.forceDuplicate;
 
@@ -420,10 +422,10 @@ export async function onRequestPost(context) {
     const rawTargetId = body.telegramUserId !== undefined ? body.telegramUserId : (body.chatId !== undefined ? body.chatId : '');
     let telegramUserId = String(rawTargetId || '').trim();
 
-    if (!text && !photoUrl) {
+    if (!text && !photoUrl && !videoUrl) {
       return new Response(JSON.stringify({
         success: false,
-        error: 'Message text or photoUrl is required.'
+        error: 'Message text, photoUrl, or videoUrl is required.'
       }), {
         status: 400,
         headers: adminCorsHeaders()
@@ -431,7 +433,7 @@ export async function onRequestPost(context) {
     }
 
     // 2. Duplicate Publication Detection
-    const fingerprint = await computeContentFingerprint(target, text, photoUrl);
+    const fingerprint = await computeContentFingerprint(target, text, photoUrl || videoUrl);
     if (!forceDuplicate) {
       const duplicate = await checkDuplicatePublish(env, fingerprint, 24 * 60 * 60 * 1000);
       if (duplicate) {
@@ -451,7 +453,8 @@ export async function onRequestPost(context) {
     // 3. Prepare Rich Message Options
     const options = {
       parseMode: 'HTML',
-      photoUrl: photoUrl || undefined
+      photoUrl: photoUrl || undefined,
+      videoUrl: videoUrl || undefined
     };
 
     if (Array.isArray(body.buttons) && body.buttons.length > 0) {

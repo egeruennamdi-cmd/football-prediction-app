@@ -212,6 +212,29 @@ export async function sendPhoto(env, chatId, photoUrl, caption = '', options = {
 }
 
 /**
+ * Sends a video with an optional rich caption and streaming support
+ */
+export async function sendVideo(env, chatId, videoUrl, caption = '', options = {}) {
+  if (!chatId) return { success: false, error: 'Destination chatId is required.' };
+  if (!videoUrl) return { success: false, error: 'Video URL is required.' };
+
+  const payload = {
+    chat_id: chatId,
+    video: videoUrl,
+    caption: caption,
+    parse_mode: options.parseMode || 'HTML',
+    supports_streaming: true,
+    ...options.extra
+  };
+
+  if (options.replyMarkup) {
+    payload.reply_markup = options.replyMarkup;
+  }
+
+  return await callTelegramApi(env, 'sendVideo', payload);
+}
+
+/**
  * Edits existing message text (useful for interactive updates)
  */
 export async function editMessage(env, chatId, messageId, text, options = {}) {
@@ -234,6 +257,9 @@ export async function editMessage(env, chatId, messageId, text, options = {}) {
  */
 export async function publishToFreeChannel(env, text, options = {}) {
   const channelId = (env && env.TELEGRAM_FREE_CHANNEL_ID) || '@DeepPredictBetFree';
+  if (options && options.videoUrl) {
+    return await sendVideo(env, channelId, options.videoUrl, text, options);
+  }
   if (options && options.photoUrl) {
     return await sendPhoto(env, channelId, options.photoUrl, text, options);
   }
@@ -250,6 +276,9 @@ export async function publishToVipChannel(env, text, options = {}) {
       success: false,
       error: 'TELEGRAM_VIP_CHANNEL_ID is not configured in Cloudflare Pages environment.'
     };
+  }
+  if (options && options.videoUrl) {
+    return await sendVideo(env, channelId, options.videoUrl, text, options);
   }
   if (options && options.photoUrl) {
     return await sendPhoto(env, channelId, options.photoUrl, text, options);

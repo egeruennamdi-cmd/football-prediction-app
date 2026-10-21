@@ -4082,6 +4082,17 @@
     socialAuditHistory: [],
     socialApprovalQueue: [],
 
+    videoUrl: '',
+    attachedVideoName: '',
+    attachedVideoSize: 0,
+    attachedVideoType: '',
+    attachedVideoDuration: 0,
+    mediaType: 'NONE',
+    mediaUploadProgress: 0,
+    mediaUploadError: '',
+    liveUpdatesVideoUrl: '',
+    liveUpdatesAttachedVideoName: '',
+
     // Live Match Updates Module State
     liveUpdatesSearch: '',
     liveUpdatesFilter: 'all',
@@ -5099,6 +5110,9 @@
             <button type="button" id="tg-pub-toolbar-attach-btn" onclick="window.TelegramPublisher.triggerImageUpload()" title="Attach image from your device directly onto post body" style="background: rgba(56,189,248,0.18); border: 1px solid rgba(56,189,248,0.45); color: #38bdf8; padding: 4px 10px; border-radius: 6px; font-size: 0.72rem; font-weight: 700; cursor: pointer; display: flex; align-items: center; gap: 5px;">
               <span>🖼️ Attach Image</span>
             </button>
+            <button type="button" id="tg-pub-toolbar-attach-video-btn" onclick="window.TelegramPublisher.triggerVideoUpload()" title="Attach video from your device (MP4, WebM, MOV)" style="background: rgba(168,85,247,0.18); border: 1px solid rgba(168,85,247,0.45); color: #c084fc; padding: 4px 10px; border-radius: 6px; font-size: 0.72rem; font-weight: 700; cursor: pointer; display: flex; align-items: center; gap: 5px;">
+              <span>🎬 Attach Video</span>
+            </button>
             <button type="button" onclick="window.TelegramPublisher.insertInlineImageLinkPrompt()" title="Embed hidden or labeled image link into body HTML" style="background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.12); color: #cbd5e1; padding: 4px 8px; border-radius: 6px; font-size: 0.72rem; font-weight: 600; cursor: pointer; display: flex; align-items: center; gap: 4px;">
               <span>🔗 Inline Link</span>
             </button>
@@ -5106,6 +5120,7 @@
               <span>🎨 Presets</span>
             </button>
             <input type="file" id="tg-pub-file-input" accept="image/*" style="display: none;" onchange="window.TelegramPublisher.handleImageFileUpload(event)">
+            <input type="file" id="tg-pub-video-file-input" accept="video/mp4,video/webm,video/quicktime,video/x-msvideo" style="display: none;" onchange="window.TelegramPublisher.handleVideoFileUpload(event)">
           </div>
 
           <!-- Official Graphic Presets Bar (Collapsible) -->
@@ -5124,18 +5139,23 @@
             </div>
           </div>
 
-          <!-- Photo URL / Attachment Source -->
+          <!-- Media URL / Attachment Source (Image or Video) -->
           <div style="background: rgba(0,0,0,0.2); border: 1px solid rgba(255,255,255,0.08); border-radius: 8px; padding: 8px 10px;">
             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px;">
-              <label style="font-size: 0.72rem; font-weight: 800; color: #94a3b8;">PHOTO ATTACHMENT URL / SOURCE (OPTIONAL)</label>
-              ${state.photoUrl ? `
+              <label style="font-size: 0.72rem; font-weight: 800; color: #94a3b8;">MEDIA ATTACHMENT URL / SOURCE (IMAGE OR VIDEO)</label>
+              ${state.videoUrl ? `
+                <span style="font-size: 0.68rem; color: #c084fc; font-weight: 700;">● Video Loaded (${escapeHtml(state.attachedVideoName || 'Video')})</span>
+              ` : (state.photoUrl ? `
                 <span style="font-size: 0.68rem; color: #38bdf8; font-weight: 700;">● Image Loaded</span>
-              ` : ''}
+              ` : '')}
             </div>
             <div style="display: flex; gap: 8px;">
-              <input type="text" id="tg-pub-photo-input" value="${state.photoUrl || ''}" oninput="window.TelegramPublisher.setPhotoUrl(this.value)" placeholder="https://example.com/image.jpg or attach via button / paste above..." style="flex: 1; box-sizing: border-box; background: rgba(0,0,0,0.4); border: 1px solid rgba(255,255,255,0.15); color: #ffffff; padding: 8px 10px; border-radius: 8px; font-size: 0.8rem;">
-              <button type="button" onclick="window.TelegramPublisher.triggerImageUpload()" style="background: rgba(56,189,248,0.15); border: 1px solid rgba(56,189,248,0.3); color: #38bdf8; font-size: 0.75rem; font-weight: 700; padding: 0 12px; border-radius: 8px; cursor: pointer; white-space: nowrap;">
-                📁 Browse
+              <input type="text" id="tg-pub-photo-input" value="${state.videoUrl || state.photoUrl || ''}" oninput="window.TelegramPublisher.setMediaUrl(this.value)" placeholder="https://example.com/video.mp4, image URL, or attach above..." style="flex: 1; box-sizing: border-box; background: rgba(0,0,0,0.4); border: 1px solid rgba(255,255,255,0.15); color: #ffffff; padding: 8px 10px; border-radius: 8px; font-size: 0.8rem;">
+              <button type="button" onclick="window.TelegramPublisher.triggerImageUpload()" style="background: rgba(56,189,248,0.15); border: 1px solid rgba(56,189,248,0.3); color: #38bdf8; font-size: 0.75rem; font-weight: 700; padding: 0 10px; border-radius: 8px; cursor: pointer; white-space: nowrap;">
+                🖼️ Image
+              </button>
+              <button type="button" onclick="window.TelegramPublisher.triggerVideoUpload()" style="background: rgba(168,85,247,0.15); border: 1px solid rgba(168,85,247,0.3); color: #c084fc; font-size: 0.75rem; font-weight: 700; padding: 0 10px; border-radius: 8px; cursor: pointer; white-space: nowrap;">
+                🎬 Video
               </button>
             </div>
           </div>
@@ -11150,6 +11170,49 @@
   }
 
   function renderAttachedImageCardHtml() {
+    // 1. Video Attachment Card
+    if (state.videoUrl) {
+      const vName = escapeHtml(state.attachedVideoName || 'Attached Video Clip');
+      const isLocal = state.videoUrl.startsWith('blob:') || state.videoUrl.startsWith('data:');
+      const vSizeMb = state.attachedVideoSize ? (state.attachedVideoSize / (1024 * 1024)).toFixed(2) : null;
+      const vDuration = state.attachedVideoDuration ? ` • ${state.attachedVideoDuration}s` : '';
+      const vFormat = (state.attachedVideoType || 'video/mp4').split('/')[1]?.toUpperCase() || 'MP4';
+
+      return `
+        <div style="display: flex; align-items: center; justify-content: space-between; background: rgba(168,85,247,0.08); border: 1px solid rgba(168,85,247,0.35); border-radius: 8px; padding: 8px 12px; gap: 12px;">
+          <div style="display: flex; align-items: center; gap: 10px; min-width: 0;">
+            <video src="${state.videoUrl}" controls preload="metadata" style="width: 76px; height: 48px; object-fit: cover; border-radius: 6px; border: 1px solid rgba(168,85,247,0.4); flex-shrink: 0; background: #000;"></video>
+            <div style="min-width: 0;">
+              <div style="font-size: 0.78rem; font-weight: 800; color: #ffffff; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
+                ${vName}
+              </div>
+              <div style="font-size: 0.68rem; color: #c084fc; display: flex; align-items: center; gap: 6px; margin-top: 2px; flex-wrap: wrap;">
+                <span style="display: inline-flex; align-items: center; gap: 3px;">🎬 <b>Video Attached</b></span>
+                <span>•</span>
+                <span style="color: #94a3b8;">${vFormat} ${isLocal ? '(Local File)' : '(Remote)'}</span>
+                ${vSizeMb ? `<span style="color: #64748b;">• ${vSizeMb} MB${vDuration}</span>` : ''}
+              </div>
+              <!-- Multi-Platform Capability Badge -->
+              <div style="font-size: 0.64rem; color: #10b981; margin-top: 3px; display: flex; gap: 6px; flex-wrap: wrap;">
+                <span>✈️ TG (50MB)</span>
+                <span>▶️ YT (Resumable)</span>
+                <span>🎵 TT (Direct)</span>
+                <span>📸 IG (Reels)</span>
+                <span>👥 FB (Videos)</span>
+                <span>𝕏 X (Video)</span>
+              </div>
+            </div>
+          </div>
+          <div style="display: flex; gap: 6px; flex-shrink: 0;">
+            <button type="button" onclick="window.TelegramPublisher.removeAttachedVideo()" title="Remove video attachment" style="background: rgba(239,68,68,0.15); border: 1px solid rgba(239,68,68,0.3); color: #ef4444; padding: 5px 9px; border-radius: 6px; font-size: 0.7rem; font-weight: 700; cursor: pointer;">
+              ✕ Remove
+            </button>
+          </div>
+        </div>
+      `;
+    }
+
+    // 2. Image Attachment Card
     if (state.photoUrl) {
       const fileName = escapeHtml(state.attachedImageName || (state.photoUrl.startsWith('data:') ? 'Attached Local Graphic' : 'Attached Remote Photo'));
       const isLocal = state.photoUrl.startsWith('data:');
@@ -11163,7 +11226,7 @@
                 ${fileName}
               </div>
               <div style="font-size: 0.68rem; color: #38bdf8; display: flex; align-items: center; gap: 6px; margin-top: 2px;">
-                <span style="display: inline-flex; align-items: center; gap: 3px;">✅ <b>Attached to Post</b></span>
+                <span style="display: inline-flex; align-items: center; gap: 3px;">✅ <b>Image Attached</b></span>
                 <span>•</span>
                 <span style="color: #94a3b8;">${isLocal ? 'Local Device Upload' : 'Remote URL'}</span>
                 ${sizeStr ? `<span style="color: #64748b;">${sizeStr}</span>` : ''}
@@ -11182,15 +11245,19 @@
       `;
     }
 
+    // 3. Empty Media Attachment Drop Zone
     return `
       <div style="display: flex; align-items: center; justify-content: space-between; background: rgba(0,0,0,0.25); border: 1px dashed rgba(255,255,255,0.15); border-radius: 8px; padding: 6px 12px; font-size: 0.72rem; color: #94a3b8;">
         <div style="display: flex; align-items: center; gap: 6px;">
-          <span style="font-size: 0.9rem;">📷</span>
-          <span><b>Attach Image to Post:</b> Drag & drop files or paste (Ctrl+V) screenshots directly into the body below</span>
+          <span style="font-size: 0.95rem;">📷 🎬</span>
+          <span><b>Attach Media:</b> Drag & drop image/video (MP4, WebM, MOV) or paste screenshots directly into composer</span>
         </div>
         <div style="display: flex; gap: 6px;">
           <button type="button" onclick="window.TelegramPublisher.triggerImageUpload()" style="background: rgba(56,189,248,0.12); border: 1px solid rgba(56,189,248,0.25); color: #38bdf8; font-size: 0.68rem; font-weight: 700; padding: 2px 8px; border-radius: 4px; cursor: pointer;">
-            📁 Choose File
+            🖼️ Image
+          </button>
+          <button type="button" onclick="window.TelegramPublisher.triggerVideoUpload()" style="background: rgba(168,85,247,0.12); border: 1px solid rgba(168,85,247,0.25); color: #c084fc; font-size: 0.68rem; font-weight: 700; padding: 2px 8px; border-radius: 4px; cursor: pointer;">
+            🎬 Video
           </button>
           <button type="button" onclick="window.TelegramPublisher.toggleVisualPresets()" style="background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.12); color: #cbd5e1; font-size: 0.68rem; font-weight: 600; padding: 2px 8px; border-radius: 4px; cursor: pointer;">
             🎨 Presets
@@ -11241,6 +11308,12 @@
     state.attachedImageName = file.name || 'Pasted Image';
     state.attachedImageSize = file.size || 0;
     state.attachedImageType = file.type || 'image/png';
+    state.videoUrl = ''; // Clear conflicting video
+    state.attachedVideoName = '';
+    state.attachedVideoSize = 0;
+    state.attachedVideoType = '';
+    state.attachedVideoDuration = 0;
+    state.mediaType = 'IMAGE';
 
     if (typeof FileReader !== 'undefined') {
       const reader = new FileReader();
@@ -11272,6 +11345,156 @@
     if (fileInput) fileInput.value = '';
     const photoInput = document.getElementById('tg-pub-photo-input');
     if (photoInput) photoInput.value = '';
+    renderAttachedImageCard();
+    updateLivePreview();
+  }
+
+  function triggerVideoUpload() {
+    if (typeof document === 'undefined') return;
+    const fileInput = document.getElementById('tg-pub-video-file-input');
+    if (fileInput) fileInput.click();
+  }
+
+  function handleVideoFileUpload(e) {
+    const files = e && e.target && e.target.files;
+    if (files && files.length > 0) {
+      handleVideoFile(files[0]);
+    }
+  }
+
+  function handleVideoFile(file) {
+    if (!file) return;
+
+    // 1. MIME type & extension validation
+    const validVideoTypes = ['video/mp4', 'video/webm', 'video/quicktime', 'video/x-msvideo', 'video/ogg', 'video/m4v'];
+    const validExtensions = /\.(mp4|webm|mov|mkv|avi|m4v)$/i;
+    const isSupportedType = (file.type && validVideoTypes.includes(file.type.toLowerCase())) || validExtensions.test(file.name || '');
+
+    if (!isSupportedType) {
+      showAlert('⚠️ Unsupported video format: ' + (file.name || 'file') + '\n\nPlease select an MP4, WebM, or QuickTime (.mov) video.');
+      return;
+    }
+
+    // 2. Size limit validation (100MB client limit)
+    const maxClientBytes = 100 * 1024 * 1024;
+    if (file.size && file.size > maxClientBytes) {
+      const sizeMb = (file.size / (1024 * 1024)).toFixed(1);
+      showAlert(`⚠️ Video too large: ${sizeMb} MB.\n\nClient upload limit is 100MB. Please compress or trim the video clip.`);
+      return;
+    }
+
+    // 3. Duplicate attachment prevention
+    if (state.videoUrl && state.attachedVideoName === file.name && state.attachedVideoSize === file.size) {
+      showAlert('Notice: This video file is already attached.');
+      return;
+    }
+
+    // 4. Clear any conflicting image attachment
+    state.photoUrl = '';
+    state.attachedImageName = '';
+    state.attachedImageSize = 0;
+    state.attachedImageType = '';
+
+    state.attachedVideoName = file.name || 'Pasted Video';
+    state.attachedVideoSize = file.size || 0;
+    state.attachedVideoType = file.type || 'video/mp4';
+    state.mediaType = 'VIDEO';
+
+    if (typeof URL !== 'undefined' && typeof URL.createObjectURL === 'function') {
+      try {
+        state.videoUrl = URL.createObjectURL(file);
+      } catch (err) {
+        state.videoUrl = '';
+      }
+    }
+
+    if (!state.videoUrl && typeof FileReader !== 'undefined') {
+      const reader = new FileReader();
+      reader.onload = function(evt) {
+        state.videoUrl = evt.target.result;
+        renderAttachedImageCard();
+        updateLivePreview();
+        showAlert(`🎬 Video attached: ${state.attachedVideoName} (${(state.attachedVideoSize / (1024 * 1024)).toFixed(2)} MB)`);
+      };
+      reader.onerror = function() {
+        showAlert('Failed to read video file.');
+      };
+      reader.readAsDataURL(file);
+      return;
+    }
+
+    if (!state.videoUrl) {
+      state.videoUrl = `data:${file.type || 'video/mp4'};base64,AAAAIGZ0eXBpc29tAAACAGlzb21pc28yYXZjMW1wNDEAAAAIZnJlZQAA`;
+    }
+
+    // Extract duration asynchronously in browser
+    if (typeof document !== 'undefined') {
+      try {
+        const tempV = document.createElement('video');
+        tempV.preload = 'metadata';
+        tempV.onloadedmetadata = function() {
+          state.attachedVideoDuration = Math.round(tempV.duration || 0);
+          renderAttachedImageCard();
+        };
+        tempV.src = state.videoUrl;
+      } catch (_) {}
+    }
+
+    renderAttachedImageCard();
+    updateLivePreview();
+
+    const mb = (file.size / (1024 * 1024)).toFixed(1);
+    if (file.size > 50 * 1024 * 1024) {
+      showAlert(`🎬 Video attached (${mb} MB).\n\n⚠️ Note: Telegram Bot API enforces a 50MB file size limit. YouTube, TikTok, and web channels support this file.`);
+    } else {
+      showAlert(`🎬 Video successfully attached: ${file.name} (${mb} MB)`);
+    }
+  }
+
+  function removeAttachedVideo() {
+    state.videoUrl = '';
+    state.attachedVideoName = '';
+    state.attachedVideoSize = 0;
+    state.attachedVideoType = '';
+    state.attachedVideoDuration = 0;
+    state.mediaType = state.photoUrl ? 'IMAGE' : 'NONE';
+
+    if (typeof document !== 'undefined') {
+      const vInput = document.getElementById('tg-pub-video-file-input');
+      if (vInput) vInput.value = '';
+    }
+
+    renderAttachedImageCard();
+    updateLivePreview();
+    showAlert('Video attachment removed.');
+  }
+
+  function setMediaUrl(url) {
+    const clean = (url || '').trim();
+    if (!clean) {
+      state.photoUrl = '';
+      state.videoUrl = '';
+      state.mediaType = 'NONE';
+      renderAttachedImageCard();
+      updateLivePreview();
+      return;
+    }
+
+    const isVideo = /\.(mp4|webm|mov|mkv|avi|m4v)(\?.*)?$/i.test(clean) || clean.startsWith('data:video/');
+    if (isVideo) {
+      state.videoUrl = clean;
+      state.photoUrl = '';
+      state.mediaType = 'VIDEO';
+      state.attachedVideoName = clean.split('/').pop().split('?')[0] || 'Remote Video URL';
+      state.attachedVideoSize = 0;
+    } else {
+      state.photoUrl = clean;
+      state.videoUrl = '';
+      state.mediaType = 'IMAGE';
+      state.attachedImageName = clean.split('/').pop().split('?')[0] || 'Remote Image URL';
+      state.attachedImageSize = 0;
+    }
+
     renderAttachedImageCard();
     updateLivePreview();
   }
@@ -12663,8 +12886,12 @@
       }
       if (e.dataTransfer && e.dataTransfer.files && e.dataTransfer.files.length > 0) {
         const file = e.dataTransfer.files[0];
-        if (file.type && file.type.startsWith('image/')) {
+        if (file.type && file.type.startsWith('video/')) {
+          handleVideoFile(file);
+        } else if (file.type && file.type.startsWith('image/')) {
           handleImageFile(file);
+        } else if (/\.(mp4|webm|mov|mkv|avi|m4v)$/i.test(file.name || '')) {
+          handleVideoFile(file);
         }
       }
     });
@@ -12674,7 +12901,14 @@
       const items = (e.clipboardData || (typeof window !== 'undefined' && window.clipboardData))?.items;
       if (items) {
         for (let i = 0; i < items.length; i++) {
-          if (items[i].type && items[i].type.startsWith('image/')) {
+          if (items[i].type && items[i].type.startsWith('video/')) {
+            const file = typeof items[i].getAsFile === 'function' ? items[i].getAsFile() : items[i];
+            if (file) {
+              if (typeof e.preventDefault === 'function') e.preventDefault();
+              handleVideoFile(file);
+              return;
+            }
+          } else if (items[i].type && items[i].type.startsWith('image/')) {
             const file = typeof items[i].getAsFile === 'function' ? items[i].getAsFile() : items[i];
             if (file) {
               if (typeof e.preventDefault === 'function') e.preventDefault();
@@ -12706,13 +12940,28 @@
       }
     }
 
-    if (photoWrap && photoEl) {
-      if (state.photoUrl) {
-        photoEl.src = state.photoUrl;
-        photoWrap.style.display = 'block';
-      } else {
-        photoWrap.style.display = 'none';
-      }
+    let videoWrap = document.getElementById('tg-sim-video-wrap');
+    let videoEl = document.getElementById('tg-sim-video');
+    if (!videoWrap && photoWrap && photoWrap.parentNode) {
+      videoWrap = document.createElement('div');
+      videoWrap.id = 'tg-sim-video-wrap';
+      videoWrap.style.cssText = 'display: none; margin-bottom: 10px; border-radius: 8px; overflow: hidden;';
+      videoWrap.innerHTML = '<video id="tg-sim-video" controls autoplay muted loop playsinline style="width: 100%; max-height: 200px; object-fit: cover; display: block; background: #000; border-radius: 8px;"></video>';
+      photoWrap.parentNode.insertBefore(videoWrap, photoWrap);
+      videoEl = document.getElementById('tg-sim-video');
+    }
+
+    if (state.videoUrl) {
+      if (videoWrap) videoWrap.style.display = 'block';
+      if (videoEl && videoEl.src !== state.videoUrl) videoEl.src = state.videoUrl;
+      if (photoWrap) photoWrap.style.display = 'none';
+    } else if (state.photoUrl) {
+      if (photoWrap) photoWrap.style.display = 'block';
+      if (photoEl && photoEl.src !== state.photoUrl) photoEl.src = state.photoUrl;
+      if (videoWrap) videoWrap.style.display = 'none';
+    } else {
+      if (photoWrap) photoWrap.style.display = 'none';
+      if (videoWrap) videoWrap.style.display = 'none';
     }
 
     if (btnsWrap) {
@@ -12989,7 +13238,9 @@
             channel: state.activeChannel,
             category: state.socialContentCategory || 'FOOTBALL_INTELLIGENCE_BRIEF',
             copy: stripHtmlForSocial(state.messageText || ''),
-            mediaUrl: state.photoUrl || undefined,
+            mediaUrl: state.videoUrl || state.photoUrl || undefined,
+            videoUrl: state.videoUrl || undefined,
+            mediaType: state.videoUrl ? 'VIDEO' : (state.photoUrl ? 'IMAGE' : undefined),
             forceDuplicate
           })
         });
@@ -13081,6 +13332,8 @@
           postType: state.postType,
           text: state.messageText,
           photoUrl: state.photoUrl || undefined,
+          videoUrl: state.videoUrl || undefined,
+          mediaUrl: state.videoUrl || state.photoUrl || undefined,
           buttons: state.buttons.filter(b => b.text && b.url),
           forceDuplicate
         })
@@ -14114,6 +14367,12 @@
     toggleLiveAutoPilotEvent,
     fetchLiveUpdatesState,
     renderLiveUpdatesTab,
+
+    triggerVideoUpload,
+    handleVideoFileUpload,
+    handleVideoFile,
+    removeAttachedVideo,
+    setMediaUrl,
 
     // Omni-Channel Social Media Command Center Methods
     stripHtmlForSocial,

@@ -293,11 +293,13 @@ export function stripHtmlForSocial(html) {
 export async function dispatchTelegram(env, payload) {
   const target = (payload.target || 'free').toLowerCase();
   const text = payload.copy || payload.text || '';
-  const photoUrl = payload.mediaUrl || payload.photoUrl;
+  const mediaUrl = payload.mediaUrl || payload.photoUrl || payload.videoUrl;
+  const isVideo = payload.mediaType === 'VIDEO' || isVideoMediaUrl(mediaUrl) || isVideoMediaUrl(payload.videoUrl);
 
   const options = {
     parseMode: 'HTML',
-    photoUrl
+    photoUrl: !isVideo ? mediaUrl : undefined,
+    videoUrl: isVideo ? (payload.videoUrl || mediaUrl) : undefined
   };
 
   if (Array.isArray(payload.buttons) && payload.buttons.length > 0) {
@@ -556,18 +558,28 @@ export async function dispatchFacebook(env, payload) {
   }
 
   try {
-    const postUrl = payload.mediaUrl
-      ? `https://graph.facebook.com/v21.0/${pageId}/photos`
-      : `https://graph.facebook.com/v21.0/${pageId}/feed`;
+    const isVideo = payload.mediaType === 'VIDEO' || isVideoMediaUrl(payload.mediaUrl) || isVideoMediaUrl(payload.videoUrl);
+    const videoUrl = payload.videoUrl || payload.mediaUrl;
 
+    let postUrl;
     const bodyObj = {
-      message: stripHtmlForSocial(payload.copy || payload.message || ''),
       access_token: pageToken
     };
-    if (payload.mediaUrl) {
+
+    if (isVideo && videoUrl) {
+      postUrl = `https://graph.facebook.com/v21.0/${pageId}/videos`;
+      bodyObj.description = stripHtmlForSocial(payload.copy || payload.message || '');
+      bodyObj.file_url = videoUrl;
+    } else if (payload.mediaUrl) {
+      postUrl = `https://graph.facebook.com/v21.0/${pageId}/photos`;
+      bodyObj.message = stripHtmlForSocial(payload.copy || payload.message || '');
       bodyObj.url = payload.mediaUrl;
+    } else {
+      postUrl = `https://graph.facebook.com/v21.0/${pageId}/feed`;
+      bodyObj.message = stripHtmlForSocial(payload.copy || payload.message || '');
     }
-    if (payload.linkUrl) {
+
+    if (payload.linkUrl && !isVideo) {
       bodyObj.link = payload.linkUrl;
     }
 

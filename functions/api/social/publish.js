@@ -247,15 +247,24 @@ export async function onRequestPost(context) {
 
       if (!itemToPublish && (body.copy || body.channel)) {
         const targetChannel = body.channel || 'telegram';
+        const resolvedMediaUrl = body.mediaUrl || body.videoUrl || body.photoUrl || null;
+        const isVideo = body.mediaType === 'VIDEO' || (typeof resolvedMediaUrl === 'string' && (/\.(mp4|mov|webm|m4v)(\?.*)?$/i.test(resolvedMediaUrl) || resolvedMediaUrl.startsWith('data:video/')));
+
         itemToPublish = {
           category: body.category || SOCIAL_CONTENT_CATEGORIES.FOOTBALL_INTELLIGENCE_BRIEF,
           matchId: body.matchId || null,
-          mediaUrl: body.mediaUrl || null,
+          mediaUrl: resolvedMediaUrl,
+          videoUrl: isVideo ? (body.videoUrl || resolvedMediaUrl) : null,
+          mediaType: isVideo ? 'VIDEO' : (resolvedMediaUrl ? 'IMAGE' : undefined),
+          title: body.title || null,
           platforms: {
             [targetChannel]: {
               enabled: true,
               copy: body.copy || '',
-              mediaUrl: body.mediaUrl || null
+              mediaUrl: resolvedMediaUrl,
+              videoUrl: isVideo ? (body.videoUrl || resolvedMediaUrl) : null,
+              mediaType: isVideo ? 'VIDEO' : (resolvedMediaUrl ? 'IMAGE' : undefined),
+              title: body.title || null
             }
           }
         };
