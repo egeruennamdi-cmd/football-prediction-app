@@ -11,8 +11,9 @@ export async function onRequest(context) {
   const cache = caches.default;
   const url = new URL(context.request.url);
   const live = url.searchParams.get('live');
+  const fixtureId = url.searchParams.get('id') || url.searchParams.get('fixture');
   const country = (url.searchParams.get('country') || '').toLowerCase().trim();
-  const league = url.searchParams.get('league') || (live ? '' : (!country || country === 'england' ? '39' : ''));
+  const league = url.searchParams.get('league') || (live || fixtureId ? '' : (!country || country === 'england' ? '39' : ''));
   const next = url.searchParams.get('next') || '15';
 
   const cacheKey = new Request(url.toString());
@@ -32,7 +33,16 @@ export async function onRequest(context) {
   try {
     let fixtures = [];
 
-    if (live === 'all' || live === 'true') {
+    if (fixtureId) {
+      // Fetch specific fixture details, including score, status, and timeline events
+      const resFixture = await fetch(`${API_HOST}/fixtures?id=${fixtureId}`, { headers });
+      if (resFixture.ok) {
+        const jsonFixture = await resFixture.json();
+        if (Array.isArray(jsonFixture.response)) {
+          fixtures = jsonFixture.response;
+        }
+      }
+    } else if (live === 'all' || live === 'true') {
       // Fetch all currently in-play live matches across global leagues
       const resLive = await fetch(`${API_HOST}/fixtures?live=all`, { headers });
       if (resLive.ok) {
@@ -72,7 +82,8 @@ export async function onRequest(context) {
       response: fixtures
     };
 
-    const ttl = (live === 'all' || live === 'true') ? 30 : 300; // 30s cache for live, 5m for fixtures
+    const isLiveFixture = (live === 'all' || live === 'true') || (fixtures[0] && ['1H','HT','2H','ET','BT','P','LIVE'].includes(fixtures[0].fixture?.status?.short));
+    const ttl = isLiveFixture ? 30 : 300; // 30s cache for live/in-play, 5m for fixtures
     const response = new Response(JSON.stringify(payload), {
       status: 200,
       headers: {

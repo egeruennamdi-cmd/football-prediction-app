@@ -154,15 +154,16 @@ async function runTests() {
   // ==========================================================================
   console.log('\n--- 2. Shared Social Content Model & Lifecycle States ---');
 
-  test('All 6 authoritative content categories are defined', () => {
+  test('All authoritative content categories are defined', () => {
     const categories = Object.keys(socialKv.SOCIAL_CONTENT_CATEGORIES);
-    assert.strictEqual(categories.length, 6);
+    assert.ok(categories.length >= 6);
     assert.ok(categories.includes('FOOTBALL_INTELLIGENCE_BRIEF'));
     assert.ok(categories.includes('AI_SCOUT_DEMO'));
     assert.ok(categories.includes('MATCH_CENTRE_ANALYSIS'));
     assert.ok(categories.includes('BETTING_EDUCATION'));
     assert.ok(categories.includes('PRODUCT_WALKTHROUGH'));
     assert.ok(categories.includes('VERIFIED_POST_MATCH_REVIEW'));
+    assert.ok(categories.includes('LIVE_MATCH_UPDATE'));
   });
 
   test('All 8 authoritative lifecycle states are supported', () => {

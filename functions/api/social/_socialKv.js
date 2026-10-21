@@ -22,7 +22,8 @@ export const SOCIAL_CONTENT_CATEGORIES = {
   MATCH_CENTRE_ANALYSIS: 'MATCH_CENTRE_ANALYSIS',
   BETTING_EDUCATION: 'BETTING_EDUCATION',
   PRODUCT_WALKTHROUGH: 'PRODUCT_WALKTHROUGH',
-  VERIFIED_POST_MATCH_REVIEW: 'VERIFIED_POST_MATCH_REVIEW'
+  VERIFIED_POST_MATCH_REVIEW: 'VERIFIED_POST_MATCH_REVIEW',
+  LIVE_MATCH_UPDATE: 'LIVE_MATCH_UPDATE'
 };
 
 // AUTHORITATIVE LIFECYCLE STATES
@@ -237,6 +238,23 @@ export function validateSocialContentFacts(item, nowEpoch = Date.now()) {
     }
     if (lineage.actualScore == null && !lineage.resultSummary) {
       errors.push('Factual Error: Post-match review requires verified scoreline or result summary.');
+    }
+  }
+
+  // 4b. Live match update validation (in-play / in-progress events)
+  if (item.category === SOCIAL_CONTENT_CATEGORIES.LIVE_MATCH_UPDATE && item.matchId) {
+    const lineage = item.sourceLineage || {};
+    if (!lineage.homeTeam || !lineage.awayTeam) {
+      errors.push('Factual Error: Live match update requires identified homeTeam and awayTeam.');
+    }
+    const eventType = (lineage.eventType || '').toUpperCase();
+    const validEventTypes = [
+      'GOAL', 'SCORE_CHANGE', 'HALF_TIME', 'HT', 'SECOND_HALF', '2H',
+      'RED_CARD', 'YELLOW_CARD', 'PENALTY', 'PENALTY_MISSED', 'FULL_TIME', 'FT',
+      'KICKOFF', 'EXTRA_TIME', 'STATUS_UPDATE', 'VAR', 'CUSTOM'
+    ];
+    if (eventType && !validEventTypes.includes(eventType)) {
+      warnings.push(`Unrecognized eventType "${eventType}".`);
     }
   }
 
@@ -515,4 +533,142 @@ export async function transitionContentState(env, contentId, nextState, userEmai
   });
 
   return item;
+}
+
+// ============================================================================
+// LIVE MATCH UPDATES CONFIGURATION, DEDUPLICATION & DISPATCH HISTORY
+// ============================================================================
+
+export const KV_KEY_LIVE_UPDATES_CONFIG = 'social_live_updates_config';
+export const KV_KEY_LIVE_DISPATCH_HISTORY = 'social_live_dispatch_history';
+export const KV_KEY_LIVE_DEDUP_PREFIX = 'social_live_dedup:';
+
+export const DEFAULT_LIVE_UPDATES_CONFIG = {
+  autoPilotEnabled: false,
+  emergencyStop: false,
+  pollIntervalSec: 60,
+  enabledChannels: {
+    telegram: true,
+    x: true,
+    facebook: false,
+    instagram: false,
+    youtube: false,
+    tiktok: false
+  },
+  allowedEventTypes: {
+    GOAL: true,
+    RED_CARD: true,
+    HALF_TIME: true,
+    FULL_TIME: true,
+    PENALTY: true,
+    KICKOFF: false
+  },
+  notifyOnScoreCorrection: true,
+  lastPollTimestamp: null,
+  updatedAt: null,
+  updatedBy: null
+};
+
+/**
+ * Retrieves the Live Match Updates Auto-Pilot configuration from KV
+ */
+export async function getLiveUpdatesConfig(env) {
+  const config = await readKVJson(env, KV_KEY_LIVE_UPDATES_CONFIG, null);
+  if (!config) return { ...DEFAULT_LIVE_UPDATES_CONFIG };
+  return {
+    ...DEFAULT_LIVE_UPDATES_CONFIG,
+    ...config,
+    enabledChannels: { ...DEFAULT_LIVE_UPDATES_CONFIG.enabledChannels, ...(config.enabledChannels || {}) },
+    allowedEventTypes: { ...DEFAULT_LIVE_UPDATES_CONFIG.allowedEventTypes, ...(config.allowedEventTypes || {}) }
+  };
+}
+
+/**
+ * Persists updated Live Updates Auto-Pilot configuration to KV
+ */
+export async function saveLiveUpdatesConfig(env, updates, userEmail) {
+  const current = await getLiveUpdatesConfig(env);
+  const updated = {
+    ...current,
+    ...updates,
+    updatedAt: new Date().toISOString(),
+    updatedBy: userEmail || 'admin@deeppredictbet.com'
+  };
+  await writeKVJson(env, KV_KEY_LIVE_UPDATES_CONFIG, updated);
+  await recordSocialAuditEvent(env, {
+    action: 'LIVE_UPDATES_CONFIG_UPDATED',
+    user: userEmail,
+    details: {
+      autoPilotEnabled: updated.autoPilotEnabled,
+      emergencyStop: updated.emergencyStop
+    }
+  });
+  return updated;
+}
+
+/**
+ * Checks if a live match event has already been dispatched to a specific channel.
+ * Key format: {fixtureId}:{eventId || eventType}:{channel}
+ * Prevents duplicate broadcasts across polls, retries, and page reloads.
+ */
+export async function checkLiveEventDeduplication(env, fixtureId, eventId, eventType, channel) {
+  if (!env || !env.USERS_KV) return false;
+  const canonicalEventKey = eventId ? String(eventId) : `${eventType}`;
+  const dedupKey = `${KV_KEY_LIVE_DEDUP_PREFIX}${fixtureId}:${canonicalEventKey}:${channel}`;
+  try {
+    const existing = await env.USERS_KV.get(dedupKey);
+    return !!existing;
+  } catch (e) {
+    return false;
+  }
+}
+
+/**
+ * Records a dispatched live match event in deduplication cache and history.
+ */
+export async function recordLiveUpdateDispatch(env, record) {
+  const { fixtureId, eventId, eventType, channel, publishedUrl, status, copy, homeTeam, awayTeam, score } = record;
+  const canonicalEventKey = eventId ? String(eventId) : `${eventType}`;
+  const dedupKey = `${KV_KEY_LIVE_DEDUP_PREFIX}${fixtureId}:${canonicalEventKey}:${channel}`;
+
+  if (env && env.USERS_KV) {
+    try {
+      // 48-hour deduplication TTL (172800 seconds)
+      await env.USERS_KV.put(dedupKey, JSON.stringify({
+        dispatchedAt: new Date().toISOString(),
+        status: status || 'SUCCESS',
+        publishedUrl: publishedUrl || null
+      }), { expirationTtl: 172800 });
+    } catch (e) {
+      console.warn('[SocialKV] Error setting live dedup key:', e.message);
+    }
+  }
+
+  // Append to recent live dispatch history (capped at 100 entries)
+  const history = await readKVJson(env, KV_KEY_LIVE_DISPATCH_HISTORY, []);
+  const entry = {
+    id: `live_disp_${Date.now()}_${Math.random().toString(36).slice(2, 6)}`,
+    fixtureId,
+    eventId: eventId || null,
+    eventType: eventType || 'LIVE_UPDATE',
+    channel,
+    status: status || 'SUCCESS',
+    publishedUrl: publishedUrl || null,
+    homeTeam: homeTeam || 'Home',
+    awayTeam: awayTeam || 'Away',
+    score: score || '0-0',
+    copy: copy ? copy.slice(0, 160) : '',
+    timestamp: new Date().toISOString()
+  };
+  const updatedHistory = [entry, ...(Array.isArray(history) ? history : [])].slice(0, 100);
+  await writeKVJson(env, KV_KEY_LIVE_DISPATCH_HISTORY, updatedHistory);
+  return entry;
+}
+
+/**
+ * Retrieves the live update dispatch history
+ */
+export async function getLiveUpdateDispatchHistory(env, limit = 50) {
+  const history = await readKVJson(env, KV_KEY_LIVE_DISPATCH_HISTORY, []);
+  return (Array.isArray(history) ? history : []).slice(0, limit);
 }
