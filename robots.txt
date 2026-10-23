@@ -1,0 +1,15 @@
+User-agent: *
+Allow: /
+
+User-agent: Twitterbot
+Allow: /
+Allow: /assets/
+
+User-agent: facebookexternalhit
+Allow: /
+Allow: /assets/
+
+User-agent: Googlebot
+Allow: /
+
+Sitemap: https://deeppredictbet.com/sitemap.xml
