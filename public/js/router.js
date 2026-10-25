@@ -230,6 +230,12 @@
       title: 'Analytical & Statistical Disclaimer — DeepPredictBet',
       navKey: 'legal'
     },
+    '/data-deletion': {
+      viewId: 'view-command-center',
+      supportModalTab: 'data-deletion',
+      title: 'User Data Deletion Instructions — DeepPredictBet',
+      navKey: 'legal'
+    },
     '/responsible-gambling': {
       viewId: 'view-command-center',
       anchor: 'homepage-responsible-gambling',

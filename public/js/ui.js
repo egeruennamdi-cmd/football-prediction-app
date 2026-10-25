@@ -4239,7 +4239,7 @@ function closeSupportModal(event, force) {
 }
 
 function switchSupportTab(tab) {
-  const tabs = ["faq", "ticket", "terms", "privacy", "disclaimer"];
+  const tabs = ["faq", "ticket", "terms", "privacy", "disclaimer", "data-deletion"];
   tabs.forEach(t => {
     const btn = document.getElementById(`supp-tab-${t}`);
     const pane = document.getElementById(`supp-pane-${t}`);

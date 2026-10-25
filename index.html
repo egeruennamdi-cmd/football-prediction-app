@@ -8429,6 +8429,8 @@
           style="padding: 6px 12px; font-size: 0.8rem;">Privacy Policy</button>
         <button class="tab-btn" id="supp-tab-disclaimer" onclick="switchSupportTab('disclaimer')"
           style="padding: 6px 12px; font-size: 0.8rem;">Disclaimer</button>
+        <button class="tab-btn" id="supp-tab-data-deletion" onclick="switchSupportTab('data-deletion')"
+          style="padding: 6px 12px; font-size: 0.8rem;">Data Deletion</button>
       </div>
 
       <!-- FAQ Pane -->
@@ -8546,6 +8548,31 @@
           3. Local Client Storage & Data Ownership</h5>
         <p style="font-size: 0.78rem; color: var(--text-muted); line-height: 1.4; margin-bottom: 0;">
           Your personal watchlist, custom slip history, and user preferences remain securely in your local browser storage. You retain total control over your device data at all times.
+        </p>
+      </div>
+
+      
+      <!-- Data Deletion Pane -->
+      <div id="supp-pane-data-deletion" class="modal-tab-pane"
+        style="display: none; padding: 0 20px 20px; max-height: 380px; overflow-y: auto;">
+        <h4 style="font-size: 0.95rem; font-weight: 700; color: var(--primary); margin-bottom: 8px;">User Data Deletion Instructions</h4>
+        <p style="font-size: 0.8rem; color: var(--text-secondary); line-height: 1.5; margin-bottom: 10px;">
+          DeepPredictBet adheres to strict data minimization. We do not provide consumer Facebook login; our Meta Graph API integration is used exclusively by administrators to manage and publish match updates to the official DeepPredictBet Facebook Page.
+        </p>
+        <h5 style="font-size: 0.85rem; font-weight: 700; color: var(--text-primary); margin-top: 10px; margin-bottom: 4px;">1. Stored Meta Integration Data</h5>
+        <p style="font-size: 0.78rem; color: var(--text-muted); line-height: 1.4; margin-bottom: 8px;">
+          When connected, only the Page Access Token, public Facebook Page ID, and published post identifiers are stored in encrypted Cloudflare KV storage (USERS_KV). No personal user profiles or friends lists are accessed.
+        </p>
+        <h5 style="font-size: 0.85rem; font-weight: 700; color: var(--text-primary); margin-top: 10px; margin-bottom: 4px;">2. Revoking Access on Facebook</h5>
+        <p style="font-size: 0.78rem; color: var(--text-muted); line-height: 1.4; margin-bottom: 8px;">
+          You can revoke access anytime in your Facebook account under <b>Settings &amp; Privacy → Settings → Apps and Websites</b> by removing &ldquo;DeepPredictBet Publisher&rdquo;.
+        </p>
+        <h5 style="font-size: 0.85rem; font-weight: 700; color: var(--text-primary); margin-top: 10px; margin-bottom: 4px;">3. Purging Server Data &amp; Submitting Deletion Requests</h5>
+        <p style="font-size: 0.78rem; color: var(--text-muted); line-height: 1.4; margin-bottom: 8px;">
+          Administrators can instantly purge stored tokens by clicking &ldquo;Disconnect Account&rdquo; in the Social Media Command Center. For complete user data deletion, contact our Data Protection desk at <a href="mailto:privacy@deeppredictbet.com" style="color: #38bdf8; text-decoration: underline;">privacy@deeppredictbet.com</a>. Requests are acknowledged within 48 hours and processed within 30 calendar days.
+        </p>
+        <p style="font-size: 0.78rem; margin-top: 12px;">
+          <a href="/data-deletion" target="_blank" style="color: #38bdf8; font-weight: 700; text-decoration: underline;">Open Full Data Deletion Instructions Page →</a>
         </p>
       </div>
 

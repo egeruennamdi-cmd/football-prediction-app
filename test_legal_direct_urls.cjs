@@ -1,7 +1,7 @@
 /**
  * test_legal_direct_urls.cjs
- * Comprehensive verification for Direct URLs to "Terms", "Privacy", and "Disclaimer"
- * and non-regression of existing application capabilities.
+ * Comprehensive verification for Direct URLs to "Terms", "Privacy", "Disclaimer",
+ * "Responsible Gambling", and "Data Deletion" instructions, plus non-regression.
  */
 
 const fs = require('fs');
@@ -36,6 +36,7 @@ const termsHtml = fs.readFileSync(path.join(ROOT_DIR, 'terms.html'), 'utf8');
 const privacyHtml = fs.readFileSync(path.join(ROOT_DIR, 'privacy.html'), 'utf8');
 const disclaimerHtml = fs.readFileSync(path.join(ROOT_DIR, 'disclaimer.html'), 'utf8');
 const respGamblingHtml = fs.readFileSync(path.join(ROOT_DIR, 'responsible-gambling.html'), 'utf8');
+const dataDeletionHtml = fs.readFileSync(path.join(ROOT_DIR, 'data-deletion.html'), 'utf8');
 
 // 1. Direct URLs in index.html (Desktop & Mobile)
 runTest('Desktop footer contains direct URL href="/terms"', () => {
@@ -54,6 +55,10 @@ runTest('Desktop footer contains direct URL href="/responsible-gambling"', () =>
   assert(indexHtml.includes('href="/responsible-gambling"'), 'Expected href="/responsible-gambling" in index.html');
 });
 
+runTest('Desktop footer contains direct URL href="/data-deletion"', () => {
+  assert(indexHtml.includes('href="/data-deletion"'), 'Expected href="/data-deletion" in index.html');
+});
+
 runTest('Footer links support modifier clicks (Ctrl/Cmd/Shift) for opening in new tab', () => {
   assert(indexHtml.includes('!event.ctrlKey && !event.metaKey && !event.shiftKey'), 'Expected modifier click check for tab opening');
 });
@@ -64,24 +69,37 @@ runTest('Support modal includes dedicated "Disclaimer" tab button', () => {
   assert(indexHtml.includes("switchSupportTab('disclaimer')"), 'Expected switchSupportTab call for disclaimer');
 });
 
+runTest('Support modal includes dedicated "Data Deletion" tab button', () => {
+  assert(indexHtml.includes('id="supp-tab-data-deletion"'), 'Expected #supp-tab-data-deletion in index.html');
+  assert(indexHtml.includes("switchSupportTab('data-deletion')"), 'Expected switchSupportTab call for data-deletion');
+});
+
 runTest('Support modal includes dedicated "Disclaimer" content pane', () => {
   assert(indexHtml.includes('id="supp-pane-disclaimer"'), 'Expected #supp-pane-disclaimer in index.html');
   assert(indexHtml.includes('Analytical &amp; Statistical Disclaimer'), 'Expected disclaimer disclosures heading');
   assert(indexHtml.includes('not a bookmaker, sportsbook, or betting operator'), 'Expected non-bookmaker notice in disclaimer pane');
 });
 
+runTest('Support modal includes dedicated "Data Deletion" content pane', () => {
+  assert(indexHtml.includes('id="supp-pane-data-deletion"'), 'Expected #supp-pane-data-deletion in index.html');
+  assert(indexHtml.includes('User Data Deletion Instructions'), 'Expected deletion heading in support pane');
+  assert(indexHtml.includes('privacy@deeppredictbet.com'), 'Expected privacy email in data deletion pane');
+});
+
 // 3. Router JS Route Configs
-runTest('js/router.js configures /terms, /privacy, and /disclaimer routes', () => {
+runTest('js/router.js configures /terms, /privacy, /disclaimer, /responsible-gambling, /data-deletion routes', () => {
   assert(routerJs.includes("'/terms': {"), 'Expected /terms in ROUTE_CONFIGS');
   assert(routerJs.includes("'/privacy': {"), 'Expected /privacy in ROUTE_CONFIGS');
   assert(routerJs.includes("'/disclaimer': {"), 'Expected /disclaimer in ROUTE_CONFIGS');
   assert(routerJs.includes("'/responsible-gambling': {"), 'Expected /responsible-gambling in ROUTE_CONFIGS');
+  assert(routerJs.includes("'/data-deletion': {"), 'Expected /data-deletion in ROUTE_CONFIGS');
 });
 
 runTest('js/router.js maps routes to supportModalTab properties', () => {
   assert(routerJs.includes("supportModalTab: 'terms'"), 'Expected supportModalTab terms');
   assert(routerJs.includes("supportModalTab: 'privacy'"), 'Expected supportModalTab privacy');
   assert(routerJs.includes("supportModalTab: 'disclaimer'"), 'Expected supportModalTab disclaimer');
+  assert(routerJs.includes("supportModalTab: 'data-deletion'"), 'Expected supportModalTab data-deletion');
 });
 
 runTest('js/router.js supports hash redirects for legacy anchors', () => {
@@ -91,12 +109,8 @@ runTest('js/router.js supports hash redirects for legacy anchors', () => {
 });
 
 // 4. UI JS Tab Handlers
-runTest('js/ui.js includes "disclaimer" in switchSupportTab()', () => {
-  assert(uiJs.includes("'disclaimer'"), 'Expected disclaimer tab registered in switchSupportTab');
-});
-
-runTest('js/ui.js handles "disclaimer" in openSupportModal()', () => {
-  assert(uiJs.includes("activeTab === 'disclaimer'"), 'Expected disclaimer condition in openSupportModal');
+runTest('js/ui.js includes "data-deletion" in switchSupportTab()', () => {
+  assert(uiJs.includes('"data-deletion"'), 'Expected data-deletion tab registered in switchSupportTab');
 });
 
 runTest('js/ui.js restores root pathname on modal close', () => {
@@ -127,8 +141,16 @@ runTest('responsible-gambling.html has valid canonical URL and helpline resource
   assert(respGamblingHtml.includes('GamCare') || respGamblingHtml.includes('National Problem Gambling Helpline'), 'Helplines listed');
 });
 
+runTest('data-deletion.html has valid canonical URL, meta tags, and instructions', () => {
+  assert(dataDeletionHtml.includes('<link rel="canonical" href="https://deeppredictbet.com/data-deletion">'), 'Valid canonical in data-deletion.html');
+  assert(dataDeletionHtml.includes('<title>User Data Deletion Instructions — DeepPredictBet</title>'), 'Valid title in data-deletion.html');
+  assert(dataDeletionHtml.includes('privacy@deeppredictbet.com'), 'Valid contact email in data-deletion.html');
+  assert(dataDeletionHtml.includes('Apps and Websites'), 'Facebook Apps and Websites instructions in data-deletion.html');
+  assert(dataDeletionHtml.includes('thirty (30) calendar days'), 'Processing timeframe in data-deletion.html');
+});
+
 // 6. Public and Dist Verification
-runTest('Dist and Public directories contain standalone HTML files and index.html subdirs', () => {
+runTest('Public directory contains standalone HTML files and index.html subdirs', () => {
   const publicFiles = [
     'public/terms.html',
     'public/terms/index.html',
@@ -138,14 +160,12 @@ runTest('Dist and Public directories contain standalone HTML files and index.htm
     'public/disclaimer/index.html',
     'public/responsible-gambling.html',
     'public/responsible-gambling/index.html',
-    'dist/terms.html',
-    'dist/privacy.html',
-    'dist/disclaimer.html',
-    'dist/responsible-gambling.html'
+    'public/data-deletion.html',
+    'public/data-deletion/index.html'
   ];
   for (const file of publicFiles) {
     const fullPath = path.join(ROOT_DIR, file);
-    assert(fs.existsSync(fullPath), `Missing required build artifact: ${file}`);
+    assert(fs.existsSync(fullPath), `Missing required file: ${file}`);
   }
 });
 

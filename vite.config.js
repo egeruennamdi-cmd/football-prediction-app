@@ -70,7 +70,8 @@ export default defineConfig({
         terms: resolve(process.cwd(), 'terms.html'),
         privacy: resolve(process.cwd(), 'privacy.html'),
         disclaimer: resolve(process.cwd(), 'disclaimer.html'),
-        responsibleGambling: resolve(process.cwd(), 'responsible-gambling.html')
+        responsibleGambling: resolve(process.cwd(), 'responsible-gambling.html'),
+        dataDeletion: resolve(process.cwd(), 'data-deletion.html')
       },
       output: {
         entryFileNames: 'assets/[name]-[hash].js',
@@ -84,7 +85,8 @@ export default defineConfig({
         terms: resolve(process.cwd(), 'terms.html'),
         privacy: resolve(process.cwd(), 'privacy.html'),
         disclaimer: resolve(process.cwd(), 'disclaimer.html'),
-        responsibleGambling: resolve(process.cwd(), 'responsible-gambling.html')
+        responsibleGambling: resolve(process.cwd(), 'responsible-gambling.html'),
+        dataDeletion: resolve(process.cwd(), 'data-deletion.html')
       }
     }
   }

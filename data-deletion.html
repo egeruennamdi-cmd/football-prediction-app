@@ -1,0 +1,421 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="X-Content-Type-Options" content="nosniff">
+  <meta http-equiv="X-Frame-Options" content="SAMEORIGIN">
+  <meta name="referrer" content="strict-origin-when-cross-origin">
+  <title>User Data Deletion Instructions — DeepPredictBet</title>
+  <meta name="description" content="Official User Data Deletion Instructions for DeepPredictBet and Meta/Facebook platform integration. Learn how to request permanent data deletion and manage app permissions.">
+  <link rel="canonical" href="https://deeppredictbet.com/data-deletion">
+  
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://deeppredictbet.com/data-deletion">
+  <meta property="og:title" content="User Data Deletion Instructions — DeepPredictBet">
+  <meta property="og:description" content="Step-by-step instructions for requesting deletion of user data and managing Facebook/Meta app connections with DeepPredictBet.">
+  <meta property="og:site_name" content="DeepPredictBet">
+  <meta property="og:image" content="https://deeppredictbet.com/assets/og-image.png?v=20261023_tg_v3">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+
+  <!-- Twitter Meta Tags -->
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:site" content="@DeepPredictBet">
+  <meta name="twitter:creator" content="@DeepPredictBet">
+  <meta name="twitter:image" content="https://deeppredictbet.com/assets/og-image.png?v=20261023_tg_v3">
+
+  <link rel="icon" type="image/x-icon" href="/favicon.ico?v=20261020_v3">
+  <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png?v=20261020_v3">
+  <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png?v=20261020_v3">
+  <meta name="theme-color" content="#080b11">
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@400;500;600;700;800&display=swap">
+  <link rel="stylesheet" href="/css/main.css?v=20260925_mobile_footer_v1">
+
+  <style>
+    body {
+      background: #080b11;
+      color: #e2e8f0;
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      line-height: 1.6;
+      margin: 0;
+      padding: 0;
+    }
+    .legal-nav-header {
+      background: rgba(8, 11, 17, 0.92);
+      backdrop-filter: blur(12px);
+      border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+      position: sticky;
+      top: 0;
+      z-index: 1000;
+      padding: 14px 24px;
+    }
+    .legal-nav-container {
+      max-width: 1080px;
+      margin: 0 auto;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 16px;
+    }
+    .legal-logo-link {
+      display: inline-flex;
+      align-items: center;
+      text-decoration: none;
+    }
+    .legal-logo-img {
+      height: 38px;
+      width: auto;
+    }
+    .legal-back-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: rgba(26, 104, 219, 0.15);
+      border: 1px solid rgba(26, 104, 219, 0.35);
+      color: #38bdf8;
+      padding: 8px 16px;
+      border-radius: 8px;
+      font-size: 0.82rem;
+      font-weight: 700;
+      text-decoration: none;
+      transition: all 0.2s ease;
+    }
+    .legal-back-btn:hover {
+      background: #1a68db;
+      color: #ffffff;
+      border-color: #1a68db;
+      box-shadow: 0 0 16px rgba(26, 104, 219, 0.4);
+    }
+    .legal-page-wrapper {
+      max-width: 1080px;
+      margin: 32px auto 60px;
+      padding: 0 20px;
+    }
+    .legal-pills-bar {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      margin-bottom: 24px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+      padding-bottom: 16px;
+    }
+    .legal-pill {
+      background: rgba(255, 255, 255, 0.04);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      color: #94a3b8;
+      padding: 8px 14px;
+      border-radius: 6px;
+      font-size: 0.8rem;
+      font-weight: 700;
+      text-decoration: none;
+      transition: all 0.15s ease;
+    }
+    .legal-pill:hover, .legal-pill.active {
+      background: rgba(56, 189, 248, 0.15);
+      border-color: #38bdf8;
+      color: #38bdf8;
+    }
+    .legal-content-card {
+      background: rgba(15, 23, 42, 0.65);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 14px;
+      padding: 36px 40px;
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+    }
+    @media (max-width: 640px) {
+      .legal-content-card {
+        padding: 24px 20px;
+      }
+    }
+    .legal-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: rgba(16, 185, 129, 0.15);
+      border: 1px solid rgba(16, 185, 129, 0.35);
+      color: #34d399;
+      padding: 4px 10px;
+      border-radius: 6px;
+      font-size: 0.72rem;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      margin-bottom: 12px;
+    }
+    .legal-title {
+      font-family: 'Outfit', sans-serif;
+      font-size: 1.85rem;
+      font-weight: 800;
+      color: #ffffff;
+      margin: 0 0 8px 0;
+      line-height: 1.25;
+    }
+    .legal-updated {
+      font-size: 0.8rem;
+      color: #94a3b8;
+      margin-bottom: 24px;
+    }
+    .legal-section-h2 {
+      font-family: 'Outfit', sans-serif;
+      font-size: 1.2rem;
+      font-weight: 700;
+      color: #38bdf8;
+      margin: 28px 0 12px 0;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+      padding-bottom: 8px;
+    }
+    .legal-section-h3 {
+      font-family: 'Outfit', sans-serif;
+      font-size: 1rem;
+      font-weight: 600;
+      color: #cbd5e1;
+      margin: 20px 0 8px 0;
+    }
+    .legal-text {
+      color: #cbd5e1;
+      font-size: 0.88rem;
+      line-height: 1.7;
+      margin-bottom: 14px;
+    }
+    .legal-list {
+      color: #cbd5e1;
+      font-size: 0.88rem;
+      line-height: 1.7;
+      margin: 0 0 16px 20px;
+      padding: 0;
+    }
+    .legal-list li {
+      margin-bottom: 8px;
+    }
+    .legal-highlight-box {
+      background: rgba(56, 189, 248, 0.08);
+      border: 1px solid rgba(56, 189, 248, 0.25);
+      border-radius: 10px;
+      padding: 16px 20px;
+      margin: 20px 0;
+      font-size: 0.85rem;
+      color: #e2e8f0;
+      line-height: 1.6;
+    }
+    .legal-steps-box {
+      background: rgba(15, 23, 42, 0.8);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 10px;
+      padding: 18px 22px;
+      margin: 16px 0;
+    }
+    .legal-step-item {
+      display: flex;
+      gap: 12px;
+      margin-bottom: 14px;
+    }
+    .legal-step-item:last-child {
+      margin-bottom: 0;
+    }
+    .legal-step-num {
+      flex-shrink: 0;
+      width: 26px;
+      height: 26px;
+      border-radius: 50%;
+      background: #0284c7;
+      color: #ffffff;
+      font-size: 0.75rem;
+      font-weight: 800;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .legal-step-content {
+      font-size: 0.85rem;
+      color: #cbd5e1;
+      line-height: 1.6;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Sticky Top Navigation -->
+  <header class="legal-nav-header">
+    <div class="legal-nav-container">
+      <a href="/" class="legal-logo-link" title="DeepPredictBet Home">
+        <img src="/assets/logo-3d.png?v=20261020_brand_logo_v4" alt="DeepPredictBet" class="legal-logo-img" width="180" height="38">
+      </a>
+      <a href="/" class="legal-back-btn">
+        <span>← Return to DeepPredictBet App</span>
+      </a>
+    </div>
+  </header>
+
+  <main class="legal-page-wrapper">
+    <!-- Legal Tabs Bar -->
+    <div class="legal-pills-bar">
+      <a href="/terms" class="legal-pill">Terms of Service</a>
+      <a href="/privacy" class="legal-pill">Privacy Policy</a>
+      <a href="/disclaimer" class="legal-pill">Analytical Disclaimer</a>
+      <a href="/responsible-gambling" class="legal-pill">Responsible Gambling (18+)</a>
+      <a href="/data-deletion" class="legal-pill active">User Data Deletion</a>
+    </div>
+
+    <!-- Document Card -->
+    <article class="legal-content-card">
+      <div class="legal-badge">Security &amp; Data Governance</div>
+      <h1 class="legal-title">User Data Deletion Instructions</h1>
+      <div class="legal-updated">Effective Date: October 2026 • Meta Platform Compliance &amp; Data Protection Standard</div>
+
+      <p class="legal-text">
+        At <strong>DeepPredictBet</strong>, we respect your privacy and uphold strict data minimization, digital sovereignty, and transparency principles. In accordance with Meta Platform Terms, the General Data Protection Regulation (GDPR), and the California Consumer Privacy Act (CCPA), this page provides clear, actionable instructions on how users and administrators can delete personal data associated with DeepPredictBet and its Facebook/Meta integrations.
+      </p>
+
+      <div class="legal-highlight-box">
+        <strong>📌 Key Overview for Facebook Users &amp; Administrators:</strong><br>
+        DeepPredictBet integrates with the Meta Graph API solely to allow authorized team administrators to connect and publish automated match previews and statistical updates to the official <strong>DeepPredictBet Facebook Page</strong>. DeepPredictBet does not offer a "Log in with Facebook" mechanism to regular website visitors or punters. We do not access or store personal Facebook profiles, friends lists, private messages, or external user activities.
+      </div>
+
+      <h2 class="legal-section-h2">1. Data Stored in Connection with Facebook/Meta</h2>
+      <p class="legal-text">
+        When an authorized administrator connects the official Facebook Page via our Social Media Command Center, DeepPredictBet stores only the bare technical credentials required to communicate with the Meta Graph API:
+      </p>
+      <ul class="legal-list">
+        <li><strong>Page Access Token:</strong> An encrypted OAuth token used by server-side Cloudflare Pages Functions to publish posts on behalf of the Page.</li>
+        <li><strong>Page Identifiers:</strong> The public Facebook Page ID and Page Name (e.g., "DeepPredictBet Official").</li>
+        <li><strong>Scope Metadata:</strong> The specific permissions authorized during OAuth (<code>pages_manage_posts</code>, <code>pages_read_engagement</code>, <code>pages_show_list</code>).</li>
+        <li><strong>Publication Logs:</strong> External post IDs returned by Meta upon successful publication (e.g., <code>fb_post_12345</code>) to confirm delivery and avoid duplicate posts.</li>
+      </ul>
+      <p class="legal-text">
+        All access tokens and connection data are stored exclusively in encrypted server-side Cloudflare KV storage (<code>USERS_KV</code>) and are never exposed to client browsers or third parties.
+      </p>
+
+      <h2 class="legal-section-h2">2. How to Request Data Deletion</h2>
+      <p class="legal-text">
+        Depending on your relationship with the platform, you may delete your data through any of the following verified methods:
+      </p>
+
+      <h3 class="legal-section-h3">Method A: Remove DeepPredictBet from Your Facebook Account</h3>
+      <p class="legal-text">
+        If you connected a Facebook Page or authorized the DeepPredictBet application, you can revoke access directly through Facebook at any time:
+      </p>
+      <div class="legal-steps-box">
+        <div class="legal-step-item">
+          <div class="legal-step-num">1</div>
+          <div class="legal-step-content">Log into your Facebook account and navigate to <strong>Settings &amp; Privacy</strong> → <strong>Settings</strong>.</div>
+        </div>
+        <div class="legal-step-item">
+          <div class="legal-step-num">2</div>
+          <div class="legal-step-content">In the left sidebar, click <strong>Apps and Websites</strong> (or go directly to <a href="https://www.facebook.com/settings?tab=applications" target="_blank" rel="noopener noreferrer" style="color: #38bdf8; text-decoration: underline;">facebook.com/settings?tab=applications</a>).</div>
+        </div>
+        <div class="legal-step-item">
+          <div class="legal-step-num">3</div>
+          <div class="legal-step-content">Locate <strong>DeepPredictBet Publisher</strong> (or the associated app name).</div>
+        </div>
+        <div class="legal-step-item">
+          <div class="legal-step-num">4</div>
+          <div class="legal-step-content">Click <strong>Remove</strong> and confirm. This immediately invalidates the active Page Access Token and prevents DeepPredictBet from making any future requests to the Meta Graph API on your behalf.</div>
+        </div>
+      </div>
+
+      <div class="legal-highlight-box" style="background: rgba(245, 158, 11, 0.08); border-color: rgba(245, 158, 11, 0.3);">
+        <strong>⚠️ Important Notice on Disconnecting vs. Deleting:</strong><br>
+        Removing the app in your Facebook settings revokes Meta's authorization, but it does not automatically erase existing cached tokens or account records previously stored on DeepPredictBet's servers. To purge all server-side records, use <strong>Method B</strong> or <strong>Method C</strong> below.
+      </div>
+
+      <h3 class="legal-section-h3">Method B: Instant Disconnect via the Command Center (Administrators)</h3>
+      <p class="legal-text">
+        Authorized administrators can immediately purge Facebook connection data from our Cloudflare KV storage:
+      </p>
+      <div class="legal-steps-box">
+        <div class="legal-step-item">
+          <div class="legal-step-num">1</div>
+          <div class="legal-step-content">Log in to the DeepPredictBet administrator panel and open the <strong>Social Media &amp; Telegram Command Center</strong>.</div>
+        </div>
+        <div class="legal-step-item">
+          <div class="legal-step-num">2</div>
+          <div class="legal-step-content">Select the <strong>Facebook Pages</strong> channel.</div>
+        </div>
+        <div class="legal-step-item">
+          <div class="legal-step-num">3</div>
+          <div class="legal-step-content">Click <strong>Disconnect Account</strong> and confirm. Our server executes an immediate purge of the <code>social_connection_facebook</code> KV entry, deleting all tokens, page identifiers, and verification records permanently.</div>
+        </div>
+      </div>
+
+      <h3 class="legal-section-h3">Method C: Submit a Written Deletion Request via Email</h3>
+      <p class="legal-text">
+        If you are a registered platform member or an administrator who wishes to request manual data erasure, please contact our verified Data Protection desk:
+      </p>
+      <div class="legal-steps-box">
+        <ul class="legal-list" style="margin-left: 0; list-style-type: none;">
+          <li><strong>Contact Email:</strong> <a href="mailto:privacy@deeppredictbet.com" style="color: #38bdf8; text-decoration: underline; font-weight: 700;">privacy@deeppredictbet.com</a></li>
+          <li><strong>Alternative Support Desk:</strong> <a href="mailto:support@deeppredictbet.com" style="color: #38bdf8; text-decoration: underline;">support@deeppredictbet.com</a></li>
+          <li><strong>Subject Line:</strong> <code>User Data Deletion Request - [Your Name / Page / Account]</code></li>
+          <li><strong>Required Information:</strong>
+            <ul style="margin: 6px 0 0 16px;">
+              <li>Your registered DeepPredictBet email address or username (if applicable).</li>
+              <li>The Facebook Page Name or Page ID associated with the integration.</li>
+              <li>A clear statement requesting permanent erasure of your stored data.</li>
+            </ul>
+          </li>
+        </ul>
+      </div>
+
+      <h2 class="legal-section-h2">3. What Information Is Deleted vs. Retained</h2>
+      <p class="legal-text">
+        When a data deletion request is processed:
+      </p>
+      <ul class="legal-list">
+        <li><strong>Data Permanently Deleted:</strong>
+          <ul style="margin-top: 4px;">
+            <li>All stored Meta OAuth tokens, Page Access Tokens, and account mappings.</li>
+            <li>Stored user profile data, login credentials, and session records.</li>
+            <li>Stored preferences, notification settings, and bet builder drafts.</li>
+          </ul>
+        </li>
+        <li><strong>Data Retained for Legitimate Legal or Security Reasons:</strong>
+          <ul style="margin-top: 4px;">
+            <li><strong>Financial &amp; Tax Compliance:</strong> If you purchased a VIP subscription, payment transaction receipts and invoice records may be retained for statutory periods required by tax and accounting regulations.</li>
+            <li><strong>Security &amp; Abuse Defense:</strong> Ephemeral network connection logs maintained by Cloudflare (such as IP addresses associated with malicious DDoS or scraping attacks) are retained strictly for infrastructure protection in accordance with legitimate interest provisions.</li>
+          </ul>
+        </li>
+      </ul>
+
+      <h2 class="legal-section-h2">4. Confirmation &amp; Processing Timeframe</h2>
+      <ul class="legal-list">
+        <li><strong>Acknowledgement:</strong> Our Data Protection Officer acknowledges all email deletion requests within <strong>48 business hours</strong> of receipt.</li>
+        <li><strong>Processing Period:</strong> Under standard data protection regulations (GDPR Article 12(3) and CCPA), verified deletion requests are fully executed within <strong>thirty (30) calendar days</strong>.</li>
+        <li><strong>Written Confirmation:</strong> Once your records have been permanently expunged from production datastores and server backups, you will receive a final confirmation email containing a formal closure statement.</li>
+      </ul>
+
+      <h2 class="legal-section-h2">5. Related Policies &amp; Contact Information</h2>
+      <p class="legal-text">
+        For further details regarding our data collection standards, please consult:
+      </p>
+      <ul class="legal-list">
+        <li><a href="/privacy" style="color: #38bdf8; text-decoration: underline;">DeepPredictBet Privacy Policy &amp; Data Security</a></li>
+        <li><a href="/terms" style="color: #38bdf8; text-decoration: underline;">Terms and Conditions of Use</a></li>
+        <li><a href="/disclaimer" style="color: #38bdf8; text-decoration: underline;">Analytical &amp; Statistical Disclaimer</a></li>
+        <li><a href="/responsible-gambling" style="color: #38bdf8; text-decoration: underline;">Responsible Gambling Policy</a></li>
+      </ul>
+      <p class="legal-text">
+        Direct all data sovereignty and privacy inquiries to <a href="mailto:privacy@deeppredictbet.com" style="color: #38bdf8; text-decoration: underline;">privacy@deeppredictbet.com</a>.
+      </p>
+    </article>
+  </main>
+
+  <!-- Clean Footer -->
+  <footer style="border-top: 1px solid rgba(255, 255, 255, 0.08); padding: 24px 20px; text-align: center; color: #64748b; font-size: 0.78rem;">
+    <div style="max-width: 1080px; margin: 0 auto; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px;">
+      <div>&copy; 2026 DeepPredictBet. All rights reserved. 18+ Only.</div>
+      <div style="display: flex; gap: 16px; flex-wrap: wrap;">
+        <a href="/terms" style="color: #94a3b8; text-decoration: none;">Terms</a>
+        <a href="/privacy" style="color: #94a3b8; text-decoration: none;">Privacy</a>
+        <a href="/disclaimer" style="color: #94a3b8; text-decoration: none;">Disclaimer</a>
+        <a href="/responsible-gambling" style="color: #94a3b8; text-decoration: none;">Responsible Gambling</a>
+        <a href="/data-deletion" style="color: #38bdf8; text-decoration: none; font-weight: 700;">Data Deletion</a>
+      </div>
+    </div>
+  </footer>
+
+</body>
+</html>
