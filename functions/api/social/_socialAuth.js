@@ -209,7 +209,7 @@ export async function buildPlatformAuthorizationUrl(env, platform, redirectUri) 
   switch (platform) {
     case 'instagram':
     case 'facebook': {
-      const clientId = env.META_APP_ID;
+      const clientId = env.META_APP_ID || env.FACEBOOK_APP_ID;
       if (!clientId) {
         throw new Error(`META_APP_ID is not configured in server environment.`);
       }
@@ -292,8 +292,8 @@ export async function exchangeOAuthCodeForTokens(env, platform, code, redirectUr
  * META (Instagram & Facebook Pages) Token Exchange
  */
 async function exchangeMetaCode(env, platform, code, redirectUri) {
-  const clientId = env.META_APP_ID;
-  const clientSecret = env.META_APP_SECRET;
+  const clientId = env.META_APP_ID || env.FACEBOOK_APP_ID;
+  const clientSecret = env.META_APP_SECRET || env.FACEBOOK_APP_SECRET;
 
   if (!clientId || !clientSecret) {
     throw new Error('META_APP_ID or META_APP_SECRET missing in server environment.');
@@ -350,8 +350,8 @@ async function exchangeMetaCode(env, platform, code, redirectUri) {
     throw new Error('No Facebook Pages found for this user. A Facebook Page is required to publish.');
   }
 
-  // Select target page (or first available)
-  const targetPage = pages[0];
+  // Select target page: prioritize DeepPredictBet if available, otherwise first
+  const targetPage = pages.find(p => p.name && p.name.toLowerCase().includes('deeppredictbet')) || pages[0];
   const pageAccessToken = targetPage.access_token;
   const pageId = targetPage.id;
   const pageName = targetPage.name;
