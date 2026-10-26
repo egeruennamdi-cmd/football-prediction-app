@@ -57,6 +57,14 @@ export const OAUTH_CONFIGS = {
 // 1. SECURE STATE & PKCE UTILITIES
 // ============================================================================
 
+/**
+ * Trims extraneous whitespace, newlines, and enclosing quotes from environment credentials
+ */
+export function sanitizeCredential(val) {
+  if (!val) return '';
+  return String(val).trim().replace(/^['"]|['"]$/g, '').trim();
+}
+
 export function generateSecureRandomString(bytes = 32) {
   const array = new Uint8Array(bytes);
   if (typeof crypto !== 'undefined' && crypto.getRandomValues) {
@@ -209,7 +217,7 @@ export async function buildPlatformAuthorizationUrl(env, platform, redirectUri, 
   switch (platform) {
     case 'instagram':
     case 'facebook': {
-      const clientId = env.META_APP_ID || env.FACEBOOK_APP_ID;
+      const clientId = sanitizeCredential(env.META_APP_ID || env.FACEBOOK_APP_ID);
       if (!clientId) {
         throw new Error(`META_APP_ID is not configured in server environment.`);
       }
@@ -219,7 +227,7 @@ export async function buildPlatformAuthorizationUrl(env, platform, redirectUri, 
       url.searchParams.set('response_type', 'code');
 
       // Support Facebook Login for Business configuration if provided
-      const configId = options.configId || env.META_CONFIG_ID || env.FACEBOOK_CONFIG_ID;
+      const configId = sanitizeCredential(options.configId || env.META_CONFIG_ID || env.FACEBOOK_CONFIG_ID);
       if (configId) {
         url.searchParams.set('config_id', configId);
         url.searchParams.set('override_default_response_type', 'true');
@@ -229,7 +237,7 @@ export async function buildPlatformAuthorizationUrl(env, platform, redirectUri, 
       break;
     }
     case 'x': {
-      const clientId = env.X_CLIENT_ID || env.X_API_CLIENT_ID;
+      const clientId = sanitizeCredential(env.X_CLIENT_ID || env.X_API_CLIENT_ID);
       if (!clientId) {
         throw new Error(`X_CLIENT_ID is not configured in server environment.`);
       }
@@ -243,7 +251,7 @@ export async function buildPlatformAuthorizationUrl(env, platform, redirectUri, 
       break;
     }
     case 'tiktok': {
-      const clientKey = env.TIKTOK_CLIENT_KEY;
+      const clientKey = sanitizeCredential(env.TIKTOK_CLIENT_KEY);
       if (!clientKey) {
         throw new Error(`TIKTOK_CLIENT_KEY is not configured in server environment.`);
       }
@@ -255,7 +263,7 @@ export async function buildPlatformAuthorizationUrl(env, platform, redirectUri, 
       break;
     }
     case 'youtube': {
-      const clientId = env.GOOGLE_CLIENT_ID || env.YOUTUBE_CLIENT_ID;
+      const clientId = sanitizeCredential(env.GOOGLE_CLIENT_ID || env.YOUTUBE_CLIENT_ID);
       if (!clientId) {
         throw new Error(`GOOGLE_CLIENT_ID is not configured in server environment.`);
       }
@@ -300,24 +308,47 @@ export async function exchangeOAuthCodeForTokens(env, platform, code, redirectUr
  * META (Instagram & Facebook Pages) Token Exchange
  */
 async function exchangeMetaCode(env, platform, code, redirectUri) {
-  const clientId = env.META_APP_ID || env.FACEBOOK_APP_ID;
-  const clientSecret = env.META_APP_SECRET || env.FACEBOOK_APP_SECRET;
+  const rawClientId = env.META_APP_ID || env.FACEBOOK_APP_ID;
+  const rawClientSecret = env.META_APP_SECRET || env.FACEBOOK_APP_SECRET;
+
+  const clientId = sanitizeCredential(rawClientId);
+  const clientSecret = sanitizeCredential(rawClientSecret);
 
   if (!clientId || !clientSecret) {
     throw new Error('META_APP_ID or META_APP_SECRET missing in server environment.');
   }
 
   // Step 1: Exchange code for short-lived User Access Token
+  // Use POST with application/x-www-form-urlencoded to prevent query string encoding issues
   const tokenParams = new URLSearchParams({
     client_id: clientId,
     client_secret: clientSecret,
     redirect_uri: redirectUri,
-    code
+    code: sanitizeCredential(code)
   });
 
-  const tokenRes = await fetch(`https://graph.facebook.com/v21.0/oauth/access_token?${tokenParams.toString()}`);
+  const tokenRes = await fetch('https://graph.facebook.com/v21.0/oauth/access_token', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/x-www-form-urlencoded'
+    },
+    body: tokenParams.toString()
+  });
+
   if (!tokenRes.ok) {
     const errText = await tokenRes.text();
+    let isSecretMismatch = false;
+    try {
+      const errJson = JSON.parse(errText);
+      if (errJson?.error?.code === 1 || errJson?.error?.message?.includes('validating client secret')) {
+        isSecretMismatch = true;
+      }
+    } catch (_) {}
+
+    if (isSecretMismatch) {
+      throw new Error(`Meta token exchange failed (400): Error validating client secret. The META_APP_SECRET configured in Cloudflare Pages does not match Meta App ID ${clientId}. Please verify the App Secret in Meta for Developers under App settings > Basic.`);
+    }
+
     throw new Error(`Meta token exchange failed (${tokenRes.status}): ${errText}`);
   }
 
@@ -332,7 +363,14 @@ async function exchangeMetaCode(env, platform, code, redirectUri) {
     fb_exchange_token: shortLivedUserToken
   });
 
-  const longLivedRes = await fetch(`https://graph.facebook.com/v21.0/oauth/access_token?${longLivedParams.toString()}`);
+  const longLivedRes = await fetch('https://graph.facebook.com/v21.0/oauth/access_token', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/x-www-form-urlencoded'
+    },
+    body: longLivedParams.toString()
+  });
+
   let userToken = shortLivedUserToken;
   let expiresIn = tokenData.expires_in || 5184000; // default 60 days
 
@@ -342,6 +380,9 @@ async function exchangeMetaCode(env, platform, code, redirectUri) {
       userToken = longLivedData.access_token;
       expiresIn = longLivedData.expires_in || 5184000;
     }
+  } else {
+    const errText = await longLivedRes.text();
+    console.warn(`[Meta OAuth] Long-lived token exchange warning (${longLivedRes.status}): ${errText}`);
   }
 
   // Step 3: Discover Facebook Pages and connected Instagram Business Accounts
@@ -401,8 +442,8 @@ async function exchangeMetaCode(env, platform, code, redirectUri) {
  * 𝕏 (Twitter) Token Exchange with PKCE
  */
 async function exchangeXCode(env, code, redirectUri, codeVerifier) {
-  const clientId = env.X_CLIENT_ID || env.X_API_CLIENT_ID;
-  const clientSecret = env.X_CLIENT_SECRET || env.X_API_CLIENT_SECRET;
+  const clientId = sanitizeCredential(env.X_CLIENT_ID || env.X_API_CLIENT_ID);
+  const clientSecret = sanitizeCredential(env.X_CLIENT_SECRET || env.X_API_CLIENT_SECRET);
 
   if (!clientId) {
     throw new Error('X_CLIENT_ID is not configured in server environment.');
@@ -418,11 +459,11 @@ async function exchangeXCode(env, code, redirectUri, codeVerifier) {
   }
 
   const bodyParams = new URLSearchParams({
-    code,
+    code: sanitizeCredential(code),
     grant_type: 'authorization_code',
     client_id: clientId,
     redirect_uri: redirectUri,
-    code_verifier: codeVerifier || ''
+    code_verifier: sanitizeCredential(codeVerifier) || ''
   });
 
   const res = await fetch('https://api.twitter.com/2/oauth2/token', {
@@ -472,8 +513,8 @@ async function exchangeXCode(env, code, redirectUri, codeVerifier) {
  * TikTok Token Exchange
  */
 async function exchangeTikTokCode(env, code, redirectUri) {
-  const clientKey = env.TIKTOK_CLIENT_KEY;
-  const clientSecret = env.TIKTOK_CLIENT_SECRET;
+  const clientKey = sanitizeCredential(env.TIKTOK_CLIENT_KEY);
+  const clientSecret = sanitizeCredential(env.TIKTOK_CLIENT_SECRET);
 
   if (!clientKey || !clientSecret) {
     throw new Error('TIKTOK_CLIENT_KEY or TIKTOK_CLIENT_SECRET missing in server environment.');
@@ -482,7 +523,7 @@ async function exchangeTikTokCode(env, code, redirectUri) {
   const bodyParams = new URLSearchParams({
     client_key: clientKey,
     client_secret: clientSecret,
-    code,
+    code: sanitizeCredential(code),
     grant_type: 'authorization_code',
     redirect_uri: redirectUri
   });
@@ -519,15 +560,15 @@ async function exchangeTikTokCode(env, code, redirectUri) {
  * YouTube (Google OAuth 2.0) Token Exchange
  */
 async function exchangeYouTubeCode(env, code, redirectUri) {
-  const clientId = env.GOOGLE_CLIENT_ID || env.YOUTUBE_CLIENT_ID;
-  const clientSecret = env.GOOGLE_CLIENT_SECRET || env.YOUTUBE_CLIENT_SECRET;
+  const clientId = sanitizeCredential(env.GOOGLE_CLIENT_ID || env.YOUTUBE_CLIENT_ID);
+  const clientSecret = sanitizeCredential(env.GOOGLE_CLIENT_SECRET || env.YOUTUBE_CLIENT_SECRET);
 
   if (!clientId || !clientSecret) {
     throw new Error('GOOGLE_CLIENT_ID or GOOGLE_CLIENT_SECRET missing in server environment.');
   }
 
   const bodyParams = new URLSearchParams({
-    code,
+    code: sanitizeCredential(code),
     client_id: clientId,
     client_secret: clientSecret,
     redirect_uri: redirectUri,

@@ -32,10 +32,30 @@ export async function onRequestGet(context) {
   try {
     const accounts = await getSocialAccountsHealth(env);
 
+    const rawMetaId = env.META_APP_ID || env.FACEBOOK_APP_ID || '';
+    const rawMetaSecret = env.META_APP_SECRET || env.FACEBOOK_APP_SECRET || '';
+    const cleanMetaId = String(rawMetaId).trim().replace(/^['"]|['"]$/g, '');
+    const cleanMetaSecret = String(rawMetaSecret).trim().replace(/^['"]|['"]$/g, '');
+
+    const metaDiagnostics = {
+      appIdConfigured: Boolean(rawMetaId),
+      appIdCleanValue: cleanMetaId || null,
+      appIdMatchesExpected: cleanMetaId === '2207122310233778',
+      appSecretConfigured: Boolean(rawMetaSecret),
+      appSecretRawLength: rawMetaSecret.length,
+      appSecretCleanLength: cleanMetaSecret.length,
+      appSecretHadWhitespace: rawMetaSecret !== rawMetaSecret.trim(),
+      appSecretHadQuotes: /^['"]|['"]$/.test(rawMetaSecret),
+      appSecretIsHex32: /^[0-9a-f]{32}$/i.test(cleanMetaSecret),
+      appSecretLooksLikeAccessToken: cleanMetaSecret.startsWith('EAA'),
+      appSecretEqualsAppId: cleanMetaSecret === cleanMetaId
+    };
+
     return new Response(JSON.stringify({
       success: true,
       timestamp: new Date().toISOString(),
       accounts,
+      metaDiagnostics,
       activeChannelsCount: Object.values(accounts).filter(a => a.connected).length,
       totalChannelsCount: Object.keys(accounts).length
     }), {
