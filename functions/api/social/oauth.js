@@ -86,7 +86,7 @@ export async function onRequestGet(context) {
     }
   }
 
-  // 2. AUTHORIZE URL GENERATOR (Requires Admin Auth)
+  // 2. AUTHORIZE URL GENERATOR & ADMIN VERIFICATION (Requires Admin Auth)
   const auth = await verifyAdminAuthorization(context);
   if (!auth.authorized) {
     return new Response(JSON.stringify({
@@ -96,6 +96,57 @@ export async function onRequestGet(context) {
       status: auth.statusCode || 403,
       headers: adminCorsHeaders()
     });
+  }
+
+  // 2b. Zero-Exposure Meta Server-to-Server Credential Verification Beacon
+  if (action === 'verify-meta-credentials') {
+    const rawClientId = env.META_APP_ID || env.FACEBOOK_APP_ID;
+    const rawClientSecret = env.META_APP_SECRET || env.FACEBOOK_APP_SECRET;
+    const clientId = String(rawClientId || '').trim().replace(/^['"]|['"]$/g, '');
+    const clientSecret = String(rawClientSecret || '').trim().replace(/^['"]|['"]$/g, '');
+
+    if (!clientId || !clientSecret) {
+      return new Response(JSON.stringify({
+        success: false,
+        error: 'META_APP_ID or META_APP_SECRET missing in server environment.'
+      }), { status: 400, headers: adminCorsHeaders() });
+    }
+
+    try {
+      const verifyRes = await fetch('https://graph.facebook.com/v21.0/oauth/access_token', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+        body: new URLSearchParams({
+          client_id: clientId,
+          client_secret: clientSecret,
+          grant_type: 'client_credentials'
+        }).toString()
+      });
+
+      const verifyData = await verifyRes.json();
+      if (verifyRes.ok && verifyData.access_token) {
+        return new Response(JSON.stringify({
+          success: true,
+          valid: true,
+          appId: clientId,
+          message: 'Meta App credentials are valid and successfully validated against Meta Graph API v21.0.'
+        }), { status: 200, headers: adminCorsHeaders() });
+      }
+
+      return new Response(JSON.stringify({
+        success: true,
+        valid: false,
+        appId: clientId,
+        error: verifyData.error ? verifyData.error.message : 'Unknown Meta validation error',
+        errorCode: verifyData.error ? verifyData.error.code : null,
+        errorSubcode: verifyData.error ? verifyData.error.error_subcode : null
+      }), { status: 200, headers: adminCorsHeaders() });
+    } catch (err) {
+      return new Response(JSON.stringify({
+        success: false,
+        error: `Meta validation network error: ${err.message}`
+      }), { status: 500, headers: adminCorsHeaders() });
+    }
   }
 
   const platform = url.searchParams.get('platform');
