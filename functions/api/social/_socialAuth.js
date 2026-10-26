@@ -30,7 +30,7 @@ export const OAUTH_CONFIGS = {
     name: 'Facebook Pages',
     authUrl: 'https://www.facebook.com/v21.0/dialog/oauth',
     tokenUrl: 'https://graph.facebook.com/v21.0/oauth/access_token',
-    scopes: ['pages_manage_posts', 'pages_read_engagement', 'pages_show_list']
+    scopes: ['pages_show_list', 'pages_manage_posts', 'pages_read_engagement']
   },
   x: {
     name: '𝕏 (Twitter)',
@@ -190,7 +190,7 @@ export async function deletePlatformConnection(env, platform) {
 // 3. AUTHORIZATION URL BUILDER
 // ============================================================================
 
-export async function buildPlatformAuthorizationUrl(env, platform, redirectUri) {
+export async function buildPlatformAuthorizationUrl(env, platform, redirectUri, options = {}) {
   const config = OAUTH_CONFIGS[platform];
   if (!config) throw new Error(`Unsupported OAuth platform: ${platform}`);
 
@@ -216,8 +216,16 @@ export async function buildPlatformAuthorizationUrl(env, platform, redirectUri) 
       url.searchParams.set('client_id', clientId);
       url.searchParams.set('redirect_uri', redirectUri);
       url.searchParams.set('state', stateRecord.state);
-      url.searchParams.set('scope', config.scopes.join(','));
       url.searchParams.set('response_type', 'code');
+
+      // Support Facebook Login for Business configuration if provided
+      const configId = options.configId || env.META_CONFIG_ID || env.FACEBOOK_CONFIG_ID;
+      if (configId) {
+        url.searchParams.set('config_id', configId);
+        url.searchParams.set('override_default_response_type', 'true');
+      } else {
+        url.searchParams.set('scope', config.scopes.join(','));
+      }
       break;
     }
     case 'x': {

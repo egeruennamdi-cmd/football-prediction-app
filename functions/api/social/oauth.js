@@ -99,6 +99,7 @@ export async function onRequestGet(context) {
   }
 
   const platform = url.searchParams.get('platform');
+  const configId = url.searchParams.get('config_id') || url.searchParams.get('configId') || null;
   if (!platform) {
     return new Response(JSON.stringify({
       success: false,
@@ -110,7 +111,7 @@ export async function onRequestGet(context) {
     const redirectUri = platform === 'tiktok'
       ? `${url.origin}/api/social/oauth`
       : `${url.origin}/api/social/oauth?action=callback`;
-    const { authorizationUrl, state } = await buildPlatformAuthorizationUrl(env, platform, redirectUri);
+    const { authorizationUrl, state } = await buildPlatformAuthorizationUrl(env, platform, redirectUri, { configId });
 
     return new Response(JSON.stringify({
       success: true,

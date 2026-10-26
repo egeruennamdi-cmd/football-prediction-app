@@ -73,8 +73,8 @@ export async function getSocialAccountsHealth(env) {
       accountHandle: null,
       supportedFormats: ['STATUS', 'PHOTO', 'LINK'],
       characterLimit: 63206,
-      requiredScopes: ['pages_manage_posts', 'pages_read_engagement'],
-      missingPermissions: ['pages_manage_posts', 'pages_read_engagement'],
+      requiredScopes: ['pages_show_list', 'pages_manage_posts', 'pages_read_engagement'],
+      missingPermissions: ['pages_show_list', 'pages_manage_posts', 'pages_read_engagement'],
       reason: 'Facebook Page ID or Page Access Token not configured.'
     },
     tiktok: {

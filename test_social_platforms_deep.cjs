@@ -170,6 +170,41 @@ async function runAllTests() {
     assert.ok(data.authorizationUrl.includes('mock_meta_app_id_999'));
   });
 
+  await test('GET /api/social/oauth: Authorizes administrator and generates Facebook Pages OAuth URL with valid scopes', async () => {
+    const res = await oauthGet({
+      request: new Request('https://deeppredictbet.com/api/social/oauth?action=authorize&platform=facebook', {
+        headers: adminHeaders
+      }),
+      env: mockEnv
+    });
+    assert.strictEqual(res.status, 200);
+    const data = await res.json();
+    assert.strictEqual(data.success, true);
+    assert.strictEqual(data.platform, 'facebook');
+    assert.ok(data.authorizationUrl.includes('facebook.com/v21.0/dialog/oauth'));
+    assert.ok(data.authorizationUrl.includes('pages_show_list'));
+    assert.ok(data.authorizationUrl.includes('pages_manage_posts'));
+    assert.ok(data.authorizationUrl.includes('pages_read_engagement'));
+    assert.ok(!data.authorizationUrl.includes('config_id'));
+  });
+
+  await test('GET /api/social/oauth: Routes Facebook Login for Business via config_id when META_CONFIG_ID is configured', async () => {
+    const customEnv = { ...mockEnv, META_CONFIG_ID: '9876543210_biz_cfg' };
+    const res = await oauthGet({
+      request: new Request('https://deeppredictbet.com/api/social/oauth?action=authorize&platform=facebook', {
+        headers: adminHeaders
+      }),
+      env: customEnv
+    });
+    assert.strictEqual(res.status, 200);
+    const data = await res.json();
+    assert.strictEqual(data.success, true);
+    assert.ok(data.authorizationUrl.includes('config_id=9876543210_biz_cfg'));
+    assert.ok(data.authorizationUrl.includes('override_default_response_type=true'));
+    // In Facebook Login for Business with config_id, raw scopes should not be passed in URL
+    assert.ok(!data.authorizationUrl.includes('scope='));
+  });
+
   // ==========================================================================
   // SECTION 2: OAUTH STATE SECURITY & PKCE
   // ==========================================================================
