@@ -205,6 +205,38 @@ async function runAllTests() {
     assert.ok(!data.authorizationUrl.includes('scope='));
   });
 
+  await test('GET /api/social/oauth: Routes Instagram via config_id when INSTAGRAM_CONFIG_ID is configured', async () => {
+    const customEnv = { ...mockEnv, INSTAGRAM_CONFIG_ID: 'ig_cfg_987654321' };
+    const res = await oauthGet({
+      request: new Request('https://deeppredictbet.com/api/social/oauth?action=authorize&platform=instagram', {
+        headers: adminHeaders
+      }),
+      env: customEnv
+    });
+    assert.strictEqual(res.status, 200);
+    const data = await res.json();
+    assert.strictEqual(data.success, true);
+    assert.ok(data.authorizationUrl.includes('config_id=ig_cfg_987654321'));
+    assert.ok(data.authorizationUrl.includes('override_default_response_type=true'));
+    assert.ok(!data.authorizationUrl.includes('scope='));
+  });
+
+  await test('GET /api/social/oauth: Generates exact Option A scopes for Instagram when config_id is absent', async () => {
+    const res = await oauthGet({
+      request: new Request('https://deeppredictbet.com/api/social/oauth?action=authorize&platform=instagram', {
+        headers: adminHeaders
+      }),
+      env: mockEnv
+    });
+    assert.strictEqual(res.status, 200);
+    const data = await res.json();
+    assert.strictEqual(data.success, true);
+    assert.ok(data.authorizationUrl.includes('pages_show_list'));
+    assert.ok(data.authorizationUrl.includes('pages_read_engagement'));
+    assert.ok(data.authorizationUrl.includes('instagram_basic'));
+    assert.ok(data.authorizationUrl.includes('instagram_content_publish'));
+  });
+
   // ==========================================================================
   // SECTION 2: OAUTH STATE SECURITY & PKCE
   // ==========================================================================

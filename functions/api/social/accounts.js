@@ -48,7 +48,10 @@ export async function onRequestGet(context) {
       appSecretHadQuotes: /^['"]|['"]$/.test(rawMetaSecret),
       appSecretIsHex32: /^[0-9a-f]{32}$/i.test(cleanMetaSecret),
       appSecretLooksLikeAccessToken: cleanMetaSecret.startsWith('EAA'),
-      appSecretEqualsAppId: cleanMetaSecret === cleanMetaId
+      appSecretEqualsAppId: cleanMetaSecret === cleanMetaId,
+      instagramConfigIdConfigured: Boolean(env.INSTAGRAM_CONFIG_ID || env.META_INSTAGRAM_CONFIG_ID),
+      facebookConfigIdConfigured: Boolean(env.FACEBOOK_CONFIG_ID || env.META_FACEBOOK_CONFIG_ID),
+      metaConfigIdConfigured: Boolean(env.META_CONFIG_ID)
     };
 
     return new Response(JSON.stringify({

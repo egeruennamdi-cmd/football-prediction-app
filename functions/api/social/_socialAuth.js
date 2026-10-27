@@ -24,7 +24,7 @@ export const OAUTH_CONFIGS = {
     name: 'Instagram Business',
     authUrl: 'https://www.facebook.com/v21.0/dialog/oauth',
     tokenUrl: 'https://graph.facebook.com/v21.0/oauth/access_token',
-    scopes: ['instagram_basic', 'instagram_content_publish', 'pages_read_engagement', 'pages_show_list']
+    scopes: ['pages_show_list', 'pages_read_engagement', 'instagram_basic', 'instagram_content_publish']
   },
   facebook: {
     name: 'Facebook Pages',
@@ -227,7 +227,10 @@ export async function buildPlatformAuthorizationUrl(env, platform, redirectUri, 
       url.searchParams.set('response_type', 'code');
 
       // Support Facebook Login for Business configuration if provided
-      const configId = sanitizeCredential(options.configId || env.META_CONFIG_ID || env.FACEBOOK_CONFIG_ID);
+      const platformConfigId = platform === 'instagram'
+        ? (env.INSTAGRAM_CONFIG_ID || env.META_INSTAGRAM_CONFIG_ID)
+        : (env.FACEBOOK_CONFIG_ID || env.META_FACEBOOK_CONFIG_ID);
+      const configId = sanitizeCredential(options.configId || platformConfigId || env.META_CONFIG_ID);
       if (configId) {
         url.searchParams.set('config_id', configId);
         url.searchParams.set('override_default_response_type', 'true');
@@ -400,7 +403,16 @@ async function exchangeMetaCode(env, platform, code, redirectUri) {
   }
 
   // Select target page: prioritize DeepPredictBet if available, otherwise first
-  const targetPage = pages.find(p => p.name && p.name.toLowerCase().includes('deeppredictbet')) || pages[0];
+  let targetPage;
+  if (platform === 'instagram') {
+    targetPage = pages.find(p => p.instagram_business_account && p.instagram_business_account.id && p.name && p.name.toLowerCase().includes('deeppredictbet'))
+      || pages.find(p => p.instagram_business_account && p.instagram_business_account.id)
+      || pages.find(p => p.name && p.name.toLowerCase().includes('deeppredictbet'))
+      || pages[0];
+  } else {
+    targetPage = pages.find(p => p.name && p.name.toLowerCase().includes('deeppredictbet')) || pages[0];
+  }
+
   const pageAccessToken = targetPage.access_token;
   const pageId = targetPage.id;
   const pageName = targetPage.name;
@@ -420,7 +432,7 @@ async function exchangeMetaCode(env, platform, code, redirectUri) {
   // Instagram resolution
   const igAccount = targetPage.instagram_business_account;
   if (!igAccount || !igAccount.id) {
-    throw new Error(`No Instagram Business/Creator account connected to Facebook Page "${pageName}". Please link your Instagram account to the Facebook Page.`);
+    throw new Error(`No Instagram Professional account found connected to Facebook Page "${pageName}". Please ensure your Instagram profile is a Business or Creator account and linked to "${pageName}" in Facebook Page Settings > Linked Accounts.`);
   }
 
   return {

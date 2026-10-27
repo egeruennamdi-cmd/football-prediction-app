@@ -61,8 +61,8 @@ export async function getSocialAccountsHealth(env) {
       accountHandle: null,
       supportedFormats: ['PHOTO', 'CAROUSEL', 'REELS'],
       characterLimit: 2200,
-      requiredScopes: ['instagram_basic', 'instagram_content_publish', 'pages_read_engagement'],
-      missingPermissions: ['instagram_basic', 'instagram_content_publish', 'pages_read_engagement'],
+      requiredScopes: ['pages_show_list', 'pages_read_engagement', 'instagram_basic', 'instagram_content_publish'],
+      missingPermissions: ['pages_show_list', 'pages_read_engagement', 'instagram_basic', 'instagram_content_publish'],
       reason: 'Instagram Business Account ID or Page Access Token not configured.'
     },
     facebook: {
