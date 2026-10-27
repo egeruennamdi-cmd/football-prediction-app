@@ -61,8 +61,8 @@ export async function getSocialAccountsHealth(env) {
       accountHandle: null,
       supportedFormats: ['PHOTO', 'CAROUSEL', 'REELS'],
       characterLimit: 2200,
-      requiredScopes: ['pages_show_list', 'pages_read_engagement', 'instagram_basic', 'instagram_content_publish'],
-      missingPermissions: ['pages_show_list', 'pages_read_engagement', 'instagram_basic', 'instagram_content_publish'],
+      requiredScopes: ['pages_show_list', 'pages_read_engagement', 'pages_manage_posts', 'instagram_basic', 'instagram_content_publish'],
+      missingPermissions: ['pages_show_list', 'pages_read_engagement', 'pages_manage_posts', 'instagram_basic', 'instagram_content_publish'],
       reason: 'Instagram Business Account ID or Page Access Token not configured.'
     },
     facebook: {
@@ -447,10 +447,28 @@ export async function dispatchInstagram(env, payload) {
   const conn = await getPlatformConnection(env, 'instagram');
   if (conn && !conn.isExpired) {
     pageToken = conn.accessToken;
-    igUserId = conn.accountId || (conn.extra && conn.extra.instagramAccountId);
+    igUserId = conn.accountId || (conn.extra && conn.extra.instagramAccountId) || (env && env.INSTAGRAM_ACCOUNT_ID) || (conn.accessToken ? 'me' : null);
   } else {
     pageToken = env.FACEBOOK_PAGE_ACCESS_TOKEN;
     igUserId = env.INSTAGRAM_ACCOUNT_ID;
+  }
+
+  // Resilient fallback: If pageToken is missing, inspect the active Facebook Page connection in KV
+  if (!pageToken) {
+    try {
+      const fbConn = await getPlatformConnection(env, 'facebook');
+      if (fbConn && fbConn.accessToken && !fbConn.isExpired) {
+        pageToken = fbConn.accessToken;
+      }
+    } catch (_) {}
+  }
+
+  if (!pageToken || !igUserId) {
+    return {
+      status: 'FAILED',
+      platform: 'instagram',
+      error: 'Instagram credentials incomplete: Page Access Token or Instagram Business Account ID is missing. Please reconnect Instagram in the Command Center.'
+    };
   }
 
   // Instagram requires an image or video asset

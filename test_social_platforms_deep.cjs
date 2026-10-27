@@ -64,7 +64,8 @@ async function runAllTests() {
     createOAuthStateRecord,
     verifyAndConsumeOAuthState,
     generatePkcePair,
-    buildPlatformAuthorizationUrl
+    buildPlatformAuthorizationUrl,
+    exchangeOAuthCodeForTokens
   } = await import('./functions/api/social/_socialAuth.js');
 
   const {
@@ -235,6 +236,7 @@ async function runAllTests() {
     assert.ok(data.authorizationUrl.includes('pages_read_engagement'));
     assert.ok(data.authorizationUrl.includes('instagram_basic'));
     assert.ok(data.authorizationUrl.includes('instagram_content_publish'));
+    assert.ok(data.authorizationUrl.includes('pages_manage_posts'));
   });
 
   // ==========================================================================
@@ -491,6 +493,155 @@ async function runAllTests() {
     const res = await dispatchInstagram(mockEnv, payload);
     assert.strictEqual(res.status, 'UNCERTAIN');
     assert.strictEqual(res.reconciliationRequired, true);
+  });
+
+  await test('GET /api/social/oauth?action=inspect-instagram-link: Inspects linked Instagram account via Facebook Page token', async () => {
+    // Setup stored Facebook connection in KV
+    await savePlatformConnection(mockEnv, 'facebook', {
+      accountId: '1395609626974327',
+      accountName: 'DeepPredictBet',
+      accessToken: 'EAAB_test_mock_fb_page_token'
+    });
+
+    global.fetch = async (url) => {
+      const urlStr = url.toString();
+      if (urlStr.includes('/1395609626974327?fields=')) {
+        return new Response(JSON.stringify({
+          id: '1395609626974327',
+          name: 'DeepPredictBet',
+          instagram_business_account: {
+            id: '17841400099998888',
+            username: 'deeppredictbet',
+            name: 'DeepPredictBet'
+          }
+        }), { status: 200 });
+      }
+      return originalFetch(url);
+    };
+
+    const res = await oauthGet({
+      request: new Request('https://deeppredictbet.com/api/social/oauth?action=inspect-instagram-link', {
+        headers: adminHeaders
+      }),
+      env: mockEnv
+    });
+
+    assert.strictEqual(res.status, 200);
+    const data = await res.json();
+    assert.strictEqual(data.success, true);
+    assert.strictEqual(data.targetPageId, '1395609626974327');
+    assert.strictEqual(data.hasLinkedInstagram, true);
+    assert.strictEqual(data.instagramAccount.username, 'deeppredictbet');
+    assert.strictEqual(data.instagramAccount.id, '17841400099998888');
+  });
+
+  await test('Instagram: Resilient multi-stage discovery recovers Instagram account when /me/accounts is empty via direct Page node fallback', async () => {
+    // Simulate Meta OAuth exchange:
+    // 1. /oauth/access_token returns short-lived user token
+    // 2. /oauth/access_token?grant_type=fb_exchange_token returns long-lived user token
+    // 3. /debug_token returns target_ids: ["1395609626974327"]
+    // 4. /me/accounts returns { data: [] } (empty array!)
+    // 5. Direct query to /1395609626974327 returns DeepPredictBet page with linked Instagram business account
+    global.fetch = async (url) => {
+      const urlStr = url.toString();
+      if (urlStr.includes('/oauth/access_token')) {
+        return new Response(JSON.stringify({
+          access_token: 'EAAB_mock_user_token_long',
+          expires_in: 5184000
+        }), { status: 200 });
+      }
+      if (urlStr.includes('/debug_token')) {
+        return new Response(JSON.stringify({
+          data: {
+            app_id: 'mock_meta_app_id_999',
+            granular_scopes: [
+              { scope: 'pages_show_list', target_ids: ['1395609626974327'] },
+              { scope: 'instagram_basic', target_ids: ['1395609626974327'] }
+            ]
+          }
+        }), { status: 200 });
+      }
+      if (urlStr.includes('/me/accounts')) {
+        // Crucial test condition: empty array returned from /me/accounts!
+        return new Response(JSON.stringify({ data: [] }), { status: 200 });
+      }
+      if (urlStr.includes('/1395609626974327')) {
+        return new Response(JSON.stringify({
+          id: '1395609626974327',
+          name: 'DeepPredictBet',
+          access_token: 'EAAB_mock_page_token_recovered',
+          instagram_business_account: {
+            id: '17841400099998888',
+            username: 'deeppredictbet',
+            name: 'DeepPredictBet'
+          }
+        }), { status: 200 });
+      }
+      return originalFetch(url);
+    };
+
+    const tokenResult = await exchangeOAuthCodeForTokens(
+      mockEnv,
+      'instagram',
+      'mock_auth_code_123',
+      'https://deeppredictbet.com/api/social/oauth?action=callback'
+    );
+
+    assert.ok(tokenResult);
+    assert.strictEqual(tokenResult.accountId, '17841400099998888');
+    assert.strictEqual(tokenResult.accountHandle, '@deeppredictbet');
+    assert.strictEqual(tokenResult.extra.linkedPageId, '1395609626974327');
+    assert.strictEqual(tokenResult.extra.linkedPageName, 'DeepPredictBet');
+  });
+
+  await test('Instagram: Decoupled error is thrown when Facebook Page exists but has no linked Instagram account', async () => {
+    global.fetch = async (url) => {
+      const urlStr = url.toString();
+      if (urlStr.includes('/oauth/access_token')) {
+        return new Response(JSON.stringify({
+          access_token: 'EAAB_mock_user_token_long',
+          expires_in: 5184000
+        }), { status: 200 });
+      }
+      if (urlStr.includes('/debug_token')) {
+        return new Response(JSON.stringify({ data: { granular_scopes: [] } }), { status: 200 });
+      }
+      if (urlStr.includes('/me/accounts')) {
+        return new Response(JSON.stringify({
+          data: [{
+            id: '1395609626974327',
+            name: 'DeepPredictBet',
+            access_token: 'EAAB_mock_page_token'
+            // No instagram_business_account!
+          }]
+        }), { status: 200 });
+      }
+      if (urlStr.includes('/1395609626974327')) {
+        return new Response(JSON.stringify({
+          id: '1395609626974327',
+          name: 'DeepPredictBet',
+          access_token: 'EAAB_mock_page_token'
+        }), { status: 200 });
+      }
+      return originalFetch(url);
+    };
+
+    await assert.rejects(
+      async () => {
+        await exchangeOAuthCodeForTokens(
+          mockEnv,
+          'instagram',
+          'mock_auth_code_123',
+          'https://deeppredictbet.com/api/social/oauth?action=callback'
+        );
+      },
+      (err) => {
+        assert.ok(err.message.includes('No Instagram Professional account found connected to Facebook Page'));
+        assert.ok(err.message.includes('DeepPredictBet'));
+        assert.ok(err.message.includes('1395609626974327'));
+        return true;
+      }
+    );
   });
 
   // ==========================================================================

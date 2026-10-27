@@ -149,6 +149,72 @@ export async function onRequestGet(context) {
     }
   }
 
+  // 2c. Zero-Exposure Instagram & Facebook Page Link Inspection Beacon (Requires Admin Auth)
+  if (action === 'inspect-instagram-link') {
+    const targetPageId = url.searchParams.get('page_id') || '1395609626974327';
+    let token = null;
+    let tokenSource = null;
+
+    // Check existing KV connection for Facebook
+    const fbConn = await getPlatformConnection(env, 'facebook');
+    if (fbConn && fbConn.accessToken) {
+      token = fbConn.accessToken;
+      tokenSource = 'KV:social_connection_facebook';
+    } else if (env && env.FACEBOOK_PAGE_ACCESS_TOKEN) {
+      token = env.FACEBOOK_PAGE_ACCESS_TOKEN;
+      tokenSource = 'ENV:FACEBOOK_PAGE_ACCESS_TOKEN';
+    }
+
+    if (!token) {
+      return new Response(JSON.stringify({
+        success: false,
+        error: 'No active Facebook Page access token found in KV or environment. Facebook must be connected first to inspect linked Instagram account.',
+        targetPageId
+      }), { status: 400, headers: adminCorsHeaders() });
+    }
+
+    try {
+      const pageRes = await fetch(
+        `https://graph.facebook.com/v21.0/${encodeURIComponent(targetPageId)}?fields=id,name,instagram_business_account{id,username,name}&access_token=${encodeURIComponent(token)}`
+      );
+
+      const pageData = await pageRes.json();
+      if (!pageRes.ok) {
+        return new Response(JSON.stringify({
+          success: false,
+          targetPageId,
+          tokenSource,
+          error: pageData.error ? pageData.error.message : 'Failed to query Facebook Page node',
+          errorCode: pageData.error ? pageData.error.code : null,
+          errorSubcode: pageData.error ? pageData.error.error_subcode : null
+        }), { status: 200, headers: adminCorsHeaders() });
+      }
+
+      const ig = pageData.instagram_business_account || null;
+      return new Response(JSON.stringify({
+        success: true,
+        targetPageId: pageData.id,
+        pageName: pageData.name,
+        tokenSource,
+        hasLinkedInstagram: Boolean(ig && ig.id),
+        instagramAccount: ig ? {
+          id: ig.id,
+          username: ig.username || null,
+          name: ig.name || null
+        } : null,
+        message: ig && ig.id
+          ? `Facebook Page "${pageData.name}" (${pageData.id}) is linked to Instagram account @${ig.username || ig.id}.`
+          : `Facebook Page "${pageData.name}" (${pageData.id}) has NO linked Instagram Professional account in Meta Graph API.`
+      }), { status: 200, headers: adminCorsHeaders() });
+    } catch (err) {
+      return new Response(JSON.stringify({
+        success: false,
+        targetPageId,
+        error: `Network error inspecting Instagram link: ${err.message}`
+      }), { status: 500, headers: adminCorsHeaders() });
+    }
+  }
+
   const platform = url.searchParams.get('platform');
   const configId = url.searchParams.get('config_id') || url.searchParams.get('configId') || null;
   if (!platform) {

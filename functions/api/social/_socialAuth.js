@@ -24,7 +24,7 @@ export const OAUTH_CONFIGS = {
     name: 'Instagram Business',
     authUrl: 'https://www.facebook.com/v21.0/dialog/oauth',
     tokenUrl: 'https://graph.facebook.com/v21.0/oauth/access_token',
-    scopes: ['pages_show_list', 'pages_read_engagement', 'instagram_basic', 'instagram_content_publish']
+    scopes: ['pages_show_list', 'pages_read_engagement', 'pages_manage_posts', 'instagram_basic', 'instagram_content_publish']
   },
   facebook: {
     name: 'Facebook Pages',
@@ -388,16 +388,147 @@ async function exchangeMetaCode(env, platform, code, redirectUri) {
     console.warn(`[Meta OAuth] Long-lived token exchange warning (${longLivedRes.status}): ${errText}`);
   }
 
-  // Step 3: Discover Facebook Pages and connected Instagram Business Accounts
-  const pagesRes = await fetch(`https://graph.facebook.com/v21.0/me/accounts?fields=id,name,access_token,instagram_business_account{id,username,name}&access_token=${userToken}`);
-  if (!pagesRes.ok) {
-    const errText = await pagesRes.text();
-    throw new Error(`Meta pages discovery failed (${pagesRes.status}): ${errText}`);
+  // Step 3: Resilient Multi-Stage Discovery of Facebook Pages & Connected Instagram Business Accounts
+  const pages = [];
+  const candidatePageIds = new Set();
+
+  // Known production page ID
+  candidatePageIds.add('1395609626974327');
+
+  // Check env bindings for configured page ID
+  if (env && env.FACEBOOK_PAGE_ID) {
+    candidatePageIds.add(String(env.FACEBOOK_PAGE_ID).trim());
   }
 
-  const pagesData = await pagesRes.json();
-  const pages = pagesData.data || [];
+  // Check existing Facebook connection in KV for page ID
+  let existingFbConn = null;
+  try {
+    existingFbConn = await getPlatformConnection(env, 'facebook');
+    if (existingFbConn && existingFbConn.accountId) {
+      candidatePageIds.add(String(existingFbConn.accountId).trim());
+    }
+  } catch (_) {}
 
+  // Stage 3A: Inspect token via debug_token to extract granted target_ids from granular_scopes
+  try {
+    const debugUrl = `https://graph.facebook.com/v21.0/debug_token?input_token=${encodeURIComponent(userToken)}&access_token=${encodeURIComponent(`${clientId}|${clientSecret}`)}`;
+    const debugRes = await fetch(debugUrl);
+    if (debugRes.ok) {
+      const debugData = await debugRes.json();
+      const granularScopes = debugData?.data?.granular_scopes || [];
+      for (const gs of granularScopes) {
+        if (Array.isArray(gs.target_ids)) {
+          for (const tid of gs.target_ids) {
+            if (tid) candidatePageIds.add(String(tid).trim());
+          }
+        }
+      }
+    }
+  } catch (err) {
+    console.warn(`[Meta OAuth] debug_token inspection warning: ${err.message}`);
+  }
+
+  // Stage 3B: Query /me/accounts with limit=100 and pagination
+  try {
+    let nextUrl = `https://graph.facebook.com/v21.0/me/accounts?fields=id,name,access_token,instagram_business_account{id,username,name}&limit=100&access_token=${encodeURIComponent(userToken)}`;
+    let pageIterations = 0;
+    while (nextUrl && pageIterations < 3) {
+      pageIterations++;
+      const meAccountsRes = await fetch(nextUrl);
+      if (meAccountsRes.ok) {
+        const meAccountsData = await meAccountsRes.json();
+        const batch = meAccountsData.data || [];
+        for (const p of batch) {
+          if (p && p.id && !pages.some(existing => existing.id === p.id)) {
+            pages.push(p);
+          }
+        }
+        nextUrl = meAccountsData.paging?.next || null;
+      } else {
+        const errText = await meAccountsRes.text();
+        console.warn(`[Meta OAuth] /me/accounts warning (${meAccountsRes.status}): ${errText}`);
+        break;
+      }
+    }
+  } catch (err) {
+    console.warn(`[Meta OAuth] /me/accounts fetch error: ${err.message}`);
+  }
+
+  // Stage 3C: Fallback Direct Page Node Query for all Candidate Page IDs
+  // If pages list is empty OR none of the pages have an instagram_business_account (when platform === 'instagram')
+  const needsDirectLookup = pages.length === 0 || (platform === 'instagram' && !pages.some(p => p.instagram_business_account?.id));
+
+  if (needsDirectLookup && candidatePageIds.size > 0) {
+    for (const pageId of candidatePageIds) {
+      if (!pageId) continue;
+      // 1. Query with userToken
+      try {
+        const directPageRes = await fetch(
+          `https://graph.facebook.com/v21.0/${encodeURIComponent(pageId)}?fields=id,name,access_token,instagram_business_account{id,username,name}&access_token=${encodeURIComponent(userToken)}`
+        );
+        if (directPageRes.ok) {
+          const directPageData = await directPageRes.json();
+          if (directPageData && directPageData.id) {
+            const existingIdx = pages.findIndex(p => p.id === directPageData.id);
+            if (existingIdx >= 0) {
+              pages[existingIdx] = { ...pages[existingIdx], ...directPageData };
+            } else {
+              pages.push(directPageData);
+            }
+          }
+        }
+      } catch (err) {
+        console.warn(`[Meta OAuth] Direct query for page ${pageId} with user token warning: ${err.message}`);
+      }
+
+      // 2. Query with fallback Page Access Token (from existing Facebook connection in KV or env)
+      const existingPage = pages.find(p => p.id === pageId);
+      const fallbackToken = existingPage?.access_token || existingFbConn?.accessToken || (env && env.FACEBOOK_PAGE_ACCESS_TOKEN);
+
+      if (fallbackToken && (!existingPage || !existingPage.instagram_business_account?.id)) {
+        try {
+          const directTokenRes = await fetch(
+            `https://graph.facebook.com/v21.0/${encodeURIComponent(pageId)}?fields=id,name,access_token,instagram_business_account{id,username,name}&access_token=${encodeURIComponent(fallbackToken)}`
+          );
+          if (directTokenRes.ok) {
+            const tokenPageData = await directTokenRes.json();
+            if (tokenPageData && tokenPageData.id) {
+              tokenPageData.access_token = tokenPageData.access_token || fallbackToken;
+              const existingIdx = pages.findIndex(p => p.id === tokenPageData.id);
+              if (existingIdx >= 0) {
+                pages[existingIdx] = { ...pages[existingIdx], ...tokenPageData };
+              } else {
+                pages.push(tokenPageData);
+              }
+            }
+          }
+        } catch (err) {
+          console.warn(`[Meta OAuth] Direct query for page ${pageId} with page token warning: ${err.message}`);
+        }
+      }
+
+      // 3. Dedicated edge query for instagram_business_account or connected_instagram_account
+      const curPage = pages.find(p => p.id === pageId);
+      if (curPage && !curPage.instagram_business_account?.id) {
+        const queryToken = curPage.access_token || fallbackToken || userToken;
+        try {
+          const igEdgeRes = await fetch(
+            `https://graph.facebook.com/v21.0/${encodeURIComponent(pageId)}?fields=connected_instagram_account,instagram_business_account{id,username,name}&access_token=${encodeURIComponent(queryToken)}`
+          );
+          if (igEdgeRes.ok) {
+            const edgeData = await igEdgeRes.json();
+            if (edgeData.instagram_business_account?.id) {
+              curPage.instagram_business_account = edgeData.instagram_business_account;
+            } else if (edgeData.connected_instagram_account?.id) {
+              curPage.instagram_business_account = edgeData.connected_instagram_account;
+            }
+          }
+        } catch (_) {}
+      }
+    }
+  }
+
+  // If still no pages found at all
   if (pages.length === 0) {
     throw new Error('No Facebook Pages found for this user. A Facebook Page is required to publish.');
   }
@@ -413,11 +544,23 @@ async function exchangeMetaCode(env, platform, code, redirectUri) {
     targetPage = pages.find(p => p.name && p.name.toLowerCase().includes('deeppredictbet')) || pages[0];
   }
 
-  const pageAccessToken = targetPage.access_token;
+  // Page token resolution
+  let pageAccessToken = targetPage.access_token;
+  if (!pageAccessToken) {
+    if (existingFbConn && existingFbConn.accountId === targetPage.id && existingFbConn.accessToken) {
+      pageAccessToken = existingFbConn.accessToken;
+    } else if (env && env.FACEBOOK_PAGE_ACCESS_TOKEN && (!env.FACEBOOK_PAGE_ID || env.FACEBOOK_PAGE_ID === targetPage.id)) {
+      pageAccessToken = env.FACEBOOK_PAGE_ACCESS_TOKEN;
+    }
+  }
+
   const pageId = targetPage.id;
-  const pageName = targetPage.name;
+  const pageName = targetPage.name || 'DeepPredictBet';
 
   if (platform === 'facebook') {
+    if (!pageAccessToken) {
+      throw new Error(`Unable to resolve Page Access Token for Facebook Page "${pageName}" (${pageId}).`);
+    }
     return {
       accessToken: pageAccessToken,
       accountId: pageId,
@@ -430,16 +573,50 @@ async function exchangeMetaCode(env, platform, code, redirectUri) {
   }
 
   // Instagram resolution
-  const igAccount = targetPage.instagram_business_account;
-  if (!igAccount || !igAccount.id) {
-    throw new Error(`No Instagram Professional account found connected to Facebook Page "${pageName}". Please ensure your Instagram profile is a Business or Creator account and linked to "${pageName}" in Facebook Page Settings > Linked Accounts.`);
+  let igAccount = targetPage.instagram_business_account;
+
+  // If igAccount was not nested, try direct edge check one more time with pageAccessToken
+  if ((!igAccount || !igAccount.id) && pageAccessToken) {
+    try {
+      const igEdgeRes = await fetch(`https://graph.facebook.com/v21.0/${encodeURIComponent(pageId)}?fields=instagram_business_account{id,username,name}&access_token=${encodeURIComponent(pageAccessToken)}`);
+      if (igEdgeRes.ok) {
+        const edgeData = await igEdgeRes.json();
+        if (edgeData.instagram_business_account?.id) {
+          igAccount = edgeData.instagram_business_account;
+        }
+      }
+    } catch (_) {}
   }
 
+  if (!igAccount || !igAccount.id) {
+    throw new Error(`No Instagram Professional account found connected to Facebook Page "${pageName}" (${pageId}). Please ensure your Instagram profile (@deeppredictbet) is converted to a Professional (Business or Creator) account and linked to "${pageName}" in Meta Business Suite or Facebook Page Settings > Linked Accounts.`);
+  }
+
+  // Ensure Instagram username and name are resolved
+  let igUsername = igAccount.username;
+  let igName = igAccount.name;
+  if (!igUsername && (pageAccessToken || userToken)) {
+    try {
+      const tokenToUse = pageAccessToken || userToken;
+      const igDetailRes = await fetch(`https://graph.facebook.com/v21.0/${encodeURIComponent(igAccount.id)}?fields=id,username,name&access_token=${encodeURIComponent(tokenToUse)}`);
+      if (igDetailRes.ok) {
+        const igDetail = await igDetailRes.json();
+        igUsername = igDetail.username || igUsername;
+        igName = igDetail.name || igName;
+      }
+    } catch (_) {}
+  }
+
+  // Format account handle cleanly (e.g. "@deeppredictbet")
+  const resolvedHandle = igUsername
+    ? (igUsername.startsWith('@') ? igUsername : `@${igUsername}`)
+    : '@deeppredictbet';
+
   return {
-    accessToken: pageAccessToken, // Page access token publishes on behalf of linked IG account
+    accessToken: pageAccessToken || userToken, // Page access token publishes on behalf of linked IG account
     accountId: igAccount.id,
-    accountName: igAccount.name || igAccount.username || 'DeepPredictBet',
-    accountHandle: igAccount.username ? `@${igAccount.username}` : '@deeppredictbet',
+    accountName: igName || igUsername || 'DeepPredictBet',
+    accountHandle: resolvedHandle,
     expiresAt: Date.now() + (expiresIn * 1000),
     scopes: OAUTH_CONFIGS.instagram.scopes,
     extra: {
