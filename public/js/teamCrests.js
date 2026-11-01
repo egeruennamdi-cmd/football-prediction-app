@@ -859,12 +859,17 @@
   /**
    * HTML Renderer helper for UI Cards
    */
-  function renderTeamLogoHtml(team, isHome = true, size = 36) {
+  function renderTeamLogoHtml(team, isHome = true, size = 36, options = {}) {
     const url = resolveTeamCrestUrl(team, isHome);
-    const name = typeof team === 'object' ? (team.name || 'Team') : String(team);
+    const name = typeof team === 'object' ? (team.name || 'Team') : String(team || 'Team');
     const fallbackId = isHome ? 40 : 42;
     const fallbackUrl = getCrestUrlById(fallbackId);
-    return `<img src="${url}" alt="${name}" style="width:${size}px;height:${size}px;object-fit:contain;display:block;margin:0 auto;" onerror="if(this.src!=='${fallbackUrl}'){this.src='${fallbackUrl}';}else{this.style.display='none';}" loading="lazy">`;
+    const opts = typeof options === 'string' ? { className: options } : (options || {});
+    const classNameAttr = opts.className ? ` class="${opts.className}"` : '';
+    const isInline = opts.inline === true;
+    const baseDisplay = isInline ? 'display:inline-block;vertical-align:middle;flex-shrink:0;' : 'display:block;margin:0 auto;';
+    const customStyle = opts.style ? `${opts.style};` : '';
+    return `<img src="${url}" alt="${name}"${classNameAttr} style="width:${size}px;height:${size}px;object-fit:contain;${baseDisplay}${customStyle}" onerror="if(this.src!=='${fallbackUrl}'){this.src='${fallbackUrl}';}else{this.style.display='none';}" loading="lazy">`;
   }
 
   return {

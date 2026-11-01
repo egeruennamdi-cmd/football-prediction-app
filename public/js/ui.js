@@ -2892,7 +2892,7 @@ function renderTopTipsTool() {
         <!-- 1. Match Selection: Logos, Teams, League & Future Date -->
         <div style="display: flex; flex-direction: column; gap: 4px; padding-right: 12px;">
           <div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap;">
-            <span style="font-size: 1.1rem; line-height: 1;">${match.homeTeam?.logo || '⚽'}</span>
+            <span style="font-size: 1.1rem; line-height: 1; display: inline-flex; align-items: center;">${(typeof window !== 'undefined' && typeof window.renderTeamLogoHtml === 'function') ? window.renderTeamLogoHtml(match.homeTeam || 'Home', true, 20, { inline: true }) : (match.homeTeam?.logo && String(match.homeTeam.logo).startsWith('http') ? `<img src="${match.homeTeam.logo}" alt="Home" style="width:20px;height:20px;object-fit:contain;display:inline-block;vertical-align:middle;" loading="lazy">` : match.homeTeam?.logo || '⚽')}</span>
             <span style="font-weight: 800; color: #ffffff; font-size: 0.9rem;">${match.homeTeam?.name || match.homeTeam || 'Home'} vs ${match.awayTeam?.name || match.awayTeam || 'Away'}</span>
             <span style="font-size: 0.72rem; color: #94a3b8; font-weight: 600;">(${match.leagueEmoji || '⚽'} ${match.league || 'League'})</span>
           </div>
@@ -11766,8 +11766,17 @@ function buildMatchCardElement(match) {
 
   const homeName = match.homeTeam?.name || 'Home';
   const awayName = match.awayTeam?.name || 'Away';
-  const homeLogo = match.homeTeam?.logo || '⚽';
-  const awayLogo = match.awayTeam?.logo || '⚽';
+  const homeLogo = (typeof window !== 'undefined' && typeof window.renderTeamLogoHtml === 'function')
+    ? window.renderTeamLogoHtml(match.homeTeam || homeName, true, 32)
+    : (match.homeTeam?.logo && String(match.homeTeam.logo).startsWith('http')
+        ? `<img src="${match.homeTeam.logo}" alt="${homeName}" style="width:32px;height:32px;object-fit:contain;display:block;margin:0 auto;" loading="lazy">`
+        : match.homeTeam?.logo || '⚽');
+
+  const awayLogo = (typeof window !== 'undefined' && typeof window.renderTeamLogoHtml === 'function')
+    ? window.renderTeamLogoHtml(match.awayTeam || awayName, false, 32)
+    : (match.awayTeam?.logo && String(match.awayTeam.logo).startsWith('http')
+        ? `<img src="${match.awayTeam.logo}" alt="${awayName}" style="width:32px;height:32px;object-fit:contain;display:block;margin:0 auto;" loading="lazy">`
+        : match.awayTeam?.logo || '⚽');
   const homeForm = Array.isArray(match.homeTeam?.form) ? match.homeTeam.form : ['W', 'D', 'W', 'L', 'W'];
   const awayForm = Array.isArray(match.awayTeam?.form) ? match.awayTeam.form : ['D', 'W', 'L', 'W', 'W'];
 
@@ -12411,11 +12420,11 @@ function renderTodayInsightsPreview(filterLeague, filterCountry, fixturesPool) {
 
           <div class="insight-teams-wrapper">
             <div class="insight-team-row home">
-              <span class="insight-team-logo">${m.homeTeam?.logo || '⚽'}</span>
+              <span class="insight-team-logo">${(typeof window !== 'undefined' && typeof window.renderTeamLogoHtml === 'function') ? window.renderTeamLogoHtml(m.homeTeam || homeName, true, 24, { inline: true, className: 'insight-crest' }) : `<img src="${(typeof resolveTeamCrestUrl === 'function') ? resolveTeamCrestUrl(m.homeTeam || homeName, true) : 'https://media.api-sports.io/football/teams/40.png'}" alt="${homeName}" style="width:24px;height:24px;object-fit:contain;" loading="lazy">`}</span>
               <span class="insight-team-name">${homeName}</span>
             </div>
             <div class="insight-team-row away">
-              <span class="insight-team-logo">${m.awayTeam?.logo || '⚽'}</span>
+              <span class="insight-team-logo">${(typeof window !== 'undefined' && typeof window.renderTeamLogoHtml === 'function') ? window.renderTeamLogoHtml(m.awayTeam || awayName, false, 24, { inline: true, className: 'insight-crest' }) : `<img src="${(typeof resolveTeamCrestUrl === 'function') ? resolveTeamCrestUrl(m.awayTeam || awayName, false) : 'https://media.api-sports.io/football/teams/42.png'}" alt="${awayName}" style="width:24px;height:24px;object-fit:contain;" loading="lazy">`}</span>
               <span class="insight-team-name">${awayName}</span>
             </div>
           </div>
@@ -12595,8 +12604,20 @@ function renderRecentSettledPredictions(filterLeague, filterCountry, fixturesPoo
     const aScore = (m.scores && m.scores.away !== null) ? Number(m.scores.away) : 0;
     const homeName = m.homeTeam?.name || 'Home';
     const awayName = m.awayTeam?.name || 'Away';
-    const homeLogo = m.homeTeam?.logo || '⚽';
-    const awayLogo = m.awayTeam?.logo || '⚽';
+    
+    // Resolve authentic club crests (never render raw image URLs as plain text)
+    const homeLogoHtml = (typeof window !== 'undefined' && typeof window.renderTeamLogoHtml === 'function')
+      ? window.renderTeamLogoHtml(m.homeTeam || homeName, true, 20, { inline: true, className: 'settled-team-crest' })
+      : (typeof renderTeamLogoHtml === 'function')
+        ? renderTeamLogoHtml(m.homeTeam || homeName, true, 20, { inline: true, className: 'settled-team-crest' })
+        : `<img src="${(typeof resolveTeamCrestUrl === 'function') ? resolveTeamCrestUrl(m.homeTeam || homeName, true) : (m.homeTeam?.logo && String(m.homeTeam.logo).startsWith('http') ? m.homeTeam.logo : 'https://media.api-sports.io/football/teams/40.png')}" alt="${homeName}" class="settled-team-crest" style="width:20px;height:20px;object-fit:contain;display:inline-block;vertical-align:middle;flex-shrink:0;" loading="lazy">`;
+
+    const awayLogoHtml = (typeof window !== 'undefined' && typeof window.renderTeamLogoHtml === 'function')
+      ? window.renderTeamLogoHtml(m.awayTeam || awayName, false, 20, { inline: true, className: 'settled-team-crest' })
+      : (typeof renderTeamLogoHtml === 'function')
+        ? renderTeamLogoHtml(m.awayTeam || awayName, false, 20, { inline: true, className: 'settled-team-crest' })
+        : `<img src="${(typeof resolveTeamCrestUrl === 'function') ? resolveTeamCrestUrl(m.awayTeam || awayName, false) : (m.awayTeam?.logo && String(m.awayTeam.logo).startsWith('http') ? m.awayTeam.logo : 'https://media.api-sports.io/football/teams/42.png')}" alt="${awayName}" class="settled-team-crest" style="width:20px;height:20px;object-fit:contain;display:inline-block;vertical-align:middle;flex-shrink:0;" loading="lazy">`;
+
     const playedDateStr = formatPlayedDate(m);
 
     // Tip, odds, confidence, and outcome determination
@@ -12642,8 +12663,14 @@ function renderRecentSettledPredictions(filterLeague, filterCountry, fixturesPoo
         </div>
         <div class="settled-teams-wrap">
           <div class="settled-teams">
-            <div class="settled-team-row"><span>${homeLogo}</span> <span>${homeName}</span></div>
-            <div class="settled-team-row"><span>${awayLogo}</span> <span>${awayName}</span></div>
+            <div class="settled-team-row">
+              <span class="settled-team-crest-wrap">${homeLogoHtml}</span>
+              <span class="settled-team-name">${homeName}</span>
+            </div>
+            <div class="settled-team-row">
+              <span class="settled-team-crest-wrap">${awayLogoHtml}</span>
+              <span class="settled-team-name">${awayName}</span>
+            </div>
           </div>
           <div class="settled-score-pill">${hScore} - ${aScore}</div>
         </div>
