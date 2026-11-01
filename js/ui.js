@@ -871,8 +871,16 @@ function renderMatchCards(fixtures) {
 
     const homeName = match.homeTeam?.name || 'Home';
     const awayName = match.awayTeam?.name || 'Away';
-    const homeLogo = match.homeTeam?.logo || '⚽';
-    const awayLogo = match.awayTeam?.logo || '⚽';
+    const homeLogo = (typeof window !== 'undefined' && typeof window.renderTeamLogoHtml === 'function')
+      ? window.renderTeamLogoHtml(match.homeTeam || homeName, true, 36)
+      : (match.homeTeam?.logo && String(match.homeTeam.logo).startsWith('http')
+          ? `<img src="${match.homeTeam.logo}" alt="${homeName}" style="width:36px;height:36px;object-fit:contain;display:block;margin:0 auto;" loading="lazy">`
+          : match.homeTeam?.logo || '⚽');
+    const awayLogo = (typeof window !== 'undefined' && typeof window.renderTeamLogoHtml === 'function')
+      ? window.renderTeamLogoHtml(match.awayTeam || awayName, false, 36)
+      : (match.awayTeam?.logo && String(match.awayTeam.logo).startsWith('http')
+          ? `<img src="${match.awayTeam.logo}" alt="${awayName}" style="width:36px;height:36px;object-fit:contain;display:block;margin:0 auto;" loading="lazy">`
+          : match.awayTeam?.logo || '⚽');
     const homeForm = Array.isArray(match.homeTeam?.form) ? match.homeTeam.form : ['W', 'D', 'W', 'L', 'W'];
     const awayForm = Array.isArray(match.awayTeam?.form) ? match.awayTeam.form : ['D', 'W', 'L', 'W', 'W'];
 

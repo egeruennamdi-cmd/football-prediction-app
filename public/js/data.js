@@ -8,12 +8,12 @@ const MATCH_DATA = [
     isLive: false,
     homeTeam: {
       name: "Manchester City",
-      logo: "🔵",
+      logo: "https://media.api-sports.io/football/teams/50.png", id: 50,
       form: ["W", "D", "W", "W", "W"]
     },
     awayTeam: {
       name: "Arsenal",
-      logo: "🔴",
+      logo: "https://media.api-sports.io/football/teams/42.png", id: 42,
       form: ["W", "W", "D", "W", "L"]
     },
     scores: { home: null, away: null },
@@ -34,12 +34,12 @@ const MATCH_DATA = [
     isLive: false,
     homeTeam: {
       name: "Barcelona",
-      logo: "🔵🔴",
+      logo: "https://media.api-sports.io/football/teams/529.png", id: 529,
       form: ["W", "W", "W", "W", "D"]
     },
     awayTeam: {
       name: "Real Madrid",
-      logo: "⚪",
+      logo: "https://media.api-sports.io/football/teams/541.png", id: 541,
       form: ["W", "W", "W", "L", "W"]
     },
     scores: { home: null, away: null },
@@ -60,12 +60,12 @@ const MATCH_DATA = [
     isLive: false,
     homeTeam: {
       name: "Liverpool",
-      logo: "🔴🛡️",
+      logo: "https://media.api-sports.io/football/teams/40.png", id: 40,
       form: ["W", "D", "W", "L", "W"]
     },
     awayTeam: {
       name: "Chelsea",
-      logo: "🦁",
+      logo: "https://media.api-sports.io/football/teams/49.png", id: 49,
       form: ["D", "W", "L", "W", "D"]
     },
     scores: { home: null, away: null },
@@ -86,12 +86,12 @@ const MATCH_DATA = [
     isLive: false,
     homeTeam: {
       name: "Bayern Munich",
-      logo: "🔴⚪",
+      logo: "https://media.api-sports.io/football/teams/157.png", id: 157,
       form: ["W", "W", "W", "W", "W"]
     },
     awayTeam: {
       name: "Dortmund",
-      logo: "🟡⚫",
+      logo: "https://media.api-sports.io/football/teams/165.png", id: 165,
       form: ["W", "L", "W", "D", "W"]
     },
     scores: { home: null, away: null },
@@ -112,12 +112,12 @@ const MATCH_DATA = [
     isLive: false,
     homeTeam: {
       name: "Inter Milan",
-      logo: "🔵⚫🐍",
+      logo: "https://media.api-sports.io/football/teams/505.png", id: 505,
       form: ["W", "D", "W", "W", "L"]
     },
     awayTeam: {
       name: "AC Milan",
-      logo: "🔴⚫👿",
+      logo: "https://media.api-sports.io/football/teams/489.png", id: 489,
       form: ["L", "W", "W", "D", "W"]
     },
     scores: { home: null, away: null },
@@ -138,12 +138,12 @@ const MATCH_DATA = [
     isLive: false,
     homeTeam: {
       name: "Juventus",
-      logo: "⚫⚪🦓",
+      logo: "https://media.api-sports.io/football/teams/496.png", id: 496,
       form: ["W", "W", "D", "D", "W"]
     },
     awayTeam: {
       name: "PSG",
-      logo: "🗼",
+      logo: "https://media.api-sports.io/football/teams/85.png", id: 85,
       form: ["W", "W", "W", "W", "D"]
     },
     scores: { home: null, away: null },
@@ -169,12 +169,12 @@ const MATCH_DATA = [
     isFT: true,
     homeTeam: {
       name: "Fulham",
-      logo: "⚪⚫",
+      logo: "https://media.api-sports.io/football/teams/36.png", id: 36,
       form: ["L", "W", "D", "W", "L"]
     },
     awayTeam: {
       name: "Chelsea",
-      logo: "🦁",
+      logo: "https://media.api-sports.io/football/teams/49.png", id: 49,
       form: ["W", "W", "D", "L", "W"]
     },
     scores: { home: 2, away: 3 },
@@ -206,12 +206,12 @@ const MATCH_DATA = [
     isFT: true,
     homeTeam: {
       name: "Atletico Madrid",
-      logo: "🔴⚪🐻",
+      logo: "https://media.api-sports.io/football/teams/530.png", id: 530,
       form: ["W", "D", "W", "L", "W"]
     },
     awayTeam: {
       name: "Athletic Bilbao",
-      logo: "🦁🔴",
+      logo: "https://media.api-sports.io/football/teams/531.png", id: 531,
       form: ["L", "W", "D", "W", "D"]
     },
     scores: { home: 1, away: 1 },
@@ -243,12 +243,12 @@ const MATCH_DATA = [
     isFT: true,
     homeTeam: {
       name: "Tottenham",
-      logo: "⚪🐓",
+      logo: "https://media.api-sports.io/football/teams/47.png", id: 47,
       form: ["W", "W", "L", "D", "W"]
     },
     awayTeam: {
       name: "Everton",
-      logo: "🔵🍬",
+      logo: "https://media.api-sports.io/football/teams/45.png", id: 45,
       form: ["L", "L", "D", "W", "L"]
     },
     scores: { home: 4, away: 0 },
@@ -280,12 +280,12 @@ const MATCH_DATA = [
     isFT: true,
     homeTeam: {
       name: "Lazio",
-      logo: "🦅🔵",
+      logo: "https://media.api-sports.io/football/teams/487.png", id: 487,
       form: ["D", "W", "L", "W", "D"]
     },
     awayTeam: {
       name: "AC Milan",
-      logo: "🔴⚫👿",
+      logo: "https://media.api-sports.io/football/teams/489.png", id: 489,
       form: ["D", "L", "D", "W", "W"]
     },
     scores: { home: 2, away: 2 },
@@ -317,12 +317,12 @@ const MATCH_DATA = [
     isFT: true,
     homeTeam: {
       name: "Aston Villa",
-      logo: "🦁🟣",
+      logo: "https://media.api-sports.io/football/teams/66.png", id: 66,
       form: ["L", "W", "W", "D", "W"]
     },
     awayTeam: {
       name: "Arsenal",
-      logo: "🔴",
+      logo: "https://media.api-sports.io/football/teams/42.png", id: 42,
       form: ["W", "W", "W", "W", "D"]
     },
     scores: { home: 0, away: 2 },
@@ -354,12 +354,12 @@ const MATCH_DATA = [
     isFT: true,
     homeTeam: {
       name: "Brighton",
-      logo: "🕊️🔵",
+      logo: "https://media.api-sports.io/football/teams/51.png", id: 51,
       form: ["W", "D", "W", "L", "D"]
     },
     awayTeam: {
       name: "West Ham",
-      logo: "⚒️",
+      logo: "https://media.api-sports.io/football/teams/48.png", id: 48,
       form: ["L", "W", "D", "L", "L"]
     },
     scores: { home: 1, away: 1 },
@@ -391,12 +391,12 @@ const MATCH_DATA = [
     isFT: true,
     homeTeam: {
       name: "Brighton",
-      logo: "🕊️🔵",
+      logo: "https://media.api-sports.io/football/teams/51.png", id: 51,
       form: ["W", "W", "D", "W", "L"]
     },
     awayTeam: {
       name: "Manchester United",
-      logo: "👿",
+      logo: "https://media.api-sports.io/football/teams/33.png", id: 33,
       form: ["L", "W", "W", "L", "W"]
     },
     scores: { home: 2, away: 1 },
@@ -428,12 +428,12 @@ const MATCH_DATA = [
     isFT: true,
     homeTeam: {
       name: "Bayer Leverkusen",
-      logo: "🔴🦁",
+      logo: "https://media.api-sports.io/football/teams/168.png", id: 168,
       form: ["W", "W", "W", "W", "D"]
     },
     awayTeam: {
       name: "Frankfurt",
-      logo: "🦅",
+      logo: "https://media.api-sports.io/football/teams/169.png", id: 169,
       form: ["D", "L", "W", "L", "W"]
     },
     scores: { home: 3, away: 1 },
@@ -465,12 +465,12 @@ const MATCH_DATA = [
     isFT: true,
     homeTeam: {
       name: "Napoli",
-      logo: "🔵👑",
+      logo: "https://media.api-sports.io/football/teams/492.png", id: 492,
       form: ["W", "W", "W", "L", "W"]
     },
     awayTeam: {
       name: "Parma",
-      logo: "🟡🔵",
+      logo: "https://media.api-sports.io/football/teams/511.png", id: 511,
       form: ["W", "D", "L", "L", "W"]
     },
     scores: { home: 2, away: 1 },
@@ -502,12 +502,12 @@ const MATCH_DATA = [
     isFT: true,
     homeTeam: {
       name: "Real Sociedad",
-      logo: "🔵⚪",
+      logo: "https://media.api-sports.io/football/teams/548.png", id: 548,
       form: ["W", "L", "D", "W", "L"]
     },
     awayTeam: {
       name: "Valencia",
-      logo: "🦇",
+      logo: "https://media.api-sports.io/football/teams/532.png", id: 532,
       form: ["L", "D", "L", "L", "D"]
     },
     scores: { home: 3, away: 0 },
@@ -539,12 +539,12 @@ const MATCH_DATA = [
     isFT: true,
     homeTeam: {
       name: "Bayern Munich",
-      logo: "🔴⚪",
+      logo: "https://media.api-sports.io/football/teams/157.png", id: 157,
       form: ["W", "W", "W", "W", "W"]
     },
     awayTeam: {
       name: "Dinamo Zagreb",
-      logo: "🔵",
+      logo: "https://media.api-sports.io/football/teams/622.png", id: 622,
       form: ["L", "W", "W", "D", "W"]
     },
     scores: { home: 9, away: 2 },

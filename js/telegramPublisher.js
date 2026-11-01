@@ -9750,8 +9750,10 @@
       if (seen.has(fixtureKey)) return;
       seen.add(fixtureKey);
 
-      const hLogo = m.homeTeam?.logo || m.homeLogo || '⚽';
-      const aLogo = m.awayTeam?.logo || m.awayLogo || '⚽';
+      const hId = m.teams?.home?.id || m.homeTeam?.id || m.homeTeamId || null;
+      const aId = m.teams?.away?.id || m.awayTeam?.id || m.awayTeamId || null;
+      const hLogo = resolveTeamCrestUrl(m.homeTeam || { name: hName, id: hId }, true);
+      const aLogo = resolveTeamCrestUrl(m.awayTeam || { name: aName, id: aId }, false);
       const comp = m.league || m.competition || 'Top League';
       const flag = m.leagueEmoji || '⚽';
 
@@ -9799,8 +9801,8 @@
         fixtureId: m.fixtureId || m.id || fixtureKey,
         competition: comp,
         leagueEmoji: flag,
-        homeTeam: { name: hName, logo: hLogo },
-        awayTeam: { name: aName, logo: aLogo },
+        homeTeam: { name: hName, logo: hLogo, id: hId },
+        awayTeam: { name: aName, logo: aLogo, id: aId },
         homeScore: hScore,
         awayScore: aScore,
         statusShort,
@@ -9902,7 +9904,202 @@
     }
   }
 
-    const MATCH_CARD_FORMATS = {
+    
+  // ============================================================================
+  // AUTHORITATIVE TEAM CRESTS & OFFICIAL CLUB LOGO ENGINE
+  // ============================================================================
+  const CDN_TEAM_BASE = 'https://media.api-sports.io/football/teams';
+
+  const LOCAL_TEAM_NAME_TO_ID = {
+    'liverpool': 40, 'liverpool fc': 40, 'lfc': 40,
+    'arsenal': 42, 'arsenal fc': 42, 'afc': 42,
+    'manchester city': 50, 'man city': 50, 'mcfc': 50,
+    'manchester united': 33, 'man united': 33, 'man utd': 33, 'mufc': 33,
+    'chelsea': 49, 'chelsea fc': 49, 'cfc': 49,
+    'tottenham': 47, 'tottenham hotspur': 47, 'spurs': 47, 'spurs (tottenham)': 47,
+    'newcastle': 34, 'newcastle united': 34,
+    'aston villa': 66, 'villa': 66,
+    'brighton': 51, 'brighton & hove albion': 51,
+    'west ham': 48, 'west ham united': 48,
+    'everton': 45, 'everton fc': 45,
+    'fulham': 36, 'brentford': 55, 'crystal palace': 52,
+    'wolves': 39, 'wolverhampton': 39, 'bournemouth': 35,
+    'nottingham forest': 65, 'leicester': 46, 'leicester city': 46,
+    'ipswich': 57, 'southampton': 41,
+    'leeds': 63, 'leeds united': 63, 'burnley': 44, 'sheffield united': 62,
+    'luton': 1359, 'sunderland': 746, 'watford': 38, 'norwich': 71,
+    'real madrid': 541, 'real madrid cf': 541,
+    'barcelona': 529, 'fc barcelona': 529, 'barca': 529,
+    'atletico madrid': 530, 'girona': 547, 'athletic bilbao': 531,
+    'real sociedad': 548, 'real betis': 543, 'sevilla': 536, 'villarreal': 533, 'valencia': 532,
+    'bayern munich': 157, 'bayern münchen': 157, 'bayern': 157,
+    'bayer leverkusen': 168, 'borussia dortmund': 165, 'dortmund': 165,
+    'rb leipzig': 173, 'eintracht frankfurt': 169, 'vfb stuttgart': 172,
+    'inter milan': 505, 'inter': 505, 'ac milan': 489, 'milan': 489,
+    'juventus': 496, 'napoli': 492, 'atalanta': 499, 'roma': 497, 'lazio': 487, 'fiorentina': 502,
+    'paris saint-germain': 85,
+    'paris saint germain': 85, 'psg': 85, 'monaco': 91, 'marseille': 81, 'lille': 79, 'lyon': 80,
+    'sporting cp': 228, 'benfica': 211, 'porto': 212,
+    'ajax': 194, 'psv': 197, 'psv eindhoven': 197, 'feyenoord': 195,
+    'celtic': 247, 'rangers': 257,
+    'galatasaray': 645, 'fenerbahce': 611, 'besiktas': 607,
+    'inter miami': 8645, 'la galaxy': 1609,
+    'al hilal': 2939, 'al nassr': 2932, 'al ittihad': 2931,
+    'flamengo': 127, 'palmeiras': 121, 'boca juniors': 451, 'river plate': 435,
+    'al ahly': 1041, 'mamelodi sundowns': 1026,
+    'enyimba': 1092, 'enugu rangers': 1093,
+    'england': 10, 'france': 2, 'germany': 25, 'spain': 9, 'italy': 768, 'argentina': 26, 'brazil': 6, 'nigeria': 19
+  };
+
+  const _crestImageCache = (typeof window !== 'undefined' && window.TeamCrestRegistry && window.TeamCrestRegistry._crestImageCache)
+    ? window.TeamCrestRegistry._crestImageCache
+    : new Map();
+
+  function resolveTeamCrestUrl(team, isHome = true) {
+    if (typeof window !== 'undefined' && window.TeamCrestRegistry && typeof window.TeamCrestRegistry.resolveTeamCrestUrl === 'function') {
+      return window.TeamCrestRegistry.resolveTeamCrestUrl(team, isHome);
+    }
+    if (!team) return `${CDN_TEAM_BASE}/${isHome ? 40 : 42}.png`;
+
+    // 1. Direct ID
+    if (typeof team === 'object' && team.id && parseInt(team.id, 10) > 0) {
+      return `${CDN_TEAM_BASE}/${parseInt(team.id, 10)}.png`;
+    }
+
+    // 2. Direct Image URL
+    const logoStr = typeof team === 'object' ? (team.logoUrl || team.crest || team.logo) : null;
+    if (typeof logoStr === 'string' && (logoStr.startsWith('http') || logoStr.startsWith('data:image'))) {
+      if (!logoStr.includes('<img')) return logoStr;
+      const m = logoStr.match(/src=["']([^"']+)["']/i);
+      if (m && m[1]) return m[1];
+    }
+
+    // 3. Name lookup
+    const rawName = (typeof team === 'object' ? (team.name || '') : String(team)).toLowerCase().trim();
+    const clean = rawName.replace(/[^a-z0-9 ]+/g, ' ').replace(/\s+/g, ' ').trim();
+    if (LOCAL_TEAM_NAME_TO_ID[clean]) {
+      return `${CDN_TEAM_BASE}/${LOCAL_TEAM_NAME_TO_ID[clean]}.png`;
+    }
+    const stripped = clean.replace(/\b(fc|cf|sc|afc)\b/g, '').trim();
+    if (LOCAL_TEAM_NAME_TO_ID[stripped]) {
+      return `${CDN_TEAM_BASE}/${LOCAL_TEAM_NAME_TO_ID[stripped]}.png`;
+    }
+
+    return `${CDN_TEAM_BASE}/${isHome ? 40 : 42}.png`;
+  }
+
+  function preloadTeamCrest(url) {
+    if (!url) return Promise.resolve(null);
+    if (_crestImageCache.has(url)) {
+      const c = _crestImageCache.get(url);
+      if (c) return Promise.resolve(c);
+    }
+
+    const isNodeOrJSDOM = typeof window === 'undefined' ||
+      (typeof process !== 'undefined' && Boolean(process.versions && process.versions.node)) ||
+      (typeof navigator !== 'undefined' && navigator.userAgent && navigator.userAgent.toLowerCase().includes('jsdom'));
+
+    if (typeof Image === 'undefined' || isNodeOrJSDOM) {
+      const mock = { src: url, complete: true, naturalWidth: 150, naturalHeight: 150, width: 150, height: 150 };
+      _crestImageCache.set(url, mock);
+      return Promise.resolve(mock);
+    }
+
+    return new Promise((resolve) => {
+      const img = new Image();
+      img.crossOrigin = 'anonymous';
+      img.onload = () => {
+        _crestImageCache.set(url, img);
+        resolve(img);
+      };
+      img.onerror = () => {
+        // Create mock fallback on network failure to avoid breaking canvas
+        const fallbackMock = { src: url, complete: true, naturalWidth: 150, naturalHeight: 150, width: 150, height: 150 };
+        _crestImageCache.set(url, fallbackMock);
+        resolve(fallbackMock);
+      };
+      img.src = url;
+      _crestImageCache.set(url, img);
+    });
+  }
+
+  async function preloadMatchCrests(match) {
+    if (!match) return;
+    const hUrl = resolveTeamCrestUrl(match.homeTeam, true);
+    const aUrl = resolveTeamCrestUrl(match.awayTeam, false);
+    await Promise.all([preloadTeamCrest(hUrl), preloadTeamCrest(aUrl)]);
+  }
+
+  function getLoadedCrestImage(url) {
+    if (!url) return null;
+    return _crestImageCache.get(url) || null;
+  }
+
+  function drawAuthenticCrest(ctx, cx, cy, maxW, maxH, logoUrl, teamName, isHome) {
+    if (!ctx) return;
+    ctx.save();
+
+    // 1. Subtle ambient radial glow behind the crest
+    const glowR = Math.max(maxW, maxH) * 0.72;
+    const glow = ctx.createRadialGradient(cx, cy, 10, cx, cy, glowR);
+    glow.addColorStop(0, isHome ? 'rgba(56, 189, 248, 0.22)' : 'rgba(16, 185, 129, 0.22)');
+    glow.addColorStop(1, 'transparent');
+    ctx.fillStyle = glow;
+    ctx.beginPath();
+    ctx.arc(cx, cy, glowR, 0, Math.PI * 2);
+    ctx.fill();
+
+    // 2. Translucent neutral dark backing plate
+    const plateW = maxW + 16;
+    const plateH = maxH + 16;
+    const plateX = Math.round(cx - plateW / 2);
+    const plateY = Math.round(cy - plateH / 2);
+    ctx.fillStyle = 'rgba(15, 23, 42, 0.72)';
+    ctx.strokeStyle = isHome ? 'rgba(56, 189, 248, 0.4)' : 'rgba(16, 185, 129, 0.4)';
+    ctx.lineWidth = 2;
+
+    ctx.beginPath();
+    if (typeof ctx.roundRect === 'function') {
+      ctx.roundRect(plateX, plateY, plateW, plateH, 16);
+    } else {
+      ctx.rect(plateX, plateY, plateW, plateH);
+    }
+    ctx.fill();
+    ctx.stroke();
+
+    // 3. Draw the exact authentic club crest
+    let img = getLoadedCrestImage(logoUrl);
+    if (!img) {
+      preloadTeamCrest(logoUrl);
+      img = getLoadedCrestImage(logoUrl);
+    }
+    if (img && (img.complete || typeof window === 'undefined')) {
+      const origW = img.naturalWidth || img.width || maxW;
+      const origH = img.naturalHeight || img.height || maxH;
+
+      // Maintain aspect ratio without stretching, distorting, or cropping
+      const ratio = Math.min(maxW / origW, maxH / origH);
+      const drawW = Math.round(origW * ratio);
+      const drawH = Math.round(origH * ratio);
+      const drawX = Math.round(cx - drawW / 2);
+      const drawY = Math.round(cy - drawH / 2);
+
+      ctx.drawImage(img, drawX, drawY, drawW, drawH);
+    } else {
+      preloadTeamCrest(logoUrl);
+      ctx.fillStyle = '#ffffff';
+      ctx.font = `bold ${Math.round(maxH * 0.25)}px system-ui, -apple-system, sans-serif`;
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      const abbr = String(teamName || '').split(' ').map(w => w[0]).join('').slice(0, 3).toUpperCase() || 'FC';
+      ctx.fillText(abbr, cx, cy);
+      ctx.textBaseline = 'alphabetic';
+    }
+
+    ctx.restore();
+  }
+
+  const MATCH_CARD_FORMATS = {
     landscape: {
       key: 'landscape',
       name: 'Landscape',
@@ -10061,6 +10258,8 @@
     const hs = match.homeScore != null ? match.homeScore : 0;
     const as = match.awayScore != null ? match.awayScore : 0;
     const compText = `${match.leagueEmoji || '⚽'} ${(match.competition || 'LEAGUE').toUpperCase()}`;
+    const hLogoUrl = resolveTeamCrestUrl(match.homeTeam || { name: h, id: match.homeTeam?.id }, true);
+    const aLogoUrl = resolveTeamCrestUrl(match.awayTeam || { name: a, id: match.awayTeam?.id }, false);
 
     // Status pill resolution
     let statusLabel = match.statusShort || 'LIVE';
@@ -10116,24 +10315,6 @@
     }
 
     // Helper: Draw Team Crest Circle
-    function drawCrest(cx, cy, r, borderCol, logoText) {
-      ctx.fillStyle = 'rgba(30, 41, 59, 0.92)';
-      ctx.beginPath();
-      ctx.arc(cx, cy, r, 0, Math.PI * 2);
-      ctx.fill();
-      ctx.strokeStyle = borderCol;
-      ctx.lineWidth = 3;
-      ctx.stroke();
-
-      ctx.font = `${Math.round(r * 0.72)}px system-ui, -apple-system, sans-serif`;
-      ctx.textAlign = 'center';
-      ctx.textBaseline = 'middle';
-      ctx.fillStyle = '#ffffff';
-      const symbol = (logoText && logoText.length <= 4) ? logoText : '🛡️';
-      ctx.fillText(symbol, cx, cy);
-      ctx.textBaseline = 'alphabetic';
-    }
-
     if (formatKey === 'landscape' || formatKey === 'original') {
       // 2. Top Header Bar: Branding & Competition
       ctx.fillStyle = 'rgba(15, 23, 42, 0.85)';
@@ -10158,14 +10339,14 @@
       ctx.fillText(compText, 1130, 74);
 
       // 3. Central Scoreboard Box
-      drawCrest(280, 240, 65, 'rgba(56, 189, 248, 0.5)', match.homeTeam?.logo);
+      drawAuthenticCrest(ctx, 280, 235, 140, 140, hLogoUrl, h, true);
 
       ctx.fillStyle = '#ffffff';
       ctx.font = 'bold 28px system-ui, -apple-system, sans-serif';
       ctx.textAlign = 'center';
       ctx.fillText(h.length > 18 ? h.slice(0, 16) + '…' : h, 280, 345);
 
-      drawCrest(920, 240, 65, 'rgba(16, 185, 129, 0.5)', match.awayTeam?.logo);
+      drawAuthenticCrest(ctx, 920, 235, 140, 140, aLogoUrl, a, false);
 
       ctx.fillStyle = '#ffffff';
       ctx.font = 'bold 28px system-ui, -apple-system, sans-serif';
@@ -10233,14 +10414,14 @@
       ctx.fillText(compText, 1010, 80);
 
       // Teams & Scores
-      drawCrest(230, 320, 75, 'rgba(56, 189, 248, 0.5)', match.homeTeam?.logo);
+      drawAuthenticCrest(ctx, 230, 320, 150, 150, hLogoUrl, h, true);
 
       ctx.fillStyle = '#ffffff';
       ctx.font = 'bold 30px system-ui, -apple-system, sans-serif';
       ctx.textAlign = 'center';
       ctx.fillText(h.length > 16 ? h.slice(0, 15) + '…' : h, 230, 435);
 
-      drawCrest(850, 320, 75, 'rgba(16, 185, 129, 0.5)', match.awayTeam?.logo);
+      drawAuthenticCrest(ctx, 850, 320, 150, 150, aLogoUrl, a, false);
 
       ctx.fillStyle = '#ffffff';
       ctx.font = 'bold 30px system-ui, -apple-system, sans-serif';
@@ -10362,14 +10543,14 @@
       ctx.fillText(compText, 1000, 92);
 
       // Teams & Scores
-      drawCrest(230, 390, 80, 'rgba(56, 189, 248, 0.5)', match.homeTeam?.logo);
+      drawAuthenticCrest(ctx, 230, 390, 160, 160, hLogoUrl, h, true);
 
       ctx.fillStyle = '#ffffff';
       ctx.font = 'bold 32px system-ui, -apple-system, sans-serif';
       ctx.textAlign = 'center';
       ctx.fillText(h.length > 16 ? h.slice(0, 15) + '…' : h, 230, 515);
 
-      drawCrest(850, 390, 80, 'rgba(16, 185, 129, 0.5)', match.awayTeam?.logo);
+      drawAuthenticCrest(ctx, 850, 390, 160, 160, aLogoUrl, a, false);
 
       ctx.fillStyle = '#ffffff';
       ctx.font = 'bold 32px system-ui, -apple-system, sans-serif';
@@ -10488,14 +10669,14 @@
       ctx.fillText(evType.includes('GOAL') ? '⚽ GOAL!' : '🔴 LIVE MATCH UPDATE', 540, 355);
 
       // Teams & Scores
-      drawCrest(230, 660, 90, 'rgba(56, 189, 248, 0.5)', match.homeTeam?.logo);
+      drawAuthenticCrest(ctx, 230, 660, 180, 180, hLogoUrl, h, true);
 
       ctx.fillStyle = '#ffffff';
       ctx.font = 'bold 34px system-ui, -apple-system, sans-serif';
       ctx.textAlign = 'center';
       ctx.fillText(h.length > 16 ? h.slice(0, 15) + '…' : h, 230, 795);
 
-      drawCrest(850, 660, 90, 'rgba(16, 185, 129, 0.5)', match.awayTeam?.logo);
+      drawAuthenticCrest(ctx, 850, 660, 180, 180, aLogoUrl, a, false);
 
       ctx.fillStyle = '#ffffff';
       ctx.font = 'bold 34px system-ui, -apple-system, sans-serif';
@@ -10633,6 +10814,9 @@
       showAlert('Please select an active match before downloading the match card.');
       return false;
     }
+
+    // Ensure authentic club crests are preloaded into memory before rendering
+    try { await preloadMatchCrests(match); } catch (_) {}
 
     const fmtKey = (formatKey || state.liveUpdatesCardFormat || 'landscape').toLowerCase();
     const fmt = MATCH_CARD_FORMATS[fmtKey] || MATCH_CARD_FORMATS.landscape;
@@ -11204,8 +11388,14 @@
 
                     <div style="display: flex; justify-content: space-between; align-items: center;">
                       <div style="font-size: 0.85rem; font-weight: 800; color: #ffffff; display: flex; flex-direction: column; gap: 4px;">
-                        <span>${escapeHtml(m.homeTeam.name)}</span>
-                        <span>${escapeHtml(m.awayTeam.name)}</span>
+                        <span style="display: flex; align-items: center; gap: 6px;">
+                          <img src="${m.homeTeam.logo}" alt="${escapeHtml(m.homeTeam.name)}" style="width: 18px; height: 18px; object-fit: contain; flex-shrink: 0;" onerror="this.style.display='none'">
+                          <span>${escapeHtml(m.homeTeam.name)}</span>
+                        </span>
+                        <span style="display: flex; align-items: center; gap: 6px;">
+                          <img src="${m.awayTeam.logo}" alt="${escapeHtml(m.awayTeam.name)}" style="width: 18px; height: 18px; object-fit: contain; flex-shrink: 0;" onerror="this.style.display='none'">
+                          <span>${escapeHtml(m.awayTeam.name)}</span>
+                        </span>
                       </div>
                       <div style="font-size: 1.15rem; font-weight: 900; color: #38bdf8; text-align: right; min-width: 45px;">
                         ${m.isUpcoming ? '<span style="font-size: 0.72rem; color: #94a3b8;">' + escapeHtml(m.kickoffTime) + '</span>' : `${m.homeScore} – ${m.awayScore}`}
@@ -15105,6 +15295,10 @@
     setCardFormat,
     setCardFileType,
     showLiveCardDownloadAlert,
+    resolveTeamCrestUrl,
+    preloadTeamCrest,
+    preloadMatchCrests,
+    drawAuthenticCrest,
     getAllLiveModuleMatches,
     filterLiveMatches,
     searchLiveMatches,
@@ -15153,6 +15347,8 @@
   if (typeof window !== 'undefined') {
     startAutonomousScheduleDispatcher(10000);
     window.downloadMatchCard = downloadMatchCard;
+    window.drawAuthenticCrest = drawAuthenticCrest;
+    window.resolveTeamCrestUrl = resolveTeamCrestUrl;
     window.renderLiveMatchGraphic = renderLiveMatchGraphic;
     window.generateMatchCardFilename = generateMatchCardFilename;
     window.generateMatchCardCanvas = generateMatchCardCanvas;

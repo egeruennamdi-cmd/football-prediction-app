@@ -77,6 +77,7 @@ async function runTestSuite() {
 
   // Mock canvas in JSDOM
   const textElementsDrawn = [];
+  const imagesDrawn = [];
   const canvasOperations = [];
 
   window.HTMLCanvasElement.prototype.getContext = function (contextType) {
@@ -98,6 +99,13 @@ async function runTestSuite() {
           assert.ok(!Number.isNaN(x), `fillText x must not be NaN (text: ${text})`);
           assert.ok(!Number.isNaN(y), `fillText y must not be NaN (text: ${text})`);
           textElementsDrawn.push({ text: String(text), x, y, width: c.width, height: c.height });
+        },
+        drawImage(img, x, y, w, h) {
+          canvasOperations.push(['drawImage', img, x, y, w, h]);
+          imagesDrawn.push({ img, x, y, w, h, width: c.width, height: c.height });
+        },
+        roundRect(x, y, w, h, r) {
+          canvasOperations.push(['roundRect', x, y, w, h, r]);
         },
         beginPath() { canvasOperations.push(['beginPath']); },
         arc(x, y, r, s, e) { canvasOperations.push(['arc', x, y, r, s, e]); },
@@ -136,7 +144,10 @@ async function runTestSuite() {
     if (origClick) origClick.call(this);
   };
 
-  // Load telegramPublisher.js into environment
+  // Load teamCrests.js and telegramPublisher.js into environment
+  const crestsCode = fs.readFileSync(path.join(__dirname, 'js', 'teamCrests.js'), 'utf8');
+  window.eval(crestsCode);
+
   const publisherCode = fs.readFileSync(path.join(__dirname, 'js', 'telegramPublisher.js'), 'utf8');
   window.eval(publisherCode);
 
