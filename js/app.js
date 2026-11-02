@@ -6249,6 +6249,13 @@ window.viewLeagueStatisticsLedger = openLeagueAveragesModal;
 
 // Open mock modal with standings table list for this league
 async function showMockTableStandings(leagueName, btn, countryName) {
+  // Authoritative Dynamic Standings Engine handoff
+  if (typeof window !== 'undefined' && window.LeagueStandingsEngine && typeof window.LeagueStandingsEngine.showMockTableStandings === 'function') {
+    const cleanL = (leagueName || '').replace(/^[^ws]+/, '').trim() || leagueName;
+    const resolvedC = countryName || (window.appState && window.appState.calCountry);
+    return window.LeagueStandingsEngine.showMockTableStandings(cleanL, btn, resolvedC);
+  }
+
   const cleanLeague = (leagueName || '').replace(/^[^\w\s]+/, '').trim() || leagueName;
   let resolvedCountry = countryName || (window.appState && window.appState.calCountry);
   if ((!resolvedCountry || resolvedCountry === 'all') && window.COUNTRY_LEAGUES_DATA && Array.isArray(window.COUNTRY_LEAGUES_DATA)) {
@@ -11688,6 +11695,16 @@ window.switchInlineUserTab = switchInlineUserTab;
 window.renderInlineSavedTickets = renderInlineSavedTickets;
 
 document.addEventListener("DOMContentLoaded", function() {
+  try {
+    if (typeof window !== 'undefined' && window.LeagueStandingsEngine && typeof window.LeagueStandingsEngine.syncAllMatches === 'function') {
+      const globalMatches = [
+        ...(Array.isArray(window.MATCH_DATA) ? window.MATCH_DATA : []),
+        ...(Array.isArray(window.AUTHENTIC_TOP_LEAGUES_FIXTURES) ? window.AUTHENTIC_TOP_LEAGUES_FIXTURES : [])
+      ];
+      window.LeagueStandingsEngine.syncAllMatches(globalMatches);
+    }
+  } catch (e) {}
+
   updateAuthUIState();
   if (typeof updateSavedTicketsCountUI === 'function') {
     updateSavedTicketsCountUI();
