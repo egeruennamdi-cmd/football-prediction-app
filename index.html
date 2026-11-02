@@ -772,41 +772,87 @@
           style="font-size: 0.8rem; font-weight: 800; color: #38bdf8; text-transform: uppercase; white-space: nowrap; display: flex; align-items: center; gap: 6px; letter-spacing: 0.5px;">
           <span style="animation: pulse 1.5s infinite; color: var(--danger);">●</span> HOT TRENDS:
         </span>
-        <div style="flex-grow: 1; overflow: hidden; position: relative; height: 20px;">
+        <div style="flex-grow: 1; overflow: hidden; position: relative; height: 28px; display: flex; align-items: center;">
           <div id="trends-ticker-container"
-            style="display: flex; gap: 40px; position: absolute; white-space: nowrap; animation: tickerScroll 35s linear infinite;">
-            <span
-              style="font-size: 0.82rem; font-weight: 600; color: #cbd5e1; display: inline-flex; align-items: center; gap: 6px; white-space: nowrap;"><span
-                style="font-size: 0.95rem;">🔴</span> <b style="color: #60a5fa; font-weight: 800;">Arsenal:</b> <span
-                style="color: #ffffff;">Won last 6 home matches in Premier League</span></span>
-            <span
-              style="font-size: 0.82rem; font-weight: 600; color: #cbd5e1; display: inline-flex; align-items: center; gap: 6px; white-space: nowrap;"><span
-                style="font-size: 0.95rem;">⚪</span> <b style="color: #60a5fa; font-weight: 800;">Real Madrid:</b> <span
-                style="color: #ffffff;">Over 2.5 Goals in 8 consecutive games</span></span>
-            <span
-              style="font-size: 0.82rem; font-weight: 600; color: #cbd5e1; display: inline-flex; align-items: center; gap: 6px; white-space: nowrap;"><span
-                style="font-size: 0.95rem;">🔴⚪</span> <b style="color: #60a5fa; font-weight: 800;">Bayern Munich:</b>
-              <span style="color: #ffffff;">BTTS Yes in 9 of last 10 fixtures</span></span>
-            <span
-              style="font-size: 0.82rem; font-weight: 600; color: #cbd5e1; display: inline-flex; align-items: center; gap: 6px; white-space: nowrap;"><span
-                style="font-size: 0.95rem;">🔵🔴</span> <b style="color: #60a5fa; font-weight: 800;">Barcelona:</b>
-              <span style="color: #ffffff;">Unbeaten in last 12 La Liga matches</span></span>
-            <span
-              style="font-size: 0.82rem; font-weight: 600; color: #cbd5e1; display: inline-flex; align-items: center; gap: 6px; white-space: nowrap;"><span
-                style="font-size: 0.95rem;">🩵</span> <b style="color: #60a5fa; font-weight: 800;">Man City:</b> <span
-                style="color: #ffffff;">Scored 2+ Goals in last 7 matches</span></span>
-            <span
-              style="font-size: 0.82rem; font-weight: 600; color: #cbd5e1; display: inline-flex; align-items: center; gap: 6px; white-space: nowrap;"><span
-                style="font-size: 0.95rem;">🔵⚫</span> <b style="color: #60a5fa; font-weight: 800;">Inter Milan:</b>
-              <span style="color: #ffffff;">Clean sheet in 5 consecutive games</span></span>
-            <span
-              style="font-size: 0.82rem; font-weight: 600; color: #cbd5e1; display: inline-flex; align-items: center; gap: 6px; white-space: nowrap;"><span
-                style="font-size: 0.95rem;">🗼</span> <b style="color: #60a5fa; font-weight: 800;">PSG:</b> <span
-                style="color: #ffffff;">Won first half in 8 of last 10 matches</span></span>
-            <span
-              style="font-size: 0.82rem; font-weight: 600; color: #cbd5e1; display: inline-flex; align-items: center; gap: 6px; white-space: nowrap;"><span
-                style="font-size: 0.95rem;">🔴🛡️</span> <b style="color: #60a5fa; font-weight: 800;">Liverpool:</b>
-              <span style="color: #ffffff;">Over 1.5 Goals in 14 straight games</span></span>
+            style="display: flex; gap: 48px; position: absolute; white-space: nowrap; animation: tickerScroll 45s linear infinite; align-items: center;">
+            <span class="ticker-item">
+              <span class="ticker-badge">TITLE SHOWDOWN</span>
+              <span class="ticker-teams">
+                <span class="ticker-crest-wrap"><img src="https://media.api-sports.io/football/teams/50.png" alt="Manchester City" class="ticker-team-crest" style="width:18px;height:18px;object-fit:contain;display:inline-block;vertical-align:middle;flex-shrink:0;" loading="lazy"></span>
+                <span class="ticker-team-name">Manchester City</span>
+                <span class="ticker-vs">vs</span>
+                <span class="ticker-crest-wrap"><img src="https://media.api-sports.io/football/teams/42.png" alt="Arsenal" class="ticker-team-crest" style="width:18px;height:18px;object-fit:contain;display:inline-block;vertical-align:middle;flex-shrink:0;" loading="lazy"></span>
+                <span class="ticker-team-name">Arsenal</span>
+              </span>
+              <span class="ticker-divider">•</span>
+              <span class="ticker-insight">Tactical preview: Arsenal's structured mid-block against City's positional play</span>
+              <span class="ticker-time">🕒 8 Nov, 16:30</span>
+            </span>
+            <span class="ticker-item">
+              <span class="ticker-badge derby">EL CLÁSICO</span>
+              <span class="ticker-teams">
+                <span class="ticker-crest-wrap"><img src="https://media.api-sports.io/football/teams/529.png" alt="Barcelona" class="ticker-team-crest" style="width:18px;height:18px;object-fit:contain;display:inline-block;vertical-align:middle;flex-shrink:0;" loading="lazy"></span>
+                <span class="ticker-team-name">Barcelona</span>
+                <span class="ticker-vs">vs</span>
+                <span class="ticker-crest-wrap"><img src="https://media.api-sports.io/football/teams/541.png" alt="Real Madrid" class="ticker-team-crest" style="width:18px;height:18px;object-fit:contain;display:inline-block;vertical-align:middle;flex-shrink:0;" loading="lazy"></span>
+                <span class="ticker-team-name">Real Madrid</span>
+              </span>
+              <span class="ticker-divider">•</span>
+              <span class="ticker-insight">Barcelona are unbeaten in their last 9 home fixtures</span>
+              <span class="ticker-time">🕒 22 Nov, 21:00</span>
+            </span>
+            <span class="ticker-item">
+              <span class="ticker-badge derby">DERBY DELLA MADONNINA</span>
+              <span class="ticker-teams">
+                <span class="ticker-crest-wrap"><img src="https://media.api-sports.io/football/teams/505.png" alt="Inter Milan" class="ticker-team-crest" style="width:18px;height:18px;object-fit:contain;display:inline-block;vertical-align:middle;flex-shrink:0;" loading="lazy"></span>
+                <span class="ticker-team-name">Inter Milan</span>
+                <span class="ticker-vs">vs</span>
+                <span class="ticker-crest-wrap"><img src="https://media.api-sports.io/football/teams/489.png" alt="AC Milan" class="ticker-team-crest" style="width:18px;height:18px;object-fit:contain;display:inline-block;vertical-align:middle;flex-shrink:0;" loading="lazy"></span>
+                <span class="ticker-team-name">AC Milan</span>
+              </span>
+              <span class="ticker-divider">•</span>
+              <span class="ticker-insight">Inter won 4 of the last 5 derbies</span>
+              <span class="ticker-time">🕒 29 Nov, 19:45</span>
+            </span>
+            <span class="ticker-item">
+              <span class="ticker-badge derby">DER KLASSIKER</span>
+              <span class="ticker-teams">
+                <span class="ticker-crest-wrap"><img src="https://media.api-sports.io/football/teams/157.png" alt="Bayern Munich" class="ticker-team-crest" style="width:18px;height:18px;object-fit:contain;display:inline-block;vertical-align:middle;flex-shrink:0;" loading="lazy"></span>
+                <span class="ticker-team-name">Bayern Munich</span>
+                <span class="ticker-vs">vs</span>
+                <span class="ticker-crest-wrap"><img src="https://media.api-sports.io/football/teams/165.png" alt="Dortmund" class="ticker-team-crest" style="width:18px;height:18px;object-fit:contain;display:inline-block;vertical-align:middle;flex-shrink:0;" loading="lazy"></span>
+                <span class="ticker-team-name">Dortmund</span>
+              </span>
+              <span class="ticker-divider">•</span>
+              <span class="ticker-insight">Bayern is averaging 3.2 goals per game</span>
+              <span class="ticker-time">🕒 30 Nov, 17:30</span>
+            </span>
+            <span class="ticker-item">
+              <span class="ticker-badge">PREMIER LEAGUE</span>
+              <span class="ticker-teams">
+                <span class="ticker-crest-wrap"><img src="https://media.api-sports.io/football/teams/40.png" alt="Liverpool" class="ticker-team-crest" style="width:18px;height:18px;object-fit:contain;display:inline-block;vertical-align:middle;flex-shrink:0;" loading="lazy"></span>
+                <span class="ticker-team-name">Liverpool</span>
+                <span class="ticker-vs">vs</span>
+                <span class="ticker-crest-wrap"><img src="https://media.api-sports.io/football/teams/49.png" alt="Chelsea" class="ticker-team-crest" style="width:18px;height:18px;object-fit:contain;display:inline-block;vertical-align:middle;flex-shrink:0;" loading="lazy"></span>
+                <span class="ticker-team-name">Chelsea</span>
+              </span>
+              <span class="ticker-divider">•</span>
+              <span class="ticker-insight">Liverpool has scored in 100% of their home games this season</span>
+              <span class="ticker-time">🕒 15 Nov, 16:30</span>
+            </span>
+            <span class="ticker-item">
+              <span class="ticker-badge ucl">UEFA CHAMPIONS LEAGUE</span>
+              <span class="ticker-teams">
+                <span class="ticker-crest-wrap"><img src="https://media.api-sports.io/football/teams/496.png" alt="Juventus" class="ticker-team-crest" style="width:18px;height:18px;object-fit:contain;display:inline-block;vertical-align:middle;flex-shrink:0;" loading="lazy"></span>
+                <span class="ticker-team-name">Juventus</span>
+                <span class="ticker-vs">vs</span>
+                <span class="ticker-crest-wrap"><img src="https://media.api-sports.io/football/teams/85.png" alt="PSG" class="ticker-team-crest" style="width:18px;height:18px;object-fit:contain;display:inline-block;vertical-align:middle;flex-shrink:0;" loading="lazy"></span>
+                <span class="ticker-team-name">PSG</span>
+              </span>
+              <span class="ticker-divider">•</span>
+              <span class="ticker-insight">Tactical deadlock expected · Both teams average low defensive lines</span>
+              <span class="ticker-time">🕒 25 Nov, 20:00</span>
+            </span>
           </div>
         </div>
       </div>

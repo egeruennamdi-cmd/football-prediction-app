@@ -4,7 +4,8 @@ const MATCH_DATA = [
     date: "future",
     league: "Premier League",
     leagueEmoji: "🏴󠁧󠁢󠁥󠁮󠁧󠁿",
-    time: "20th, September 2026, 16:30",
+    time: "8th, November 2026, 16:30",
+    dateSlot: "2026-11-08-1630",
     isLive: false,
     homeTeam: {
       name: "Manchester City",
@@ -30,7 +31,8 @@ const MATCH_DATA = [
     date: "future",
     league: "La Liga",
     leagueEmoji: "🇪🇸",
-    time: "25th, October 2026, 21:00",
+    time: "22nd, November 2026, 21:00",
+    dateSlot: "2026-11-22-2100",
     isLive: false,
     homeTeam: {
       name: "Barcelona",
@@ -48,7 +50,7 @@ const MATCH_DATA = [
     confidenceVal: 72,
     insight: "El Clásico at Spotify Camp Nou. Barcelona are unbeaten in their last 9 home fixtures.",
     isPremium: true,
-    aiAnalysis: "PREMIUM SCOUT REPORT: Barcelona host Real Madrid at the Spotify Camp Nou on 25th October 2026. Barcelona's home form gives them a structural advantage. Real Madrid's transition efficiency index is 9.4/10 but faces Barcelona's defensive press rated 8.1/10 at home. Recommended Pick: Draw No Bet (Barcelona) or BTTS (Both Teams To Score) as a banker option.",
+    aiAnalysis: "PREMIUM SCOUT REPORT: Barcelona host Real Madrid at the Spotify Camp Nou on 22nd November 2026. Barcelona's home form gives them a structural advantage. Real Madrid's transition efficiency index is 9.4/10 but faces Barcelona's defensive press rated 8.1/10 at home. Recommended Pick: Draw No Bet (Barcelona) or BTTS (Both Teams To Score) as a banker option.",
     topTips: ["uo15", "uoht05", "bttsht", "c75", "c85", "c95"]
   },
   {
@@ -56,7 +58,8 @@ const MATCH_DATA = [
     date: "future",
     league: "Premier League",
     leagueEmoji: "🏴󠁧󠁢󠁥󠁮󠁧󠁿",
-    time: "19th, October 2026, 16:30",
+    time: "15th, November 2026, 16:30",
+    dateSlot: "2026-11-15-1630",
     isLive: false,
     homeTeam: {
       name: "Liverpool",
@@ -83,6 +86,7 @@ const MATCH_DATA = [
     league: "Bundesliga",
     leagueEmoji: "🇩🇪",
     time: "30th, November 2026, 17:30",
+    dateSlot: "2026-11-30-1730",
     isLive: false,
     homeTeam: {
       name: "Bayern Munich",
@@ -108,7 +112,8 @@ const MATCH_DATA = [
     date: "future",
     league: "Serie A",
     leagueEmoji: "🇮🇹",
-    time: "21st, September 2026, 19:45",
+    time: "29th, November 2026, 19:45",
+    dateSlot: "2026-11-29-1945",
     isLive: false,
     homeTeam: {
       name: "Inter Milan",
@@ -134,7 +139,8 @@ const MATCH_DATA = [
     date: "future",
     league: "Champions League",
     leagueEmoji: "🇪🇺",
-    time: "1st, October 2026, 20:00",
+    time: "25th, November 2026, 20:00",
+    dateSlot: "2026-11-25-2000",
     isLive: false,
     homeTeam: {
       name: "Juventus",

@@ -5024,48 +5024,299 @@ if (document.readyState === 'loading') {
 }
 window.addEventListener('load', initHeroScoutDynamicOutput);
 
-function getDynamicHotTrends() {
-  const dynamicList = [];
-  const matches = (typeof MATCH_DATA !== 'undefined' && Array.isArray(MATCH_DATA) && MATCH_DATA.length > 0)
-    ? MATCH_DATA
-    : (window.MATCH_DATA && Array.isArray(window.MATCH_DATA) ? window.MATCH_DATA : []);
+// ============================================================================
+// 🔴 HOT TRENDS TICKER ENGINE (UPCOMING INTELLIGENCE & AUTHENTIC CRESTS)
+// ============================================================================
 
-  if (matches.length > 0) {
-    matches.forEach(m => {
-      if (m.homeTeam && m.homeTeam.name && m.topTip) {
-        dynamicList.push({
-          team: m.homeTeam.name,
-          icon: m.homeTeam.logo || '⚽',
-          trend: `${m.topTip} (${m.confidenceVal || 85}% AI Model Confidence)`
-        });
-      }
-      if (m.awayTeam && m.awayTeam.name && m.insight) {
-        const snippet = m.insight.split('.')[0];
-        if (snippet && snippet.length < 65) {
-          dynamicList.push({
-            team: m.awayTeam.name,
-            icon: m.awayTeam.logo || '⚽',
-            trend: snippet
-          });
-        }
-      }
-    });
+const HOT_TRENDS_MARKET_MAP = {
+  'uo05': 'Over 0.5 Match Goals',
+  'uo15': 'Over 1.5 Match Goals',
+  'uo25': 'Over 2.5 Match Goals',
+  'uo35': 'Over 3.5 Match Goals',
+  'uo45': 'Over 4.5 Match Goals',
+  'uoht05': 'Over 0.5 First Half Goals',
+  'uoht15': 'Over 1.5 First Half Goals',
+  'uo2h05': 'Over 0.5 Second Half Goals',
+  'uo2h15': 'Over 1.5 Second Half Goals',
+  'btts': 'Both Teams To Score (BTTS)',
+  'btts_no': 'Both Teams To Score - NO',
+  'bttsht': 'Both Teams To Score (1st Half)',
+  'btts2h': 'Both Teams To Score (2nd Half)',
+  'win1': 'Home Team To Win',
+  'win2': 'Away Team To Win',
+  'draw': 'Match Drawn',
+  'dc1x': 'Double Chance 1X',
+  'dc12': 'Double Chance 12',
+  'dcx2': 'Double Chance X2',
+  'dnb': 'Draw No Bet',
+  'c75': 'Over 7.5 Total Corners',
+  'c85': 'Over 8.5 Total Corners',
+  'c95': 'Over 9.5 Total Corners',
+  'c105': 'Over 10.5 Total Corners'
+};
+
+function formatHotTrendInsight(match, homeName, awayName, headline) {
+  if (match.insight && typeof match.insight === 'string' && match.insight.trim().length > 0) {
+    const sentences = match.insight.split(/(?<=[a-zA-Z0-9])\.\s+/);
+    let candidate = (sentences[0] || match.insight).trim();
+    if (headline && candidate.toLowerCase().includes(headline.toLowerCase()) && sentences.length > 1) {
+      candidate = sentences[1].trim();
+    }
+    if (candidate.length > 5 && candidate.length <= 95) {
+      return candidate;
+    }
   }
 
-  const baseTrends = (typeof HOT_TRENDS !== 'undefined' && Array.isArray(HOT_TRENDS) && HOT_TRENDS.length > 0)
-    ? HOT_TRENDS
-    : (window.HOT_TRENDS && Array.isArray(window.HOT_TRENDS) ? window.HOT_TRENDS : [
-        { team: "Arsenal", icon: "🔴", trend: "Won last 6 home matches in Premier League" },
-        { team: "Real Madrid", icon: "⚪", trend: "Over 2.5 Goals in 8 consecutive games" },
-        { team: "Bayern Munich", icon: "🔴⚪", trend: "BTTS Yes in 9 of last 10 fixtures" },
-        { team: "Barcelona", icon: "🔵🔴", trend: "Unbeaten in last 12 La Liga matches" },
-        { team: "Manchester City", icon: "🩵", trend: "Scored 2+ Goals in last 7 matches" },
-        { team: "Inter Milan", icon: "🔵⚫", trend: "Clean sheet in 5 consecutive Serie A fixtures" },
-        { team: "PSG", icon: "🗼", trend: "Won first half in 8 of last 10 Ligue 1 matches" },
-        { team: "Liverpool", icon: "🔴🛡️", trend: "Over 1.5 Goals in 14 straight games" }
-      ]);
+  if (match.aiAnalysis && typeof match.aiAnalysis === 'string' && match.aiAnalysis.trim().length > 0) {
+    const cleanAnalysis = match.aiAnalysis.replace(/^PREMIUM SCOUT REPORT:\s*/i, '').trim();
+    const sentences = cleanAnalysis.split(/(?<=[a-zA-Z0-9])\.\s+/);
+    const candidate = (sentences[0] || cleanAnalysis).trim();
+    if (candidate.length > 10 && candidate.length <= 95) {
+      return candidate;
+    }
+  }
 
-  return dynamicList.length > 0 ? [...dynamicList.slice(0, 8), ...baseTrends.slice(0, 6)] : baseTrends;
+  if (match.predictions && typeof match.predictions.home === 'number') {
+    const pHome = match.predictions.home;
+    const pAway = match.predictions.away;
+    if (pHome >= 55) {
+      return `AI Model: ${homeName} ${pHome}% Win Probability (${match.confidenceVal || 85}% Confidence)`;
+    } else if (pAway >= 50) {
+      return `AI Model: ${awayName} ${pAway}% Win Probability (${match.confidenceVal || 85}% Confidence)`;
+    } else {
+      return `High-intensity tactical matchup · ${homeName} ${pHome}% / ${awayName} ${pAway}% Win Index`;
+    }
+  }
+
+  if (match.topTip && HOT_TRENDS_MARKET_MAP[match.topTip]) {
+    return `${HOT_TRENDS_MARKET_MAP[match.topTip]} (${match.confidenceVal || 85}% AI Model Confidence)`;
+  }
+
+  return 'Tactical preview & statistical model analysis active';
+}
+
+function getMatchHeadlineInfo(match) {
+  const home = (match.homeTeam?.name || match.homeTeam || '').toLowerCase();
+  const away = (match.awayTeam?.name || match.awayTeam || '').toLowerCase();
+  const league = (match.league || '').toLowerCase();
+  const insight = (match.insight || '').toLowerCase();
+  const analysis = (match.aiAnalysis || '').toLowerCase();
+
+  // 1. Major Derby Identification
+  if ((home.includes('inter') && away.includes('milan')) || (home.includes('milan') && away.includes('inter'))) {
+    return { headline: 'DERBY DELLA MADONNINA', isDerby: true, isUCL: false };
+  }
+  if ((home.includes('barcelona') && away.includes('real madrid')) || (home.includes('real madrid') && away.includes('barcelona'))) {
+    return { headline: 'EL CLÁSICO', isDerby: true, isUCL: false };
+  }
+  if ((home.includes('bayern') && away.includes('dortmund')) || (home.includes('dortmund') && away.includes('bayern'))) {
+    return { headline: 'DER KLASSIKER', isDerby: true, isUCL: false };
+  }
+  if ((home.includes('arsenal') && away.includes('tottenham')) || (home.includes('tottenham') && away.includes('arsenal'))) {
+    return { headline: 'NORTH LONDON DERBY', isDerby: true, isUCL: false };
+  }
+  if ((home.includes('liverpool') && away.includes('everton')) || (home.includes('everton') && away.includes('liverpool'))) {
+    return { headline: 'MERSEYSIDE DERBY', isDerby: true, isUCL: false };
+  }
+  if ((home.includes('manchester united') && away.includes('manchester city')) || (home.includes('manchester city') && away.includes('manchester united'))) {
+    return { headline: 'MANCHESTER DERBY', isDerby: true, isUCL: false };
+  }
+  if ((home.includes('chiefs') && away.includes('pirates')) || (home.includes('pirates') && away.includes('chiefs'))) {
+    return { headline: 'SOWETO DERBY', isDerby: true, isUCL: false };
+  }
+  if ((home.includes('celtic') && away.includes('rangers')) || (home.includes('rangers') && away.includes('celtic'))) {
+    return { headline: 'OLD FIRM DERBY', isDerby: true, isUCL: false };
+  }
+  if ((home.includes('roma') && away.includes('lazio')) || (home.includes('lazio') && away.includes('roma'))) {
+    return { headline: 'DERBY DELLA CAPITALE', isDerby: true, isUCL: false };
+  }
+  if ((home.includes('galatasaray') && away.includes('fenerbahce')) || (home.includes('fenerbahce') && away.includes('galatasaray'))) {
+    return { headline: 'INTERCONTINENTAL DERBY', isDerby: true, isUCL: false };
+  }
+
+  // 2. Text hints in analytical metadata
+  if (insight.includes('derby della madonnina') || analysis.includes('derby della madonnina')) {
+    return { headline: 'DERBY DELLA MADONNINA', isDerby: true, isUCL: false };
+  }
+  if (insight.includes('el clásico') || insight.includes('el clasico') || analysis.includes('el clásico') || analysis.includes('el clasico')) {
+    return { headline: 'EL CLÁSICO', isDerby: true, isUCL: false };
+  }
+  if (insight.includes('klassiker') || analysis.includes('klassiker')) {
+    return { headline: 'DER KLASSIKER', isDerby: true, isUCL: false };
+  }
+  if (insight.includes('title showdown') || analysis.includes('title showdown') || (home.includes('manchester city') && away.includes('arsenal'))) {
+    return { headline: 'TITLE SHOWDOWN', isDerby: true, isUCL: false };
+  }
+
+  // 3. Continental & Major Competitions
+  if (league.includes('champions league') || league.includes('ucl')) {
+    return { headline: 'UEFA CHAMPIONS LEAGUE', isDerby: false, isUCL: true };
+  }
+  if (league.includes('europa league')) {
+    return { headline: 'UEFA EUROPA LEAGUE', isDerby: false, isUCL: true };
+  }
+  if (league.includes('premier league') || league.includes('epl')) {
+    return { headline: 'PREMIER LEAGUE', isDerby: false, isUCL: false };
+  }
+  if (league.includes('la liga') || league.includes('laliga')) {
+    return { headline: 'LA LIGA', isDerby: false, isUCL: false };
+  }
+  if (league.includes('serie a')) {
+    return { headline: 'SERIE A', isDerby: false, isUCL: false };
+  }
+  if (league.includes('bundesliga')) {
+    return { headline: 'BUNDESLIGA', isDerby: false, isUCL: false };
+  }
+  if (league.includes('ligue 1')) {
+    return { headline: 'LIGUE 1', isDerby: false, isUCL: false };
+  }
+  if (league.includes('psl') || league.includes('south african')) {
+    return { headline: 'SOUTH AFRICAN PSL', isDerby: false, isUCL: false };
+  }
+  if (match.league) {
+    return { headline: String(match.league).toUpperCase(), isDerby: false, isUCL: false };
+  }
+  return { headline: 'UPCOMING FIXTURE', isDerby: false, isUCL: false };
+}
+
+function calculateTrendPriority(match, now) {
+  let score = 0;
+  const headlineInfo = getMatchHeadlineInfo(match);
+  if (headlineInfo.isDerby) score += 50;
+  if (headlineInfo.isUCL) score += 40;
+
+  const league = (match.league || '').toLowerCase();
+  if (league.includes('premier league')) score += 35;
+  else if (league.includes('la liga') || league.includes('serie a') || league.includes('bundesliga')) score += 30;
+  else if (league.includes('ligue 1') || league.includes('psl') || league.includes('saudi') || league.includes('mls')) score += 20;
+
+  const home = (match.homeTeam?.name || match.homeTeam || '').toLowerCase();
+  const away = (match.awayTeam?.name || match.awayTeam || '').toLowerCase();
+  const elite = ['real madrid', 'barcelona', 'manchester city', 'arsenal', 'liverpool', 'bayern munich', 'inter milan', 'ac milan', 'psg', 'chelsea', 'manchester united', 'juventus', 'borussia dortmund', 'atletico madrid'];
+  elite.forEach(team => {
+    if (home.includes(team)) score += 12;
+    if (away.includes(team)) score += 12;
+  });
+
+  const ts = (typeof getMatchTimestamp === 'function') ? getMatchTimestamp(match) : null;
+  if (ts !== null && ts > now) {
+    const hoursAway = (ts - now) / (1000 * 3600);
+    if (hoursAway <= 48) score += 25;
+    else if (hoursAway <= 168) score += 15;
+    else if (hoursAway <= 720) score += 5;
+  }
+
+  if (match.aiAnalysis) score += 15;
+  if (match.insight) score += 10;
+  if (match.confidence === 'high' || (match.confidenceVal && match.confidenceVal >= 80)) score += 10;
+
+  return score;
+}
+
+function formatTickerKickoff(match) {
+  if (match.isLive) return '🔴 LIVE';
+  const ts = (typeof getMatchTimestamp === 'function') ? getMatchTimestamp(match) : null;
+  if (ts) {
+    const d = new Date(ts);
+    const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+    const day = d.getDate();
+    const mo = months[d.getMonth()];
+    const hr = String(d.getHours()).padStart(2, '0');
+    const mi = String(d.getMinutes()).padStart(2, '0');
+    return `🕒 ${day} ${mo}, ${hr}:${mi}`;
+  }
+  if (typeof match.time === 'string' && match.time) {
+    const clean = match.time.replace(/(\d+)(?:st|nd|rd|th)?,\s*([A-Za-z]+)\s+\d{4},\s*(\d{1,2}:\d{2})/, '$1 $2, $3');
+    if (clean && clean.length <= 16) {
+      return `🕒 ${clean}`;
+    }
+  }
+  return '';
+}
+
+function getTickerCrestHtml(team, isHome) {
+  const teamName = team?.name || team || (isHome ? 'Home' : 'Away');
+  if (typeof window !== 'undefined' && typeof window.renderTeamLogoHtml === 'function') {
+    return window.renderTeamLogoHtml(team || teamName, isHome, 18, { inline: true, className: 'ticker-team-crest' });
+  }
+  if (typeof renderTeamLogoHtml === 'function') {
+    return renderTeamLogoHtml(team || teamName, isHome, 18, { inline: true, className: 'ticker-team-crest' });
+  }
+  const crestUrl = (typeof resolveTeamCrestUrl === 'function')
+    ? resolveTeamCrestUrl(team || teamName, isHome)
+    : ((team?.logo && String(team.logo).startsWith('http')) ? team.logo : (isHome ? 'https://media.api-sports.io/football/teams/40.png' : 'https://media.api-sports.io/football/teams/42.png'));
+  return `<img src="${crestUrl}" alt="${teamName}" class="ticker-team-crest" style="width:18px;height:18px;object-fit:contain;display:inline-block;vertical-align:middle;flex-shrink:0;" loading="lazy">`;
+}
+
+function getDynamicHotTrends() {
+  const now = (typeof window !== 'undefined' && window.__HOT_TRENDS_TEST_NOW__) ? window.__HOT_TRENDS_TEST_NOW__ : Date.now();
+  const rawList = [];
+
+  const matches = (typeof window !== 'undefined' && Array.isArray(window.MATCH_DATA))
+    ? window.MATCH_DATA
+    : ((typeof MATCH_DATA !== 'undefined' && Array.isArray(MATCH_DATA)) ? MATCH_DATA : []);
+  const authenticFixtures = (typeof window !== 'undefined' && Array.isArray(window.AUTHENTIC_TOP_LEAGUES_FIXTURES))
+    ? window.AUTHENTIC_TOP_LEAGUES_FIXTURES
+    : ((typeof AUTHENTIC_TOP_LEAGUES_FIXTURES !== 'undefined' && Array.isArray(AUTHENTIC_TOP_LEAGUES_FIXTURES)) ? AUTHENTIC_TOP_LEAGUES_FIXTURES : []);
+  const poolFixtures = (typeof window !== 'undefined' && Array.isArray(window.TOP_LEAGUES_FIXTURES_POOL))
+    ? window.TOP_LEAGUES_FIXTURES_POOL
+    : ((typeof TOP_LEAGUES_FIXTURES_POOL !== 'undefined' && Array.isArray(TOP_LEAGUES_FIXTURES_POOL)) ? TOP_LEAGUES_FIXTURES_POOL : []);
+
+  const allCandidates = [...matches, ...authenticFixtures, ...poolFixtures];
+  const seenKeys = new Set();
+
+  allCandidates.forEach(m => {
+    if (!m) return;
+    const homeName = m.homeTeam?.name || m.homeTeam || '';
+    const awayName = m.awayTeam?.name || m.awayTeam || '';
+    if (!homeName || !awayName) return;
+
+    const key = `${homeName.toLowerCase()} vs ${awayName.toLowerCase()}`;
+    if (seenKeys.has(key)) return;
+    seenKeys.add(key);
+
+    // Strict future / upcoming check: eliminate completed, FT, yesterday, and past fixtures
+    if (typeof isMatchOutdated === 'function' && isMatchOutdated(m)) return;
+    if (m.isFT || m.status === 'FT' || m.statusShort === 'FT' || m.isYesterday || m.date === 'yesterday') return;
+    if (m.scores && m.scores.home !== null && !m.isLive) return;
+
+    const ts = (typeof getMatchTimestamp === 'function') ? getMatchTimestamp(m) : null;
+    const isFuture = (ts !== null ? (ts > now || m.isLive) : (m.date === 'future' || m.date === 'tomorrow' || m.isLive));
+    if (!isFuture) return;
+
+    const priority = calculateTrendPriority(m, now);
+    rawList.push({ match: m, priority });
+  });
+
+  // Sort by priority descending
+  rawList.sort((a, b) => b.priority - a.priority);
+
+  // Take top 8-10 events
+  return rawList.slice(0, 10).map(item => {
+    const m = item.match;
+    const homeName = m.homeTeam?.name || m.homeTeam || 'Home';
+    const awayName = m.awayTeam?.name || m.awayTeam || 'Away';
+    const headInfo = getMatchHeadlineInfo(m);
+    const homeCrestHtml = getTickerCrestHtml(m.homeTeam || homeName, true);
+    const awayCrestHtml = getTickerCrestHtml(m.awayTeam || awayName, false);
+    const insight = formatHotTrendInsight(m, homeName, awayName, headInfo.headline);
+    const timeStr = formatTickerKickoff(m);
+
+    let badgeClass = '';
+    if (headInfo.isDerby) badgeClass = 'derby';
+    else if (headInfo.isUCL) badgeClass = 'ucl';
+
+    return {
+      headline: headInfo.headline,
+      badgeClass,
+      homeName,
+      awayName,
+      homeCrestHtml,
+      awayCrestHtml,
+      insight,
+      timeStr
+    };
+  });
 }
 
 function renderTrends() {
@@ -5074,13 +5325,35 @@ function renderTrends() {
 
   try {
     const trendsData = getDynamicHotTrends();
+
+    if (!trendsData || trendsData.length === 0) {
+      container.innerHTML = `
+        <span class="ticker-empty">
+          <span style="font-size: 0.95rem;">📡</span> Monitoring live feeds for upcoming headline fixtures... Check back shortly.
+        </span>
+      `;
+      container.style.display = "flex";
+      container.style.position = "relative";
+      container.style.animation = "none";
+      return;
+    }
+
+    // Triplicate for seamless -33.33% infinite scroll loop
     const combinedTrends = [...trendsData, ...trendsData, ...trendsData];
 
-    container.innerHTML = combinedTrends.map(trend => `
-      <span style="font-size: 0.82rem; font-weight: 600; color: #cbd5e1; display: inline-flex; align-items: center; gap: 6px; margin-right: 40px; white-space: nowrap; flex-shrink: 0;">
-        <span style="font-size: 0.95rem;">${trend.icon || '🔥'}</span>
-        <b style="color: #60a5fa; font-weight: 800;">${trend.team}:</b>
-        <span style="color: #ffffff;">${trend.trend}</span>
+    container.innerHTML = combinedTrends.map(t => `
+      <span class="ticker-item">
+        <span class="ticker-badge ${t.badgeClass}">${t.headline}</span>
+        <span class="ticker-teams">
+          <span class="ticker-crest-wrap">${t.homeCrestHtml}</span>
+          <span class="ticker-team-name">${t.homeName}</span>
+          <span class="ticker-vs">vs</span>
+          <span class="ticker-crest-wrap">${t.awayCrestHtml}</span>
+          <span class="ticker-team-name">${t.awayName}</span>
+        </span>
+        <span class="ticker-divider">•</span>
+        <span class="ticker-insight">${t.insight}</span>
+        ${t.timeStr ? `<span class="ticker-time">${t.timeStr}</span>` : ''}
       </span>
     `).join("");
 
@@ -5089,13 +5362,28 @@ function renderTrends() {
     container.style.whiteSpace = "nowrap";
     container.style.left = "0";
     container.style.top = "0";
-    container.style.animation = "tickerScroll 35s linear infinite";
+    container.style.height = "100%";
+    container.style.alignItems = "center";
+    container.style.animation = "tickerScroll 45s linear infinite";
   } catch(e) {
     console.error("Hot trends render error:", e);
   }
 }
 window.renderTrends = renderTrends;
 window.getDynamicHotTrends = getDynamicHotTrends;
+
+// Auto-run Hot Trends on site load
+if (typeof document !== 'undefined') {
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', renderTrends);
+  } else {
+    renderTrends();
+  }
+}
+if (typeof window !== 'undefined') {
+  window.addEventListener('load', renderTrends);
+}
+
 window.triggerHeroScoutPrompt = triggerHeroScoutPrompt;
 window.quickPromptScout = quickPromptScout;
 
