@@ -12754,6 +12754,11 @@ window.renderTodayInsightsPreview = renderTodayInsightsPreview;
 
 // Dynamic synchronization for RECENT SETTLED PREDICTIONS (Audited Ledger • Wins & Losses)
 function renderRecentSettledPredictions(filterLeague, filterCountry, fixturesPool) {
+  // Authoritative Prediction Settlement Ledger handoff
+  if (typeof window !== 'undefined' && window.PredictionSettlementLedger && typeof window.PredictionSettlementLedger.renderRecentSettledPredictions === 'function') {
+    return window.PredictionSettlementLedger.renderRecentSettledPredictions(filterLeague, filterCountry, fixturesPool);
+  }
+
   const container = document.getElementById('settled-picks-grid');
   if (!container) return;
 
@@ -13109,6 +13114,10 @@ function getSettledMatchesForTimeframe(timeframe) {
   if (!allSettled || allSettled.length === 0) return [];
 
   if (timeframe === '7d') {
+    if (typeof window !== 'undefined' && window.PredictionSettlementLedger && typeof window.PredictionSettlementLedger.getRecentSettledPredictions === 'function') {
+      const q = window.PredictionSettlementLedger.getRecentSettledPredictions({ days: 7, limit: 50 });
+      if (q && Array.isArray(q.records) && q.records.length > 0) return q.records;
+    }
     return allSettled.filter(m => {
       const t = String(m.time || '').toLowerCase();
       return t.includes('yesterday') || t.includes('3 days') || t.includes('4 days') || t.includes('1 week');

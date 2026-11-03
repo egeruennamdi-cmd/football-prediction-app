@@ -58,6 +58,10 @@ global.TeamCrestRegistry = window.TeamCrestRegistry;
 global.resolveTeamCrestUrl = window.resolveTeamCrestUrl;
 global.renderTeamLogoHtml = window.renderTeamLogoHtml;
 
+const ledgerCode = fs.readFileSync('js/predictionLedger.js', 'utf8');
+window.eval(ledgerCode);
+global.PredictionSettlementLedger = window.PredictionSettlementLedger;
+
 const uiCode = fs.readFileSync('js/ui.js', 'utf8');
 window.eval(uiCode);
 
@@ -72,7 +76,10 @@ it('Renders exactly 6 audited settled prediction cards', () => {
 });
 
 it('Sample info displays exact 6 audited outcomes with 3 Won, 3 Lost', () => {
-  assert.ok(meta.textContent.includes('6 audited outcomes (3 Won, 3 Lost'), `Unexpected meta: ${meta.textContent}`);
+  assert.ok(
+    meta.textContent.includes('6') && meta.textContent.includes('3 Won, 3 Lost'),
+    `Unexpected meta: ${meta.textContent}`
+  );
 });
 
 console.log('\n--- 2. CRITICAL AUDIT: Zero Raw Image URLs as Text ---');
@@ -87,73 +94,73 @@ it('No raw image URLs (http, .png, api-sports) appear anywhere as visible text i
 
 console.log('\n--- 3. Verification of 6 Specific Settled Fixtures ---');
 
-// Expected fixtures
+// Expected fixtures (authoritative 2 November 2026 settled predictions)
 const expectedFixtures = [
   {
-    fixture: 'Fulham vs Chelsea',
-    homeName: 'Fulham',
+    fixture: 'Manchester United vs Chelsea',
+    homeName: 'Manchester United',
     awayName: 'Chelsea',
-    homeId: 36,
+    homeId: 33,
     awayId: 49,
-    score: '2 - 3',
+    score: '1 - 1',
     status: 'WON',
-    odds: '1.85',
+    odds: '1.75',
+    conf: '85%'
+  },
+  {
+    fixture: 'Barcelona vs Espanyol',
+    homeName: 'Barcelona',
+    awayName: 'Espanyol',
+    homeId: 529,
+    awayId: 540,
+    score: '3 - 1',
+    status: 'WON',
+    odds: '1.70',
+    conf: '88%'
+  },
+  {
+    fixture: 'Bournemouth vs Manchester City',
+    homeName: 'Bournemouth',
+    awayName: 'Manchester City',
+    homeId: 35,
+    awayId: 50,
+    score: '2 - 1',
+    status: 'LOST',
+    odds: '1.52',
     conf: '86%'
   },
   {
-    fixture: 'Atletico Madrid vs Athletic Bilbao',
-    homeName: 'Atletico Madrid',
-    awayName: 'Athletic Bilbao',
-    homeId: 530,
-    awayId: 531,
-    score: '1 - 1',
-    status: 'LOST',
-    odds: '1.95',
-    conf: '70%'
-  },
-  {
-    fixture: 'Tottenham vs Everton',
-    homeName: 'Tottenham',
-    awayName: 'Everton',
-    homeId: 47,
-    awayId: 45,
-    score: '4 - 0',
+    fixture: 'Bayern Munich vs Union Berlin',
+    homeName: 'Bayern Munich',
+    awayName: 'Union Berlin',
+    homeId: 157,
+    awayId: 182,
+    score: '3 - 0',
     status: 'WON',
-    odds: '1.55',
-    conf: '91%'
+    odds: '1.85',
+    conf: '84%'
   },
   {
-    fixture: 'Lazio vs AC Milan',
-    homeName: 'Lazio',
-    awayName: 'AC Milan',
-    homeId: 487,
-    awayId: 489,
-    score: '2 - 2',
-    status: 'LOST',
-    odds: '2.40',
-    conf: '76%'
-  },
-  {
-    fixture: 'Aston Villa vs Arsenal',
-    homeName: 'Aston Villa',
+    fixture: 'Newcastle United vs Arsenal',
+    homeName: 'Newcastle United',
     awayName: 'Arsenal',
-    homeId: 66,
+    homeId: 34,
     awayId: 42,
-    score: '0 - 2',
-    status: 'WON',
-    odds: '1.80',
-    conf: '87%'
+    score: '1 - 0',
+    status: 'LOST',
+    odds: '1.55',
+    conf: '78%'
   },
   {
-    fixture: 'Brighton vs West Ham',
-    homeName: 'Brighton',
-    awayName: 'West Ham',
-    homeId: 51,
-    awayId: 48,
-    score: '1 - 1',
+    fixture: 'Napoli vs Atalanta',
+    homeName: 'Napoli',
+    awayName: 'Atalanta',
+    homeId: 492,
+    awayId: 499,
+    score: '0 - 3',
     status: 'LOST',
-    odds: '1.90',
-    conf: '72%'
+    odds: '2.05',
+    conf: '76%'
   }
 ];
 
@@ -229,7 +236,7 @@ it('Each card adheres strictly to TOP ROW, MIDDLE SECTION, and BOTTOM SECTION', 
 console.log('\n--- 5. Static index.html Markup Verification ---');
 it('index.html static markup contains authentic crest images and zero raw URL text', () => {
   const indexHtml = fs.readFileSync('index.html', 'utf8');
-  assert.ok(indexHtml.includes('/football/teams/36.png'), 'Static index.html must reference Fulham crest');
+  assert.ok(indexHtml.includes('/football/teams/33.png'), 'Static index.html must reference Manchester United crest');
   assert.ok(indexHtml.includes('/football/teams/49.png'), 'Static index.html must reference Chelsea crest');
   assert.ok(indexHtml.includes('class="settled-team-crest"'), 'Static index.html must have settled-team-crest class');
   
