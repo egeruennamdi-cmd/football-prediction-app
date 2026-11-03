@@ -7,7 +7,12 @@
  */
 
 const https = require('https');
+const dns = require('dns');
 const assert = require('assert');
+
+try {
+  dns.setServers(['1.1.1.1', '8.8.8.8']);
+} catch (e) {}
 
 const PRODUCTION_URL = 'https://deeppredictbet.com';
 
