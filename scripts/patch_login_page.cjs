@@ -464,10 +464,10 @@ function patchRouter(filePath) {
         document.body.classList.remove('auth-view-active');
       }
 
-      // If authenticated user visits root '/' or '/login', redirect to designated dashboard
-      if (path === '/' || path === '/login') {
+      // If authenticated user visits '/login', restore preserved target or redirect to designated dashboard
+      if (path === '/login') {
         const preservedTarget = typeof sessionStorage !== 'undefined' ? sessionStorage.getItem('auth_redirect_target') : null;
-        if (preservedTarget && preservedTarget !== '/' && preservedTarget !== '/login') {
+        if (preservedTarget && preservedTarget !== '/' && preservedTarget !== '/login' && preservedTarget !== '/command-center') {
           sessionStorage.removeItem('auth_redirect_target');
           window.history.replaceState(null, '', preservedTarget);
           return handleRouteNavigation();

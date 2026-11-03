@@ -168,7 +168,7 @@ it('Test 3: Unauthenticated visitor can access public legal routes (/privacy, /t
 
 console.log('\n--- TEST GROUP 2: AUTHENTICATED USER ROUTING & ROLE DISPATCH ---');
 
-it('Test 4: Authenticated Administrator accessing root "/" is redirected to Founder Command Center (/admin)', () => {
+it('Test 4: Authenticated Administrator accessing root "/" opens the restored Command Center (view-command-center)', () => {
   const { window } = createFreshEnvironment('https://deeppredictbet.com/');
   window.localStorage.setItem('userLoggedIn', 'true');
   window.localStorage.setItem('currentUserEmail', 'admin@deeppredictbet.com');
@@ -177,13 +177,15 @@ it('Test 4: Authenticated Administrator accessing root "/" is redirected to Foun
 
   window.handleRouteNavigation();
 
-  assert.strictEqual(window.location.pathname, '/admin', 'Admin must be redirected to /admin');
+  assert.strictEqual(window.location.pathname, '/', 'Authenticated admin accessing / stays on Command Center');
   assert.ok(!window.document.body.classList.contains('auth-view-active'), 'auth-view-active must be removed for authenticated user');
-  const adminView = window.document.getElementById('view-founder-analytics');
-  assert.strictEqual(adminView.style.display, 'block', 'view-founder-analytics must be active');
+  const commandCenterView = window.document.getElementById('view-command-center');
+  const founderView = window.document.getElementById('view-founder-analytics');
+  assert.strictEqual(commandCenterView.style.display, 'block', 'view-command-center must be active');
+  assert.strictEqual(founderView.style.display, 'none', 'view-founder-analytics must remain hidden on Command Center');
 });
 
-it('Test 5: Authenticated Punter accessing root "/" is redirected to My DeepPredict (/dashboard)', () => {
+it('Test 5: Authenticated Punter accessing root "/" opens the restored Command Center (view-command-center)', () => {
   const { window } = createFreshEnvironment('https://deeppredictbet.com/');
   window.localStorage.setItem('userLoggedIn', 'true');
   window.localStorage.setItem('currentUserEmail', 'punter@test.com');
@@ -192,14 +194,16 @@ it('Test 5: Authenticated Punter accessing root "/" is redirected to My DeepPred
 
   window.handleRouteNavigation();
 
-  assert.strictEqual(window.location.pathname, '/dashboard', 'Punter must be redirected to /dashboard');
+  assert.strictEqual(window.location.pathname, '/', 'Authenticated punter accessing / stays on Command Center');
   assert.ok(!window.document.body.classList.contains('auth-view-active'));
+  const commandCenterView = window.document.getElementById('view-command-center');
   const dashView = window.document.getElementById('view-my-deeppredict');
-  assert.strictEqual(dashView.style.display, 'block', 'view-my-deeppredict must be active');
+  assert.strictEqual(commandCenterView.style.display, 'block', 'view-command-center must be active');
+  assert.strictEqual(dashView.style.display, 'none', 'view-my-deeppredict must remain hidden on Command Center');
 });
 
-it('Test 6: Authenticated user with preserved redirect target is returned to their requested destination', () => {
-  const { window } = createFreshEnvironment('https://deeppredictbet.com/');
+it('Test 6: Authenticated user visiting /login with preserved redirect target is returned to their requested destination', () => {
+  const { window } = createFreshEnvironment('https://deeppredictbet.com/login');
   window.localStorage.setItem('userLoggedIn', 'true');
   window.localStorage.setItem('currentUserEmail', 'punter@test.com');
   window.localStorage.setItem('currentUsername', 'john_punter');

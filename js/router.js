@@ -49,6 +49,11 @@
       title: 'DeepPredictBet — AI Football Intelligence & Command Center',
       navKey: 'home'
     },
+    '/command-center': {
+      viewId: 'view-command-center',
+      title: 'DeepPredictBet — AI Football Intelligence & Command Center',
+      navKey: 'home'
+    },
     '/home': {
       redirect: '/'
     },
@@ -350,6 +355,7 @@
     '#social-command-center': '/admin',
     '#publisher': '/admin',
     '#predictions': '/predictions',
+    '#command-center': '/command-center',
     '#home': '/'
   };
 
@@ -517,10 +523,10 @@
         document.body.classList.remove('auth-view-active');
       }
 
-      // If authenticated user visits root '/' or '/login', redirect to designated dashboard
-      if (path === '/' || path === '/login') {
+      // If authenticated user visits '/login', restore preserved target or redirect to designated dashboard
+      if (path === '/login') {
         const preservedTarget = typeof sessionStorage !== 'undefined' ? sessionStorage.getItem('auth_redirect_target') : null;
-        if (preservedTarget && preservedTarget !== '/' && preservedTarget !== '/login') {
+        if (preservedTarget && preservedTarget !== '/' && preservedTarget !== '/login' && preservedTarget !== '/command-center') {
           sessionStorage.removeItem('auth_redirect_target');
           window.history.replaceState(null, '', preservedTarget);
           return handleRouteNavigation();
@@ -729,6 +735,22 @@
       }
     }
 
+    // Handle Command Center initializer & dynamic widget refreshes
+    if (targetViewId === 'view-command-center' || path === '/' || path === '/command-center') {
+      if (typeof window.initCommandCenter === 'function') {
+        window.initCommandCenter();
+      }
+      if (typeof window.renderRecentSettledPredictions === 'function') {
+        window.renderRecentSettledPredictions();
+      }
+      if (typeof window.renderDynamicStandings === 'function') {
+        window.renderDynamicStandings();
+      }
+      if (typeof window.initHotTrendsTicker === 'function') {
+        window.initHotTrendsTicker();
+      }
+    }
+
     // Handle Founder Analytics dashboard initializer
     if (targetViewId === 'view-founder-analytics') {
       if (typeof window.renderFounderDashboard === 'function') {
@@ -798,7 +820,7 @@
       const normHref = normalizePath(href.split('#')[0]);
       const isMatch = (href === currentPath) || 
                       (normHref === currentPath && currentPath !== '/') ||
-                      (currentPath === '/' && (href === '/' || href === '#home')) ||
+                      ((currentPath === '/' || currentPath === '/command-center') && (href === '/' || href === '/command-center' || href === '#home')) ||
                       (navKey && (href.includes(navKey) || (href.startsWith('#') && HASH_REDIRECTS[href.toLowerCase()] === currentPath)));
 
       if (isMatch) {
