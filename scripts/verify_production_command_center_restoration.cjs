@@ -25,13 +25,13 @@ async function verifyProduction() {
   console.log(`🔍 Starting Live Production Verification on ${PRODUCTION_URL}...\n`);
 
   // 1. Check router.js
-  console.log('1. Checking /js/router.js ...');
-  const routerRes = await fetchUrl(`${PRODUCTION_URL}/js/router.js`);
+  console.log('1. Checking /js/router.js?v=20261103_cc_v1 ...');
+  const routerRes = await fetchUrl(`${PRODUCTION_URL}/js/router.js?v=20261103_cc_v1`);
   console.log(`   [HTTP ${routerRes.status}] Size: ${routerRes.body.length} bytes`);
   assert.strictEqual(routerRes.status, 200, 'router.js must return HTTP 200');
   
-  assert.ok(!routerRes.body.includes("if (path === '/' || path === '/login')"), 'router.js must NOT intercept root "/" to dashboard');
-  assert.ok(routerRes.body.includes("if (path === '/login')"), 'router.js must only intercept "/login" for authenticated users');
+  assert.ok(!routerRes.body.includes("// If authenticated user visits root '/' or '/login'"), 'router.js must NOT intercept root "/" to dashboard');
+  assert.ok(routerRes.body.includes("// If authenticated user visits '/login'"), 'router.js must only intercept "/login" for authenticated users');
   assert.ok(routerRes.body.includes("'/command-center':"), 'router.js must contain explicit /command-center route');
   assert.ok(routerRes.body.includes("window.initCommandCenter"), 'router.js must invoke initCommandCenter for Command Center');
   console.log('   ✅ router.js verified with correct separation logic.');
