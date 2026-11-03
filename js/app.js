@@ -11087,6 +11087,7 @@ function logoutUser(e) {
     localStorage.removeItem("user_role");
     localStorage.removeItem("dp_founder_authenticated");
     localStorage.removeItem("dp_session_id");
+    try { sessionStorage.removeItem("auth_redirect_target"); } catch(e) {} // LOGOUT_AUTH_ENTRY_REDIRECT
     // Explicitly preserved: user tickets, watchlist, alerts, theme preferences
   } catch (err) {}
 
@@ -11122,7 +11123,15 @@ function logoutUser(e) {
 
   document.body.style.overflow = "";
 
-  const msg = "🚪 You have been logged out successfully.";
+  // Immediately transition to '/' authentication page
+    if (typeof window.navigateTo === 'function') {
+      window.navigateTo('/');
+    } else if (typeof window.handleRouteNavigation === 'function') {
+      window.history.pushState(null, '', '/');
+      window.handleRouteNavigation();
+    }
+
+    const msg = "🚪 You have been logged out successfully.";
   if (typeof showAppNotification === 'function') {
     showAppNotification(msg);
   } else if (typeof showToast === 'function') {

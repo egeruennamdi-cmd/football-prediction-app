@@ -1,15 +1,9 @@
 const fs = require('fs');
 const html = fs.readFileSync('index.html', 'utf8');
-
-function inspectView(viewId) {
-  const start = html.indexOf(`id="${viewId}"`);
-  if (start === -1) {
-    console.log(`View ${viewId} not found`);
-    return;
-  }
-  console.log(`=== View ${viewId} ===`);
-  console.log(html.slice(start, start + 800));
+const viewRegex = /id=["'](view-[^"']+)["']/g;
+const views = [];
+let match;
+while ((match = viewRegex.exec(html)) !== null) {
+  views.push(match[1]);
 }
-
-inspectView('view-leagues');
-inspectView('view-analytics');
+console.log('Found views:', [...new Set(views)]);

@@ -30,6 +30,20 @@
 (function () {
   // 1. Clean Route Configurations
   const ROUTE_CONFIGS = {
+    '/login': {
+      viewId: 'view-auth-entry',
+      title: 'DeepPredictBet — AI-Powered Football Predictions',
+      navKey: 'auth'
+    },
+    '/auth': {
+      redirect: '/login'
+    },
+    '/signin': {
+      redirect: '/login'
+    },
+    '/signup': {
+      redirect: '/login'
+    },
     '/': {
       viewId: 'view-command-center',
       title: 'DeepPredictBet — AI Football Intelligence & Command Center',
@@ -430,6 +444,104 @@
     }
 
     const { path, config } = resolveRoute(currentPath);
+
+    // --- AUTH_PROTECTED_GATE_ACTIVE: AUTHORITATIVE ENTRY POINT & PROTECTED ROUTE GATEWAY ---
+    const isLoggedIn = typeof localStorage !== 'undefined' && localStorage.getItem('userLoggedIn') === 'true';
+
+    // 1. PUBLIC ROUTES ALLOWLIST
+    const PUBLIC_ROUTES = [
+      '/terms', '/terms-of-service',
+      '/privacy', '/privacy-policy',
+      '/disclaimer',
+      '/data-deletion',
+      '/responsible-gambling',
+      '/login', '/auth', '/signin', '/signup'
+    ];
+
+    // 2. UNAUTHENTICATED VISITORS:
+    // https://deeppredictbet.com/ ALWAYS opens the DeepPredictBet authentication page first.
+    if (!isLoggedIn) {
+      if (path === '/' || path === '/login') {
+        if (typeof document !== 'undefined') {
+          document.body.classList.add('auth-view-active');
+        }
+
+        // Hide all page-view containers
+        const pageViews = document.querySelectorAll('.page-view');
+        pageViews.forEach(view => {
+          view.style.display = 'none';
+          view.classList.remove('active');
+        });
+
+        const authView = document.getElementById('view-auth-entry');
+        if (authView) {
+          authView.style.display = 'flex';
+          authView.classList.add('active');
+        }
+
+        document.title = 'DeepPredictBet — AI-Powered Football Predictions';
+
+        // Check for pending redirect notice
+        const noticeEl = document.getElementById('auth-entry-notice');
+        const pendingTarget = typeof sessionStorage !== 'undefined' ? sessionStorage.getItem('auth_redirect_target') : null;
+        if (noticeEl) {
+          if (pendingTarget && pendingTarget !== '/' && pendingTarget !== '/login') {
+            const cleanName = pendingTarget.replace(/^\//, '').replace(/-/g, ' ').toUpperCase();
+            noticeEl.textContent = `🔒 Please sign in to access ${cleanName}`;
+            noticeEl.style.display = 'block';
+          } else {
+            noticeEl.style.display = 'none';
+          }
+        }
+
+        // Hide universal date bar & tool breadcrumb
+        const dateBar = document.getElementById('universal-date-bar-wrapper');
+        if (dateBar) dateBar.style.display = 'none';
+        const breadcrumbEl = document.getElementById('global-tool-breadcrumb');
+        if (breadcrumbEl) breadcrumbEl.style.display = 'none';
+
+        return;
+      } else if (!PUBLIC_ROUTES.includes(path)) {
+        // Protected Route Interception: Safely preserve original destination
+        try {
+          const fullDest = window.location.pathname + window.location.search + window.location.hash;
+          sessionStorage.setItem('auth_redirect_target', fullDest);
+        } catch (e) {}
+
+        window.history.replaceState(null, '', '/login');
+        return handleRouteNavigation({ interceptedFrom: path });
+      }
+    } else {
+      // 3. AUTHENTICATED VISITORS:
+      if (typeof document !== 'undefined') {
+        document.body.classList.remove('auth-view-active');
+      }
+
+      // If authenticated user visits root '/' or '/login', redirect to designated dashboard
+      if (path === '/' || path === '/login') {
+        const preservedTarget = typeof sessionStorage !== 'undefined' ? sessionStorage.getItem('auth_redirect_target') : null;
+        if (preservedTarget && preservedTarget !== '/' && preservedTarget !== '/login') {
+          sessionStorage.removeItem('auth_redirect_target');
+          window.history.replaceState(null, '', preservedTarget);
+          return handleRouteNavigation();
+        }
+
+        const isUserAdmin = typeof window.isAdmin === 'function' ? window.isAdmin() : false;
+        const targetDashboard = isUserAdmin ? '/admin' : '/dashboard';
+        window.history.replaceState(null, '', targetDashboard);
+        return handleRouteNavigation();
+      }
+
+      // RBAC check: non-admins cannot access /admin
+      if (path === '/admin' || path === '/admin/analytics' || path === '/founder-analytics') {
+        const isUserAdmin = typeof window.isAdmin === 'function' ? window.isAdmin() : false;
+        const isFounderAuth = typeof localStorage !== 'undefined' && (localStorage.getItem('dp_founder_authenticated') === 'true' || sessionStorage.getItem('dp_founder_authenticated') === 'true');
+        if (!isUserAdmin && !isFounderAuth) {
+          window.history.replaceState(null, '', '/dashboard');
+          return handleRouteNavigation();
+        }
+      }
+    }
 
     // If normalized path differs from current (e.g. alias redirect)
     if (normalizePath(currentPath) !== path && !window.location.pathname.startsWith(path)) {
