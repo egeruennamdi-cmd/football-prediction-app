@@ -192,12 +192,14 @@
 
     const email = (localStorage.getItem('currentUserEmail') || '').trim();
     const username = (localStorage.getItem('currentUsername') || '').trim();
+    const fullName = (localStorage.getItem('currentUserFullName') || '').trim();
     const role = normalizeRole(localStorage.getItem('user_role') || 'USER');
 
     return {
       isLoggedIn: true,
       email: email,
       username: username,
+      fullName: fullName,
       role: role,
       isAdmin: isAdmin()
     };

@@ -3265,10 +3265,7 @@ header {
 
 /* Formal Top Header Elements in .nav-actions */
 .header .nav-actions .header-lang-switcher,
-.header .nav-actions .top-header-coins-pill,
-.header .nav-actions .top-header-cta-btn,
-.header .nav-actions #lang-switcher,
-.header .nav-actions #nav-get-started-btn {
+.header .nav-actions #lang-switcher {
   display: flex;
 }
 .header .nav-actions select.header-lang-switcher,
@@ -12828,4 +12825,129 @@ textarea:focus-visible,
 .standings-live-badge {
   display: inline-block;
   animation: standingsPulseBadge 2s infinite ease-in-out;
+}
+
+
+/* ==========================================================================
+   DYNAMIC AUTHENTICATION-AWARE HEADER ACCOUNT AREA
+   Strict requirements:
+   - Logged-out state: top-right account area must remain completely empty (display: none).
+   - Logged-in state: [USER'S NAME OR USERNAME] [LOG OUT]
+   - Absolute prohibition: NEVER display account balance, coins, or financial info.
+   ========================================================================== */
+
+/* Absolute prohibition of coins, balances, and financial elements in top-right header */
+.header .nav-actions .header-coins-pill,
+.header .nav-actions .top-header-coins-pill,
+.header .nav-actions #header-coins-count,
+.header .nav-actions [title="Mines Coins Store"],
+.header .nav-actions #nav-auth-container,
+.header .nav-actions #nav-get-started-btn {
+  display: none !important;
+  visibility: hidden !important;
+  width: 0 !important;
+  height: 0 !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  pointer-events: none !important;
+}
+
+.header-account-area {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-shrink: 0;
+  z-index: 100;
+}
+
+.header-user-identity {
+  font-family: var(--font-heading, var(--font-body, system-ui, -apple-system, sans-serif));
+  font-size: 0.85rem;
+  font-weight: 800;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+  color: #f8fafc;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  padding: 5px 12px;
+  border-radius: 6px;
+  max-width: 170px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  display: inline-block;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+.header-user-identity:hover {
+  background: rgba(255, 255, 255, 0.1);
+  border-color: rgba(59, 130, 246, 0.5);
+  color: #ffffff;
+  box-shadow: 0 0 10px rgba(59, 130, 246, 0.25);
+}
+
+.header-logout-btn {
+  background: rgba(239, 68, 68, 0.14);
+  border: 1px solid rgba(239, 68, 68, 0.4);
+  color: #fca5a5;
+  padding: 5px 12px;
+  border-radius: 6px;
+  font-size: 0.8rem;
+  font-weight: 800;
+  letter-spacing: 0.3px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  white-space: nowrap;
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.header-logout-btn:hover,
+.header-logout-btn:focus-visible {
+  background: rgba(239, 68, 68, 0.28);
+  border-color: rgba(239, 68, 68, 0.7);
+  color: #ffffff;
+  box-shadow: 0 0 12px rgba(239, 68, 68, 0.35);
+  transform: translateY(-1px);
+}
+
+.header-logout-btn:active {
+  transform: translateY(0);
+}
+
+/* Responsive Viewports */
+@media (max-width: 640px) {
+  .header-account-area {
+    gap: 8px;
+  }
+  .header-user-identity {
+    font-size: 0.78rem;
+    padding: 4px 8px;
+    max-width: 110px;
+  }
+  .header-logout-btn {
+    font-size: 0.75rem;
+    padding: 4px 8px;
+  }
+}
+
+@media (max-width: 380px) {
+  .header-account-area {
+    gap: 6px;
+  }
+  .header-user-identity {
+    font-size: 0.72rem;
+    padding: 3px 6px;
+    max-width: 85px;
+  }
+  .header-logout-btn {
+    font-size: 0.72rem;
+    padding: 3px 6px;
+  }
 }

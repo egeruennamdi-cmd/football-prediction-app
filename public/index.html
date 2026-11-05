@@ -308,7 +308,7 @@
 <body>
 
       <!-- --- HEADER / NAVBAR --- -->
-  <header class="header">
+  <header class="header" id="main-header">
     <div class="container nav-container" style="display: flex; align-items: center; justify-content: space-between;">
       
       <!-- LEFT: DeepPredictBet Logo + Mobile Hamburger -->
@@ -496,32 +496,8 @@
           <option value="es">🇪🇸 ES</option>
         </select>
 
-        <!-- Mines Coins Pill (Formal Header Element) -->
-        <div class="header-coins-pill top-header-coins-pill"
-          style="display: flex; align-items: center; gap: 6px; background: rgba(245, 158, 11, 0.08); border: 1px solid rgba(245, 158, 11, 0.2); border-radius: var(--radius-full); padding: 4px 10px; font-size: 0.8rem; font-weight: 700; color: var(--accent-gold); cursor: pointer;"
-          onclick="openStoreModal('shop')" title="Mines Coins Store">
-          <span>🪙</span> <span id="header-coins-count" class="header-coins-count">500</span>
-        </div>
-
-        <!-- Login / Authenticated Profile Button (Displays USER name at top right header when logged in) -->
-        <div id="nav-auth-container" onclick="handleNavAuthClick()"
-          style="display: flex; align-items: center; gap: 6px; cursor: pointer; touch-action: manipulation; -webkit-tap-highlight-color: transparent; user-select: none; -webkit-user-select: none; position: relative; z-index: 100;"
-          title="Account / Login">
-          <div id="nav-auth-inner-box"
-            style="background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.16); border-radius: 20px; color: #ffffff; font-weight: 700; font-size: 0.82rem; cursor: pointer; display: flex; align-items: center; gap: 6px; padding: 3px 10px 3px 4px; pointer-events: none; transition: all 0.2s ease;">
-            <div id="nav-avatar-icon"
-              style="width: 28px; height: 28px; border-radius: 50%; border: 1.5px solid rgba(59,130,246,0.6); display: flex; align-items: center; justify-content: center; font-size: 0.8rem; background: linear-gradient(135deg, rgba(37,99,235,0.4) 0%, rgba(29,78,216,0.7) 100%); color: #ffffff; font-weight: 800; flex-shrink: 0; pointer-events: none;">
-              👤
-            </div>
-            <span id="nav-user-label" style="display: inline-block; max-width: 90px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; vertical-align: middle; pointer-events: none;">Login</span>
-          </div>
-        </div>
-
-        <!-- Primary CTA: GET STARTED / VIP CLUB -->
-        <button type="button" id="nav-get-started-btn" class="nav-cta-btn top-header-cta-btn" onclick="openAuthModal('signup')"
-          style="background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%); color: #ffffff; border: 1px solid rgba(255, 255, 255, 0.2); border-radius: 8px; padding: 7px 16px; font-weight: 800; font-size: 0.82rem; letter-spacing: 0.5px; text-transform: uppercase; cursor: pointer; transition: all 0.2s ease; box-shadow: 0 4px 14px rgba(37, 99, 235, 0.35); white-space: nowrap;">
-          GET STARTED
-        </button>
+        <!-- Dynamic Authentication-Aware Header Account Area -->
+        <div id="header-account-area" class="header-account-area" style="display: none;"></div>
       </div>
     </div>
   </header>

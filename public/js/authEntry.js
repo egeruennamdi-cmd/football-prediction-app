@@ -248,16 +248,31 @@
 
       try {
         localStorage.setItem('userLoggedIn', 'true');
-        localStorage.setItem('currentUsername', loggedInUser.username || loggedInUser.fullName || identifier);
-        localStorage.setItem('currentUserEmail', loggedInUser.email || identifier);
+        localStorage.setItem('currentUserFullName', (loggedInUser && (loggedInUser.fullName || loggedInUser.name)) || '');
+        localStorage.setItem('currentUsername', (loggedInUser && loggedInUser.username) || (loggedInUser && loggedInUser.fullName) || identifier);
+        localStorage.setItem('currentUserEmail', (loggedInUser && loggedInUser.email) || identifier);
         localStorage.setItem('user_role', isAdminUser ? 'ADMIN' : (loggedInUser.role || 'USER'));
         if (serverSessionId) {
           localStorage.setItem('dp_session_id', serverSessionId);
         }
+        if (loggedInUser && loggedInUser.sessionExpiresAt) {
+          localStorage.setItem('dp_session_expires_at', String(loggedInUser.sessionExpiresAt));
+        } else {
+          localStorage.setItem('dp_session_expires_at', String(Date.now() + 30 * 24 * 60 * 60 * 1000));
+        }
         if (isAdminUser) {
           sessionStorage.setItem('dp_founder_authenticated', 'true');
         }
+        localStorage.setItem('dp_auth_sync', 'login_' + Date.now());
       } catch (err) {}
+
+      try {
+        if (typeof BroadcastChannel !== 'undefined') {
+          const ch = new BroadcastChannel('dp_auth_channel');
+          ch.postMessage({ type: 'LOGIN', timestamp: Date.now() });
+          ch.close();
+        }
+      } catch (e) {}
 
       // Update UI state & navigation headers
       if (typeof window.updateAuthUIState === 'function') {
@@ -404,10 +419,21 @@
       // Session persistence
       try {
         localStorage.setItem('userLoggedIn', 'true');
+        localStorage.setItem('currentUserFullName', fullName || '');
         localStorage.setItem('currentUsername', username);
         localStorage.setItem('currentUserEmail', email);
         localStorage.setItem('user_role', 'USER');
+        localStorage.setItem('dp_session_expires_at', String(Date.now() + 30 * 24 * 60 * 60 * 1000));
+        localStorage.setItem('dp_auth_sync', 'login_' + Date.now());
       } catch (err) {}
+
+      try {
+        if (typeof BroadcastChannel !== 'undefined') {
+          const ch = new BroadcastChannel('dp_auth_channel');
+          ch.postMessage({ type: 'LOGIN', timestamp: Date.now() });
+          ch.close();
+        }
+      } catch (e) {}
 
       if (typeof window.updateAuthUIState === 'function') {
         window.updateAuthUIState();

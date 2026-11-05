@@ -81,9 +81,13 @@ export async function onRequestPost(context) {
       token = String(body.sessionId).trim();
     }
 
-    if (token) {
+    const cleanEmail = (body.email || '').trim().toLowerCase();
+    if (token || cleanEmail) {
       const members = await getMembers(context);
-      const userIndex = members.findIndex(m => m.sessionId === token);
+      const userIndex = members.findIndex(m =>
+        (token && m.sessionId === token) ||
+        (cleanEmail && m.email && m.email.trim().toLowerCase() === cleanEmail)
+      );
       if (userIndex >= 0) {
         delete members[userIndex].sessionId;
         delete members[userIndex].sessionExpiresAt;

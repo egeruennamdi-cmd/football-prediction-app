@@ -10307,9 +10307,12 @@ async function handleAuthSignup(e) {
 
   try {
     localStorage.setItem("userLoggedIn", "true");
+    localStorage.setItem("currentUserFullName", fullName || "");
     localStorage.setItem("currentUsername", username);
     localStorage.setItem("currentUserEmail", email);
     localStorage.setItem("user_role", "USER");
+    localStorage.setItem("dp_session_expires_at", String(Date.now() + 30 * 24 * 60 * 60 * 1000));
+    localStorage.setItem("dp_auth_sync", "login_" + Date.now());
   } catch(err) {}
 
   if (typeof window.trackEvent === 'function') {
@@ -11093,9 +11096,16 @@ async function handleAuthLogin(e) {
 
     try {
       localStorage.setItem("userLoggedIn", "true");
-      localStorage.setItem("currentUsername", loggedInUser.username || loggedInUser.fullName || identifier);
-      localStorage.setItem("currentUserEmail", loggedInUser.email || identifier);
+      localStorage.setItem("currentUserFullName", (loggedInUser && (loggedInUser.fullName || loggedInUser.name)) || "");
+      localStorage.setItem("currentUsername", (loggedInUser && loggedInUser.username) || (loggedInUser && loggedInUser.fullName) || identifier);
+      localStorage.setItem("currentUserEmail", (loggedInUser && loggedInUser.email) || identifier);
       localStorage.setItem("user_role", isAdminUser ? "ADMIN" : (loggedInUser.role || "USER"));
+      if (loggedInUser && loggedInUser.sessionExpiresAt) {
+        localStorage.setItem("dp_session_expires_at", String(loggedInUser.sessionExpiresAt));
+      } else {
+        localStorage.setItem("dp_session_expires_at", String(Date.now() + 30 * 24 * 60 * 60 * 1000));
+      }
+      localStorage.setItem("dp_auth_sync", "login_" + Date.now());
       if (serverSessionId) {
         localStorage.setItem("dp_session_id", serverSessionId);
       }
@@ -11156,34 +11166,62 @@ function handleNavAuthClick() {
 }
 window.handleNavAuthClick = handleNavAuthClick;
 
-function updateAuthUIState() {
-  const isLoggedIn = localStorage.getItem("userLoggedIn") === "true";
-  const username = localStorage.getItem("currentUsername") || "Guest User";
+function resolveUserDisplayName() {
+  const fullName = (typeof localStorage !== 'undefined' && localStorage.getItem("currentUserFullName")) || "";
+  if (fullName && fullName.trim()) return fullName.trim();
+  const username = (typeof localStorage !== 'undefined' && localStorage.getItem("currentUsername")) || "";
+  if (username && username.trim()) return username.trim();
+  const email = (typeof localStorage !== 'undefined' && localStorage.getItem("currentUserEmail")) || "";
+  if (email && email.trim()) return email.split('@')[0];
+  return "User";
+}
+window.resolveUserDisplayName = resolveUserDisplayName;
 
-  const navLabel = document.getElementById("nav-user-label");
-  const navAvatar = document.getElementById("nav-avatar-icon");
+function updateAuthUIState() {
+  const isLoggedIn = typeof localStorage !== 'undefined' && localStorage.getItem("userLoggedIn") === "true";
+  const displayName = resolveUserDisplayName();
+
+  // 1. Dynamic Authentication-Aware Header Account Area
+  // Strictly enforces:
+  // - When logged out: completely empty top-right account area (display: none; innerHTML = '')
+  // - When logged in: [USER'S NAME OR USERNAME] [LOG OUT]
+  // - Prohibition: NEVER display account balance, coins, or financial figures in header
+  const accountArea = document.getElementById("header-account-area");
+  if (accountArea) {
+    if (isLoggedIn) {
+      accountArea.style.display = "flex";
+      accountArea.style.alignItems = "center";
+      accountArea.style.gap = "10px";
+      accountArea.innerHTML =
+        '<span id="header-user-identity" class="header-user-identity" title="' + displayName.replace(/"/g, '&quot;') + '" onclick="if(typeof openProfileModal===\'function\')openProfileModal(\'info\');">' + displayName.replace(/</g, '&lt;').replace(/>/g, '&gt;') + '</span>' +
+        '<button type="button" id="header-logout-btn" class="header-logout-btn" onclick="logoutUser(event)" aria-label="Log out of DeepPredictBet">Log out</button>';
+    } else {
+      accountArea.style.display = "none";
+      accountArea.innerHTML = "";
+    }
+  }
+
+  // 2. Enforce hiding legacy header containers if present
+  const navContainer = document.getElementById("nav-auth-container");
+  if (navContainer) navContainer.style.display = "none";
+  const topCoinsPill = document.querySelector(".header-coins-pill.top-header-coins-pill");
+  if (topCoinsPill) topCoinsPill.style.display = "none";
+  const topCtaBtn = document.getElementById("nav-get-started-btn");
+  if (topCtaBtn) topCtaBtn.style.display = "none";
+
+  // 3. Update Mobile Drawer & User Account Modal displays
   const drawerUsername = document.getElementById("mobile-drawer-username");
   const profileUsernameDisplay = document.getElementById("profile-username-display");
   const profileAvatarInitial = document.getElementById("profile-avatar-initial");
 
-  if (navLabel) {
-    navLabel.textContent = isLoggedIn ? username : "Login";
-    navLabel.innerText = isLoggedIn ? username : "Login";
-    navLabel.title = isLoggedIn ? username : "Login";
-  }
-  if (navAvatar) {
-    const initial = isLoggedIn ? username.charAt(0).toUpperCase() : "👤";
-    navAvatar.textContent = initial;
-    navAvatar.innerText = initial;
-  }
   if (drawerUsername) {
-    drawerUsername.innerText = isLoggedIn ? username : "Guest User";
+    drawerUsername.textContent = isLoggedIn ? displayName : "Guest User"; drawerUsername.innerText = isLoggedIn ? displayName : "Guest User";
   }
   if (profileUsernameDisplay) {
-    profileUsernameDisplay.innerText = isLoggedIn ? username : "Guest User";
+    profileUsernameDisplay.textContent = isLoggedIn ? displayName : "Guest User"; profileUsernameDisplay.innerText = isLoggedIn ? displayName : "Guest User";
   }
   if (profileAvatarInitial) {
-    profileAvatarInitial.innerText = isLoggedIn ? username.charAt(0).toUpperCase() : "👤";
+    profileAvatarInitial.textContent = isLoggedIn ? displayName.charAt(0).toUpperCase() : "👤"; profileAvatarInitial.innerText = isLoggedIn ? displayName.charAt(0).toUpperCase() : "👤";
   }
 
   // Authoritative RBAC check for User Account Hub: Show Founder Console ONLY for ADMIN
@@ -11195,32 +11233,8 @@ function updateAuthUIState() {
 
   const mobileAuthText = document.getElementById("mobile-drawer-auth-text");
   if (mobileAuthText) {
-    mobileAuthText.innerText = isLoggedIn ? ("Account: " + username) : "Login";
+    mobileAuthText.innerText = isLoggedIn ? ("Account: " + displayName) : "Login";
   }
-
-  const navContainer = document.getElementById("nav-auth-container");
-  if (navContainer) {
-    if (isLoggedIn) {
-      navContainer.classList.add("is-logged-in");
-      navContainer.title = `Logged in as ${username} (Click to manage account)`;
-    } else {
-      navContainer.classList.remove("is-logged-in");
-      navContainer.title = "Account / Login";
-    }
-  }
-
-  const ctaBtns = document.querySelectorAll("#nav-get-started-btn, #desktop-datebar-cta-btn, .nav-cta-btn:not(#mobile-drawer-cta-btn)");
-  ctaBtns.forEach(btn => {
-    if (isLoggedIn) {
-      btn.textContent = "VIP CLUB"; btn.innerText = "VIP CLUB";
-      btn.title = "Punters VIP Club";
-      btn.onclick = function() { if (typeof openVipSubscriptionModal === 'function') openVipSubscriptionModal(); };
-    } else {
-      btn.textContent = "GET STARTED"; btn.innerText = "GET STARTED";
-      btn.title = "Get Started with DeepPredictBet";
-      btn.onclick = function() { if (typeof openAuthModal === 'function') openAuthModal('signup'); };
-    }
-  });
 
   const drawerCta = document.getElementById("mobile-drawer-cta-btn");
   if (drawerCta) {
@@ -11233,25 +11247,44 @@ function updateAuthUIState() {
     }
   }
 }
-
+window.updateAuthUIState = updateAuthUIState;
 
 function logoutUser(e) {
   if (e && e.preventDefault) e.preventDefault();
+  if (e && e.stopPropagation) e.stopPropagation();
 
+  const sessionId = typeof localStorage !== 'undefined' ? (localStorage.getItem("dp_session_id") || "") : "";
+  const email = typeof localStorage !== 'undefined' ? (localStorage.getItem("currentUserEmail") || "") : "";
+
+  // 1. Immediately wipe client auth state to prevent UI flicker
   try {
     sessionStorage.removeItem("dp_founder_authenticated");
+    sessionStorage.removeItem("auth_redirect_target");
+    sessionStorage.removeItem("dp_session_id");
     localStorage.removeItem("userLoggedIn");
     localStorage.removeItem("currentUsername");
+    localStorage.removeItem("currentUserFullName");
     localStorage.removeItem("currentUserEmail");
     localStorage.removeItem("user_role");
     localStorage.removeItem("dp_founder_authenticated");
     localStorage.removeItem("dp_session_id");
-    try { sessionStorage.removeItem("auth_redirect_target"); } catch(e) {} // LOGOUT_AUTH_ENTRY_REDIRECT
-    // Explicitly preserved: user tickets, watchlist, alerts, theme preferences
+    localStorage.removeItem("dp_session_expires_at");
+    localStorage.setItem("dp_auth_sync", "logout_" + Date.now());
   } catch (err) {}
 
+  // 2. Broadcast logout across open browser tabs
+  try {
+    if (typeof BroadcastChannel !== 'undefined') {
+      const channel = new BroadcastChannel('dp_auth_channel');
+      channel.postMessage({ type: 'LOGOUT', timestamp: Date.now() });
+      channel.close();
+    }
+  } catch (err) {}
+
+  // 3. Immediately wipe the top-right header account area
   updateAuthUIState();
 
+  // 4. Close any open modals/drawers
   const profModal = document.getElementById("profile-modal");
   if (profModal) {
     profModal.classList.remove("active");
@@ -11282,21 +11315,128 @@ function logoutUser(e) {
 
   document.body.style.overflow = "";
 
-  // Immediately transition to '/' authentication page
-    if (typeof window.navigateTo === 'function') {
-      window.navigateTo('/');
-    } else if (typeof window.handleRouteNavigation === 'function') {
-      window.history.pushState(null, '', '/');
-      window.handleRouteNavigation();
+  // 5. Asynchronously notify Cloudflare API to revoke KV session
+  try {
+    if (typeof fetch === 'function') {
+      fetch('/api/logout', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': sessionId ? 'Bearer ' + sessionId : ''
+        },
+        body: JSON.stringify({ sessionId: sessionId, email: email })
+      }).catch(function(err) { console.debug('[Logout API]', err.message); });
     }
+  } catch (err) {}
 
-    const msg = "🚪 You have been logged out successfully.";
+  // 6. Transition to approved login page ('/')
+  if (typeof window.navigateTo === 'function') {
+    window.navigateTo('/');
+  } else if (typeof window.handleRouteNavigation === 'function') {
+    window.history.pushState(null, '', '/');
+    window.handleRouteNavigation();
+  } else {
+    window.location.href = '/';
+  }
+
+  const msg = "🚪 You have been logged out successfully.";
   if (typeof showAppNotification === 'function') {
     showAppNotification(msg);
   } else if (typeof showToast === 'function') {
     showToast(msg);
+  }
+}
+window.logoutUser = logoutUser;
+
+// Cross-tab synchronization and session verification listener
+if (typeof window !== 'undefined' && !window._dpAuthListenersAttached) {
+  window._dpAuthListenersAttached = true;
+
+  window.addEventListener('storage', function(e) {
+    if (e.key === 'dp_auth_sync' || e.key === 'userLoggedIn') {
+      const isStillLoggedIn = localStorage.getItem('userLoggedIn') === 'true';
+      updateAuthUIState();
+      if (!isStillLoggedIn) {
+        if (typeof window.handleRouteNavigation === 'function') {
+          window.handleRouteNavigation();
+        }
+      }
+    }
+  });
+
+  try {
+    if (typeof BroadcastChannel !== 'undefined') {
+      const bc = new BroadcastChannel('dp_auth_channel');
+      bc.onmessage = function(event) {
+        if (event && event.data) {
+          if (event.data.type === 'LOGOUT') {
+            updateAuthUIState();
+            if (typeof window.handleRouteNavigation === 'function') {
+              window.handleRouteNavigation();
+            }
+          } else if (event.data.type === 'LOGIN') {
+            updateAuthUIState();
+            if (typeof window.handleRouteNavigation === 'function') {
+              window.handleRouteNavigation();
+            }
+          }
+        }
+      };
+    }
+  } catch (e) {}
+
+  window.verifyActiveUserSession = function() {
+    const isLoggedIn = localStorage.getItem('userLoggedIn') === 'true';
+    if (!isLoggedIn) return;
+
+    const expiresAt = localStorage.getItem('dp_session_expires_at');
+    if (expiresAt && Date.now() > parseInt(expiresAt, 10)) {
+      console.warn('[Auth] Client session expired by timestamp, logging out');
+      logoutUser();
+      return;
+    }
+
+    const email = localStorage.getItem('currentUserEmail');
+    const sessionId = localStorage.getItem('dp_session_id');
+    if (!email || !sessionId) return;
+
+    if (typeof fetch === 'function') {
+      fetch('/api/users?selfEmail=' + encodeURIComponent(email), {
+        headers: { 'Authorization': 'Bearer ' + sessionId }
+      })
+      .then(function(res) { return res.json(); })
+      .then(function(data) {
+        if (data && data.success && data.user) {
+          if (data.user.sessionId && data.user.sessionId !== sessionId) {
+            console.warn('[Auth] Server session revoked or replaced elsewhere');
+            logoutUser();
+          } else if (data.user.sessionExpiresAt && Date.now() > data.user.sessionExpiresAt) {
+            console.warn('[Auth] Server session expired');
+            logoutUser();
+          } else {
+            if (data.user.fullName && data.user.fullName !== localStorage.getItem('currentUserFullName')) {
+              localStorage.setItem('currentUserFullName', data.user.fullName);
+              updateAuthUIState();
+            }
+          }
+        } else if (data && data.success === false && data.error === 'User profile not found') {
+          logoutUser();
+        }
+      })
+      .catch(function(err) {
+        console.debug('[Auth Session Verification Offline]:', err.message);
+      });
+    }
+  };
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', function() {
+      updateAuthUIState();
+      window.verifyActiveUserSession();
+    });
   } else {
-    alert(msg);
+    updateAuthUIState();
+    window.verifyActiveUserSession();
   }
 }
 
