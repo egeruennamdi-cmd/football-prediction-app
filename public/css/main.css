@@ -11456,11 +11456,33 @@ textarea:focus-visible,
   color: #10b981;
   background: rgba(16, 185, 129, 0.15);
   border: 1px solid rgba(16, 185, 129, 0.35);
-  padding: 3px 8px;
+  padding: 4px 10px;
   border-radius: 9999px;
   display: inline-flex;
   align-items: center;
-  gap: 5px;
+  gap: 6px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  user-select: none;
+}
+.command-scout-badge-ai:hover {
+  background: rgba(16, 185, 129, 0.28);
+  border-color: rgba(16, 185, 129, 0.65);
+  box-shadow: 0 0 12px rgba(16, 185, 129, 0.4);
+  transform: translateY(-1px);
+}
+.command-scout-badge-ai-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: #10b981;
+  display: inline-block;
+  box-shadow: 0 0 8px #10b981;
+  animation: scoutIndicatorPulse 2s infinite ease-in-out;
+}
+@keyframes scoutIndicatorPulse {
+  0%, 100% { opacity: 1; transform: scale(1); box-shadow: 0 0 8px #10b981; }
+  50% { opacity: 0.55; transform: scale(1.25); box-shadow: 0 0 14px #34d399; }
 }
 
 /* Input Form Row */

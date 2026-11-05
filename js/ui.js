@@ -7514,6 +7514,10 @@ function formatAiScoutResultsHtml(selections, requestedCount = DEFAULT_AI_SCOUT_
     title = `🎯 AI Tactical Angle Briefing & ${finalCount}-Match Football Selections`;
   } else if (mode === 'value') {
     title = `📊 High EV Algorithmic Value Picks (${finalCount} Matches)`;
+  } else if (mode === 'live') {
+    title = `📡 Live In-Play Market Intelligence (${finalCount} Matches)`;
+  } else if (mode === 'audit') {
+    title = `🩺 Bet Doctor Audited Selections (${finalCount} Matches)`;
   }
 
   // 4. Dynamic Subtitle strictly derived from finalCount
@@ -7522,6 +7526,10 @@ function formatAiScoutResultsHtml(selections, requestedCount = DEFAULT_AI_SCOUT_
     subtitleText = `Tactical evaluation analyzing high pressing triggers & transition speed. Curated <b>${finalCount} Positive EV picks</b>:`;
   } else if (mode === 'value') {
     subtitleText = `Algorithmic value models identified <b>${finalCount} High Expected Value (EV) opportunities</b> today:`;
+  } else if (mode === 'live') {
+    subtitleText = `Real-time in-play scanner detected <b>${finalCount} active match momentum opportunities</b>:`;
+  } else if (mode === 'audit') {
+    subtitleText = `DeepPredict Bet Doctor evaluated your active ticket: <b>${finalCount} selections verified with zero structural traps</b>:`;
   } else if (mode === 'custom' && promptText && promptText.length > 2) {
     subtitleText = `AI Scout analyzed your query <i>"${escapeScoutHtml(promptText)}"</i> and curated <b>${finalCount} high-probability selections</b>:`;
   }
@@ -7618,7 +7626,10 @@ function quickPromptScout(text, autoOpenModal = true) {
     requestedCount = 10;
   }
 
-  if (lowerText.includes("tactic") || lowerText.includes("angle")) {
+  if (lowerText.includes("scan live") || lowerText.includes("live scanner") || lowerText.includes("in-play") || lowerText.includes("inplay") || lowerText.includes("in play")) {
+    mode = "live";
+    if (!numMatches || numMatches.length === 0) requestedCount = 8;
+  } else if (lowerText.includes("tactic") || lowerText.includes("angle")) {
     mode = "tactics";
     if (!numMatches || numMatches.length === 0) requestedCount = 10;
   } else if (lowerText.includes("ev") || lowerText.includes("value")) {
@@ -13412,4 +13423,10 @@ if (typeof document !== 'undefined') {
   window.addEventListener('load', () => {
     initDynamicHomePreviews();
   });
+}
+
+
+if (typeof window !== 'undefined') {
+  window.executeCommandScoutPrompt = function(p) { if (typeof executeCommandScoutPrompt === 'function') return executeCommandScoutPrompt(p); };
+  window.handleCommandScoutSubmit = function(e) { if (typeof handleCommandScoutSubmit === 'function') return handleCommandScoutSubmit(e); };
 }

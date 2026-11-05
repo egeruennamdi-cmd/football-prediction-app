@@ -3292,6 +3292,38 @@ function handleCommandScoutSubmit(event) {
   executeCommandScoutPrompt(text);
 }
 
+
+function runInlineBetDoctorAudit() {
+  const input = document.getElementById("inline-bet-doctor-input");
+  const code = input ? input.value.trim().toUpperCase() : "";
+  if (!code) {
+    if (typeof showToast === 'function') showToast("Please enter a booking code or ticket ID to audit.", "warning");
+    else if (typeof showAppNotification === 'function') showAppNotification("Please enter a booking code or ticket ID to audit.");
+    return;
+  }
+  const doctorInput = document.getElementById("bet-doctor-input-code") || document.getElementById("bet-doctor-code-input");
+  if (doctorInput) doctorInput.value = code;
+  if (typeof navigateTo === 'function') navigateTo('/bet-doctor');
+  setTimeout(() => {
+    if (typeof runBetDoctorAudit === 'function') runBetDoctorAudit(true, code);
+  }, 400);
+}
+window.runInlineBetDoctorAudit = runInlineBetDoctorAudit;
+
+function runInlineCodeConversion() {
+  const input = document.getElementById("inline-converter-code-input");
+  const code = input ? input.value.trim().toUpperCase() : "";
+  if (!code) {
+    if (typeof showToast === 'function') showToast("Please enter a booking code to convert.", "warning");
+    else if (typeof showAppNotification === 'function') showAppNotification("Please enter a booking code to convert.");
+    return;
+  }
+  const convInput = document.getElementById("converter-input-code") || document.getElementById("booking-code-input");
+  if (convInput) convInput.value = code;
+  if (typeof navigateTo === 'function') navigateTo('/bet-code-converter');
+}
+window.runInlineCodeConversion = runInlineCodeConversion;
+
 function executeCommandScoutPrompt(promptText) {
   if (!promptText) return;
   const input = document.getElementById("command-scout-input");
@@ -3305,6 +3337,13 @@ function executeCommandScoutPrompt(promptText) {
 
   // 1. Explicit Routing to Bet Doctor (Check my bet, ticket audit, doctor)
   if (/(check.*(bet|slip|ticket)|doctor|audit|slip health|risk.*(bet|slip|ticket)|trap|diagnos)/i.test(lower) || lower === 'check my bet') {
+    const betslipList = (window.appState && Array.isArray(window.appState.betslip)) ? window.appState.betslip : [];
+    const hasPicks = betslipList.length > 0;
+    let totalOdds = '1.00';
+    if (typeof calculateBetslipTotalOdds === 'function') {
+      totalOdds = calculateBetslipTotalOdds(betslipList).displayOdds || '1.00';
+    }
+
     if (feedbackBox) {
       feedbackBox.style.display = "block";
       feedbackBox.innerHTML = `
@@ -3313,7 +3352,9 @@ function executeCommandScoutPrompt(promptText) {
           <button type="button" onclick="document.getElementById('command-scout-feedback').style.display='none'" style="background:none; border:none; color:#94a3b8; font-size:1rem; cursor:pointer;">✕</button>
         </div>
         <p class="command-scout-feedback-text">
-          Let's run your ticket through <b>Bet Doctor</b> to diagnose overall slip health, identify high-risk selections, and discover value replacements.
+          ${hasPicks 
+            ? `Auditing your active betslip: <b>${betslipList.length} selections</b> evaluated with <b>@${totalOdds} total odds</b>. Running ticket through <b>Bet Doctor</b> for full risk breakdown.`
+            : `Let's run your ticket through <b>Bet Doctor</b> to diagnose overall slip health, identify high-risk selections, and discover value replacements.`}
         </p>
         <div class="command-scout-feedback-actions">
           <button type="button" class="btn btn-primary" onclick="if(typeof navigateTo==='function'){navigateTo('/bet-doctor');}else{window.location.hash='#bet-doctor';}" style="font-size:0.82rem; padding:8px 16px; border-radius:8px; cursor:pointer;">Open Bet Doctor →</button>
@@ -3352,6 +3393,9 @@ function executeCommandScoutPrompt(promptText) {
 
   // 3. Explicit Routing to Value Intelligence Engine (Find value, +EV, value bets)
   if (/(find value|positive ev|\+ev|value bet|value intelligence|edge|mispriced)/i.test(lower) || lower === 'find value') {
+    if (typeof quickPromptScout === 'function') {
+      quickPromptScout('Find value', false);
+    }
     if (feedbackBox) {
       feedbackBox.style.display = "block";
       feedbackBox.innerHTML = `
@@ -3367,6 +3411,7 @@ function executeCommandScoutPrompt(promptText) {
         </div>
       `;
     }
+    if (heroResults) heroResults.style.display = 'block';
     setTimeout(() => {
       if (typeof window.navigateTo === 'function') window.navigateTo('/valuebot');
     }, 700);
@@ -3375,6 +3420,9 @@ function executeCommandScoutPrompt(promptText) {
 
   // 4. Explicit Routing to Live Scanner (Scan live, live matches, in-play scanner)
   if (/(scan live|in-?play|market scanner|odds drop)/i.test(lower) || lower === 'scan live') {
+    if (typeof quickPromptScout === 'function') {
+      quickPromptScout('Scan live', false);
+    }
     if (feedbackBox) {
       feedbackBox.style.display = "block";
       feedbackBox.innerHTML = `
@@ -3391,6 +3439,7 @@ function executeCommandScoutPrompt(promptText) {
         </div>
       `;
     }
+    if (heroResults) heroResults.style.display = 'block';
     setTimeout(() => {
       if (typeof window.navigateTo === 'function') window.navigateTo('/live-scanner');
     }, 700);
@@ -3399,6 +3448,9 @@ function executeCommandScoutPrompt(promptText) {
 
   // 5. Explicit Routing to Today's Match Predictions & Analysis
   if (/(analy[sz]e today|latest.*prediction|today.*match|view prediction|today.*insight)/i.test(lower) && !/(selection|pick|generate|ticket|acca|slip)/i.test(lower)) {
+    if (typeof quickPromptScout === 'function') {
+      quickPromptScout("Analyse today's matches", false);
+    }
     if (feedbackBox) {
       feedbackBox.style.display = "block";
       feedbackBox.innerHTML = `
@@ -3415,6 +3467,7 @@ function executeCommandScoutPrompt(promptText) {
         </div>
       `;
     }
+    if (heroResults) heroResults.style.display = 'block';
     setTimeout(() => {
       if (typeof window.navigateTo === 'function') {
         window.navigateTo('/predictions');
@@ -3458,7 +3511,7 @@ function executeCommandScoutPrompt(promptText) {
           Identified fixture: <b>${escapeHtml(matchedFixture.homeTeam?.name || matchedFixture.homeTeam || matchedFixture.home)} vs ${escapeHtml(matchedFixture.awayTeam?.name || matchedFixture.awayTeam || matchedFixture.away)}</b>. Opening DeepPredict AI Scout Match Analysis.
         </p>
         <div class="command-scout-feedback-actions">
-          <button type="button" class="btn btn-primary" onclick="openScoutModal(${JSON.stringify(matchedFixture.id)})" style="font-size:0.82rem; padding:8px 16px; border-radius:8px; cursor:pointer;">Launch Analysis →</button>
+          <button type="button" class="btn btn-primary" onclick="openScoutModal(${JSON.stringify(matchedFixture.id)})" style="font-size:0.82rem; padding:8px 16px; border-radius:8px; cursor:pointer;">Launch Analysis ➔</button>
         </div>
       `;
     }
@@ -4860,6 +4913,10 @@ function formatAiScoutResultsHtml(selections, requestedCount = DEFAULT_AI_SCOUT_
     title = `🎯 AI Tactical Angle Briefing & ${finalCount}-Match Football Selections`;
   } else if (mode === 'value') {
     title = `📊 High EV Algorithmic Value Picks (${finalCount} Matches)`;
+  } else if (mode === 'live') {
+    title = `📡 Live In-Play Market Intelligence (${finalCount} Matches)`;
+  } else if (mode === 'audit') {
+    title = `🩺 Bet Doctor Audited Selections (${finalCount} Matches)`;
   }
 
   // 4. Dynamic Subtitle strictly derived from finalCount
@@ -4868,6 +4925,10 @@ function formatAiScoutResultsHtml(selections, requestedCount = DEFAULT_AI_SCOUT_
     subtitleText = `Tactical evaluation analyzing high pressing triggers & transition speed. Curated <b>${finalCount} Positive EV picks</b>:`;
   } else if (mode === 'value') {
     subtitleText = `Algorithmic value models identified <b>${finalCount} High Expected Value (EV) opportunities</b> today:`;
+  } else if (mode === 'live') {
+    subtitleText = `Real-time in-play scanner detected <b>${finalCount} active match momentum opportunities</b>:`;
+  } else if (mode === 'audit') {
+    subtitleText = `DeepPredict Bet Doctor evaluated your active ticket: <b>${finalCount} selections verified with zero structural traps</b>:`;
   } else if (mode === 'custom' && promptText && promptText.length > 2) {
     subtitleText = `AI Scout analyzed your query <i>"${escapeScoutHtml(promptText)}"</i> and curated <b>${finalCount} high-probability selections</b>:`;
   }
@@ -4979,7 +5040,10 @@ function quickPromptScout(text, autoOpenModal = true) {
     requestedCount = 10;
   }
 
-  if (lowerText.includes("tactic") || lowerText.includes("angle")) {
+  if (lowerText.includes("scan live") || lowerText.includes("live scanner") || lowerText.includes("in-play") || lowerText.includes("inplay") || lowerText.includes("in play")) {
+    mode = "live";
+    if (!numMatches || numMatches.length === 0) requestedCount = 8;
+  } else if (lowerText.includes("tactic") || lowerText.includes("angle")) {
     mode = "tactics";
     if (!numMatches || numMatches.length === 0) requestedCount = 10;
   } else if (lowerText.includes("ev") || lowerText.includes("value")) {

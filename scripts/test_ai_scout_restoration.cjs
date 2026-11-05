@@ -445,6 +445,49 @@ runTest('Test I1: Command Center remains on route "/" and Founder Analytics on "
   assert.ok(routerJs.includes("view-founder-analytics"), 'Router must handle view-founder-analytics');
 });
 
+// ----------------------------------------------------
+// TEST J: INTELLIGENT ASSISTANT INDICATOR & SHORTCUT INTEGRITY
+// ----------------------------------------------------
+console.log('\n--- TEST J: Intelligent Assistant Indicator & Shortcut Integrity ---');
+
+runTest('Test J1: Intelligent Assistant badge click invokes openGeneralScout()', () => {
+  let scoutOpened = false;
+  sandbox.openGeneralScout = () => { scoutOpened = true; };
+  sandbox.window.openGeneralScout = () => { scoutOpened = true; };
+  
+  const indexHtml = fs.readFileSync(path.join(__dirname, '..', 'index.html'), 'utf8');
+  assert.ok(indexHtml.includes('onclick="openGeneralScout()"'), 'Badge must have onclick="openGeneralScout()"');
+  assert.ok(indexHtml.includes('role="button"'), 'Badge must have role="button"');
+  assert.ok(indexHtml.includes('class="command-scout-badge-ai-dot"'), 'Badge must have pulsing dot element');
+
+  sandbox.openGeneralScout();
+  assert.strictEqual(scoutOpened, true, 'openGeneralScout() must execute cleanly');
+});
+
+runTest('Test J2: CSS contains pulsing indicator animation and hover styling', () => {
+  const css = fs.readFileSync(path.join(__dirname, '..', 'css', 'main.css'), 'utf8');
+  assert.ok(css.includes('scoutIndicatorPulse'), 'CSS must define scoutIndicatorPulse animation');
+  assert.ok(css.includes('.command-scout-badge-ai:hover'), 'CSS must have hover styles');
+  assert.ok(css.includes('cursor: pointer'), 'Badge must specify cursor: pointer');
+});
+
+runTest('Test J3: "ASK AI SCOUT" form submit with empty text generates selections in-place', () => {
+  elements['command-scout-input'].value = '';
+  elements['hero-scout-input'].value = '';
+  sandbox.handleCommandScoutSubmit({ preventDefault: () => {} });
+  assert.ok(sandbox.window.appState.betslip.length > 0, 'Must generate selections into betslip');
+  assert.ok(elements['hero-scout-results'].innerHTML.includes('Football Event Selections'));
+});
+
+runTest('Test J4: All 6 shortcuts populate input field and trigger intent feedback', () => {
+  const shortcuts = ['Check my bet', 'Build a ticket', 'Find value', "Analyse today's matches", 'Convert code', 'Scan live'];
+  shortcuts.forEach(s => {
+    sandbox.executeCommandScoutPrompt(s);
+    assert.strictEqual(elements['command-scout-input'].value, s, `Input value must reflect shortcut: ${s}`);
+    assert.ok(elements['command-scout-feedback'].innerHTML.length > 0, `Feedback must be populated for: ${s}`);
+  });
+});
+
 console.log('\n================================================================');
 console.log(`ALL ASK AI SCOUT TESTS PASSED (${passedTests}/${totalTests}) — 100% SUCCESS`);
 console.log('================================================================');

@@ -285,6 +285,24 @@
       }
     });
   </script>
+  <script>
+    // Early resilient stubs for Ask AI Scout & Command Center
+    window.executeCommandScoutPrompt = function(p) {
+      if (typeof window._deferredScoutPrompts === 'undefined') window._deferredScoutPrompts = [];
+      if (typeof executeCommandScoutPrompt === 'function') {
+        return executeCommandScoutPrompt(p);
+      } else {
+        window._deferredScoutPrompts.push(p);
+      }
+    };
+    window.handleCommandScoutSubmit = function(e) {
+      if (e && e.preventDefault) e.preventDefault();
+      if (typeof handleCommandScoutSubmit === 'function') return handleCommandScoutSubmit(e);
+    };
+    window.openGeneralScout = function() {
+      if (typeof openGeneralScout === 'function') return openGeneralScout();
+    };
+  </script>
 </head>
 
 <body>
@@ -1259,8 +1277,8 @@
               <p class="command-scout-sub">Tell me what you're looking for and I'll take you to the right DeepPredictBet tool.</p>
             </div>
           </div>
-          <div class="command-scout-badge-ai">
-            <span style="width:6px; height:6px; border-radius:50%; background:#10b981; display:inline-block;"></span>
+          <div class="command-scout-badge-ai" onclick="openGeneralScout()" role="button" tabindex="0" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();openGeneralScout();}" title="Click to chat with AI Scout Assistant" aria-label="Intelligent Assistant Online — Click to open AI Scout Assistant">
+            <span class="command-scout-badge-ai-dot"></span>
             <span>Intelligent Assistant</span>
           </div>
         </div>
@@ -1319,7 +1337,7 @@
         <div id="command-scout-feedback" class="command-scout-feedback" style="display: none;"></div>
 
         <!-- Hidden container for backward-compatibility with quickPromptScout renderer -->
-        <div id="hero-scout-results" class="hero-scout-results" style="display: none;"></div>
+        <div id="hero-scout-results" class="hero-scout-results" style="display: block;"></div>
       </div>
 
       <!-- ==========================================
