@@ -488,6 +488,65 @@ runTest('Test J4: All 6 shortcuts populate input field and trigger intent feedba
   });
 });
 
+// ----------------------------------------------------
+// TEST K: NUMERIC SELECTIONS & ACTIVE BETSLIP BUILDER (E.G. 12, 15)
+// ----------------------------------------------------
+console.log('\n--- TEST K: Numeric Selections & Active Betslip Builder (e.g. 12, 15) ---');
+
+runTest('Test K1: Input "12" outputs 12 upcoming match events into Active Betslip Builder', () => {
+  sandbox.window.appState.betslip = [];
+  sandbox.executeCommandScoutPrompt('12');
+  assert.strictEqual(sandbox.window.appState.betslip.length, 12, 'Must output 12 selections into betslip');
+  assert.strictEqual(Number(elements['betslip-count-badge'].textContent), 12, 'Active Betslip count badge must be 12');
+  assert.ok(elements['floating-betslip-drawer'].classList.contains('open'), 'Active Betslip Builder drawer must be open');
+  assert.ok(elements['hero-scout-results'].innerHTML.toUpperCase().includes('12-MATCH'), 'Heading must indicate 12-MATCH');
+  assert.ok(elements['hero-scout-results'].innerHTML.includes('12 high-probability'), 'Subtitle must indicate 12 high-probability');
+});
+
+runTest('Test K2: Input "15" outputs 15 upcoming match events into Active Betslip Builder', () => {
+  sandbox.window.appState.betslip = [];
+  sandbox.executeCommandScoutPrompt('15');
+  assert.strictEqual(sandbox.window.appState.betslip.length, 15, 'Must output 15 selections into betslip');
+  assert.strictEqual(Number(elements['betslip-count-badge'].textContent), 15, 'Active Betslip count badge must be 15');
+  assert.ok(elements['floating-betslip-drawer'].classList.contains('open'), 'Active Betslip Builder drawer must be open');
+  assert.ok(elements['hero-scout-results'].innerHTML.toUpperCase().includes('15-MATCH'), 'Heading must indicate 15-MATCH');
+  assert.ok(elements['hero-scout-results'].innerHTML.includes('15 high-probability'), 'Subtitle must indicate 15 high-probability');
+});
+
+runTest('Test K3: Input "output 12 upcoming match events into the Active Betslip Builder" outputs 12 events', () => {
+  sandbox.window.appState.betslip = [];
+  sandbox.executeCommandScoutPrompt('output 12 upcoming match events into the Active Betslip Builder');
+  assert.strictEqual(sandbox.window.appState.betslip.length, 12);
+  assert.strictEqual(Number(elements['betslip-count-badge'].textContent), 12);
+  assert.ok(elements['floating-betslip-drawer'].classList.contains('open'));
+});
+
+runTest('Test K4: Input "output 15 upcoming match events into the Active Betslip Builder" outputs 15 events', () => {
+  sandbox.window.appState.betslip = [];
+  sandbox.executeCommandScoutPrompt('output 15 upcoming match events into the Active Betslip Builder');
+  assert.strictEqual(sandbox.window.appState.betslip.length, 15);
+  assert.strictEqual(Number(elements['betslip-count-badge'].textContent), 15);
+  assert.ok(elements['floating-betslip-drawer'].classList.contains('open'));
+});
+
+runTest('Test K5: Form submit with "12" in command-scout-input outputs 12 matches into Active Betslip Builder', () => {
+  sandbox.window.appState.betslip = [];
+  elements['command-scout-input'].value = '12';
+  sandbox.handleCommandScoutSubmit({ preventDefault: () => {} });
+  assert.strictEqual(sandbox.window.appState.betslip.length, 12, 'Must output 12 selections into betslip');
+  assert.strictEqual(Number(elements['betslip-count-badge'].textContent), 12, 'Active Betslip count badge must be 12');
+  assert.ok(elements['floating-betslip-drawer'].classList.contains('open'), 'Active Betslip Builder drawer must be open');
+});
+
+runTest('Test K6: Form submit with "15" in command-scout-input outputs 15 matches into Active Betslip Builder', () => {
+  sandbox.window.appState.betslip = [];
+  elements['command-scout-input'].value = '15';
+  sandbox.handleCommandScoutSubmit({ preventDefault: () => {} });
+  assert.strictEqual(sandbox.window.appState.betslip.length, 15, 'Must output 15 selections into betslip');
+  assert.strictEqual(Number(elements['betslip-count-badge'].textContent), 15, 'Active Betslip count badge must be 15');
+  assert.ok(elements['floating-betslip-drawer'].classList.contains('open'), 'Active Betslip Builder drawer must be open');
+});
+
 console.log('\n================================================================');
 console.log(`ALL ASK AI SCOUT TESTS PASSED (${passedTests}/${totalTests}) — 100% SUCCESS`);
 console.log('================================================================');

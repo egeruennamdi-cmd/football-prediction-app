@@ -3548,9 +3548,15 @@ function executeCommandScoutPrompt(promptText) {
     return;
   }
 
-  // 8. Selections Generation Intent (Build a ticket, generate selections, picks, accumulator, numbers 10/20/30/40)
+  // 8. Selections Generation Intent (Build a ticket, generate selections, picks, accumulator, numbers e.g. 12, 15, 20)
   // Generates selections IN-PLACE right in Ask AI Scout, updates count and odds, and synchronizes betslip!
-  if (/(build.*ticket|generate.*selection|selection|pick|acca|accumulator|multibet|\b(10|20|30|40)\b.*match)/i.test(lower) || lower === 'build a ticket') {
+  const isNumericOnly = /^\s*\d+\s*$/.test(lower);
+  const hasNumberWithSelectionKeywords = /\b\d+\b.*(match|event|game|fixture|pick|selection|slip|ticket|leg|fold|banker|acca|accumulator|builder)/i.test(lower);
+  const hasActionWithNumber = /(build|generate|give|output|create|find|get|show|make|add|load|put|want|need)\s+.*?(\b\d+\b)/i.test(lower);
+  const hasGeneralSelectionIntent = /(build.*ticket|generate.*selection|selection|pick|acca|accumulator|multibet|upcoming.*match)/i.test(lower) || lower === 'build a ticket';
+  const hasBetslipBuilderMention = /(active.*betslip|betslip.*builder)/i.test(lower);
+
+  if (isNumericOnly || hasNumberWithSelectionKeywords || hasActionWithNumber || hasGeneralSelectionIntent || hasBetslipBuilderMention) {
     if (typeof quickPromptScout === 'function') {
       quickPromptScout(promptText, false);
     }
@@ -3559,6 +3565,10 @@ function executeCommandScoutPrompt(promptText) {
     if (typeof calculateBetslipTotalOdds === 'function') {
       totalOdds = calculateBetslipTotalOdds(window.appState.betslip).displayOdds || '1.00';
     }
+
+    // Ensure Active Betslip Builder drawer is visibly open
+    const drawer = document.getElementById("floating-betslip-drawer");
+    if (drawer) drawer.classList.add("open");
 
     if (feedbackBox) {
       feedbackBox.style.display = "block";
