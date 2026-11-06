@@ -1,4 +1,9 @@
 const https = require('https');
+const dns = require('dns');
+
+try {
+  dns.setServers(['1.1.1.1', '8.8.8.8']);
+} catch (e) {}
 
 function fetchUrl(url) {
   return new Promise((resolve, reject) => {
@@ -30,6 +35,7 @@ async function verify() {
   console.log('   Status Code:', appRes.status);
   console.log('   Payload Size:', (appRes.data.length / 1024).toFixed(1), 'KB');
   console.log('   Contains executeCommandScoutPrompt:', appRes.data.includes('executeCommandScoutPrompt'));
+  console.log('   Contains hasAnalyseTodayIntent:', appRes.data.includes('hasAnalyseTodayIntent'));
   console.log('   Contains numeric selection detection:', appRes.data.includes('isNumericOnly'));
   console.log('   Contains betslip drawer ensure in scout prompt:', appRes.data.includes('floating-betslip-drawer'));
   console.log('   Contains generateScoutAccumulator:', appRes.data.includes('generateScoutAccumulator'));
