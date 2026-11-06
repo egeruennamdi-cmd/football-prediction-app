@@ -85,16 +85,34 @@
     }
   }
 
-  // 2. Add Match directly to Bet Generator or Bet Doctor
-  function addMatchToGenerator(matchId) {
-    const match = (typeof window.findMatchAnywhere === 'function' ? window.findMatchAnywhere(matchId) : null);
-    if (typeof window.navigateTo === 'function') {
-      window.navigateTo('/generator');
+  // 2. Add Match directly to Betslip Builder from Match Detail
+  function addMatchToSlip(matchId, event) {
+    const evt = event || (typeof window !== 'undefined' ? window.event : null);
+    if (evt) {
+      if (typeof evt.stopPropagation === 'function') evt.stopPropagation();
+      if (typeof evt.preventDefault === 'function') evt.preventDefault();
     }
-    if (typeof window.showAppNotification === 'function') {
-      const teamName = match?.homeTeam?.name || 'Match';
-      window.showAppNotification(`Added ${teamName} fixture to Bet Generator parameters!`);
+
+    const sId = String(matchId || '').trim();
+    const match = (typeof window.findMatchAnywhere === 'function' ? window.findMatchAnywhere(sId, evt) : null) ||
+                  window._currentMatchDetail ||
+                  ((window.MATCH_DATA && Array.isArray(window.MATCH_DATA)) ? window.MATCH_DATA.find(m => String(m.id) === sId) : null);
+
+    if (match && (match.id || sId)) {
+      if (!window._matchRegistry) window._matchRegistry = new Map();
+      window._matchRegistry.set(String(match.id || sId), match);
     }
+
+    if (typeof window.addMatchCardToBetslip === 'function') {
+      window.addMatchCardToBetslip(sId || (match && match.id), evt);
+    } else if (typeof addMatchCardToBetslip === 'function') {
+      addMatchCardToBetslip(sId || (match && match.id), evt);
+    }
+  }
+
+  // Safe backwards-compatibility alias:
+  function addMatchToGenerator(matchId, event) {
+    return addMatchToSlip(matchId, event);
   }
 
   function addMatchToDoctor(matchId) {
@@ -122,6 +140,12 @@
     const match = (typeof window.findMatchAnywhere === 'function' ? window.findMatchAnywhere(matchId) : null) ||
                   ((window.MATCH_DATA && Array.isArray(window.MATCH_DATA)) ? window.MATCH_DATA.find(m => String(m.id) === String(matchId)) : null) ||
                   ((window.MATCH_DATA && Array.isArray(window.MATCH_DATA)) ? window.MATCH_DATA[0] : null);
+
+    if (match && (match.id || matchId)) {
+      if (!window._matchRegistry) window._matchRegistry = new Map();
+      window._matchRegistry.set(String(match.id || matchId), match);
+      window._currentMatchDetail = match;
+    }
 
     if (!match) {
       container.innerHTML = `
@@ -267,8 +291,8 @@
 
       <!-- Quick Action Floating Bar -->
       <div class="match-action-toolbar" style="display: flex; gap: 12px; margin-bottom: 28px; flex-wrap: wrap;">
-        <button type="button" class="btn btn-primary" onclick="window.addMatchToGenerator('${match.id || matchId}')" style="flex: 1; min-width: 180px; padding: 12px 18px; font-weight: 800; border-radius: 10px; display: flex; align-items: center; justify-content: center; gap: 8px;">
-          <span>🎯</span> <span>Add to Bet Generator</span>
+        <button type="button" class="btn btn-primary add-to-slip-btn" id="match-detail-add-slip-btn" data-match-id="${match.id || matchId}" onclick="window.addMatchToSlip ? window.addMatchToSlip('${match.id || matchId}', event) : window.addMatchCardToBetslip('${match.id || matchId}', event)" style="flex: 1; min-width: 180px; padding: 12px 18px; font-weight: 800; border-radius: 10px; display: flex; align-items: center; justify-content: center; gap: 8px; background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%); color: #ffffff; border: none; cursor: pointer; transition: all 0.2s ease;">
+          <span style="font-size: 1.1rem; line-height: 1; display: inline-flex; align-items: center;">➕</span> <span>Add to Slip</span>
         </button>
         <button type="button" class="btn btn-secondary" onclick="window.addMatchToDoctor('${match.id || matchId}')" style="flex: 1; min-width: 180px; padding: 12px 18px; font-weight: 800; border-radius: 10px; display: flex; align-items: center; justify-content: center; gap: 8px;">
           <span>🩺</span> <span>Diagnose in Bet Doctor</span>
@@ -1109,7 +1133,8 @@
   window.renderWatchlistPage = renderWatchlistPage;
   window.toggleWatchlist = toggleWatchlist;
   window.clearUserWatchlist = clearUserWatchlist;
-  window.addMatchToGenerator = addMatchToGenerator;
+  window.addMatchToSlip = addMatchToSlip;
+  window.addMatchToGenerator = addMatchToSlip;
   window.addMatchToDoctor = addMatchToDoctor;
   window.handleAiScoutInputPrompt = handleAiScoutInputPrompt;
   window.handleAiScoutChatSubmit = handleAiScoutChatSubmit;
