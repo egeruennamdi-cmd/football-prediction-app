@@ -11,14 +11,14 @@
 // =========================================================================
 // 1. OFFICIAL PERMANENT PRODUCT LANGUAGE CONSTANTS
 // =========================================================================
-export const BOOKING_CODE_CONVERTER_HEADLINE = "Convert booking codes between supported bookmakers";
-export const BOOKING_CODE_CONVERTER_DESCRIPTION = "Move your selections between available bookmakers without rebuilding your betslip manually.";
-export const BOOKING_CODE_CONVERTER_ALT_DESCRIPTION = "Convert your booking code from one supported bookmaker to another without rebuilding your selections manually.";
+var BOOKING_CODE_CONVERTER_HEADLINE = "Convert booking codes between supported bookmakers";
+var BOOKING_CODE_CONVERTER_DESCRIPTION = "Move your selections between available bookmakers without rebuilding your betslip manually.";
+var BOOKING_CODE_CONVERTER_ALT_DESCRIPTION = "Convert your booking code from one supported bookmaker to another without rebuilding your selections manually.";
 
 // =========================================================================
 // 2. AUTHORITATIVE BOOKMAKER REGISTRY (96 GENUINE INTEGRATIONS)
 // =========================================================================
-export const BOOKMAKER_REGISTRY = [
+var BOOKMAKER_REGISTRY = [
   {
     "id": "188bet",
     "name": "188BET",
@@ -2369,7 +2369,7 @@ BOOKMAKER_REGISTRY.forEach(bookie => {
  * @param {string} [options.search=''] - Search term for brand or variant.
  * @returns {Array<Object>}
  */
-export function getSupportedBookmakers(options = {}) {
+function getSupportedBookmakers(options = {}) {
   const { includeUnavailable = false, role = null, region = null, search = '' } = options;
   const q = String(search || '').toLowerCase().trim();
 
@@ -2407,7 +2407,7 @@ export function getSupportedBookmakers(options = {}) {
  * Does NOT count inactive, duplicate, or unverified regional aliases.
  * @returns {number}
  */
-export function getSupportedBookmakerCount() {
+function getSupportedBookmakerCount() {
   return getSupportedBookmakers({ includeUnavailable: false }).length;
 }
 
@@ -2415,7 +2415,7 @@ export function getSupportedBookmakerCount() {
  * Returns total registered bookmakers (including temporarily unavailable).
  * @returns {number}
  */
-export function getTotalRegisteredBookmakerCount() {
+function getTotalRegisteredBookmakerCount() {
   return BOOKMAKER_REGISTRY.length;
 }
 
@@ -2424,7 +2424,7 @@ export function getTotalRegisteredBookmakerCount() {
  * Distinguishes bookmaker count from conversion routes.
  * @returns {number}
  */
-export function getAvailableConversionRoutesCount() {
+function getAvailableConversionRoutesCount() {
   const sources = getSupportedBookmakers({ includeUnavailable: false, role: 'source' }).length;
   const targets = getSupportedBookmakers({ includeUnavailable: false, role: 'target' }).length;
   if (sources <= 1 || targets <= 1) return 0;
@@ -2437,7 +2437,7 @@ export function getAvailableConversionRoutesCount() {
  * @param {string} id
  * @returns {Object|null}
  */
-export function getBookmakerById(id) {
+function getBookmakerById(id) {
   if (!id) return null;
   return BOOKMAKERS_BY_ID.get(String(id).toLowerCase().trim()) || null;
 }
@@ -2447,7 +2447,7 @@ export function getBookmakerById(id) {
  * @param {string} code
  * @returns {Object|null}
  */
-export function getBookmakerByCode(code) {
+function getBookmakerByCode(code) {
   if (!code) return null;
   return BOOKMAKERS_BY_CODE.get(String(code).toLowerCase().trim()) || null;
 }
@@ -2457,7 +2457,7 @@ export function getBookmakerByCode(code) {
  * @param {string} code
  * @returns {string}
  */
-export function formatBookieLabel(code) {
+function formatBookieLabel(code) {
   if (!code) return "1xBet";
   const variant = getBookmakerByCode(code);
   if (variant && variant.label) {
@@ -2483,7 +2483,7 @@ export function formatBookieLabel(code) {
  * @param {'active'|'temporarily_unavailable'} newStatus
  * @param {string} [notice] - Maintenance explanation
  */
-export function setBookmakerStatus(id, newStatus, notice = null) {
+function setBookmakerStatus(id, newStatus, notice = null) {
   const bookie = getBookmakerById(id);
   if (bookie) {
     bookie.status = newStatus;
@@ -2499,7 +2499,7 @@ export function setBookmakerStatus(id, newStatus, notice = null) {
 /**
  * Synchronizes all dynamic coverage elements in the DOM with the live count.
  */
-export function updateAllDynamicBookmakerCounts() {
+function updateAllDynamicBookmakerCounts() {
   if (typeof document === 'undefined') return;
 
   const count = getSupportedBookmakerCount();
@@ -2547,7 +2547,7 @@ let currentDirectoryRegion = 'all';
  * @param {string} [searchQuery='']
  * @param {string} [regionFilter='all']
  */
-export function renderSupportedBookmakersDirectory(container, searchQuery = '', regionFilter = 'all') {
+function renderSupportedBookmakersDirectory(container, searchQuery = '', regionFilter = 'all') {
   currentDirectoryRegion = regionFilter;
   const targetEl = typeof container === 'string' ? document.getElementById(container) : container;
   if (!targetEl) return;
@@ -2623,7 +2623,7 @@ export function renderSupportedBookmakersDirectory(container, searchQuery = '', 
   `;
 }
 
-export function openSupportedBookmakersModal() {
+function openSupportedBookmakersModal() {
   const modal = document.getElementById('supported-bookmakers-modal');
   if (modal) {
     modal.style.display = 'flex';
@@ -2636,14 +2636,14 @@ export function openSupportedBookmakersModal() {
   }
 }
 
-export function closeSupportedBookmakersModal(event, force = false) {
+function closeSupportedBookmakersModal(event, force = false) {
   if (force || (event && event.target && event.target.id === 'supported-bookmakers-modal')) {
     const modal = document.getElementById('supported-bookmakers-modal');
     if (modal) modal.style.display = 'none';
   }
 }
 
-export function toggleSupportedBookmakersModal() {
+function toggleSupportedBookmakersModal() {
   const modal = document.getElementById('supported-bookmakers-modal');
   if (modal && modal.style.display === 'flex') {
     closeSupportedBookmakersModal(null, true);
@@ -2652,7 +2652,7 @@ export function toggleSupportedBookmakersModal() {
   }
 }
 
-export function filterSupportedBookmakersDirectory(query, region = null) {
+function filterSupportedBookmakersDirectory(query, region = null) {
   const activeRegion = region !== null ? region : currentDirectoryRegion;
   renderSupportedBookmakersDirectory('supported-bookmakers-directory-container', query, activeRegion);
 }

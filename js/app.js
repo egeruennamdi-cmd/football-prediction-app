@@ -5191,7 +5191,7 @@ window.addEventListener('load', initHeroScoutDynamicOutput);
 // 🔴 HOT TRENDS TICKER ENGINE (UPCOMING INTELLIGENCE & AUTHENTIC CRESTS)
 // ============================================================================
 
-const HOT_TRENDS_MARKET_MAP = {
+var HOT_TRENDS_MARKET_MAP = (typeof window !== 'undefined' && window.HOT_TRENDS_MARKET_MAP) ? window.HOT_TRENDS_MARKET_MAP : {
   'uo05': 'Over 0.5 Match Goals',
   'uo15': 'Over 1.5 Match Goals',
   'uo25': 'Over 2.5 Match Goals',

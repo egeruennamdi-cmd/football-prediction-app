@@ -1907,7 +1907,7 @@ window.renderDailyBets = renderDailyBets;
 // 🔴 HOT TRENDS TICKER ENGINE (UPCOMING INTELLIGENCE & AUTHENTIC CRESTS)
 // ============================================================================
 
-const HOT_TRENDS_MARKET_MAP = {
+var HOT_TRENDS_MARKET_MAP = (typeof window !== 'undefined' && window.HOT_TRENDS_MARKET_MAP) ? window.HOT_TRENDS_MARKET_MAP : {
   'uo05': 'Over 0.5 Match Goals',
   'uo15': 'Over 1.5 Match Goals',
   'uo25': 'Over 2.5 Match Goals',
@@ -13580,6 +13580,18 @@ if (typeof document !== 'undefined') {
 
 
 if (typeof window !== 'undefined') {
-  window.executeCommandScoutPrompt = function(p) { if (typeof executeCommandScoutPrompt === 'function') return executeCommandScoutPrompt(p); };
-  window.handleCommandScoutSubmit = function(e) { if (typeof handleCommandScoutSubmit === 'function') return handleCommandScoutSubmit(e); };
+  if (typeof window.executeCommandScoutPrompt !== 'function') {
+    window.executeCommandScoutPrompt = function(p) {
+      if (typeof executeCommandScoutPrompt === 'function' && executeCommandScoutPrompt !== window.executeCommandScoutPrompt) {
+        return executeCommandScoutPrompt(p);
+      }
+    };
+  }
+  if (typeof window.handleCommandScoutSubmit !== 'function') {
+    window.handleCommandScoutSubmit = function(e) {
+      if (typeof handleCommandScoutSubmit === 'function' && handleCommandScoutSubmit !== window.handleCommandScoutSubmit) {
+        return handleCommandScoutSubmit(e);
+      }
+    };
+  }
 }
