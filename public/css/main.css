@@ -309,6 +309,12 @@ header {
   list-style: none;
 }
 
+.nav-left {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
 .nav-actions {
   display: flex;
   align-items: center;
@@ -4305,7 +4311,7 @@ body.is-desktop .mobile-hamburger-btn {
     display: flex !important;
     align-items: center !important;
     gap: 6px !important;
-    flex-shrink: 0 !important;
+    flex-shrink: 1 !important;
   }
 
   .nav-container {
@@ -12856,7 +12862,8 @@ textarea:focus-visible,
   display: flex;
   align-items: center;
   gap: 12px;
-  flex-shrink: 0;
+  flex-shrink: 1;
+  min-width: 0;
   z-index: 100;
 }
 
@@ -12872,6 +12879,7 @@ textarea:focus-visible,
   padding: 5px 12px;
   border-radius: 6px;
   max-width: 170px;
+  min-width: 0;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -12880,6 +12888,7 @@ textarea:focus-visible,
   transition: all 0.2s ease;
   user-select: none;
   -webkit-user-select: none;
+  flex: 0 1 auto;
 }
 
 .header-user-identity:hover {
@@ -12906,6 +12915,7 @@ textarea:focus-visible,
   display: inline-flex;
   align-items: center;
   justify-content: center;
+  flex-shrink: 0;
 }
 
 .header-logout-btn:hover,
@@ -12921,33 +12931,145 @@ textarea:focus-visible,
   transform: translateY(0);
 }
 
-/* Responsive Viewports */
-@media (max-width: 640px) {
+/* Responsive Mobile Header & Width Management */
+@media (max-width: 768px) {
+  .nav-container {
+    padding-left: max(8px, env(safe-area-inset-left)) !important;
+    padding-right: max(8px, env(safe-area-inset-right)) !important;
+    gap: 6px !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    box-sizing: border-box !important;
+    overflow: hidden !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: space-between !important;
+  }
+
+  .nav-left {
+    display: flex !important;
+    align-items: center !important;
+    gap: 6px !important;
+    min-width: 0 !important;
+    flex-shrink: 1 !important;
+  }
+
+  html:not(.is-desktop) .mobile-hamburger-btn,
+  body:not(.is-desktop) .mobile-hamburger-btn,
+  .mobile-hamburger-btn {
+    width: 32px !important;
+    height: 32px !important;
+    min-width: 32px !important;
+    min-height: 32px !important;
+    max-width: 32px !important;
+    max-height: 32px !important;
+    font-size: 1.15rem !important;
+    flex-shrink: 0 !important;
+    padding: 0 !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+  }
+
+  .brand-logo-img {
+    height: 24px !important;
+    max-width: 105px !important;
+    width: auto !important;
+    object-fit: contain !important;
+    flex-shrink: 1 !important;
+  }
+
+  .nav-actions {
+    display: flex !important;
+    align-items: center !important;
+    justify-content: flex-end !important;
+    gap: 6px !important;
+    min-width: 0 !important;
+    flex: 0 1 auto !important;
+    flex-shrink: 1 !important;
+  }
+
   .header-account-area {
-    gap: 8px;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: flex-end !important;
+    gap: 6px !important;
+    min-width: 0 !important;
+    flex: 0 1 auto !important;
+    flex-shrink: 1 !important;
   }
+
   .header-user-identity {
-    font-size: 0.78rem;
-    padding: 4px 8px;
-    max-width: 110px;
+    min-width: 0 !important;
+    max-width: 110px !important;
+    font-size: 0.74rem !important;
+    padding: 4px 6px !important;
+    border-radius: 6px !important;
+    flex: 0 1 auto !important;
+    overflow: hidden !important;
+    text-overflow: ellipsis !important;
+    white-space: nowrap !important;
+    display: block !important;
   }
+
   .header-logout-btn {
-    font-size: 0.75rem;
-    padding: 4px 8px;
+    font-size: 0.74rem !important;
+    padding: 4px 8px !important;
+    border-radius: 6px !important;
+    min-height: 28px !important;
+    flex-shrink: 0 !important;
+    white-space: nowrap !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
   }
 }
 
 @media (max-width: 380px) {
+  .nav-container {
+    padding-left: max(4px, env(safe-area-inset-left)) !important;
+    padding-right: max(4px, env(safe-area-inset-right)) !important;
+    gap: 4px !important;
+  }
+
+  .nav-left {
+    gap: 4px !important;
+  }
+
+  html:not(.is-desktop) .mobile-hamburger-btn,
+  body:not(.is-desktop) .mobile-hamburger-btn,
+  .mobile-hamburger-btn {
+    width: 30px !important;
+    height: 30px !important;
+    min-width: 30px !important;
+    min-height: 30px !important;
+    max-width: 30px !important;
+    max-height: 30px !important;
+    font-size: 1.05rem !important;
+  }
+
+  .brand-logo-img {
+    height: 22px !important;
+    max-width: 88px !important;
+  }
+
+  .nav-actions {
+    gap: 4px !important;
+  }
+
   .header-account-area {
-    gap: 6px;
+    gap: 4px !important;
   }
+
   .header-user-identity {
-    font-size: 0.72rem;
-    padding: 3px 6px;
-    max-width: 85px;
+    max-width: 78px !important;
+    font-size: 0.68rem !important;
+    padding: 3px 5px !important;
   }
+
   .header-logout-btn {
-    font-size: 0.72rem;
-    padding: 3px 6px;
+    font-size: 0.68rem !important;
+    padding: 3px 6px !important;
+    min-height: 26px !important;
   }
 }

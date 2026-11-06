@@ -11195,7 +11195,6 @@ function updateAuthUIState() {
     if (isLoggedIn) {
       accountArea.style.display = "flex";
       accountArea.style.alignItems = "center";
-      accountArea.style.gap = "10px";
       accountArea.innerHTML =
         '<span id="header-user-identity" class="header-user-identity" title="' + displayName.replace(/"/g, '&quot;') + '" onclick="if(typeof openProfileModal===\'function\')openProfileModal(\'info\');">' + displayName.replace(/</g, '&lt;').replace(/>/g, '&gt;') + '</span>' +
         '<button type="button" id="header-logout-btn" class="header-logout-btn" onclick="logoutUser(event)" aria-label="Log out of DeepPredictBet">Log out</button>';
