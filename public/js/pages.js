@@ -204,7 +204,15 @@
         <div class="match-scoreboard-grid" style="display: grid; grid-template-columns: 1fr auto 1fr; align-items: center; gap: 20px; margin-bottom: 24px; text-align: center;">
           <!-- Home Team -->
           <div style="text-align: right;">
-            <div style="font-size: 2.2rem; margin-bottom: 6px;">${homeLogo}</div>
+            <div style="display: flex; justify-content: flex-end; margin-bottom: 8px;">
+              ${(typeof window !== 'undefined' && typeof window.renderTeamLogoHtml === 'function')
+                ? window.renderTeamLogoHtml(match.homeTeam || home, true, 52)
+                : (typeof renderTeamLogoHtml === 'function'
+                    ? renderTeamLogoHtml(match.homeTeam || home, true, 52)
+                    : (String(homeLogo).startsWith('http')
+                        ? `<img src="${homeLogo}" alt="${home}" style="width:52px;height:52px;object-fit:contain;display:block;" loading="lazy">`
+                        : `<div style="font-size: 2.2rem;">${homeLogo}</div>`))}
+            </div>
             <h1 style="font-family: var(--font-display); font-size: 1.6rem; font-weight: 900; color: #ffffff; margin: 0; line-height: 1.2;">${home}</h1>
             <span style="font-size: 0.78rem; color: #93c5fd; font-weight: 700; text-transform: uppercase;">Home Club</span>
           </div>
@@ -221,7 +229,15 @@
 
           <!-- Away Team -->
           <div style="text-align: left;">
-            <div style="font-size: 2.2rem; margin-bottom: 6px;">${awayLogo}</div>
+            <div style="display: flex; justify-content: flex-start; margin-bottom: 8px;">
+              ${(typeof window !== 'undefined' && typeof window.renderTeamLogoHtml === 'function')
+                ? window.renderTeamLogoHtml(match.awayTeam || away, false, 52)
+                : (typeof renderTeamLogoHtml === 'function'
+                    ? renderTeamLogoHtml(match.awayTeam || away, false, 52)
+                    : (String(awayLogo).startsWith('http')
+                        ? `<img src="${awayLogo}" alt="${away}" style="width:52px;height:52px;object-fit:contain;display:block;" loading="lazy">`
+                        : `<div style="font-size: 2.2rem;">${awayLogo}</div>`))}
+            </div>
             <h1 style="font-family: var(--font-display); font-size: 1.6rem; font-weight: 900; color: #ffffff; margin: 0; line-height: 1.2;">${away}</h1>
             <span style="font-size: 0.78rem; color: #93c5fd; font-weight: 700; text-transform: uppercase;">Away Club</span>
           </div>

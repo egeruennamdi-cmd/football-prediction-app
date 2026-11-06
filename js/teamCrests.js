@@ -15,12 +15,8 @@
 (function (root, factory) {
   'use strict';
   const api = factory();
-  if (typeof module === 'object' && module.exports) {
-    try {
-      Object.assign(module.exports, api);
-      module.exports.default = api;
-      module.exports = api;
-    } catch (e) {}
+  if (typeof module !== 'undefined' && module.exports) {
+    module.exports = api;
   }
   if (typeof root !== 'undefined') {
     root.TeamCrestRegistry = api;

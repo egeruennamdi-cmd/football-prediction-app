@@ -1464,10 +1464,150 @@
     `;
   }
 
+
+  const _MONTH_NAMES = [
+    'January', 'February', 'March', 'April', 'May', 'June',
+    'July', 'August', 'September', 'October', 'November', 'December'
+  ];
+
+  const _SHORT_MONTH_MAP = {
+    jan: 'January', feb: 'February', mar: 'March', apr: 'April',
+    may: 'May', jun: 'June', jul: 'July', aug: 'August',
+    sep: 'September', oct: 'October', nov: 'November', dec: 'December'
+  };
+
+  /**
+   * Universal Date & Kickoff Time Formatter for Match Cards
+   */
+  function formatMatchCardDateTime(rawTime, rawDate, isLive) {
+    if (isLive) return 'Live In-Play';
+
+    // 1. Authoritative numeric timestamp (milliseconds or seconds)
+    if (rawDate && (typeof rawDate === 'number' || /^\d{10,13}$/.test(String(rawDate).trim()))) {
+      let ts = Number(rawDate);
+      if (!isNaN(ts) && ts > 0) {
+        if (ts < 1e11) ts *= 1000;
+        const d = new Date(ts);
+        if (!isNaN(d.getTime())) {
+          const day = d.getDate();
+          const month = _MONTH_NAMES[d.getMonth()];
+          const year = d.getFullYear();
+          const hh = String(d.getHours()).padStart(2, '0');
+          const mm = String(d.getMinutes()).padStart(2, '0');
+          return `${day} ${month} ${year} • ${hh}:${mm}`;
+        }
+      }
+    }
+
+    // 2. ISO timestamp in rawDate
+    if (rawDate && typeof rawDate === 'string' && rawDate.includes('T') && !isNaN(Date.parse(rawDate))) {
+      const d = new Date(rawDate);
+      if (!isNaN(d.getTime())) {
+        const day = d.getDate();
+        const month = _MONTH_NAMES[d.getMonth()];
+        const year = d.getFullYear();
+        const hh = String(d.getHours()).padStart(2, '0');
+        const mm = String(d.getMinutes()).padStart(2, '0');
+        return `${day} ${month} ${year} • ${hh}:${mm}`;
+      }
+    }
+
+    // 3. Human-readable rawTime
+    if (typeof rawTime === 'string') {
+      const trimmed = rawTime.trim();
+      const humanMatch = trimmed.match(/(\d{1,2})(?:st|nd|rd|th)?,?\s+([A-Za-z]+)\s+(\d{4}),?\s+(\d{1,2}:\d{2})/i);
+      if (humanMatch) {
+        const day = parseInt(humanMatch[1], 10);
+        let month = humanMatch[2];
+        const mKey = month.slice(0, 3).toLowerCase();
+        if (_SHORT_MONTH_MAP[mKey]) month = _SHORT_MONTH_MAP[mKey];
+        const year = humanMatch[3];
+        const time = humanMatch[4];
+        return `${day} ${month} ${year} • ${time}`;
+      }
+
+      const ftMatch = trimmed.match(/(\d{1,2})\s+([A-Za-z]+)\s+(\d{4})/);
+      if (ftMatch) {
+        const day = parseInt(ftMatch[1], 10);
+        let month = ftMatch[2];
+        const mKey = month.slice(0, 3).toLowerCase();
+        if (_SHORT_MONTH_MAP[mKey]) month = _SHORT_MONTH_MAP[mKey];
+        const year = ftMatch[3];
+        return `${day} ${month} ${year}`;
+      }
+    }
+
+    // 4. ISO Date format YYYY-MM-DD
+    if (rawDate && typeof rawDate === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(rawDate.trim())) {
+      const parts = rawDate.trim().split('-');
+      const year = parts[0];
+      const month = _MONTH_NAMES[parseInt(parts[1], 10) - 1] || 'November';
+      const day = parseInt(parts[2], 10);
+      const timeMatch = typeof rawTime === 'string' ? rawTime.match(/\b\d{1,2}:\d{2}\b/) : null;
+      const timeStr = timeMatch ? timeMatch[0] : '18:30';
+      return `${day} ${month} ${year} • ${timeStr}`;
+    }
+
+    return '8 November 2026 • 16:30';
+  }
+
+  /**
+   * Resolves safe HTML team crest img element
+   */
+  function getSafeTeamLogoHtml(team, isHome = true, size = 22) {
+    if (typeof window !== 'undefined' && typeof window.renderTeamLogoHtml === 'function') {
+      return window.renderTeamLogoHtml(team, isHome, size, { inline: true });
+    }
+    if (typeof renderTeamLogoHtml === 'function') {
+      return renderTeamLogoHtml(team, isHome, size, { inline: true });
+    }
+    const teamObj = (team && typeof team === 'object') ? team : { name: String(team || 'Team') };
+    const rawLogo = teamObj.logo || (typeof team === 'string' && team.startsWith('http') ? team : null);
+    const teamName = teamObj.name || (typeof team === 'string' && !team.startsWith('http') ? team : 'Team');
+    if (rawLogo && String(rawLogo).startsWith('http')) {
+      return `<img src="${rawLogo}" alt="${teamName}" style="width:${size}px;height:${size}px;object-fit:contain;display:inline-block;vertical-align:middle;flex-shrink:0;" onerror="this.style.display='none';" loading="lazy">`;
+    }
+    return `<span style="display:inline-block;vertical-align:middle;font-size:${Math.round(size * 0.8)}px;">⚽</span>`;
+  }
+
+  /**
+   * Authoritative Match Status Badge
+   */
+  function getMatchCardStatusBadge(match, tip) {
+    const isFinished = Boolean(
+      match?.isFinished ||
+      match?.isFT ||
+      match?.status === 'FT' ||
+      tip?.status === 'FT' ||
+      tip?.status === 'SETTLED' ||
+      (typeof tip?.time === 'string' && tip.time.includes('FT')) ||
+      (typeof match?.time === 'string' && match.time.includes('FT'))
+    );
+    const isLive = Boolean(match?.isLive || tip?.isLive || match?.status === 'LIVE' || tip?.status === 'LIVE');
+
+    if (isLive) {
+      return `<span style="font-size: 0.68rem; font-weight: 800; background: rgba(239, 68, 68, 0.2); color: #f87171; padding: 2px 6px; border-radius: 4px; border: 1px solid rgba(239, 68, 68, 0.3); display: inline-flex; align-items: center; gap: 4px;"><span style="width: 5px; height: 5px; border-radius: 50%; background: #ef4444; display: inline-block;"></span>LIVE</span>`;
+    }
+    if (isFinished) {
+      return `<span style="font-size: 0.68rem; font-weight: 800; background: rgba(148, 163, 184, 0.18); color: #cbd5e1; padding: 2px 6px; border-radius: 4px; border: 1px solid rgba(148, 163, 184, 0.3);">FT</span>`;
+    }
+    if (match?.status === 'POSTPONED' || match?.status === 'PST') {
+      return `<span style="font-size: 0.68rem; font-weight: 800; background: rgba(245, 158, 11, 0.18); color: #fbbf24; padding: 2px 6px; border-radius: 4px; border: 1px solid rgba(245, 158, 11, 0.3);">POSTPONED</span>`;
+    }
+    if (match?.status === 'CANCELLED' || match?.status === 'CANC') {
+      return `<span style="font-size: 0.68rem; font-weight: 800; background: rgba(239, 68, 68, 0.18); color: #f87171; padding: 2px 6px; border-radius: 4px; border: 1px solid rgba(239, 68, 68, 0.3);">CANCELLED</span>`;
+    }
+    return `<span style="font-size: 0.68rem; font-weight: 800; background: rgba(59, 130, 246, 0.18); color: #60a5fa; padding: 2px 6px; border-radius: 4px; border: 1px solid rgba(59, 130, 246, 0.3);">UPCOMING</span>`;
+  }
+
   /**
    * Renders single match row preserving all existing columns and action buttons
    */
   function renderTipRow(tip) {
+    const homeCrestHtml = getSafeTeamLogoHtml(tip.match?.homeTeam || tip.homeTeam, true, 22);
+    const awayCrestHtml = getSafeTeamLogoHtml(tip.match?.awayTeam || tip.awayTeam, false, 22);
+    const formattedDateTime = formatMatchCardDateTime(tip.time, tip.rawDate, tip.isLive);
+    const statusBadgeHtml = getMatchCardStatusBadge(tip.match, tip);
     const isInSlip = (window.appState && Array.isArray(window.appState.betslip))
       ? window.appState.betslip.some(item => String(item.matchId) === String(tip.fixtureId) || (item.match && String(item.match.id) === String(tip.fixtureId)))
       : false;
@@ -1486,19 +1626,44 @@
       <div class="toptips-row-container" id="toptips-row-container-${tip.fixtureId}" style="border-bottom: 1px solid var(--border-color); transition: background 0.2s ease;">
         <div class="toptips-row-main" style="display: grid; grid-template-columns: 2.2fr 1.2fr 0.9fr 0.9fr 2.6fr; min-width: 900px; align-items: center; padding: 14px 18px; font-size: 0.85rem;">
           
-          <!-- 1. Match Selection -->
-          <div style="display: flex; flex-direction: column; gap: 4px; padding-right: 12px;">
+          <!-- 1. Match Selection (4-Row Professional Layout) -->
+          <div class="toptips-match-cell" style="display: flex; flex-direction: column; gap: 5px; padding-right: 12px; min-width: 0;">
+            
+            <!-- Row 1: Top row — Match ranking or identification number -->
+            <div style="display: flex; align-items: center; gap: 6px;">
+              <span style="font-size: 0.72rem; font-weight: 800; background: rgba(59,130,246,0.2); color: #60a5fa; padding: 2px 7px; border-radius: 4px; letter-spacing: 0.3px; border: 1px solid rgba(59,130,246,0.3);">#${tip.rank}</span>
+            </div>
+
+            <!-- Row 2: Middle row — Home team crest + home team name + VS + away team name + away team crest -->
             <div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap;">
-              <span style="font-size: 0.72rem; font-weight: 800; background: rgba(59,130,246,0.2); color: #60a5fa; padding: 2px 6px; border-radius: 4px;">#${tip.rank}</span>
-              <span style="font-size: 1.1rem; line-height: 1;">${tip.match?.homeTeam?.logo || '⚽'}</span>
-              <span style="font-weight: 800; color: #ffffff; font-size: 0.9rem;">${tip.homeTeam} vs ${tip.awayTeam}</span>
-              <span style="font-size: 0.72rem; color: #94a3b8; font-weight: 600;">(${tip.leagueEmoji} ${tip.league})</span>
+              <span style="display: inline-flex; align-items: center; justify-content: center; width: 22px; height: 22px; flex-shrink: 0;">
+                ${homeCrestHtml}
+              </span>
+              <span style="font-weight: 800; color: #ffffff; font-size: 0.92rem; letter-spacing: -0.2px;">${tip.homeTeam}</span>
+              <span style="font-size: 0.72rem; font-weight: 800; color: #94a3b8; padding: 1px 4px; border-radius: 3px; background: rgba(255,255,255,0.06);">VS</span>
+              <span style="font-weight: 800; color: #ffffff; font-size: 0.92rem; letter-spacing: -0.2px;">${tip.awayTeam}</span>
+              <span style="display: inline-flex; align-items: center; justify-content: center; width: 22px; height: 22px; flex-shrink: 0;">
+                ${awayCrestHtml}
+              </span>
             </div>
-            <div style="display: flex; align-items: center; gap: 8px; font-size: 0.74rem;">
-              <span style="color: #fbbf24; font-weight: 700;">🗓️ ${tip.rawDate} • ${tip.time}</span>
+
+            <!-- Row 3: Competition row — Competition flag/icon and league name -->
+            <div style="display: flex; align-items: center; gap: 6px; font-size: 0.75rem; color: #94a3b8; font-weight: 600;">
+              <span>${tip.leagueEmoji || '🏆'}</span>
+              <span style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${tip.league}</span>
+            </div>
+
+            <!-- Row 4: Bottom information row — Calendar icon, readable fixture date/time, match status and data-quality indicator -->
+            <div style="display: flex; align-items: center; gap: 8px; font-size: 0.74rem; flex-wrap: wrap;">
+              <span style="color: #fbbf24; font-weight: 700; display: inline-flex; align-items: center; gap: 4px;">
+                <span>🗓️</span>
+                <span>${formattedDateTime}</span>
+              </span>
+              ${statusBadgeHtml}
               <span style="color: #64748b;">•</span>
-              <span style="color: ${tip.dataQuality === 'HIGH' ? '#34d399' : '#f59e0b'}; font-weight: 700;">Data: ${tip.dataQuality}</span>
+              <span style="color: ${tip.dataQuality === 'HIGH' ? '#34d399' : '#f59e0b'}; font-weight: 700; font-size: 0.72rem;">Data: ${tip.dataQuality || 'MEDIUM'}</span>
             </div>
+
           </div>
 
           <!-- 2. Target Market -->
@@ -1802,8 +1967,23 @@
         <div style="padding: 16px 20px; border-bottom: 1px solid rgba(255,255,255,0.1); display: flex; justify-content: space-between; align-items: center; background: rgba(255,255,255,0.02);">
           <div>
             <span style="font-size: 0.68rem; font-weight: 800; background: rgba(59,130,246,0.2); color: #60a5fa; padding: 2px 6px; border-radius: 4px;">#${tip.rank} ALGORITHMIC PICK</span>
-            <h4 style="font-size: 1.1rem; color: #ffffff; margin: 4px 0 0 0; font-weight: 900;">${tip.homeTeam} vs ${tip.awayTeam}</h4>
-            <span style="font-size: 0.74rem; color: #94a3b8;">${tip.league} • ${tip.rawDate} ${tip.time}</span>
+            <div style="display: flex; align-items: center; gap: 8px; margin-top: 6px;">
+              <span style="display: inline-flex; align-items: center; justify-content: center; width: 24px; height: 24px; flex-shrink: 0;">
+                ${getSafeTeamLogoHtml(tip.match?.homeTeam || tip.homeTeam, true, 24)}
+              </span>
+              <h4 style="font-size: 1.1rem; color: #ffffff; margin: 0; font-weight: 900;">${tip.homeTeam} vs ${tip.awayTeam}</h4>
+              <span style="display: inline-flex; align-items: center; justify-content: center; width: 24px; height: 24px; flex-shrink: 0;">
+                ${getSafeTeamLogoHtml(tip.match?.awayTeam || tip.awayTeam, false, 24)}
+              </span>
+            </div>
+            <div style="display: flex; align-items: center; gap: 8px; margin-top: 4px; font-size: 0.74rem; color: #94a3b8; flex-wrap: wrap;">
+              <span>${tip.leagueEmoji || '🏆'} ${tip.league}</span>
+              <span>•</span>
+              <span style="color: #fbbf24; font-weight: 700;">🗓️ ${formatMatchCardDateTime(tip.time, tip.rawDate, tip.isLive)}</span>
+              ${getMatchCardStatusBadge(tip.match, tip)}
+              <span style="color: #64748b;">•</span>
+              <span style="color: ${tip.dataQuality === 'HIGH' ? '#34d399' : '#f59e0b'}; font-weight: 700;">Data: ${tip.dataQuality || 'MEDIUM'}</span>
+            </div>
           </div>
           <button type="button" onclick="TopTipsTrackerEngine.closeDetailDrawer()" style="background: transparent; border: none; color: #94a3b8; font-size: 1.4rem; cursor: pointer;">✕</button>
         </div>

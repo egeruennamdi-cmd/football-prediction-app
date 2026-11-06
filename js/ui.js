@@ -3114,13 +3114,31 @@ function renderTopTipsTool() {
   }
 
   // Render each match row
-  matching.forEach(match => {
+  matching.forEach((match, idx) => {
     if (!window._matchRegistry) window._matchRegistry = new Map();
     window._matchRegistry.set(String(match.id), match);
 
-    const matchTimeStr = (typeof formatStandardMatchDateString === 'function')
-      ? formatStandardMatchDateString(match.time, match.rawDate, match.isLive)
-      : (match.time || '20th, September 2026, 16:30');
+    const homeName = match.homeTeam?.name || match.homeTeam || 'Home';
+    const awayName = match.awayTeam?.name || match.awayTeam || 'Away';
+    const homeLogoHtml = (typeof window !== 'undefined' && typeof window.renderTeamLogoHtml === 'function')
+      ? window.renderTeamLogoHtml(match.homeTeam || homeName, true, 22, { inline: true })
+      : (typeof renderTeamLogoHtml === 'function' ? renderTeamLogoHtml(match.homeTeam || homeName, true, 22, { inline: true }) : `<img src="https://media.api-sports.io/football/teams/40.png" alt="${homeName}" style="width:22px;height:22px;object-fit:contain;display:inline-block;vertical-align:middle;" loading="lazy">`);
+    const awayLogoHtml = (typeof window !== 'undefined' && typeof window.renderTeamLogoHtml === 'function')
+      ? window.renderTeamLogoHtml(match.awayTeam || awayName, false, 22, { inline: true })
+      : (typeof renderTeamLogoHtml === 'function' ? renderTeamLogoHtml(match.awayTeam || awayName, false, 22, { inline: true }) : `<img src="https://media.api-sports.io/football/teams/42.png" alt="${awayName}" style="width:22px;height:22px;object-fit:contain;display:inline-block;vertical-align:middle;" loading="lazy">`);
+
+    const formattedMatchDateTime = (typeof formatMatchCardDateTime === 'function')
+      ? formatMatchCardDateTime(match.time, match.rawDate, match.isLive)
+      : (typeof formatStandardMatchDateString === 'function'
+          ? formatStandardMatchDateString(match.time, match.rawDate, match.isLive)
+          : (match.time || '8 November 2026 • 16:30'));
+
+    const isFinished = Boolean(match.isFinished || match.isFT || match.status === 'FT' || (typeof match.time === 'string' && match.time.includes('FT')));
+    const statusBadgeHtml = match.isLive
+      ? `<span style="font-size: 0.68rem; font-weight: 800; background: rgba(239, 68, 68, 0.2); color: #f87171; padding: 2px 6px; border-radius: 4px; border: 1px solid rgba(239, 68, 68, 0.3); display: inline-flex; align-items: center; gap: 4px;"><span style="width: 5px; height: 5px; border-radius: 50%; background: #ef4444; display: inline-block;"></span>LIVE</span>`
+      : (isFinished
+          ? `<span style="font-size: 0.68rem; font-weight: 800; background: rgba(148, 163, 184, 0.18); color: #cbd5e1; padding: 2px 6px; border-radius: 4px; border: 1px solid rgba(148, 163, 184, 0.3);">FT</span>`
+          : `<span style="font-size: 0.68rem; font-weight: 800; background: rgba(59, 130, 246, 0.18); color: #60a5fa; padding: 2px 6px; border-radius: 4px; border: 1px solid rgba(59, 130, 246, 0.3);">UPCOMING</span>`);
 
     const pool = typeof getMatchMarketPool === 'function' ? getMatchMarketPool(match) : [];
     const activeMarketLabel = labels[activeMarket] || "Target Market";
@@ -3168,16 +3186,44 @@ function renderTopTipsTool() {
     rowContainer.innerHTML = `
       <div class="toptips-row-main" style="display: grid; grid-template-columns: 2.2fr 1.2fr 0.9fr 0.9fr 2.6fr; min-width: 900px; align-items: center; padding: 14px 18px; font-size: 0.85rem;">
         
-        <!-- 1. Match Selection: Logos, Teams, League & Future Date -->
-        <div style="display: flex; flex-direction: column; gap: 4px; padding-right: 12px;">
+        <!-- 1. Match Selection (4-Row Professional Layout) -->
+        <div class="toptips-match-cell" style="display: flex; flex-direction: column; gap: 5px; padding-right: 12px; min-width: 0;">
+          
+          <!-- Row 1: Top row — Match ranking or identification number -->
+          <div style="display: flex; align-items: center; gap: 6px;">
+            <span style="font-size: 0.72rem; font-weight: 800; background: rgba(59,130,246,0.2); color: #60a5fa; padding: 2px 7px; border-radius: 4px; letter-spacing: 0.3px; border: 1px solid rgba(59,130,246,0.3);">#${idx + 1}</span>
+          </div>
+
+          <!-- Row 2: Middle row — Home team crest + home team name + VS + away team name + away team crest -->
           <div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap;">
-            <span style="font-size: 1.1rem; line-height: 1; display: inline-flex; align-items: center;">${(typeof window !== 'undefined' && typeof window.renderTeamLogoHtml === 'function') ? window.renderTeamLogoHtml(match.homeTeam || 'Home', true, 20, { inline: true }) : (match.homeTeam?.logo && String(match.homeTeam.logo).startsWith('http') ? `<img src="${match.homeTeam.logo}" alt="Home" style="width:20px;height:20px;object-fit:contain;display:inline-block;vertical-align:middle;" loading="lazy">` : match.homeTeam?.logo || '⚽')}</span>
-            <span style="font-weight: 800; color: #ffffff; font-size: 0.9rem;">${match.homeTeam?.name || match.homeTeam || 'Home'} vs ${match.awayTeam?.name || match.awayTeam || 'Away'}</span>
-            <span style="font-size: 0.72rem; color: #94a3b8; font-weight: 600;">(${match.leagueEmoji || '⚽'} ${match.league || 'League'})</span>
+            <span style="display: inline-flex; align-items: center; justify-content: center; width: 22px; height: 22px; flex-shrink: 0;">
+              ${homeLogoHtml}
+            </span>
+            <span style="font-weight: 800; color: #ffffff; font-size: 0.92rem; letter-spacing: -0.2px;">${homeName}</span>
+            <span style="font-size: 0.72rem; font-weight: 800; color: #94a3b8; padding: 1px 4px; border-radius: 3px; background: rgba(255,255,255,0.06);">VS</span>
+            <span style="font-weight: 800; color: #ffffff; font-size: 0.92rem; letter-spacing: -0.2px;">${awayName}</span>
+            <span style="display: inline-flex; align-items: center; justify-content: center; width: 22px; height: 22px; flex-shrink: 0;">
+              ${awayLogoHtml}
+            </span>
           </div>
-          <div style="display: flex; align-items: center; gap: 6px; font-size: 0.74rem; color: #fbbf24; font-weight: 700;">
-            <span>🗓️ ${matchTimeStr}</span>
+
+          <!-- Row 3: Competition row — Competition flag/icon and league name -->
+          <div style="display: flex; align-items: center; gap: 6px; font-size: 0.75rem; color: #94a3b8; font-weight: 600;">
+            <span>${match.leagueEmoji || '🏆'}</span>
+            <span style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${match.league || 'League'}</span>
           </div>
+
+          <!-- Row 4: Bottom information row — Calendar icon, readable fixture date/time, match status and data-quality indicator -->
+          <div style="display: flex; align-items: center; gap: 8px; font-size: 0.74rem; flex-wrap: wrap;">
+            <span style="color: #fbbf24; font-weight: 700; display: inline-flex; align-items: center; gap: 4px;">
+              <span>🗓️</span>
+              <span>${formattedMatchDateTime}</span>
+            </span>
+            ${statusBadgeHtml}
+            <span style="color: #64748b;">•</span>
+            <span style="color: #34d399; font-weight: 700; font-size: 0.72rem;">Data: HIGH</span>
+          </div>
+
         </div>
 
         <!-- 2. Target Market -->

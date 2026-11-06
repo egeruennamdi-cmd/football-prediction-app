@@ -163,6 +163,9 @@ const MATCH_DATA = [
     leagueEmoji: "🏴󠁧󠁢󠁥󠁮󠁧󠁿",
     time: "8th, November 2026, 16:30",
     dateSlot: "2026-11-08-1630",
+    rawDate: "2026-11-08T16:30:00Z",
+    status: "UPCOMING",
+    statusShort: "NS",
     isLive: false,
     homeTeam: {
       name: "Manchester City",
@@ -190,6 +193,9 @@ const MATCH_DATA = [
     leagueEmoji: "🇪🇸",
     time: "22nd, November 2026, 21:00",
     dateSlot: "2026-11-22-2100",
+    rawDate: "2026-11-22T21:00:00Z",
+    status: "UPCOMING",
+    statusShort: "NS",
     isLive: false,
     homeTeam: {
       name: "Barcelona",
@@ -217,6 +223,9 @@ const MATCH_DATA = [
     leagueEmoji: "🏴󠁧󠁢󠁥󠁮󠁧󠁿",
     time: "15th, November 2026, 16:30",
     dateSlot: "2026-11-15-1630",
+    rawDate: "2026-11-15T16:30:00Z",
+    status: "UPCOMING",
+    statusShort: "NS",
     isLive: false,
     homeTeam: {
       name: "Liverpool",
@@ -244,6 +253,9 @@ const MATCH_DATA = [
     leagueEmoji: "🇩🇪",
     time: "30th, November 2026, 17:30",
     dateSlot: "2026-11-30-1730",
+    rawDate: "2026-11-30T17:30:00Z",
+    status: "UPCOMING",
+    statusShort: "NS",
     isLive: false,
     homeTeam: {
       name: "Bayern Munich",
@@ -271,6 +283,9 @@ const MATCH_DATA = [
     leagueEmoji: "🇮🇹",
     time: "29th, November 2026, 19:45",
     dateSlot: "2026-11-29-1945",
+    rawDate: "2026-11-29T19:45:00Z",
+    status: "UPCOMING",
+    statusShort: "NS",
     isLive: false,
     homeTeam: {
       name: "Inter Milan",
@@ -298,6 +313,9 @@ const MATCH_DATA = [
     leagueEmoji: "🇪🇺",
     time: "25th, November 2026, 20:00",
     dateSlot: "2026-11-25-2000",
+    rawDate: "2026-11-25T20:00:00Z",
+    status: "UPCOMING",
+    statusShort: "NS",
     isLive: false,
     homeTeam: {
       name: "Juventus",
