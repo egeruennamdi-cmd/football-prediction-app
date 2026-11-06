@@ -3446,8 +3446,8 @@ function executeCommandScoutPrompt(promptText) {
     return;
   }
 
-  // 5. Explicit Routing to Today's Match Predictions & Analysis
-  if (/(analy[sz]e today|latest.*prediction|today.*match|view prediction|today.*insight)/i.test(lower) && !/(selection|pick|generate|ticket|acca|slip)/i.test(lower)) {
+  // 5. Explicit Routing to Today's Match Predictions (When asking to view/show/open predictions)
+  if (/(open.*prediction|go to.*prediction|take me to.*prediction|view.*prediction|show.*prediction|latest.*prediction|navigate to.*prediction)/i.test(lower)) {
     if (typeof quickPromptScout === 'function') {
       quickPromptScout("Analyse today's matches", false);
     }
@@ -3555,8 +3555,9 @@ function executeCommandScoutPrompt(promptText) {
   const hasActionWithNumber = /(build|generate|give|output|create|find|get|show|make|add|load|put|want|need)\s+.*?(\b\d+\b)/i.test(lower);
   const hasGeneralSelectionIntent = /(build.*ticket|generate.*selection|selection|pick|acca|accumulator|multibet|upcoming.*match)/i.test(lower) || lower === 'build a ticket';
   const hasBetslipBuilderMention = /(active.*betslip|betslip.*builder)/i.test(lower);
+  const hasAnalyseTodayIntent = /(analy[sz]e.*(today|match)|today.*match|today.*insight)/i.test(lower) || lower === "analyse today's matches" || lower === "analyze today's matches";
 
-  if (isNumericOnly || hasNumberWithSelectionKeywords || hasActionWithNumber || hasGeneralSelectionIntent || hasBetslipBuilderMention) {
+  if (isNumericOnly || hasNumberWithSelectionKeywords || hasActionWithNumber || hasGeneralSelectionIntent || hasBetslipBuilderMention || hasAnalyseTodayIntent) {
     if (typeof quickPromptScout === 'function') {
       quickPromptScout(promptText, false);
     }
@@ -5059,6 +5060,9 @@ function quickPromptScout(text, autoOpenModal = true) {
   } else if (lowerText.includes("ev") || lowerText.includes("value")) {
     mode = "value";
     if (!numMatches || numMatches.length === 0) requestedCount = 8;
+  } else if (lowerText.includes("analy") || lowerText.includes("today")) {
+    mode = "selections";
+    if (!numMatches || numMatches.length === 0) requestedCount = 9;
   } else if (numMatches && numMatches.length > 0) {
     mode = "selections";
   } else if (lowerText.includes("select") || lowerText.includes("pick") || lowerText.includes("match") || lowerText.includes("acca") || lowerText.includes("accumulator")) {

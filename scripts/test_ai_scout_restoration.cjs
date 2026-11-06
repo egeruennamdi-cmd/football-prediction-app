@@ -267,10 +267,13 @@ runTest('Test B3: Shortcut "Find value" routes to /valuebot', () => {
   assert.strictEqual(lastNavigatedRoute, '/valuebot');
 });
 
-runTest('Test B4: Shortcut "Analyse today\'s matches" routes to /predictions', () => {
+runTest('Test B4: Shortcut "Analyse today\'s matches" generates 9-match selections in-place and stays in Ask AI Scout', () => {
   lastNavigatedRoute = null;
   sandbox.executeCommandScoutPrompt("Analyse today's matches");
-  assert.strictEqual(lastNavigatedRoute, '/predictions');
+  assert.strictEqual(lastNavigatedRoute, null, 'Must NOT kick user off to /predictions');
+  assert.strictEqual(sandbox.window.appState.betslip.length, 9, 'Active betslip must be populated with 9 selections');
+  assert.ok(elements['floating-betslip-drawer'].classList.contains('open'), 'Betslip drawer must open');
+  assert.ok(elements['hero-scout-results'].innerHTML.includes('9-Match Football Event Selections'), 'Must display 9-Match in hero results');
 });
 
 runTest('Test B5: Shortcut "Convert code" routes to /bet-code-converter', () => {

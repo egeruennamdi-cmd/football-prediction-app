@@ -7635,6 +7635,9 @@ function quickPromptScout(text, autoOpenModal = true) {
   } else if (lowerText.includes("ev") || lowerText.includes("value")) {
     mode = "value";
     if (!numMatches || numMatches.length === 0) requestedCount = 8;
+  } else if (lowerText.includes("analy") || lowerText.includes("today")) {
+    mode = "selections";
+    if (!numMatches || numMatches.length === 0) requestedCount = 9;
   } else if (numMatches && numMatches.length > 0) {
     mode = "selections";
   } else if (lowerText.includes("select") || lowerText.includes("pick") || lowerText.includes("match") || lowerText.includes("acca") || lowerText.includes("accumulator")) {
