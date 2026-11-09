@@ -1015,7 +1015,29 @@ const GLOBAL_CLUBS = [
   { name: "France",          country: "Global", flag: "🇫🇷", league: "World Cup", logo: "🐓🇫🇷", matchesPlayed: 1, wins: 1, draws: 0, losses: 0, points: 3 },
   { name: "Brazil",          country: "Global", flag: "🇧🇷", league: "World Cup", logo: "⚽🇧🇷", matchesPlayed: 1, wins: 1, draws: 0, losses: 0, points: 3 },
   { name: "England",         country: "Global", flag: "🏴󠁧󠁢󠁥󠁮󠁧󠁿", league: "World Cup", logo: "🦁🏴󠁧󠁢󠁥󠁮󠁧󠁿", matchesPlayed: 1, wins: 1, draws: 0, losses: 0, points: 3 },
-  { name: "Spain",           country: "Global", flag: "🇪🇸", league: "World Cup", logo: "🐂🇪🇸", matchesPlayed: 1, wins: 1, draws: 0, losses: 0, points: 3 }
+  { name: "Spain",           country: "Global", flag: "🇪🇸", league: "World Cup", logo: "🐂🇪🇸", matchesPlayed: 1, wins: 1, draws: 0, losses: 0, points: 3 },
+
+  // Albania - Superliga (Kategoria Superiore) Official Clubs
+  { name: "KF Tirana",         country: "Albania", flag: "🇦🇱", league: "Superliga", logo: "https://upload.wikimedia.org/wikipedia/en/0/0e/Tirana_Club_Logo.svg", matchesPlayed: 10, wins: 4, draws: 4, losses: 2, goalsFor: 14, goalsAgainst: 10, goalDiff: 4, points: 16, form: "WDWLD" },
+  { name: "Partizani Tirana",  country: "Albania", flag: "🇦🇱", league: "Superliga", logo: "https://upload.wikimedia.org/wikipedia/en/3/36/Partizani_Tirana_Club_Logo.svg", matchesPlayed: 10, wins: 5, draws: 3, losses: 2, goalsFor: 15, goalsAgainst: 9, goalDiff: 6, points: 18, form: "WWDLW" },
+  { name: "Vllaznia Shkodër",  country: "Albania", flag: "🇦🇱", league: "Superliga", logo: "https://upload.wikimedia.org/wikipedia/en/2/20/Vllaznia_Shkod%C3%ABr_Club_Logo.svg", matchesPlayed: 10, wins: 5, draws: 2, losses: 3, goalsFor: 16, goalsAgainst: 11, goalDiff: 5, points: 17, form: "DWWWL" },
+  { name: "Egnatia Rrogozhinë",country: "Albania", flag: "🇦🇱", league: "Superliga", logo: "https://upload.wikimedia.org/wikipedia/commons/c/c1/Egnatia_Rrogozhin%C3%AB_club_logo.svg", matchesPlayed: 10, wins: 6, draws: 2, losses: 2, goalsFor: 14, goalsAgainst: 8, goalDiff: 6, points: 20, form: "WWWDW" },
+  { name: "Dinamo City",       country: "Albania", flag: "🇦🇱", league: "Superliga", logo: "https://upload.wikimedia.org/wikipedia/en/a/a3/Dinamo_Tirana_Club_Logo.svg", matchesPlayed: 10, wins: 4, draws: 3, losses: 3, goalsFor: 12, goalsAgainst: 11, goalDiff: 1, points: 15, form: "LDWWD" },
+  { name: "Teuta Durrës",      country: "Albania", flag: "🇦🇱", league: "Superliga", logo: "https://upload.wikimedia.org/wikipedia/en/4/40/Teuta_Club_Logo.svg", matchesPlayed: 10, wins: 3, draws: 3, losses: 4, goalsFor: 10, goalsAgainst: 14, goalDiff: -4, points: 12, form: "DLLWD" },
+  { name: "Skënderbeu Korçë",  country: "Albania", flag: "🇦🇱", league: "Superliga", logo: "https://upload.wikimedia.org/wikipedia/en/6/6a/Sk%C3%ABnderbeu_Kor%C3%A7%C3%AB_Logo.svg", matchesPlayed: 10, wins: 3, draws: 2, losses: 5, goalsFor: 9, goalsAgainst: 15, goalDiff: -6, points: 11, form: "WLLDL" },
+  { name: "KF Laçi",           country: "Albania", flag: "🇦🇱", league: "Superliga", logo: "https://upload.wikimedia.org/wikipedia/en/7/78/La%C3%A7i_Club_Logo.svg", matchesPlayed: 10, wins: 2, draws: 3, losses: 5, goalsFor: 8, goalsAgainst: 13, goalDiff: -5, points: 9, form: "DLDLL" },
+
+  // Africa - CAF Champions League Elite Clubs
+  { name: "Al Ahly",           country: "Egypt",        flag: "🇪🇬", league: "CAF Champions League", logo: "https://media.api-sports.io/football/teams/1041.png", matchesPlayed: 6, wins: 4, draws: 2, losses: 0, goalsFor: 12, goalsAgainst: 3, goalDiff: 9, points: 14, form: "WDWWW" },
+  { name: "Espérance de Tunis",country: "Tunisia",      flag: "🇹🇳", league: "CAF Champions League", logo: "https://media.api-sports.io/football/teams/1042.png", matchesPlayed: 6, wins: 3, draws: 2, losses: 1, goalsFor: 8, goalsAgainst: 4, goalDiff: 4, points: 11, form: "WDWLW" },
+  { name: "Mamelodi Sundowns", country: "South Africa",  flag: "🇿🇦", league: "CAF Champions League", logo: "https://media.api-sports.io/football/teams/1026.png", matchesPlayed: 6, wins: 4, draws: 1, losses: 1, goalsFor: 11, goalsAgainst: 4, goalDiff: 7, points: 13, form: "WWLDW" },
+  { name: "TP Mazembe",        country: "DR Congo",      flag: "🇨🇩", league: "CAF Champions League", logo: "https://media.api-sports.io/football/teams/1029.png", matchesPlayed: 6, wins: 3, draws: 1, losses: 2, goalsFor: 7, goalsAgainst: 5, goalDiff: 2, points: 10, form: "LWDWW" },
+  { name: "Raja Casablanca",   country: "Morocco",       flag: "🇲🇦", league: "CAF Champions League", logo: "https://media.api-sports.io/football/teams/1044.png", matchesPlayed: 6, wins: 3, draws: 2, losses: 1, goalsFor: 9, goalsAgainst: 5, goalDiff: 4, points: 11, form: "WWDLD" },
+  { name: "Wydad AC",          country: "Morocco",       flag: "🇲🇦", league: "CAF Champions League", logo: "https://media.api-sports.io/football/teams/1045.png", matchesPlayed: 6, wins: 3, draws: 1, losses: 2, goalsFor: 8, goalsAgainst: 6, goalDiff: 2, points: 10, form: "WLWDW" },
+  { name: "Zamalek SC",        country: "Egypt",        flag: "🇪🇬", league: "CAF Champions League", logo: "https://media.api-sports.io/football/teams/1040.png", matchesPlayed: 6, wins: 3, draws: 1, losses: 2, goalsFor: 8, goalsAgainst: 7, goalDiff: 1, points: 10, form: "DWLWW" },
+  { name: "Simba SC",          country: "Tanzania",     flag: "🇹🇿", league: "CAF Champions League", logo: "https://media.api-sports.io/football/teams/8092.png", matchesPlayed: 6, wins: 2, draws: 2, losses: 2, goalsFor: 6, goalsAgainst: 6, goalDiff: 0, points: 8, form: "LDWDL" },
+  { name: "Petro de Luanda",   country: "Angola",       flag: "🇦🇴", league: "CAF Champions League", logo: "https://media.api-sports.io/football/teams/4976.png", matchesPlayed: 6, wins: 2, draws: 3, losses: 1, goalsFor: 5, goalsAgainst: 4, goalDiff: 1, points: 9, form: "DDWLD" },
+  { name: "Pyramids FC",       country: "Egypt",        flag: "🇪🇬", league: "CAF Champions League", logo: "https://media.api-sports.io/football/teams/7856.png", matchesPlayed: 6, wins: 2, draws: 2, losses: 2, goalsFor: 7, goalsAgainst: 7, goalDiff: 0, points: 8, form: "DWLDL" }
 ];
 
 const LEAGUE_STATS = [

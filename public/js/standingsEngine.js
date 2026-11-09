@@ -196,6 +196,36 @@
         playoff: [1, 2, 3, 4, 5, 6, 7],
         wildcard: [8, 9]
       }
+    },
+    'CAF Champions League': {
+      id: 12,
+      displayName: 'CAF Champions League',
+      shortName: 'CAF CL',
+      country: 'Africa',
+      flag: '🌍',
+      season: '2026/27',
+      teamsCount: 16,
+      tiebreaker: 'h2h',
+      zones: {
+        knockout: [1, 2],
+        eliminated: [3, 4]
+      }
+    },
+    'Superliga': {
+      id: 31,
+      displayName: 'Albania Superliga',
+      shortName: 'Superliga',
+      country: 'Albania',
+      flag: '🇦🇱',
+      season: '2026/27',
+      teamsCount: 10,
+      tiebreaker: 'h2h',
+      zones: {
+        ucl: [1],
+        uecl: [2, 3],
+        relegationPlayoff: [8],
+        relegation: [9, 10]
+      }
     }
   };
 
@@ -223,6 +253,12 @@
     'dstv premiership': 'South African PSL',
     'betway premiership': 'South African PSL',
     'psl': 'South African PSL',
+    'caf champions league': 'CAF Champions League',
+    'caf champions': 'CAF Champions League',
+    'caf cl': 'CAF Champions League',
+    'superliga': 'Superliga',
+    'albania superliga': 'Superliga',
+    'kategoria superiore': 'Superliga',
     'mls': 'MLS',
     'major league soccer': 'MLS'
   };

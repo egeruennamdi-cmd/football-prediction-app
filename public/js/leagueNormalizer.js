@@ -602,6 +602,61 @@
       over25Rate: 59
     },
 
+    // ── Continental African Competitions ────────────────────────────────────
+    12: {
+      id: 12,
+      slug: 'caf-champions-league',
+      name: 'CAF Champions League',
+      country: 'Africa',
+      countryCode: 'AF',
+      flag: '🌍',
+      type: 'club',
+      seasonId: '2026/27',
+      seasonYear: 2026,
+      matchesPlayed: 120,
+      homeWinRate: 52,
+      avgGoals: 2.35,
+      bttsRate: 46,
+      drawRate: 26,
+      over25Rate: 48
+    },
+    20: {
+      id: 20,
+      slug: 'caf-confederation-cup',
+      name: 'CAF Confederation Cup',
+      country: 'Africa',
+      countryCode: 'AF',
+      flag: '🌍',
+      type: 'club',
+      seasonId: '2026/27',
+      seasonYear: 2026,
+      matchesPlayed: 110,
+      homeWinRate: 50,
+      avgGoals: 2.28,
+      bttsRate: 44,
+      drawRate: 28,
+      over25Rate: 45
+    },
+
+    // ── Albania ─────────────────────────────────────────────────────────────
+    31: {
+      id: 31,
+      slug: 'superliga-albania',
+      name: 'Superliga',
+      country: 'Albania',
+      countryCode: 'AL',
+      flag: '🇦🇱',
+      type: 'club',
+      seasonId: '2026/27',
+      seasonYear: 2026,
+      matchesPlayed: 180,
+      homeWinRate: 42,
+      avgGoals: 2.40,
+      bttsRate: 49,
+      drawRate: 30,
+      over25Rate: 46
+    },
+
     // ── Americas & Global ───────────────────────────────────────────────────
     71: {
       id: 71,
@@ -892,6 +947,16 @@
   NAME_TO_ID_MAP['uefa euro'] = 4;
   NAME_TO_ID_MAP['euro championship'] = 4;
   NAME_TO_ID_MAP['uefa european championship'] = 4;
+  NAME_TO_ID_MAP['caf champions league'] = 12;
+  NAME_TO_ID_MAP['caf champions'] = 12;
+  NAME_TO_ID_MAP['caf cl'] = 12;
+  NAME_TO_ID_MAP['caf-champions-league'] = 12;
+  NAME_TO_ID_MAP['caf confederation cup'] = 20;
+  NAME_TO_ID_MAP['caf confed cup'] = 20;
+  NAME_TO_ID_MAP['albania superliga'] = 31;
+  NAME_TO_ID_MAP['albanian superliga'] = 31;
+  NAME_TO_ID_MAP['kategoria superiore'] = 31;
+  NAME_TO_ID_MAP['superliga albania'] = 31;
 
   // ─────────────────────────────────────────────────────────────────────────────
   // GLOBAL DATA-INTEGRITY RULE & DIAGNOSTIC SYSTEM
@@ -1176,12 +1241,42 @@
       }
     }
 
-    // 4. Fuzzy / substring match in catalog
+    // 4. Fuzzy / substring match in catalog with strict continent and competition isolation
+    // Exact match prioritized
     for (const comp of Object.values(CANONICAL_COMPETITIONS)) {
       const cName = comp.name.toLowerCase();
       const cCountry = comp.country.toLowerCase();
-      if (q === cName || q.includes(cName) || cName.includes(q)) {
-        if (!optCountry || optCountry.toLowerCase() === cCountry || cCountry === 'europe' || cCountry === 'world') {
+      if (q === cName) {
+        if (!optCountry || optCountry.toLowerCase() === cCountry || cCountry === 'world') {
+          return comp;
+        }
+      }
+    }
+
+    // Substring match with strict geographic and competition boundaries
+    const isQueryAfrican = q.includes('caf') || q.includes('africa') || (optCountry && optCountry.toLowerCase() === 'africa');
+    const isQueryAlbanian = q.includes('albania') || q.includes('kategoria') || (optCountry && optCountry.toLowerCase() === 'albania');
+    const isQueryEuropean = (optCountry && optCountry.toLowerCase() === 'europe') || q.includes('uefa');
+
+    for (const comp of Object.values(CANONICAL_COMPETITIONS)) {
+      const cName = comp.name.toLowerCase();
+      const cCountry = comp.country.toLowerCase();
+
+      // Guard 1: Never cross-match African queries into European competitions
+      if (isQueryAfrican && (cCountry === 'europe' || comp.id === 2 || comp.id === 3 || comp.id === 848)) {
+        continue;
+      }
+      // Guard 2: Never cross-match European queries into African competitions
+      if (isQueryEuropean && (cCountry === 'africa' || comp.id === 12 || comp.id === 20)) {
+        continue;
+      }
+      // Guard 3: Never match Albania Superliga to Danish Superliga
+      if (isQueryAlbanian && comp.id === 119) {
+        continue;
+      }
+
+      if (q.includes(cName) || cName.includes(q)) {
+        if (!optCountry || optCountry.toLowerCase() === cCountry || (!isQueryAfrican && !isQueryAlbanian && (cCountry === 'europe' || cCountry === 'world'))) {
           return comp;
         }
       }

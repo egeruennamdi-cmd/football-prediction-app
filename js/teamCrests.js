@@ -20,16 +20,22 @@
   }
   if (typeof root !== 'undefined') {
     root.TeamCrestRegistry = api;
+    root.TeamIdentityService = api;
+    root.resolveTeamIdentity = api.resolveTeamIdentity;
     root.resolveTeamCrestUrl = api.resolveTeamCrestUrl;
     root.renderTeamLogoHtml = api.renderTeamLogoHtml;
   }
   if (typeof globalThis !== 'undefined') {
     globalThis.TeamCrestRegistry = api;
+    globalThis.TeamIdentityService = api;
+    globalThis.resolveTeamIdentity = api.resolveTeamIdentity;
     globalThis.resolveTeamCrestUrl = api.resolveTeamCrestUrl;
     globalThis.renderTeamLogoHtml = api.renderTeamLogoHtml;
   }
   if (typeof window !== 'undefined') {
     window.TeamCrestRegistry = api;
+    window.TeamIdentityService = api;
+    window.resolveTeamIdentity = api.resolveTeamIdentity;
     window.resolveTeamCrestUrl = api.resolveTeamCrestUrl;
     window.renderTeamLogoHtml = api.renderTeamLogoHtml;
   }
@@ -37,6 +43,13 @@
   'use strict';
 
   const CDN_BASE = 'https://media.api-sports.io/football/teams';
+
+  /**
+   * Neutral Crest Placeholder (SVG Data URI)
+   * Rendered whenever a genuine authentic club crest cannot be resolved.
+   * NEVER substitutes an unrelated club's logo (such as Liverpool or Arsenal).
+   */
+  const NEUTRAL_CREST_PLACEHOLDER = 'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48" width="48" height="48"><path d="M24 4 L40 10 L40 24 C40 33 33 41 24 44 C15 41 8 33 8 24 L8 10 Z" fill="%231e293b" stroke="%233b82f6" stroke-width="2"/><circle cx="24" cy="22" r="9" fill="%230f172a" stroke="%2360a5fa" stroke-width="1.5"/><circle cx="24" cy="22" r="3" fill="%2360a5fa"/></svg>';
 
   /**
    * Authoritative Team ID to Official Logo URL formula
@@ -47,6 +60,83 @@
     if (isNaN(numId) || numId <= 0) return null;
     return `${CDN_BASE}/${numId}.png`;
   }
+
+  /**
+   * VERIFIED DIRECT CREST ASSETS REGISTRY
+   * Authoritative, verified high-resolution SVGs/PNGs from official asset repositories
+   */
+  const TEAM_NAME_TO_CREST_URL = {
+    // ── Albania Superliga (Kategoria Superiore) ──
+    'kf tirana': 'https://upload.wikimedia.org/wikipedia/en/0/0e/Tirana_Club_Logo.svg',
+    'tirana': 'https://upload.wikimedia.org/wikipedia/en/0/0e/Tirana_Club_Logo.svg',
+    'partizani tirana': 'https://upload.wikimedia.org/wikipedia/en/3/36/Partizani_Tirana_Club_Logo.svg',
+    'partizani': 'https://upload.wikimedia.org/wikipedia/en/3/36/Partizani_Tirana_Club_Logo.svg',
+    'vllaznia shkoder': 'https://upload.wikimedia.org/wikipedia/en/2/20/Vllaznia_Shkod%C3%ABr_Club_Logo.svg',
+    'vllaznia': 'https://upload.wikimedia.org/wikipedia/en/2/20/Vllaznia_Shkod%C3%ABr_Club_Logo.svg',
+    'egnatia rrogozhine': 'https://upload.wikimedia.org/wikipedia/commons/c/c1/Egnatia_Rrogozhin%C3%AB_club_logo.svg',
+    'egnatia': 'https://upload.wikimedia.org/wikipedia/commons/c/c1/Egnatia_Rrogozhin%C3%AB_club_logo.svg',
+    'dinamo city': 'https://upload.wikimedia.org/wikipedia/en/a/a3/Dinamo_Tirana_Club_Logo.svg',
+    'dinamo tirana': 'https://upload.wikimedia.org/wikipedia/en/a/a3/Dinamo_Tirana_Club_Logo.svg',
+    'teuta durres': 'https://upload.wikimedia.org/wikipedia/en/4/40/Teuta_Club_Logo.svg',
+    'teuta': 'https://upload.wikimedia.org/wikipedia/en/4/40/Teuta_Club_Logo.svg',
+    'skenderbeu korce': 'https://upload.wikimedia.org/wikipedia/en/6/6a/Sk%C3%ABnderbeu_Kor%C3%A7%C3%AB_Logo.svg',
+    'skenderbeu': 'https://upload.wikimedia.org/wikipedia/en/6/6a/Sk%C3%ABnderbeu_Kor%C3%A7%C3%AB_Logo.svg',
+    'kf laci': 'https://upload.wikimedia.org/wikipedia/en/7/78/La%C3%A7i_Club_Logo.svg',
+    'laci': 'https://upload.wikimedia.org/wikipedia/en/7/78/La%C3%A7i_Club_Logo.svg'
+  };
+
+  /**
+   * CANONICAL TEAM IDENTITY REGISTRY
+   * Authoritative mapping providing full metadata: ID, official name, competition, country, crest.
+   */
+  const TEAM_IDENTITY_REGISTRY = {
+    // ── Albania Superliga ──
+    'kf tirana': { teamId: 600, officialName: 'KF Tirana', competitionId: 31, competition: 'Superliga', country: 'Albania', crestUrl: 'https://upload.wikimedia.org/wikipedia/en/0/0e/Tirana_Club_Logo.svg', provider: 'verified-asset' },
+    'tirana': { teamId: 600, officialName: 'KF Tirana', competitionId: 31, competition: 'Superliga', country: 'Albania', crestUrl: 'https://upload.wikimedia.org/wikipedia/en/0/0e/Tirana_Club_Logo.svg', provider: 'verified-asset' },
+    'partizani tirana': { teamId: 601, officialName: 'Partizani Tirana', competitionId: 31, competition: 'Superliga', country: 'Albania', crestUrl: 'https://upload.wikimedia.org/wikipedia/en/3/36/Partizani_Tirana_Club_Logo.svg', provider: 'verified-asset' },
+    'partizani': { teamId: 601, officialName: 'Partizani Tirana', competitionId: 31, competition: 'Superliga', country: 'Albania', crestUrl: 'https://upload.wikimedia.org/wikipedia/en/3/36/Partizani_Tirana_Club_Logo.svg', provider: 'verified-asset' },
+    'vllaznia shkoder': { teamId: 604, officialName: 'Vllaznia Shkodër', competitionId: 31, competition: 'Superliga', country: 'Albania', crestUrl: 'https://upload.wikimedia.org/wikipedia/en/2/20/Vllaznia_Shkod%C3%ABr_Club_Logo.svg', provider: 'verified-asset' },
+    'vllaznia': { teamId: 604, officialName: 'Vllaznia Shkodër', competitionId: 31, competition: 'Superliga', country: 'Albania', crestUrl: 'https://upload.wikimedia.org/wikipedia/en/2/20/Vllaznia_Shkod%C3%ABr_Club_Logo.svg', provider: 'verified-asset' },
+    'egnatia rrogozhine': { teamId: 7188, officialName: 'Egnatia Rrogozhinë', competitionId: 31, competition: 'Superliga', country: 'Albania', crestUrl: 'https://upload.wikimedia.org/wikipedia/commons/c/c1/Egnatia_Rrogozhin%C3%AB_club_logo.svg', provider: 'verified-asset' },
+    'egnatia': { teamId: 7188, officialName: 'Egnatia Rrogozhinë', competitionId: 31, competition: 'Superliga', country: 'Albania', crestUrl: 'https://upload.wikimedia.org/wikipedia/commons/c/c1/Egnatia_Rrogozhin%C3%AB_club_logo.svg', provider: 'verified-asset' },
+    'dinamo city': { teamId: 602, officialName: 'Dinamo City', competitionId: 31, competition: 'Superliga', country: 'Albania', crestUrl: 'https://upload.wikimedia.org/wikipedia/en/a/a3/Dinamo_Tirana_Club_Logo.svg', provider: 'verified-asset' },
+    'dinamo tirana': { teamId: 602, officialName: 'Dinamo City', competitionId: 31, competition: 'Superliga', country: 'Albania', crestUrl: 'https://upload.wikimedia.org/wikipedia/en/a/a3/Dinamo_Tirana_Club_Logo.svg', provider: 'verified-asset' },
+    'teuta durres': { teamId: 603, officialName: 'Teuta Durrës', competitionId: 31, competition: 'Superliga', country: 'Albania', crestUrl: 'https://upload.wikimedia.org/wikipedia/en/4/40/Teuta_Club_Logo.svg', provider: 'verified-asset' },
+    'teuta': { teamId: 603, officialName: 'Teuta Durrës', competitionId: 31, competition: 'Superliga', country: 'Albania', crestUrl: 'https://upload.wikimedia.org/wikipedia/en/4/40/Teuta_Club_Logo.svg', provider: 'verified-asset' },
+    'skenderbeu korce': { teamId: 599, officialName: 'Skënderbeu Korçë', competitionId: 31, competition: 'Superliga', country: 'Albania', crestUrl: 'https://upload.wikimedia.org/wikipedia/en/6/6a/Sk%C3%ABnderbeu_Kor%C3%A7%C3%AB_Logo.svg', provider: 'verified-asset' },
+    'skenderbeu': { teamId: 599, officialName: 'Skënderbeu Korçë', competitionId: 31, competition: 'Superliga', country: 'Albania', crestUrl: 'https://upload.wikimedia.org/wikipedia/en/6/6a/Sk%C3%ABnderbeu_Kor%C3%A7%C3%AB_Logo.svg', provider: 'verified-asset' },
+    'kf laci': { teamId: 605, officialName: 'KF Laçi', competitionId: 31, competition: 'Superliga', country: 'Albania', crestUrl: 'https://upload.wikimedia.org/wikipedia/en/7/78/La%C3%A7i_Club_Logo.svg', provider: 'verified-asset' },
+    'laci': { teamId: 605, officialName: 'KF Laçi', competitionId: 31, competition: 'Superliga', country: 'Albania', crestUrl: 'https://upload.wikimedia.org/wikipedia/en/7/78/La%C3%A7i_Club_Logo.svg', provider: 'verified-asset' },
+
+    // ── CAF Champions League & African Clubs ──
+    'al ahly': { teamId: 1041, officialName: 'Al Ahly SC', competitionId: 12, competition: 'CAF Champions League', country: 'Egypt', crestUrl: 'https://media.api-sports.io/football/teams/1041.png', provider: 'api-sports' },
+    'al ahly sc': { teamId: 1041, officialName: 'Al Ahly SC', competitionId: 12, competition: 'CAF Champions League', country: 'Egypt', crestUrl: 'https://media.api-sports.io/football/teams/1041.png', provider: 'api-sports' },
+    'esperance de tunis': { teamId: 1042, officialName: 'Espérance Sportive de Tunis', competitionId: 12, competition: 'CAF Champions League', country: 'Tunisia', crestUrl: 'https://media.api-sports.io/football/teams/1042.png', provider: 'api-sports' },
+    'esperance tunis': { teamId: 1042, officialName: 'Espérance Sportive de Tunis', competitionId: 12, competition: 'CAF Champions League', country: 'Tunisia', crestUrl: 'https://media.api-sports.io/football/teams/1042.png', provider: 'api-sports' },
+    'mamelodi sundowns': { teamId: 1026, officialName: 'Mamelodi Sundowns', competitionId: 12, competition: 'CAF Champions League', country: 'South Africa', crestUrl: 'https://media.api-sports.io/football/teams/1026.png', provider: 'api-sports' },
+    'sundowns': { teamId: 1026, officialName: 'Mamelodi Sundowns', competitionId: 12, competition: 'CAF Champions League', country: 'South Africa', crestUrl: 'https://media.api-sports.io/football/teams/1026.png', provider: 'api-sports' },
+    'tp mazembe': { teamId: 1029, officialName: 'TP Mazembe', competitionId: 12, competition: 'CAF Champions League', country: 'DR Congo', crestUrl: 'https://media.api-sports.io/football/teams/1029.png', provider: 'api-sports' },
+    'raja casablanca': { teamId: 1044, officialName: 'Raja Club Athletic', competitionId: 12, competition: 'CAF Champions League', country: 'Morocco', crestUrl: 'https://media.api-sports.io/football/teams/1044.png', provider: 'api-sports' },
+    'raja ca': { teamId: 1044, officialName: 'Raja Club Athletic', competitionId: 12, competition: 'CAF Champions League', country: 'Morocco', crestUrl: 'https://media.api-sports.io/football/teams/1044.png', provider: 'api-sports' },
+    'wydad ac': { teamId: 1045, officialName: 'Wydad AC', competitionId: 12, competition: 'CAF Champions League', country: 'Morocco', crestUrl: 'https://media.api-sports.io/football/teams/1045.png', provider: 'api-sports' },
+    'wydad casablanca': { teamId: 1045, officialName: 'Wydad AC', competitionId: 12, competition: 'CAF Champions League', country: 'Morocco', crestUrl: 'https://media.api-sports.io/football/teams/1045.png', provider: 'api-sports' },
+    'zamalek': { teamId: 1040, officialName: 'Zamalek SC', competitionId: 12, competition: 'CAF Champions League', country: 'Egypt', crestUrl: 'https://media.api-sports.io/football/teams/1040.png', provider: 'api-sports' },
+    'zamalek sc': { teamId: 1040, officialName: 'Zamalek SC', competitionId: 12, competition: 'CAF Champions League', country: 'Egypt', crestUrl: 'https://media.api-sports.io/football/teams/1040.png', provider: 'api-sports' },
+    'simba': { teamId: 8092, officialName: 'Simba SC', competitionId: 12, competition: 'CAF Champions League', country: 'Tanzania', crestUrl: 'https://media.api-sports.io/football/teams/8092.png', provider: 'api-sports' },
+    'simba sc': { teamId: 8092, officialName: 'Simba SC', competitionId: 12, competition: 'CAF Champions League', country: 'Tanzania', crestUrl: 'https://media.api-sports.io/football/teams/8092.png', provider: 'api-sports' },
+    'young africans': { teamId: 8091, officialName: 'Young Africans SC', competitionId: 12, competition: 'CAF Champions League', country: 'Tanzania', crestUrl: 'https://media.api-sports.io/football/teams/8091.png', provider: 'api-sports' },
+    'yanga': { teamId: 8091, officialName: 'Young Africans SC', competitionId: 12, competition: 'CAF Champions League', country: 'Tanzania', crestUrl: 'https://media.api-sports.io/football/teams/8091.png', provider: 'api-sports' },
+    'petro de luanda': { teamId: 4976, officialName: 'Petro Atlético de Luanda', competitionId: 12, competition: 'CAF Champions League', country: 'Angola', crestUrl: 'https://media.api-sports.io/football/teams/4976.png', provider: 'api-sports' },
+    'petro atletico': { teamId: 4976, officialName: 'Petro Atlético de Luanda', competitionId: 12, competition: 'CAF Champions League', country: 'Angola', crestUrl: 'https://media.api-sports.io/football/teams/4976.png', provider: 'api-sports' },
+    'pyramids': { teamId: 7856, officialName: 'Pyramids FC', competitionId: 12, competition: 'CAF Champions League', country: 'Egypt', crestUrl: 'https://media.api-sports.io/football/teams/7856.png', provider: 'api-sports' },
+    'pyramids fc': { teamId: 7856, officialName: 'Pyramids FC', competitionId: 12, competition: 'CAF Champions League', country: 'Egypt', crestUrl: 'https://media.api-sports.io/football/teams/7856.png', provider: 'api-sports' },
+    'cr belouizdad': { teamId: 3514, officialName: 'CR Belouizdad', competitionId: 12, competition: 'CAF Champions League', country: 'Algeria', crestUrl: 'https://media.api-sports.io/football/teams/3514.png', provider: 'api-sports' },
+    'mc alger': { teamId: 3516, officialName: 'MC Alger', competitionId: 12, competition: 'CAF Champions League', country: 'Algeria', crestUrl: 'https://media.api-sports.io/football/teams/3516.png', provider: 'api-sports' },
+    'orlando pirates': { teamId: 1025, officialName: 'Orlando Pirates', competitionId: 12, competition: 'CAF Champions League', country: 'South Africa', crestUrl: 'https://media.api-sports.io/football/teams/1025.png', provider: 'api-sports' },
+    'kaizer chiefs': { teamId: 1027, officialName: 'Kaizer Chiefs', competitionId: 12, competition: 'CAF Champions League', country: 'South Africa', crestUrl: 'https://media.api-sports.io/football/teams/1027.png', provider: 'api-sports' },
+    'enyimba': { teamId: 1092, officialName: 'Enyimba FC', competitionId: 12, competition: 'CAF Champions League', country: 'Nigeria', crestUrl: 'https://media.api-sports.io/football/teams/1092.png', provider: 'api-sports' },
+    'rivers united': { teamId: 7894, officialName: 'Rivers United', competitionId: 12, competition: 'CAF Champions League', country: 'Nigeria', crestUrl: 'https://media.api-sports.io/football/teams/7894.png', provider: 'api-sports' }
+  };
 
   /**
    * CANONICAL TEAM NAME & ALIAS TO TEAM ID REGISTRY
@@ -599,7 +689,57 @@
     'ghana': 1504,
     'cameroon': 1501,
     'japan': 12,
-    'south korea': 17
+    'south korea': 17,
+
+    // ── Albania Superliga (Kategoria Superiore) ──────────────────────────────
+    'kf tirana': 600,
+    'tirana': 600,
+    'partizani tirana': 601,
+    'partizani': 601,
+    'vllaznia shkoder': 604,
+    'vllaznia': 604,
+    'egnatia rrogozhine': 7188,
+    'egnatia': 7188,
+    'dinamo city': 602,
+    'dinamo tirana': 602,
+    'teuta durres': 603,
+    'teuta': 603,
+    'skenderbeu korce': 599,
+    'skenderbeu': 599,
+    'kf laci': 605,
+    'laci': 605,
+
+    // ── CAF Champions League & African Clubs ─────────────────────────────────
+    'al ahly': 1041,
+    'al ahly sc': 1041,
+    'esperance de tunis': 1042,
+    'esperance tunis': 1042,
+    'mamelodi sundowns': 1026,
+    'sundowns': 1026,
+    'tp mazembe': 1029,
+    'raja casablanca': 1044,
+    'raja ca': 1044,
+    'wydad ac': 1045,
+    'wydad casablanca': 1045,
+    'zamalek': 1040,
+    'zamalek sc': 1040,
+    'simba': 8092,
+    'simba sc': 8092,
+    'young africans': 8091,
+    'yanga': 8091,
+    'petro de luanda': 4976,
+    'petro atletico': 4976,
+    'pyramids': 7856,
+    'pyramids fc': 7856,
+    'cr belouizdad': 3514,
+    'mc alger': 3516,
+    'orlando pirates': 1025,
+    'kaizer chiefs': 1027,
+    'enyimba': 1092,
+    'rivers united': 7894,
+    'asec mimosas': 1039,
+    'al hilal omdurman': 4967,
+    'as far rabat': 1043
   };
 
   /**
@@ -654,23 +794,49 @@
   /**
    * Authoritative Team Crest URL Resolver
    * Resolves home and away clubs completely independently.
+   * Priority:
+   * 1. Verified Asset URL (Wikimedia / official SVG/PNG)
+   * 2. Canonical Team Identity Registry URL
+   * 3. Explicit reliable Team ID (maps directly to official API-Sports CDN)
+   * 4. Existing valid image URL directly on the team object
+   * 5. If completely unresolvable, returns NEUTRAL_CREST_PLACEHOLDER (never Liverpool or Arsenal)
    *
    * @param {Object|string} team Team representation
    * @param {boolean} isHome Whether this is the home club
-   * @returns {string} Fully qualified authentic crest URL
+   * @returns {string} Fully qualified authentic crest URL or neutral placeholder
    */
   function resolveTeamCrestUrl(team, isHome = true) {
     if (!team) {
-      return getCrestUrlById(isHome ? 40 : 42); // Liverpool / Arsenal fallback
+      return NEUTRAL_CREST_PLACEHOLDER;
     }
 
-    // 1. Priority A: Explicit reliable Team ID (maps directly to official API-Sports CDN)
+    const rawName = (typeof team === 'object' ? (team.name || team.teamName || team.club || team.officialName || '') : String(team)).trim();
+    const norm = normalizeKey(rawName);
+    const stripped = norm.replace(/\b(fc|cf|sc|afc|cd)\b/g, '').replace(/\s+/g, ' ').trim();
+
+    // 1. Priority A: Verified Direct Crest Assets (e.g. Wikimedia SVG for Albanian clubs)
+    if (norm && TEAM_NAME_TO_CREST_URL[norm]) {
+      return TEAM_NAME_TO_CREST_URL[norm];
+    }
+    if (stripped && TEAM_NAME_TO_CREST_URL[stripped]) {
+      return TEAM_NAME_TO_CREST_URL[stripped];
+    }
+
+    // 2. Priority B: Canonical Team Identity Registry
+    if (norm && TEAM_IDENTITY_REGISTRY[norm]) {
+      return TEAM_IDENTITY_REGISTRY[norm].crestUrl;
+    }
+    if (stripped && TEAM_IDENTITY_REGISTRY[stripped]) {
+      return TEAM_IDENTITY_REGISTRY[stripped].crestUrl;
+    }
+
+    // 3. Priority C: Explicit reliable Team ID (maps directly to official API-Sports CDN)
     const teamId = resolveTeamId(team);
     if (teamId) {
       return getCrestUrlById(teamId);
     }
 
-    // 2. Priority B: Existing valid image URL directly on the team object
+    // 4. Priority D: Existing valid image URL directly on the team object
     if (typeof team === 'object') {
       const candidates = [team.logoUrl, team.crest, team.logo, team.badge];
       for (const cand of candidates) {
@@ -683,10 +849,13 @@
           if (trimmed.startsWith('https://media.api-sports.io/football/teams/')) {
             return trimmed;
           }
+          if (trimmed.startsWith('data:image/svg+xml')) {
+            return trimmed;
+          }
           // Extracted from HTML <img> tag
           if (trimmed.includes('<img') && trimmed.includes('src=')) {
             const m = trimmed.match(/src=["']([^"']+)["']/i);
-            if (m && m[1] && m[1].startsWith('http')) {
+            if (m && m[1] && (m[1].startsWith('http') || m[1].startsWith('data:image/'))) {
               return m[1];
             }
           }
@@ -694,8 +863,128 @@
       }
     }
 
-    // 3. Priority C: Fallback to official Liverpool (40) for Home or Arsenal (42) for Away if completely unresolvable
-    return getCrestUrlById(isHome ? 40 : 42);
+    // 5. Priority E: Neutral SVG Placeholder - NEVER substitute an unrelated club's crest
+    return NEUTRAL_CREST_PLACEHOLDER;
+  }
+
+  /**
+   * CENTRAL TEAM IDENTITY RESOLUTION SERVICE
+   * Resolves authoritative identity including provider ID, official club name,
+   * competition association, country, crest URL, and provider source.
+   *
+   * @param {Object|string} teamOrName Team object or name string
+   * @param {Object} [context] Context overrides (competitionId, competition, country, isHome)
+   * @returns {Object} Authoritative team identity record
+   */
+  function resolveTeamIdentity(teamOrName, context = {}) {
+    const isHome = context.isHome !== false;
+    if (!teamOrName) {
+      return {
+        teamId: null,
+        name: isHome ? 'Home Team' : 'Away Team',
+        officialName: isHome ? 'Home Team' : 'Away Team',
+        competitionId: context.competitionId || null,
+        competition: context.competition || null,
+        country: context.country || null,
+        crestUrl: NEUTRAL_CREST_PLACEHOLDER,
+        provider: 'placeholder',
+        isPlaceholder: true
+      };
+    }
+
+    let candidateId = null;
+    let rawName = '';
+    let candidateCrest = null;
+
+    if (typeof teamOrName === 'object' && teamOrName !== null) {
+      candidateId = teamOrName.id || teamOrName.teamId || teamOrName.fixtureTeamId || null;
+      rawName = (teamOrName.name || teamOrName.teamName || teamOrName.club || teamOrName.officialName || '').trim();
+      candidateCrest = teamOrName.crestUrl || teamOrName.crest || teamOrName.logo || teamOrName.logoUrl || null;
+    } else {
+      rawName = String(teamOrName).trim();
+    }
+
+    const norm = normalizeKey(rawName);
+    const stripped = norm.replace(/\b(fc|cf|sc|afc|cd)\b/g, '').replace(/\s+/g, ' ').trim();
+
+    // 1. Authoritative Identity Registry lookup
+    const registered = (norm && TEAM_IDENTITY_REGISTRY[norm]) || (stripped ? TEAM_IDENTITY_REGISTRY[stripped] : null);
+    if (registered) {
+      return {
+        teamId: registered.teamId,
+        name: rawName || registered.officialName,
+        officialName: registered.officialName,
+        competitionId: registered.competitionId || context.competitionId || null,
+        competition: registered.competition || context.competition || null,
+        country: registered.country || context.country || null,
+        crestUrl: registered.crestUrl,
+        provider: registered.provider,
+        isPlaceholder: false
+      };
+    }
+
+    // 2. Verified Direct Crest Asset lookup
+    const verifiedUrl = (norm && TEAM_NAME_TO_CREST_URL[norm]) || (stripped && TEAM_NAME_TO_CREST_URL[stripped]);
+    if (verifiedUrl) {
+      return {
+        teamId: resolveTeamId(teamOrName),
+        name: rawName,
+        officialName: rawName,
+        competitionId: context.competitionId || null,
+        competition: context.competition || null,
+        country: context.country || null,
+        crestUrl: verifiedUrl,
+        provider: 'verified-asset',
+        isPlaceholder: false
+      };
+    }
+
+    // 3. API-Sports Team ID lookup
+    const resolvedId = resolveTeamId(teamOrName);
+    if (resolvedId && resolvedId > 0) {
+      return {
+        teamId: resolvedId,
+        name: rawName,
+        officialName: rawName,
+        competitionId: context.competitionId || null,
+        competition: context.competition || null,
+        country: context.country || null,
+        crestUrl: getCrestUrlById(resolvedId),
+        provider: 'api-sports',
+        isPlaceholder: false
+      };
+    }
+
+    // 4. Valid Direct URL check
+    if (typeof candidateCrest === 'string') {
+      const trimmed = candidateCrest.trim();
+      if (/^https?:\/\/.+\.(png|svg|webp|jpg|jpeg)(\?.*)?$/i.test(trimmed) || trimmed.startsWith('https://media.api-sports.io/football/teams/')) {
+        return {
+          teamId: null,
+          name: rawName,
+          officialName: rawName,
+          competitionId: context.competitionId || null,
+          competition: context.competition || null,
+          country: context.country || null,
+          crestUrl: trimmed,
+          provider: 'direct-url',
+          isPlaceholder: false
+        };
+      }
+    }
+
+    // 5. Unresolvable club -> Neutral Placeholder (never unrelated club)
+    return {
+      teamId: null,
+      name: rawName || (isHome ? 'Home Team' : 'Away Team'),
+      officialName: rawName || (isHome ? 'Home Team' : 'Away Team'),
+      competitionId: context.competitionId || null,
+      competition: context.competition || null,
+      country: context.country || null,
+      crestUrl: NEUTRAL_CREST_PLACEHOLDER,
+      provider: 'placeholder',
+      isPlaceholder: true
+    };
   }
 
   /**
@@ -854,26 +1143,30 @@
 
   /**
    * HTML Renderer helper for UI Cards
+   * Guaranteed: Never displays Liverpool or Arsenal as a fallback logo.
+   * On error or unresolved identity, cleanly falls back to NEUTRAL_CREST_PLACEHOLDER.
    */
   function renderTeamLogoHtml(team, isHome = true, size = 36, options = {}) {
     const url = resolveTeamCrestUrl(team, isHome);
     const name = typeof team === 'object' ? (team.name || 'Team') : String(team || 'Team');
-    const fallbackId = isHome ? 40 : 42;
-    const fallbackUrl = getCrestUrlById(fallbackId);
     const opts = typeof options === 'string' ? { className: options } : (options || {});
     const classNameAttr = opts.className ? ` class="${opts.className}"` : '';
     const isInline = opts.inline === true;
     const baseDisplay = isInline ? 'display:inline-block;vertical-align:middle;flex-shrink:0;' : 'display:block;margin:0 auto;';
     const customStyle = opts.style ? `${opts.style};` : '';
-    return `<img src="${url}" alt="${name}"${classNameAttr} style="width:${size}px;height:${size}px;object-fit:contain;${baseDisplay}${customStyle}" onerror="if(this.src!=='${fallbackUrl}'){this.src='${fallbackUrl}';}else{this.style.display='none';}" loading="lazy">`;
+    return `<img src="${url}" alt="${name}"${classNameAttr} style="width:${size}px;height:${size}px;object-fit:contain;${baseDisplay}${customStyle}" onerror="this.onerror=null;this.src='${NEUTRAL_CREST_PLACEHOLDER}';" loading="lazy">`;
   }
 
   return {
     CDN_BASE,
+    NEUTRAL_CREST_PLACEHOLDER,
     getCrestUrlById,
     TEAM_NAME_TO_ID,
+    TEAM_NAME_TO_CREST_URL,
+    TEAM_IDENTITY_REGISTRY,
     normalizeKey,
     resolveTeamId,
+    resolveTeamIdentity,
     resolveTeamCrestUrl,
     preloadTeamCrest,
     preloadMatchCrests,

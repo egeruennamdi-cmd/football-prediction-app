@@ -64,6 +64,11 @@
     'UAE Pro League':                  301,
     'Qatar Stars League':              305,
     'CAF Champions League':            12,
+    'Africa CAF Champions League':     12,
+    'CAF Confederation Cup':           20,
+    'Africa CAF Confederation Cup':    20,
+    'Albania Superliga':               31,
+    'Albania Kategoria Superiore':     31,
     'NPFL':                            302,
     'Nigeria NPFL':                    302,
     'Nigeria NPFL Nigeria':            302,
@@ -125,8 +130,11 @@
       }
     }
 
-    // 2. Continental / International competitions
+    // 2. Continental / International competitions (STRICT ORDER: Specific prefixes like CAF must come before generic 'champions league'!)
     const international = [
+      { name: 'caf champions league', id: 12 },
+      { name: 'caf champions', id: 12 },
+      { name: 'caf confederation cup', id: 20 },
       { name: 'uefa nations league', id: 5 },
       { name: 'nations league', id: 5 },
       { name: 'world cup', id: 1 },
@@ -134,15 +142,20 @@
       { name: 'afcon', id: 6 },
       { name: 'copa am', id: 9 },
       { name: 'friendl', id: 10 },
-      { name: 'champions league', id: 2 },
-      { name: 'europa league', id: 3 },
-      { name: 'conference league', id: 848 },
       { name: 'copa libertadores', id: 13 },
       { name: 'copa sudamericana', id: 11 },
-      { name: 'caf champions league', id: 12 }
+      { name: 'champions league', id: 2 },
+      { name: 'europa league', id: 3 },
+      { name: 'conference league', id: 848 }
     ];
     for (const intl of international) {
-      if (lLower.includes(intl.name)) return intl.id;
+      if (lLower.includes(intl.name)) {
+        // Guard: Never resolve African query or country to European UCL
+        if (intl.id === 2 && (lLower.includes('caf') || lLower.includes('africa') || cLower === 'africa')) {
+          return 12;
+        }
+        return intl.id;
+      }
     }
 
     // 3. Country-exclusive generic league mapping (STRICT PROTECTION: Never cross-match foreign leagues!)
@@ -152,7 +165,8 @@
       { leagues: ['serie a', 'serie b', 'coppa italia'], country: 'italy', ids: { 'serie a': 135, 'serie b': 136, 'coppa italia': 137 } },
       { leagues: ['bundesliga', '2. bundesliga', 'dfb pokal'], country: 'germany', ids: { 'bundesliga': 78, '2. bundesliga': 79, 'dfb pokal': 81 } },
       { leagues: ['ligue 1', 'ligue 2', 'coupe de france'], country: 'france', ids: { 'ligue 1': 61, 'ligue 2': 62, 'coupe de france': 66 } },
-      { leagues: ['superliga'], country: 'denmark', ids: { 'superliga': 119 } },
+      { leagues: ['kategoria superiore', 'superliga albania', 'albania superliga'], country: 'albania', ids: { 'kategoria superiore': 31, 'superliga albania': 31, 'albania superliga': 31 } },
+      { leagues: ['superliga'], country: (cLower.includes('albania') || lLower.includes('albania')) ? 'albania' : 'denmark', ids: { 'superliga': (cLower.includes('albania') || lLower.includes('albania')) ? 31 : 119 } },
       { leagues: ['eredivisie'], country: 'netherlands', ids: { 'eredivisie': 88 } },
       { leagues: ['primeira liga'], country: 'portugal', ids: { 'primeira liga': 94 } },
       { leagues: ['süper lig', 'super lig'], country: 'turkey', ids: { 'süper lig': 203, 'super lig': 203 } },

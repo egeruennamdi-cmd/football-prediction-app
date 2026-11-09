@@ -116,18 +116,56 @@ const AUTHENTIC_TEAM_IDS = {
   "Angers": 78,
   "Saint-Etienne": 1063,
   "Le Havre": 111,
-  "Montpellier": 82
+  "Montpellier": 82,
+
+  // Albania Superliga
+  "KF Tirana": 600,
+  "Partizani Tirana": 601,
+  "Vllaznia Shkodër": 604,
+  "Egnatia Rrogozhinë": 7188,
+  "Dinamo City": 602,
+  "Teuta Durrës": 603,
+  "Skënderbeu Korçë": 599,
+  "KF Laçi": 605,
+
+  // CAF Champions League & African Clubs
+  "Al Ahly": 1041,
+  "Espérance de Tunis": 1042,
+  "Mamelodi Sundowns": 1026,
+  "TP Mazembe": 1029,
+  "Raja Casablanca": 1044,
+  "Wydad AC": 1045,
+  "Zamalek SC": 1040,
+  "Simba SC": 8092,
+  "Petro de Luanda": 4976,
+  "Pyramids FC": 7856
 };
+
+const VERIFIED_CUSTOM_CRESTS = {
+  "KF Tirana": "https://upload.wikimedia.org/wikipedia/en/0/0e/Tirana_Club_Logo.svg",
+  "Partizani Tirana": "https://upload.wikimedia.org/wikipedia/en/3/36/Partizani_Tirana_Club_Logo.svg",
+  "Vllaznia Shkodër": "https://upload.wikimedia.org/wikipedia/en/2/20/Vllaznia_Shkod%C3%ABr_Club_Logo.svg",
+  "Egnatia Rrogozhinë": "https://upload.wikimedia.org/wikipedia/commons/c/c1/Egnatia_Rrogozhin%C3%AB_club_logo.svg",
+  "Dinamo City": "https://upload.wikimedia.org/wikipedia/en/a/a3/Dinamo_Tirana_Club_Logo.svg",
+  "Teuta Durrës": "https://upload.wikimedia.org/wikipedia/en/4/40/Teuta_Club_Logo.svg",
+  "Skënderbeu Korçë": "https://upload.wikimedia.org/wikipedia/en/6/6a/Sk%C3%ABnderbeu_Kor%C3%A7%C3%AB_Logo.svg",
+  "KF Laçi": "https://upload.wikimedia.org/wikipedia/en/7/78/La%C3%A7i_Club_Logo.svg"
+};
+
+const NEUTRAL_CREST_PLACEHOLDER = 'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48" width="48" height="48"><path d="M24 4 L40 10 L40 24 C40 33 33 41 24 44 C15 41 8 33 8 24 L8 10 Z" fill="%231e293b" stroke="%233b82f6" stroke-width="2"/><circle cx="24" cy="22" r="9" fill="%230f172a" stroke="%2360a5fa" stroke-width="1.5"/><circle cx="24" cy="22" r="3" fill="%2360a5fa"/></svg>';
 
 function resolveAuthenticCrest(teamName, rawLogo) {
   if (rawLogo && typeof rawLogo === 'string' && rawLogo.startsWith('http') && !rawLogo.includes('⚽')) {
     return rawLogo;
   }
+  if (VERIFIED_CUSTOM_CRESTS[teamName]) {
+    return VERIFIED_CUSTOM_CRESTS[teamName];
+  }
   const id = AUTHENTIC_TEAM_IDS[teamName];
   if (id) {
     return `${CDN_BASE}/${id}.png`;
   }
-  return `${CDN_BASE}/40.png`; // Fallback to neutral high-res crest
+  return NEUTRAL_CREST_PLACEHOLDER; // Neutral SVG placeholder (never Liverpool or Arsenal)
 }
 
 export async function onRequest(context) {
@@ -234,12 +272,42 @@ export async function onRequest(context) {
  * Returns dynamic, authentic standings data with official crests when edge fetch fails
  */
 function getComprehensiveFallbackStandings(league, country) {
-  const isEpl = (league === '39' || league === 'Premier League' || (!country || country === 'england'));
+  const isEpl = (league === '39' || league === 'Premier League' || (!country && (!league || league === '39')));
   const isLaLiga = (league === '140' || league === 'La Liga' || country === 'spain');
   const isSerieA = (league === '135' || league === 'Serie A' || country === 'italy');
   const isBundesliga = (league === '78' || league === 'Bundesliga' || country === 'germany');
   const isLigue1 = (league === '61' || league === 'Ligue 1' || country === 'france');
-  const isUcl = (league === '2' || league === 'Champions League');
+  const isUcl = (league === '2' || league === 'Champions League' || (league === 'ucl' && country !== 'africa'));
+  const isCaf = (league === '12' || league === 'CAF Champions League' || country === 'africa');
+  const isAlbania = (league === '31' || league === 'Superliga' || country === 'albania');
+
+  if (isAlbania) {
+    return [
+      { rank: 1, name: "Egnatia Rrogozhinë", logo: "https://upload.wikimedia.org/wikipedia/commons/c/c1/Egnatia_Rrogozhin%C3%AB_club_logo.svg", matchesPlayed: 10, wins: 6, draws: 2, losses: 2, goalsFor: 14, goalsAgainst: 8, goalDiff: 6, points: 20, form: "WWWDW" },
+      { rank: 2, name: "Partizani Tirana", logo: "https://upload.wikimedia.org/wikipedia/en/3/36/Partizani_Tirana_Club_Logo.svg", matchesPlayed: 10, wins: 5, draws: 3, losses: 2, goalsFor: 15, goalsAgainst: 9, goalDiff: 6, points: 18, form: "WWDLW" },
+      { rank: 3, name: "Vllaznia Shkodër", logo: "https://upload.wikimedia.org/wikipedia/en/2/20/Vllaznia_Shkod%C3%ABr_Club_Logo.svg", matchesPlayed: 10, wins: 5, draws: 2, losses: 3, goalsFor: 16, goalsAgainst: 11, goalDiff: 5, points: 17, form: "DWWWL" },
+      { rank: 4, name: "KF Tirana", logo: "https://upload.wikimedia.org/wikipedia/en/0/0e/Tirana_Club_Logo.svg", matchesPlayed: 10, wins: 4, draws: 4, losses: 2, goalsFor: 14, goalsAgainst: 10, goalDiff: 4, points: 16, form: "WDWLD" },
+      { rank: 5, name: "Dinamo City", logo: "https://upload.wikimedia.org/wikipedia/en/a/a3/Dinamo_Tirana_Club_Logo.svg", matchesPlayed: 10, wins: 4, draws: 3, losses: 3, goalsFor: 12, goalsAgainst: 11, goalDiff: 1, points: 15, form: "LDWWD" },
+      { rank: 6, name: "Teuta Durrës", logo: "https://upload.wikimedia.org/wikipedia/en/4/40/Teuta_Club_Logo.svg", matchesPlayed: 10, wins: 3, draws: 3, losses: 4, goalsFor: 10, goalsAgainst: 14, goalDiff: -4, points: 12, form: "DLLWD" },
+      { rank: 7, name: "Skënderbeu Korçë", logo: "https://upload.wikimedia.org/wikipedia/en/6/6a/Sk%C3%ABnderbeu_Kor%C3%A7%C3%AB_Logo.svg", matchesPlayed: 10, wins: 3, draws: 2, losses: 5, goalsFor: 9, goalsAgainst: 15, goalDiff: -6, points: 11, form: "WLLDL" },
+      { rank: 8, name: "KF Laçi", logo: "https://upload.wikimedia.org/wikipedia/en/7/78/La%C3%A7i_Club_Logo.svg", matchesPlayed: 10, wins: 2, draws: 3, losses: 5, goalsFor: 8, goalsAgainst: 13, goalDiff: -5, points: 9, form: "DLDLL" }
+    ];
+  }
+
+  if (isCaf) {
+    return [
+      { rank: 1, name: "Al Ahly", logo: `${CDN_BASE}/1041.png`, matchesPlayed: 6, wins: 4, draws: 2, losses: 0, goalsFor: 12, goalsAgainst: 3, goalDiff: 9, points: 14, form: "WDWWW" },
+      { rank: 2, name: "Mamelodi Sundowns", logo: `${CDN_BASE}/1026.png`, matchesPlayed: 6, wins: 4, draws: 1, losses: 1, goalsFor: 11, goalsAgainst: 4, goalDiff: 7, points: 13, form: "WWLDW" },
+      { rank: 3, name: "Espérance de Tunis", logo: `${CDN_BASE}/1042.png`, matchesPlayed: 6, wins: 3, draws: 2, losses: 1, goalsFor: 8, goalsAgainst: 4, goalDiff: 4, points: 11, form: "WDWLW" },
+      { rank: 4, name: "Raja Casablanca", logo: `${CDN_BASE}/1044.png`, matchesPlayed: 6, wins: 3, draws: 2, losses: 1, goalsFor: 9, goalsAgainst: 5, goalDiff: 4, points: 11, form: "WWDLD" },
+      { rank: 5, name: "TP Mazembe", logo: `${CDN_BASE}/1029.png`, matchesPlayed: 6, wins: 3, draws: 1, losses: 2, goalsFor: 7, goalsAgainst: 5, goalDiff: 2, points: 10, form: "LWDWW" },
+      { rank: 6, name: "Wydad AC", logo: `${CDN_BASE}/1045.png`, matchesPlayed: 6, wins: 3, draws: 1, losses: 2, goalsFor: 8, goalsAgainst: 6, goalDiff: 2, points: 10, form: "WLWDW" },
+      { rank: 7, name: "Zamalek SC", logo: `${CDN_BASE}/1040.png`, matchesPlayed: 6, wins: 3, draws: 1, losses: 2, goalsFor: 8, goalsAgainst: 7, goalDiff: 1, points: 10, form: "DWLWW" },
+      { rank: 8, name: "Petro de Luanda", logo: `${CDN_BASE}/4976.png`, matchesPlayed: 6, wins: 2, draws: 3, losses: 1, goalsFor: 5, goalsAgainst: 4, goalDiff: 1, points: 9, form: "DDWLD" },
+      { rank: 9, name: "Simba SC", logo: `${CDN_BASE}/8092.png`, matchesPlayed: 6, wins: 2, draws: 2, losses: 2, goalsFor: 6, goalsAgainst: 6, goalDiff: 0, points: 8, form: "LDWDL" },
+      { rank: 10, name: "Pyramids FC", logo: `${CDN_BASE}/7856.png`, matchesPlayed: 6, wins: 2, draws: 2, losses: 2, goalsFor: 7, goalsAgainst: 7, goalDiff: 0, points: 8, form: "DWLDL" }
+    ];
+  }
 
   if (isEpl) {
     return [

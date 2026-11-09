@@ -1907,6 +1907,10 @@ window.renderDailyBets = renderDailyBets;
 // 🔴 HOT TRENDS TICKER ENGINE (UPCOMING INTELLIGENCE & AUTHENTIC CRESTS)
 // ============================================================================
 
+const NEUTRAL_CREST_PLACEHOLDER = (typeof window !== 'undefined' && window.TeamIdentityService && window.TeamIdentityService.NEUTRAL_CREST_PLACEHOLDER)
+  ? window.TeamIdentityService.NEUTRAL_CREST_PLACEHOLDER
+  : 'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48" width="48" height="48"><path d="M24 4 L40 10 L40 24 C40 33 33 41 24 44 C15 41 8 33 8 24 L8 10 Z" fill="%231e293b" stroke="%233b82f6" stroke-width="2"/><circle cx="24" cy="22" r="9" fill="%230f172a" stroke="%2360a5fa" stroke-width="1.5"/><circle cx="24" cy="22" r="3" fill="%2360a5fa"/></svg>';
+
 var HOT_TRENDS_MARKET_MAP = (typeof window !== 'undefined' && window.HOT_TRENDS_MARKET_MAP) ? window.HOT_TRENDS_MARKET_MAP : {
   'uo05': 'Over 0.5 Match Goals',
   'uo15': 'Over 1.5 Match Goals',
@@ -2028,6 +2032,9 @@ function getMatchHeadlineInfo(match) {
   }
 
   // 3. Continental & Major Competitions
+  if (league.includes('caf champions league') || (league.includes('caf') && league.includes('champions'))) {
+    return { headline: 'CAF CHAMPIONS LEAGUE', isDerby: false, isUCL: false };
+  }
   if (league.includes('champions league') || league.includes('ucl')) {
     return { headline: 'UEFA CHAMPIONS LEAGUE', isDerby: false, isUCL: true };
   }
@@ -2123,7 +2130,7 @@ function getTickerCrestHtml(team, isHome) {
   }
   const crestUrl = (typeof resolveTeamCrestUrl === 'function')
     ? resolveTeamCrestUrl(team || teamName, isHome)
-    : ((team?.logo && String(team.logo).startsWith('http')) ? team.logo : (isHome ? 'https://media.api-sports.io/football/teams/40.png' : 'https://media.api-sports.io/football/teams/42.png'));
+    : ((team?.logo && String(team.logo).startsWith('http')) ? team.logo : (typeof NEUTRAL_CREST_PLACEHOLDER !== 'undefined' ? NEUTRAL_CREST_PLACEHOLDER : 'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48" width="48" height="48"><path d="M24 4 L40 10 L40 24 C40 33 33 41 24 44 C15 41 8 33 8 24 L8 10 Z" fill="%231e293b" stroke="%233b82f6" stroke-width="2"/></svg>'));
   return `<img src="${crestUrl}" alt="${teamName}" class="ticker-team-crest" style="width:18px;height:18px;object-fit:contain;display:inline-block;vertical-align:middle;flex-shrink:0;" loading="lazy">`;
 }
 
@@ -3122,10 +3129,10 @@ function renderTopTipsTool() {
     const awayName = match.awayTeam?.name || match.awayTeam || 'Away';
     const homeLogoHtml = (typeof window !== 'undefined' && typeof window.renderTeamLogoHtml === 'function')
       ? window.renderTeamLogoHtml(match.homeTeam || homeName, true, 22, { inline: true })
-      : (typeof renderTeamLogoHtml === 'function' ? renderTeamLogoHtml(match.homeTeam || homeName, true, 22, { inline: true }) : `<img src="https://media.api-sports.io/football/teams/40.png" alt="${homeName}" style="width:22px;height:22px;object-fit:contain;display:inline-block;vertical-align:middle;" loading="lazy">`);
+      : (typeof renderTeamLogoHtml === 'function' ? renderTeamLogoHtml(match.homeTeam || homeName, true, 22, { inline: true }) : `<img src="${NEUTRAL_CREST_PLACEHOLDER}" alt="${homeName}" style="width:22px;height:22px;object-fit:contain;display:inline-block;vertical-align:middle;" loading="lazy">`);
     const awayLogoHtml = (typeof window !== 'undefined' && typeof window.renderTeamLogoHtml === 'function')
       ? window.renderTeamLogoHtml(match.awayTeam || awayName, false, 22, { inline: true })
-      : (typeof renderTeamLogoHtml === 'function' ? renderTeamLogoHtml(match.awayTeam || awayName, false, 22, { inline: true }) : `<img src="https://media.api-sports.io/football/teams/42.png" alt="${awayName}" style="width:22px;height:22px;object-fit:contain;display:inline-block;vertical-align:middle;" loading="lazy">`);
+      : (typeof renderTeamLogoHtml === 'function' ? renderTeamLogoHtml(match.awayTeam || awayName, false, 22, { inline: true }) : `<img src="${NEUTRAL_CREST_PLACEHOLDER}" alt="${awayName}" style="width:22px;height:22px;object-fit:contain;display:inline-block;vertical-align:middle;" loading="lazy">`);
 
     const formattedMatchDateTime = (typeof formatMatchCardDateTime === 'function')
       ? formatMatchCardDateTime(match.time, match.rawDate, match.isLive)
@@ -3755,7 +3762,23 @@ function getClubsForLeague(leagueName, countryName) {
       if (res.length > 0) return res;
     }
   }
-  if (!isNationalComp && (clean.includes('champions league') || clean.includes('europa league') || clean.includes('conference'))) {
+  // Strict Albania Club Resolution
+  if (cleanCountry === 'albania' || clean.includes('albania') || (clean === 'superliga' && (cleanCountry === 'albania' || !cleanCountry || cleanCountry === 'all'))) {
+    const albClubs = allClubs.filter(c => (c.country || '').toLowerCase() === 'albania');
+    if (albClubs.length > 0) return albClubs;
+    if (typeof COUNTRY_CLUBS_DATA !== 'undefined' && COUNTRY_CLUBS_DATA['Albania']) {
+      return typeof hydrateCountryClubs === 'function' ? hydrateCountryClubs('Albania', COUNTRY_CLUBS_DATA['Albania'], 'Superliga') : [];
+    }
+  }
+
+  // Strict CAF Champions League & African Club Resolution
+  if (clean.includes('caf') || (cleanCountry === 'africa' && clean.includes('champions league'))) {
+    const cafClubs = allClubs.filter(c => c.league === 'CAF Champions League' || ['Egypt', 'Tunisia', 'South Africa', 'DR Congo', 'Morocco', 'Tanzania', 'Angola', 'Nigeria', 'Ghana', 'Algeria'].includes(c.country));
+    if (cafClubs.length > 0) return cafClubs;
+  }
+
+  // Strict European UEFA Continental Competitions (Never match CAF/African clubs)
+  if (!isNationalComp && !clean.includes('caf') && cleanCountry !== 'africa' && (clean.includes('champions league') || clean.includes('europa league') || clean.includes('conference'))) {
     const res = allClubs.filter(c => ['Arsenal', 'Manchester City', 'Liverpool', 'Real Madrid', 'Barcelona', 'Bayern Munich', 'Borussia Dortmund', 'Inter Milan', 'Juventus', 'Paris Saint-Germain', 'Sporting CP', 'Benfica', 'PSV Eindhoven'].includes(c.name));
     if (res.length > 0) return res;
   }
@@ -4704,6 +4727,17 @@ var AUTHENTIC_TOP_LEAGUES_FIXTURES = (typeof window !== 'undefined' && window.AU
   { id: "epl-fix-11", homeTeam: { name: "Manchester United", logo: "👿" }, awayTeam: { name: "Liverpool", logo: "🔴🛡️" }, league: "Premier League", leagueEmoji: "🏴󠁧󠁢󠁥󠁮󠁧󠁿", time: "21st, November 2026, 16:30", dateSlot: "2026-11-21-1630", date: "future" },
   { id: "epl-fix-12", homeTeam: { name: "Arsenal", logo: "🔴" }, awayTeam: { name: "Liverpool", logo: "🔴🛡️" }, league: "Premier League", leagueEmoji: "🏴󠁧󠁢󠁥󠁮󠁧󠁿", time: "28th, November 2026, 16:30", dateSlot: "2026-11-28-1630", date: "future" },
   { id: "epl-fix-13", homeTeam: { name: "Manchester United", logo: "👿" }, awayTeam: { name: "Chelsea", logo: "🦁" }, league: "Premier League", leagueEmoji: "🏴󠁧󠁢󠁥󠁮󠁧󠁿", time: "5th, December 2026, 16:30", dateSlot: "2026-12-05-1630", date: "future" },
+
+  // ── CAF Champions League Authentic Fixtures ──
+  { id: "caf-fix-1", homeTeam: { name: "Al Ahly", logo: "https://media.api-sports.io/football/teams/1041.png" }, awayTeam: { name: "Espérance de Tunis", logo: "https://media.api-sports.io/football/teams/1042.png" }, league: "CAF Champions League", leagueEmoji: "🌍", country: "Africa", time: "28th, November 2026, 19:00", dateSlot: "2026-11-28-1900", date: "future" },
+  { id: "caf-fix-2", homeTeam: { name: "Mamelodi Sundowns", logo: "https://media.api-sports.io/football/teams/1026.png" }, awayTeam: { name: "TP Mazembe", logo: "https://media.api-sports.io/football/teams/1029.png" }, league: "CAF Champions League", leagueEmoji: "🌍", country: "Africa", time: "28th, November 2026, 14:00", dateSlot: "2026-11-28-1400", date: "future" },
+  { id: "caf-fix-3", homeTeam: { name: "Raja Casablanca", logo: "https://media.api-sports.io/football/teams/1044.png" }, awayTeam: { name: "Wydad AC", logo: "https://media.api-sports.io/football/teams/1045.png" }, league: "CAF Champions League", leagueEmoji: "🌍", country: "Africa", time: "29th, November 2026, 20:00", dateSlot: "2026-11-29-2000", date: "future" },
+  { id: "caf-fix-4", homeTeam: { name: "Zamalek SC", logo: "https://media.api-sports.io/football/teams/1040.png" }, awayTeam: { name: "Pyramids FC", logo: "https://media.api-sports.io/football/teams/7856.png" }, league: "CAF Champions League", leagueEmoji: "🌍", country: "Africa", time: "29th, November 2026, 17:00", dateSlot: "2026-11-29-1700", date: "future" },
+
+  // ── Albania Superliga Authentic Fixtures ──
+  { id: "alb-fix-1", homeTeam: { name: "KF Tirana", logo: "https://upload.wikimedia.org/wikipedia/en/0/0e/Tirana_Club_Logo.svg" }, awayTeam: { name: "Partizani Tirana", logo: "https://upload.wikimedia.org/wikipedia/en/3/36/Partizani_Tirana_Club_Logo.svg" }, league: "Superliga", leagueEmoji: "🇦🇱", country: "Albania", time: "28th, November 2026, 17:00", dateSlot: "2026-11-28-1700", date: "future" },
+  { id: "alb-fix-2", homeTeam: { name: "Egnatia Rrogozhinë", logo: "https://upload.wikimedia.org/wikipedia/commons/c/c1/Egnatia_Rrogozhin%C3%AB_club_logo.svg" }, awayTeam: { name: "Vllaznia Shkodër", logo: "https://upload.wikimedia.org/wikipedia/en/2/20/Vllaznia_Shkod%C3%ABr_Club_Logo.svg" }, league: "Superliga", leagueEmoji: "🇦🇱", country: "Albania", time: "29th, November 2026, 14:00", dateSlot: "2026-11-29-1400", date: "future" },
+  { id: "alb-fix-3", homeTeam: { name: "Dinamo City", logo: "https://upload.wikimedia.org/wikipedia/en/a/a3/Dinamo_Tirana_Club_Logo.svg" }, awayTeam: { name: "Teuta Durrës", logo: "https://upload.wikimedia.org/wikipedia/en/4/40/Teuta_Club_Logo.svg" }, league: "Superliga", leagueEmoji: "🇦🇱", country: "Albania", time: "29th, November 2026, 17:00", dateSlot: "2026-11-29-1700", date: "future" },
 
   // ── UEFA Champions League Elite Matches ──
   { id: "ucl-fix-1", homeTeam: { name: "Barcelona", logo: "🔵🔴" }, awayTeam: { name: "Young Boys", logo: "🟡⚫" }, league: "Champions League", leagueEmoji: "🇪🇺", time: "7th, November 2026, 20:00", dateSlot: "2026-11-07-2000-c", date: "future" },
@@ -7046,9 +7080,46 @@ function updateFixturesDisplay() {
   }
 
   // If a league filter is active in appState (e.g. from calendar or search) and not already filtered in currentLeagueMatches
+  function matchBelongsToLeague(match, targetLeague, targetCountry) {
+  if (!match || !targetLeague || targetLeague === 'all') return true;
+  const mLg = (match.league || '').toLowerCase().trim();
+  const tLg = targetLeague.toLowerCase().trim();
+  const mCountry = (match.country || '').toLowerCase().trim();
+  const tCountry = (targetCountry || '').toLowerCase().trim();
+
+  // Strict Continental & Competition Isolation
+  const isTargetCAF = tLg.includes('caf') || (tLg.includes('champions league') && tCountry === 'africa');
+  const isMatchCAF = mLg.includes('caf') || (mLg.includes('champions league') && mCountry === 'africa');
+
+  if (isTargetCAF) {
+    if (!isMatchCAF) return false;
+    if (mLg === 'champions league' && mCountry !== 'africa') return false;
+    return true;
+  }
+
+  const isTargetUCL = (tLg === 'champions league' || tLg === 'uefa champions league' || tLg === 'ucl') && !isTargetCAF;
+  if (isTargetUCL) {
+    if (isMatchCAF) return false;
+    return mLg === 'champions league' || mLg === 'uefa champions league' || mLg.includes('ucl');
+  }
+
+  // Strict Albania isolation
+  const isTargetAlbania = tLg.includes('albania') || tLg.includes('kategoria') || tCountry === 'albania';
+  if (isTargetAlbania) {
+    const isMatchAlbania = mLg.includes('albania') || mLg.includes('kategoria') || mCountry === 'albania' || (match.leagueId === 31);
+    if (!isMatchAlbania) return false;
+    return true;
+  }
+
+  if (mLg === tLg) return true;
+  if (tCountry && mCountry && tCountry !== mCountry && tCountry !== 'all' && tCountry !== 'europe' && tCountry !== 'world') {
+    return false;
+  }
+  return mLg.includes(tLg) || tLg.includes(mLg);
+}
+
   if (activeLeague && activeLeague !== 'all') {
-    const lTarget = activeLeague.toLowerCase();
-    const lFiltered = filtered.filter(m => m.league && m.league.toLowerCase().includes(lTarget));
+    const lFiltered = filtered.filter(m => matchBelongsToLeague(m, activeLeague, activeCountry));
     if (lFiltered.length > 0) {
       filtered = lFiltered;
     } else if (activeCountry && activeCountry.toLowerCase() !== 'england') {
@@ -12925,11 +12996,11 @@ function renderTodayInsightsPreview(filterLeague, filterCountry, fixturesPool) {
 
           <div class="insight-teams-wrapper">
             <div class="insight-team-row home">
-              <span class="insight-team-logo">${(typeof window !== 'undefined' && typeof window.renderTeamLogoHtml === 'function') ? window.renderTeamLogoHtml(m.homeTeam || homeName, true, 24, { inline: true, className: 'insight-crest' }) : `<img src="${(typeof resolveTeamCrestUrl === 'function') ? resolveTeamCrestUrl(m.homeTeam || homeName, true) : 'https://media.api-sports.io/football/teams/40.png'}" alt="${homeName}" style="width:24px;height:24px;object-fit:contain;" loading="lazy">`}</span>
+              <span class="insight-team-logo">${(typeof window !== 'undefined' && typeof window.renderTeamLogoHtml === 'function') ? window.renderTeamLogoHtml(m.homeTeam || homeName, true, 24, { inline: true, className: 'insight-crest' }) : `<img src="${(typeof resolveTeamCrestUrl === 'function') ? resolveTeamCrestUrl(m.homeTeam || homeName, true) : NEUTRAL_CREST_PLACEHOLDER}" alt="${homeName}" style="width:24px;height:24px;object-fit:contain;" loading="lazy">`}</span>
               <span class="insight-team-name">${homeName}</span>
             </div>
             <div class="insight-team-row away">
-              <span class="insight-team-logo">${(typeof window !== 'undefined' && typeof window.renderTeamLogoHtml === 'function') ? window.renderTeamLogoHtml(m.awayTeam || awayName, false, 24, { inline: true, className: 'insight-crest' }) : `<img src="${(typeof resolveTeamCrestUrl === 'function') ? resolveTeamCrestUrl(m.awayTeam || awayName, false) : 'https://media.api-sports.io/football/teams/42.png'}" alt="${awayName}" style="width:24px;height:24px;object-fit:contain;" loading="lazy">`}</span>
+              <span class="insight-team-logo">${(typeof window !== 'undefined' && typeof window.renderTeamLogoHtml === 'function') ? window.renderTeamLogoHtml(m.awayTeam || awayName, false, 24, { inline: true, className: 'insight-crest' }) : `<img src="${(typeof resolveTeamCrestUrl === 'function') ? resolveTeamCrestUrl(m.awayTeam || awayName, false) : NEUTRAL_CREST_PLACEHOLDER}" alt="${awayName}" style="width:24px;height:24px;object-fit:contain;" loading="lazy">`}</span>
               <span class="insight-team-name">${awayName}</span>
             </div>
           </div>
@@ -13120,13 +13191,13 @@ function renderRecentSettledPredictions(filterLeague, filterCountry, fixturesPoo
       ? window.renderTeamLogoHtml(m.homeTeam || homeName, true, 20, { inline: true, className: 'settled-team-crest' })
       : (typeof renderTeamLogoHtml === 'function')
         ? renderTeamLogoHtml(m.homeTeam || homeName, true, 20, { inline: true, className: 'settled-team-crest' })
-        : `<img src="${(typeof resolveTeamCrestUrl === 'function') ? resolveTeamCrestUrl(m.homeTeam || homeName, true) : (m.homeTeam?.logo && String(m.homeTeam.logo).startsWith('http') ? m.homeTeam.logo : 'https://media.api-sports.io/football/teams/40.png')}" alt="${homeName}" class="settled-team-crest" style="width:20px;height:20px;object-fit:contain;display:inline-block;vertical-align:middle;flex-shrink:0;" loading="lazy">`;
+        : `<img src="${(typeof resolveTeamCrestUrl === 'function') ? resolveTeamCrestUrl(m.homeTeam || homeName, true) : (m.homeTeam?.logo && String(m.homeTeam.logo).startsWith('http') ? m.homeTeam.logo : NEUTRAL_CREST_PLACEHOLDER)}" alt="${homeName}" class="settled-team-crest" style="width:20px;height:20px;object-fit:contain;display:inline-block;vertical-align:middle;flex-shrink:0;" loading="lazy">`;
 
     const awayLogoHtml = (typeof window !== 'undefined' && typeof window.renderTeamLogoHtml === 'function')
       ? window.renderTeamLogoHtml(m.awayTeam || awayName, false, 20, { inline: true, className: 'settled-team-crest' })
       : (typeof renderTeamLogoHtml === 'function')
         ? renderTeamLogoHtml(m.awayTeam || awayName, false, 20, { inline: true, className: 'settled-team-crest' })
-        : `<img src="${(typeof resolveTeamCrestUrl === 'function') ? resolveTeamCrestUrl(m.awayTeam || awayName, false) : (m.awayTeam?.logo && String(m.awayTeam.logo).startsWith('http') ? m.awayTeam.logo : 'https://media.api-sports.io/football/teams/42.png')}" alt="${awayName}" class="settled-team-crest" style="width:20px;height:20px;object-fit:contain;display:inline-block;vertical-align:middle;flex-shrink:0;" loading="lazy">`;
+        : `<img src="${(typeof resolveTeamCrestUrl === 'function') ? resolveTeamCrestUrl(m.awayTeam || awayName, false) : (m.awayTeam?.logo && String(m.awayTeam.logo).startsWith('http') ? m.awayTeam.logo : NEUTRAL_CREST_PLACEHOLDER)}" alt="${awayName}" class="settled-team-crest" style="width:20px;height:20px;object-fit:contain;display:inline-block;vertical-align:middle;flex-shrink:0;" loading="lazy">`;
 
     const playedDateStr = formatPlayedDate(m);
 
