@@ -4105,6 +4105,13 @@
     liveUpdatesGraphicDataUrl: '',
     liveUpdatesCardFormat: 'landscape',
     liveUpdatesCardTemplate: 'ai_centre',
+    fanArenaSelectedMatchId: null,
+    fanArenaSelectedMatch: null,
+    fanArenaFormat: 'square',
+    fanArenaFileType: 'png',
+    fanArenaFilter: 'all',
+    fanArenaSearch: '',
+    fanArenaGraphicDataUrl: '',
     liveUpdatesCardFileType: 'png',
     liveUpdatesCardDownloading: false,
     liveUpdatesAutoRefresh: true,
@@ -4493,9 +4500,10 @@
         const isTarget = btn.getAttribute('data-tab') === tabId;
         btn.style.background = isTarget ? 'rgba(56,189,248,0.2)' : 'transparent';
         const isLiveTab = btn.getAttribute('data-tab') === 'live-updates';
-        btn.style.background = isTarget ? (isLiveTab ? 'rgba(239,68,68,0.25)' : 'rgba(56,189,248,0.2)') : 'transparent';
-        btn.style.color = isTarget ? (isLiveTab ? '#f87171' : '#38bdf8') : (isLiveTab ? '#fca5a5' : '#94a3b8');
-        btn.style.borderColor = isTarget ? (isLiveTab ? 'rgba(239,68,68,0.45)' : 'rgba(56,189,248,0.45)') : 'transparent';
+        const isFanArenaTab = btn.getAttribute('data-tab') === 'fan-arena';
+        btn.style.background = isTarget ? (isLiveTab ? 'rgba(239,68,68,0.25)' : (isFanArenaTab ? 'rgba(168,85,247,0.28)' : 'rgba(56,189,248,0.2)')) : 'transparent';
+        btn.style.color = isTarget ? (isLiveTab ? '#f87171' : (isFanArenaTab ? '#c084fc' : '#38bdf8')) : (isLiveTab ? '#fca5a5' : (isFanArenaTab ? '#e9d5ff' : '#94a3b8'));
+        btn.style.borderColor = isTarget ? (isLiveTab ? 'rgba(239,68,68,0.45)' : (isFanArenaTab ? 'rgba(168,85,247,0.55)' : 'rgba(56,189,248,0.45)')) : 'transparent';
       });
       renderCurrentTab();
     }
@@ -4509,6 +4517,10 @@
     switch (state.activeTab) {
       case 'overview':
         container.innerHTML = renderOverviewTab();
+        break;
+      case 'fan-arena':
+        container.innerHTML = renderFanArenaTab();
+        initFanArenaTabEvents();
         break;
       case 'live-updates':
         container.innerHTML = renderLiveUpdatesTab();
@@ -4637,12 +4649,35 @@
             <span style="font-size: 0.85rem; font-weight: 800; color: #cbd5e1;">DP-v3.4 Production</span>
           </div>
         </div>
+
+        <!-- Card 5: Fan Arena Community Telemetry -->
+        <div style="background: rgba(15,23,42,0.8); border: 1px solid rgba(168,85,247,0.35); border-radius: 14px; padding: 18px;">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+            <span style="font-size: 0.8rem; font-weight: 800; color: #c084fc; text-transform: uppercase;">Fan Arena Community Polls</span>
+            <span style="font-size: 1rem;">🗳️</span>
+          </div>
+          <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
+            <span style="font-size: 0.82rem; color: #cbd5e1;">Active Fixture Polls:</span>
+            <span style="font-size: 0.85rem; font-weight: 800; color: #ffffff;">${eligibleUpcoming} Live Polls</span>
+          </div>
+          <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
+            <span style="font-size: 0.82rem; color: #cbd5e1;">Download Formats:</span>
+            <span style="font-size: 0.85rem; font-weight: 800; color: #38bdf8;">1:1 · 9:16 · 16:9</span>
+          </div>
+          <div style="display: flex; justify-content: space-between;">
+            <span style="font-size: 0.82rem; color: #cbd5e1;">Social Card Studio:</span>
+            <span style="font-size: 0.85rem; font-weight: 800; color: #10b981;">PNG / JPEG Ready</span>
+          </div>
+        </div>
       </div>
 
       <!-- Quick Action Shortcuts -->
       <div style="background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.08); border-radius: 14px; padding: 20px;">
         <h4 style="margin: 0 0 14px 0; font-size: 0.95rem; font-weight: 800; color: #ffffff;">Quick Publishing Workflows</h4>
         <div style="display: flex; flex-wrap: wrap; gap: 10px;">
+          <button type="button" onclick="window.TelegramPublisher.switchTab('fan-arena')" style="background: rgba(168,85,247,0.22); border: 1.5px solid rgba(168,85,247,0.55); color: #c084fc; padding: 10px 18px; border-radius: 8px; font-weight: 800; font-size: 0.82rem; cursor: pointer; display: flex; align-items: center; gap: 6px; box-shadow: 0 2px 10px rgba(168,85,247,0.25);">
+            <span>🗳️</span> Fan Arena Social Cards Studio
+          </button>
           <button type="button" onclick="window.TelegramPublisher.switchTab('live-updates')" style="background: rgba(239,68,68,0.18); border: 1px solid rgba(239,68,68,0.45); color: #f87171; padding: 10px 18px; border-radius: 8px; font-weight: 800; font-size: 0.82rem; cursor: pointer; display: flex; align-items: center; gap: 6px;">
             <span>🔴</span> Live Match Publisher
           </button>
@@ -11818,6 +11853,416 @@
     `;
   }
 
+
+  // ============================================================================
+  // TAB: FAN ARENA SOCIAL MEDIA & VOTING STUDIO
+  // ============================================================================
+
+  function selectFanArenaMatch(matchId) {
+    const allMatches = getAllLiveModuleMatches();
+    const m = allMatches.find(x => x.id === matchId || String(x.fixtureId) === String(matchId));
+    if (m) {
+      state.fanArenaSelectedMatchId = m.id;
+      state.fanArenaSelectedMatch = m;
+      renderCurrentTab();
+    }
+  }
+
+  function setFanArenaFormat(formatKey) {
+    state.fanArenaFormat = formatKey;
+    renderCurrentTab();
+  }
+
+  function setFanArenaFileType(fileType) {
+    state.fanArenaFileType = fileType;
+    renderCurrentTab();
+  }
+
+  function filterFanArenaMatches(filterKey) {
+    state.fanArenaFilter = filterKey;
+    renderCurrentTab();
+  }
+
+  function searchFanArenaMatches(query) {
+    state.fanArenaSearch = (query || '').toLowerCase().trim();
+    renderCurrentTab();
+  }
+
+  function refreshFanArena() {
+    renderCurrentTab();
+  }
+
+  function castFanArenaVote(matchId, choice) {
+    if (typeof castFanVote === 'function') {
+      castFanVote(matchId, choice);
+    } else if (typeof window !== 'undefined' && window.FanArenaEngine && typeof window.FanArenaEngine.castFanVote === 'function') {
+      window.FanArenaEngine.castFanVote(matchId, choice);
+    }
+    renderCurrentTab();
+  }
+
+  function renderFanArenaGraphic(match, formatKey = state.fanArenaFormat || 'square') {
+    if (!match || typeof document === 'undefined') return '';
+    try {
+      let canvas = null;
+      if (typeof generateFanArenaCardCanvas === 'function') {
+        canvas = generateFanArenaCardCanvas(match, formatKey);
+      } else if (typeof window !== 'undefined' && window.FanArenaEngine && typeof window.FanArenaEngine.generateFanArenaCardCanvas === 'function') {
+        canvas = window.FanArenaEngine.generateFanArenaCardCanvas(match, formatKey);
+      } else if (typeof window !== 'undefined' && typeof window.generateFanArenaCardCanvas === 'function') {
+        canvas = window.generateFanArenaCardCanvas(match, formatKey);
+      }
+      if (!canvas) return '';
+
+      const mimeType = (state.fanArenaFileType || 'png') === 'jpeg' ? 'image/jpeg' : 'image/png';
+      const quality = mimeType === 'image/jpeg' ? 0.95 : 1.0;
+      state.fanArenaGraphicDataUrl = canvas.toDataURL(mimeType, quality);
+
+      const imgEl = document.getElementById('tg-fa-graphic-preview-img');
+      if (imgEl && state.fanArenaGraphicDataUrl) {
+        imgEl.src = state.fanArenaGraphicDataUrl;
+      }
+
+      const badgeEl = document.getElementById('tg-fa-graphic-fmt-badge');
+      if (badgeEl) {
+        const fmtName = formatKey === 'square' ? 'Square (1080 × 1080 · 1:1)' : (formatKey === 'portrait' ? 'Story / Status (1080 × 1920 · 9:16)' : 'Landscape (1200 × 675 · 16:9)');
+        badgeEl.textContent = fmtName;
+      }
+      return state.fanArenaGraphicDataUrl;
+    } catch (e) {
+      console.warn('[FanArena Graphic] Canvas error:', e.message);
+      return '';
+    }
+  }
+
+  async function downloadFanArenaCard(formatKeyInput = null, fileTypeInput = null) {
+    const match = state.fanArenaSelectedMatch;
+    if (!match) return;
+    const fmtKey = formatKeyInput || state.fanArenaFormat || 'square';
+    const cleanExt = (fileTypeInput || state.fanArenaFileType || 'png').toLowerCase().includes('jp') ? 'jpg' : 'png';
+    const mime = cleanExt === 'jpg' ? 'image/jpeg' : 'image/png';
+    const quality = mime === 'image/jpeg' ? 0.95 : 1.0;
+
+    let filename = '';
+    if (typeof generateDownloadFilename === 'function') {
+      filename = generateDownloadFilename(match, fmtKey, cleanExt);
+    } else if (typeof window !== 'undefined' && window.FanArenaEngine && typeof window.FanArenaEngine.generateDownloadFilename === 'function') {
+      filename = window.FanArenaEngine.generateDownloadFilename(match, fmtKey, cleanExt);
+    } else if (typeof window !== 'undefined' && typeof window.generateFanArenaFilename === 'function') {
+      filename = window.generateFanArenaFilename(match, fmtKey, cleanExt);
+    } else {
+      filename = `DeepPredictBet-Fan-Arena-${fmtKey}.${cleanExt}`;
+    }
+
+    try {
+      const canvas = (typeof generateFanArenaCardCanvas === 'function')
+        ? generateFanArenaCardCanvas(match, fmtKey)
+        : (window.FanArenaEngine ? window.FanArenaEngine.generateFanArenaCardCanvas(match, fmtKey) : null);
+      if (!canvas) throw new Error('Could not create off-screen canvas element.');
+
+      let downloaded = false;
+      if (canvas.toBlob) {
+        await new Promise((resolve) => {
+          canvas.toBlob((blob) => {
+            if (blob) downloaded = triggerClientFileDownload(blob, filename);
+            else downloaded = triggerClientFileDownload(canvas.toDataURL(mime, quality), filename);
+            resolve();
+          }, mime, quality);
+        });
+      } else {
+        downloaded = triggerClientFileDownload(canvas.toDataURL(mime, quality), filename);
+      }
+
+      if (downloaded) {
+        if (typeof window !== 'undefined' && typeof window.showAppNotification === 'function') {
+          window.showAppNotification(`⬇ Downloaded DeepPredictBet Fan Arena Card: ${filename}`);
+        }
+        return true;
+      }
+    } catch (err) {
+      console.error('[FanArena Download] Failure:', err);
+      return false;
+    }
+  }
+
+  function initFanArenaTabEvents() {
+    const sel = state.fanArenaSelectedMatch;
+    if (sel) {
+      renderFanArenaGraphic(sel, state.fanArenaFormat || 'square');
+    }
+  }
+
+  function renderFanArenaTab() {
+    const allMatches = getAllLiveModuleMatches();
+    const filter = state.fanArenaFilter || 'all';
+    const search = state.fanArenaSearch || '';
+
+    let filteredMatches = allMatches.filter(m => {
+      if (filter === 'upcoming' && !m.isUpcoming) return false;
+      if (filter === 'live' && !m.isLive) return false;
+      if (filter === 'finished' && !m.isFT) return false;
+      if (search) {
+        const matchStr = `${m.homeTeam?.name || ''} ${m.awayTeam?.name || ''} ${m.competition || ''}`.toLowerCase();
+        if (!matchStr.includes(search)) return false;
+      }
+      return true;
+    });
+
+    if (!state.fanArenaSelectedMatch && filteredMatches.length > 0) {
+      state.fanArenaSelectedMatch = filteredMatches[0];
+      state.fanArenaSelectedMatchId = filteredMatches[0].id;
+    }
+
+    const sel = state.fanArenaSelectedMatch || filteredMatches[0];
+    const activeFormatKey = state.fanArenaFormat || 'square';
+    const activeFileExt = state.fanArenaFileType || 'png';
+
+    let votes = { homePercent: 45, drawPercent: 25, awayPercent: 30, totalVotes: 1200, userVote: null };
+    if (sel) {
+      try {
+        const fn = (typeof getMatchFanVotes === 'function' ? getMatchFanVotes : (typeof window !== 'undefined' && window.FanArenaEngine ? window.FanArenaEngine.getMatchFanVotes : null));
+        if (fn) votes = fn(sel.id, sel);
+      } catch (_) {}
+    }
+
+    const hName = sel ? (sel.homeTeam?.name || 'Home Team') : '';
+    const aName = sel ? (sel.awayTeam?.name || 'Away Team') : '';
+    const compName = sel ? (sel.competition || 'Football') : '';
+
+    return `
+      <div style="display: flex; flex-direction: column; gap: 20px;">
+        <!-- Header Toolbar -->
+        <div style="background: rgba(15,23,42,0.85); border: 1.5px solid rgba(168,85,247,0.35); border-radius: 16px; padding: 18px 24px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 14px;">
+          <div>
+            <div style="display: flex; align-items: center; gap: 10px;">
+              <span style="font-size: 1.4rem;">🗳️</span>
+              <h3 style="margin: 0; font-size: 1.15rem; font-weight: 900; color: #ffffff;">
+                DEEPPREDICTBET FAN ARENA — SOCIAL MEDIA MATCH CARD PRODUCTION & VOTING STUDIO
+              </h3>
+              <span style="background: rgba(168,85,247,0.25); border: 1px solid #a855f7; color: #c084fc; font-size: 0.68rem; font-weight: 800; padding: 2px 8px; border-radius: 12px;">
+                DP-v4.0 Fan Engine
+              </span>
+            </div>
+            <p style="margin: 4px 0 0 0; font-size: 0.76rem; color: #94a3b8;">
+              Generate, preview and download professional DeepPredictBet Fan Arena social match cards with live community voting, authentic crests, and dynamic odds in all 3 formats.
+            </p>
+          </div>
+          <div style="display: flex; align-items: center; gap: 10px;">
+            <button type="button" onclick="window.TelegramPublisher.refreshFanArena()" style="background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.15); color: #ffffff; padding: 8px 14px; border-radius: 8px; font-weight: 800; font-size: 0.78rem; cursor: pointer; display: flex; align-items: center; gap: 6px;">
+              <span>🔄</span> Refresh Fixtures
+            </button>
+          </div>
+        </div>
+
+        <!-- 2-Column Responsive Studio Layout -->
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(360px, 1fr)); gap: 20px; align-items: start;">
+          
+          <!-- LEFT COLUMN: Fixtures List & Filter -->
+          <div style="background: rgba(15,23,42,0.7); border: 1px solid rgba(255,255,255,0.08); border-radius: 16px; padding: 20px; display: flex; flex-direction: column; gap: 16px;">
+            <div style="display: flex; flex-direction: column; gap: 12px;">
+              <input type="text" placeholder="🔎 Search fixture for Fan Arena..." value="${escapeHtml(search)}" oninput="window.TelegramPublisher.searchFanArenaMatches(this.value)" style="width: 100%; box-sizing: border-box; background: rgba(0,0,0,0.4); border: 1px solid rgba(255,255,255,0.15); color: #ffffff; padding: 9px 12px; border-radius: 8px; font-size: 0.8rem;">
+              
+              <div style="display: flex; gap: 6px; overflow-x: auto; padding-bottom: 4px;">
+                <button type="button" onclick="window.TelegramPublisher.filterFanArenaMatches('all')" style="padding: 5px 10px; font-size: 0.72rem; font-weight: 700; border-radius: 20px; cursor: pointer; background: ${filter === 'all' ? '#7c3aed' : 'rgba(255,255,255,0.05)'}; color: #ffffff; border: 1px solid ${filter === 'all' ? '#a855f7' : 'rgba(255,255,255,0.1)'}; white-space: nowrap;">
+                  All (${allMatches.length})
+                </button>
+                <button type="button" onclick="window.TelegramPublisher.filterFanArenaMatches('upcoming')" style="padding: 5px 10px; font-size: 0.72rem; font-weight: 700; border-radius: 20px; cursor: pointer; background: ${filter === 'upcoming' ? '#059669' : 'rgba(255,255,255,0.05)'}; color: ${filter === 'upcoming' ? '#ffffff' : '#a7f3d0'}; border: 1px solid ${filter === 'upcoming' ? '#10b981' : 'rgba(16,185,129,0.3)'}; white-space: nowrap;">
+                  📅 Upcoming (${allMatches.filter(m => m.isUpcoming).length})
+                </button>
+                <button type="button" onclick="window.TelegramPublisher.filterFanArenaMatches('live')" style="padding: 5px 10px; font-size: 0.72rem; font-weight: 700; border-radius: 20px; cursor: pointer; background: ${filter === 'live' ? '#dc2626' : 'rgba(255,255,255,0.05)'}; color: ${filter === 'live' ? '#ffffff' : '#fca5a5'}; border: 1px solid ${filter === 'live' ? '#ef4444' : 'rgba(239,68,68,0.3)'}; white-space: nowrap;">
+                  🔴 Live (${allMatches.filter(m => m.isLive).length})
+                </button>
+                <button type="button" onclick="window.TelegramPublisher.filterFanArenaMatches('finished')" style="padding: 5px 10px; font-size: 0.72rem; font-weight: 700; border-radius: 20px; cursor: pointer; background: ${filter === 'finished' ? '#475569' : 'rgba(255,255,255,0.05)'}; color: #cbd5e1; border: 1px solid rgba(255,255,255,0.1); white-space: nowrap;">
+                  🏁 Finished (${allMatches.filter(m => m.isFT).length})
+                </button>
+              </div>
+            </div>
+
+            <!-- Scrollable Fixtures List -->
+            <div style="max-height: 580px; overflow-y: auto; display: flex; flex-direction: column; gap: 10px; padding-right: 4px;">
+              ${filteredMatches.length === 0 ? `
+                <div style="text-align: center; padding: 40px 10px; color: #94a3b8; font-size: 0.8rem;">
+                  No fixtures found. Try another search or filter.
+                </div>
+              ` : filteredMatches.map(m => {
+                const isSelected = sel && sel.id === m.id;
+                let mVotes = { homePercent: 45, drawPercent: 25, awayPercent: 30, totalVotes: 1200 };
+                try {
+                  const fn = (typeof getMatchFanVotes === 'function' ? getMatchFanVotes : (typeof window !== 'undefined' && window.FanArenaEngine ? window.FanArenaEngine.getMatchFanVotes : null));
+                  if (fn) mVotes = fn(m.id, m);
+                } catch (_) {}
+
+                return `
+                  <div onclick="window.TelegramPublisher.selectFanArenaMatch('${m.id}')" style="background: ${isSelected ? 'rgba(168,85,247,0.18)' : 'rgba(0,0,0,0.3)'}; border: 1.5px solid ${isSelected ? '#a855f7' : 'rgba(255,255,255,0.06)'}; border-radius: 12px; padding: 12px 14px; cursor: pointer; transition: all 0.15s ease;">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
+                      <span style="font-size: 0.7rem; font-weight: 800; color: #a855f7; text-transform: uppercase;">${escapeHtml(m.competition || 'LEAGUE')}</span>
+                      <span style="font-size: 0.68rem; font-weight: 700; color: ${m.isLive ? '#ef4444' : (m.isFT ? '#94a3b8' : '#10b981')};">
+                        ${m.isLive ? `🔴 ${m.elapsed}'` : (m.isFT ? '🏁 FT' : `📅 ${m.time || 'Upcoming'}`)}
+                      </span>
+                    </div>
+                    <div style="font-weight: 800; font-size: 0.88rem; color: #ffffff; margin-bottom: 6px;">
+                      ${escapeHtml(m.homeTeam?.name || m.home || 'Home')} vs ${escapeHtml(m.awayTeam?.name || m.away || 'Away')}
+                    </div>
+                    <div style="display: flex; justify-content: space-between; align-items: center; font-size: 0.72rem; color: #94a3b8;">
+                      <span>🗳️ ${mVotes.totalVotes.toLocaleString()} votes</span>
+                      <span style="color: #c084fc; font-weight: 800;">${mVotes.homePercent}% · ${mVotes.drawPercent}% · ${mVotes.awayPercent}%</span>
+                    </div>
+                  </div>
+                `;
+              }).join('')}
+            </div>
+          </div>
+
+          <!-- RIGHT COLUMN: Fan Arena Graphic Studio & Preview -->
+          ${sel ? `
+            <div style="background: rgba(15,23,42,0.7); border: 1px solid rgba(255,255,255,0.08); border-radius: 16px; padding: 20px; display: flex; flex-direction: column; gap: 16px;">
+              
+              <!-- Fixture Title & Live Score -->
+              <div style="background: rgba(0,0,0,0.4); border: 1px solid rgba(168,85,247,0.3); border-radius: 12px; padding: 14px 18px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px;">
+                <div>
+                  <div style="font-size: 0.7rem; font-weight: 800; color: #a855f7; text-transform: uppercase;">
+                    ${escapeHtml(compName)} · FAN ARENA
+                  </div>
+                  <h4 style="margin: 2px 0 0 0; font-size: 1.15rem; font-weight: 900; color: #ffffff;">
+                    ${escapeHtml(hName)} vs ${escapeHtml(aName)}
+                  </h4>
+                </div>
+                <div style="text-align: right;">
+                  <span style="background: rgba(168,85,247,0.2); border: 1px solid #a855f7; color: #c084fc; font-size: 0.72rem; font-weight: 800; padding: 3px 10px; border-radius: 20px;">
+                    🗳️ ${votes.totalVotes.toLocaleString()} Total Votes
+                  </span>
+                </div>
+              </div>
+
+              <!-- Interactive Voting Simulation Bar -->
+              <div>
+                <label style="display: block; font-size: 0.72rem; font-weight: 800; color: #94a3b8; margin-bottom: 8px; text-transform: uppercase;">
+                  🗳️ Community Voting Simulator ("WHO IS WINNING?"):
+                </label>
+                <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px;">
+                  <button type="button" onclick="window.TelegramPublisher.castFanArenaVote('${sel.id}', 'home')" style="padding: 10px 8px; font-size: 0.78rem; font-weight: 800; border-radius: 8px; cursor: pointer; background: ${votes.userVote === 'home' ? 'rgba(56,189,248,0.35)' : 'rgba(255,255,255,0.05)'}; color: #ffffff; border: 1.5px solid ${votes.userVote === 'home' ? '#38bdf8' : 'rgba(255,255,255,0.12)'}; text-align: center;">
+                    <div>${escapeHtml(hName)}</div>
+                    <div style="font-size: 1rem; color: #38bdf8; margin-top: 2px;">${votes.homePercent}%</div>
+                  </button>
+                  <button type="button" onclick="window.TelegramPublisher.castFanArenaVote('${sel.id}', 'draw')" style="padding: 10px 8px; font-size: 0.78rem; font-weight: 800; border-radius: 8px; cursor: pointer; background: ${votes.userVote === 'draw' ? 'rgba(245,158,11,0.35)' : 'rgba(255,255,255,0.05)'}; color: #ffffff; border: 1.5px solid ${votes.userVote === 'draw' ? '#f59e0b' : 'rgba(255,255,255,0.12)'}; text-align: center;">
+                    <div>Draw</div>
+                    <div style="font-size: 1rem; color: #fbbf24; margin-top: 2px;">${votes.drawPercent}%</div>
+                  </button>
+                  <button type="button" onclick="window.TelegramPublisher.castFanArenaVote('${sel.id}', 'away')" style="padding: 10px 8px; font-size: 0.78rem; font-weight: 800; border-radius: 8px; cursor: pointer; background: ${votes.userVote === 'away' ? 'rgba(239,68,68,0.35)' : 'rgba(255,255,255,0.05)'}; color: #ffffff; border: 1.5px solid ${votes.userVote === 'away' ? '#ef4444' : 'rgba(255,255,255,0.12)'}; text-align: center;">
+                    <div>${escapeHtml(aName)}</div>
+                    <div style="font-size: 1rem; color: #f87171; margin-top: 2px;">${votes.awayPercent}%</div>
+                  </button>
+                </div>
+              </div>
+
+              <!-- Graphic Preview Studio -->
+              <div style="background: rgba(0,0,0,0.3); border: 1px solid rgba(168,85,247,0.35); border-radius: 14px; padding: 14px;">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; flex-wrap: wrap; gap: 6px;">
+                  <span style="font-size: 0.75rem; font-weight: 800; color: #ffffff; text-transform: uppercase; display: flex; align-items: center; gap: 6px;">
+                    <span>🎨</span> <span>DeepPredictBet Fan Arena Card Preview:</span>
+                  </span>
+                  <span id="tg-fa-graphic-fmt-badge" style="font-size: 0.68rem; color: #c084fc; font-weight: 800; background: rgba(168,85,247,0.2); padding: 2px 8px; border-radius: 6px; border: 1px solid rgba(168,85,247,0.4);">
+                    ${activeFormatKey.toUpperCase()}
+                  </span>
+                </div>
+
+                <!-- Preview Image Frame -->
+                <div style="position: relative; width: 100%; text-align: center; background: #070b14; border-radius: 10px; overflow: hidden; border: 1px solid rgba(255,255,255,0.1);">
+                  <img id="tg-fa-graphic-preview-img" src="${state.fanArenaGraphicDataUrl || ''}" alt="Fan Arena Card Preview" style="max-width: 100%; max-height: 480px; width: auto; height: auto; display: block; margin: 0 auto; object-fit: contain; box-shadow: 0 8px 24px rgba(0,0,0,0.6);" />
+                </div>
+
+                <!-- Controls & Format Selection -->
+                <div style="margin-top: 14px; display: flex; flex-direction: column; gap: 12px;">
+                  
+                  <!-- Primary Action Row -->
+                  <div style="display: flex; justify-content: space-between; align-items: stretch; flex-wrap: wrap; gap: 8px;">
+                    <button type="button" onclick="window.TelegramPublisher.downloadFanArenaCard()" style="flex: 2; min-width: 220px; min-height: 48px; background: linear-gradient(135deg, #7c3aed 0%, #6366f1 100%); border: none; color: #ffffff; padding: 12px 20px; border-radius: 8px; font-weight: 900; font-size: 0.95rem; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; box-shadow: 0 4px 14px rgba(124,58,237,0.4); text-transform: uppercase; letter-spacing: 0.5px;">
+                      <span style="font-size: 1.15rem;">⬇</span> <span>DOWNLOAD MATCH CARD</span>
+                    </button>
+
+                    <div style="display: flex; align-items: center; background: rgba(0,0,0,0.5); border: 1px solid rgba(255,255,255,0.15); border-radius: 8px; padding: 3px; gap: 3px;">
+                      <span style="font-size: 0.66rem; font-weight: 800; color: #94a3b8; padding-left: 6px; padding-right: 4px;">TYPE:</span>
+                      <button type="button" class="tg-fa-filetype-btn" data-type="png" onclick="window.TelegramPublisher.setFanArenaFileType('png')" style="background: ${activeFileExt === 'png' ? 'rgba(168,85,247,0.3)' : 'transparent'}; color: ${activeFileExt === 'png' ? '#c084fc' : '#94a3b8'}; border: ${activeFileExt === 'png' ? '1px solid #a855f7' : 'none'}; padding: 6px 12px; border-radius: 6px; font-size: 0.72rem; font-weight: 800; cursor: pointer;">
+                        PNG
+                      </button>
+                      <button type="button" class="tg-fa-filetype-btn" data-type="jpeg" onclick="window.TelegramPublisher.setFanArenaFileType('jpeg')" style="background: ${activeFileExt === 'jpeg' ? 'rgba(168,85,247,0.3)' : 'transparent'}; color: ${activeFileExt === 'jpeg' ? '#c084fc' : '#94a3b8'}; border: ${activeFileExt === 'jpeg' ? '1px solid #a855f7' : 'none'}; padding: 6px 12px; border-radius: 6px; font-size: 0.72rem; font-weight: 800; cursor: pointer;">
+                        JPEG
+                      </button>
+                    </div>
+                  </div>
+
+                  <!-- Format Switcher Buttons -->
+                  <div>
+                    <label style="display: block; font-size: 0.7rem; font-weight: 800; color: #94a3b8; text-transform: uppercase; margin-bottom: 5px;">
+                      👁️ Select Card Format:
+                    </label>
+                    <div style="display: flex; gap: 6px; overflow-x: auto; padding-bottom: 2px;">
+                      <button type="button" class="tg-fa-fmt-btn" data-fmt="square" onclick="window.TelegramPublisher.setFanArenaFormat('square')" style="background: ${activeFormatKey === 'square' ? '#7c3aed' : 'rgba(255,255,255,0.05)'}; color: ${activeFormatKey === 'square' ? '#ffffff' : '#cbd5e1'}; border: 1px solid ${activeFormatKey === 'square' ? '#a855f7' : 'rgba(255,255,255,0.12)'}; padding: 6px 12px; border-radius: 6px; font-size: 0.72rem; font-weight: 800; cursor: pointer; white-space: nowrap;">
+                        Square (1080 × 1080 · 1:1)
+                      </button>
+                      <button type="button" class="tg-fa-fmt-btn" data-fmt="portrait" onclick="window.TelegramPublisher.setFanArenaFormat('portrait')" style="background: ${activeFormatKey === 'portrait' ? '#7c3aed' : 'rgba(255,255,255,0.05)'}; color: ${activeFormatKey === 'portrait' ? '#ffffff' : '#cbd5e1'}; border: 1px solid ${activeFormatKey === 'portrait' ? '#a855f7' : 'rgba(255,255,255,0.12)'}; padding: 6px 12px; border-radius: 6px; font-size: 0.72rem; font-weight: 800; cursor: pointer; white-space: nowrap;">
+                        Story / Status (1080 × 1920 · 9:16)
+                      </button>
+                      <button type="button" class="tg-fa-fmt-btn" data-fmt="landscape" onclick="window.TelegramPublisher.setFanArenaFormat('landscape')" style="background: ${activeFormatKey === 'landscape' ? '#7c3aed' : 'rgba(255,255,255,0.05)'}; color: ${activeFormatKey === 'landscape' ? '#ffffff' : '#cbd5e1'}; border: 1px solid ${activeFormatKey === 'landscape' ? '#a855f7' : 'rgba(255,255,255,0.12)'}; padding: 6px 12px; border-radius: 6px; font-size: 0.72rem; font-weight: 800; cursor: pointer; white-space: nowrap;">
+                        Landscape (1200 × 675 · 16:9)
+                      </button>
+                    </div>
+                  </div>
+
+                  <!-- 1-Click Social Media Format Direct Downloads -->
+                  <div>
+                    <label style="display: block; font-size: 0.7rem; font-weight: 800; color: #94a3b8; text-transform: uppercase; margin-bottom: 6px;">
+                      📐 1-Click Format Downloads:
+                    </label>
+                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 8px;">
+                      <button type="button" onclick="window.TelegramPublisher.downloadFanArenaCard('square')" style="background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.12); color: #cbd5e1; padding: 8px 10px; border-radius: 8px; font-size: 0.74rem; font-weight: 800; cursor: pointer; text-align: left; display: flex; flex-direction: column; gap: 2px;">
+                        <div style="color: #ffffff; display: flex; align-items: center; gap: 5px;">
+                          <span>⬇</span> <span>Download Square</span>
+                        </div>
+                        <span style="font-size: 0.65rem; color: #10b981;">1080 × 1080 px · Instagram Feed</span>
+                      </button>
+
+                      <button type="button" onclick="window.TelegramPublisher.downloadFanArenaCard('portrait')" style="background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.12); color: #cbd5e1; padding: 8px 10px; border-radius: 8px; font-size: 0.74rem; font-weight: 800; cursor: pointer; text-align: left; display: flex; flex-direction: column; gap: 2px;">
+                        <div style="color: #ffffff; display: flex; align-items: center; gap: 5px;">
+                          <span>⬇</span> <span>Download Story</span>
+                        </div>
+                        <span style="font-size: 0.65rem; color: #f472b6;">1080 × 1920 px · WhatsApp Status & IG</span>
+                      </button>
+
+                      <button type="button" onclick="window.TelegramPublisher.downloadFanArenaCard('landscape')" style="background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.12); color: #cbd5e1; padding: 8px 10px; border-radius: 8px; font-size: 0.74rem; font-weight: 800; cursor: pointer; text-align: left; display: flex; flex-direction: column; gap: 2px;">
+                        <div style="color: #ffffff; display: flex; align-items: center; gap: 5px;">
+                          <span>⬇</span> <span>Download Landscape</span>
+                        </div>
+                        <span style="font-size: 0.65rem; color: #38bdf8;">1200 × 675 px · Facebook & 𝕏</span>
+                      </button>
+                    </div>
+                  </div>
+
+                  <!-- Direct Social Sharing & Copy Links -->
+                  <div style="display: flex; gap: 8px; flex-wrap: wrap; margin-top: 4px;">
+                    <button type="button" onclick="window.FanArenaEngine ? window.FanArenaEngine.shareFanArenaToWhatsApp('${sel.id}') : (window.shareFanArenaToWhatsApp && window.shareFanArenaToWhatsApp('${sel.id}'))" style="flex: 1; min-width: 160px; padding: 8px 14px; background: rgba(37,211,102,0.15); border: 1px solid rgba(37,211,102,0.4); color: #25d366; border-radius: 8px; font-size: 0.78rem; font-weight: 800; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 6px;">
+                      <span>📲</span> <span>WhatsApp Share</span>
+                    </button>
+                    <button type="button" onclick="window.FanArenaEngine ? window.FanArenaEngine.copyFanArenaLink('${sel.id}') : (window.copyFanArenaLink && window.copyFanArenaLink('${sel.id}'))" style="flex: 1; min-width: 160px; padding: 8px 14px; background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.15); color: #ffffff; border-radius: 8px; font-size: 0.78rem; font-weight: 800; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 6px;">
+                      <span>📋</span> <span>Copy Match Link</span>
+                    </button>
+                  </div>
+
+                </div>
+              </div>
+
+            </div>
+          ` : `
+            <div style="text-align: center; padding: 60px 20px; color: #94a3b8;">
+              Please select a fixture from the list to preview the Fan Arena card.
+            </div>
+          `}
+        </div>
+      </div>
+    `;
+  }
+
+
   // MAIN SHELL RENDER
   function render(container) {
     if (!container) return;
@@ -11895,10 +12340,14 @@
           </div>
         </div>
 
-        <!-- 9-Tab Navigation Workspace Bar -->
+        <!-- 10-Tab Navigation Workspace Bar -->
         <div style="background: rgba(15,23,42,0.6); padding: 6px 20px; border-bottom: 1px solid rgba(255,255,255,0.08); display: flex; gap: 6px; overflow-x: auto;">
           <button type="button" class="tg-cc-tab-btn" data-tab="overview" onclick="window.TelegramPublisher.switchTab('overview')" style="background: rgba(56,189,248,0.2); border: 1px solid rgba(56,189,248,0.45); color: #38bdf8; padding: 8px 14px; border-radius: 8px; font-size: 0.78rem; font-weight: 800; cursor: pointer; white-space: nowrap;">
             Overview
+          </button>
+          <button type="button" class="tg-cc-tab-btn" data-tab="fan-arena" onclick="window.TelegramPublisher.switchTab('fan-arena')" style="background: transparent; border: 1px solid rgba(168,85,247,0.3); color: #c084fc; padding: 8px 14px; border-radius: 8px; font-size: 0.78rem; font-weight: 800; cursor: pointer; white-space: nowrap; display: flex; align-items: center; gap: 6px;">
+            <span>🗳️</span> Fan Arena Cards
+            <span style="background: #a855f7; color: #ffffff; border-radius: 10px; padding: 1px 5px; font-size: 0.6rem; font-weight: 900;">NEW</span>
           </button>
           <button type="button" class="tg-cc-tab-btn" data-tab="live-updates" onclick="window.TelegramPublisher.switchTab('live-updates')" style="background: transparent; border: 1px solid transparent; color: #f87171; padding: 8px 14px; border-radius: 8px; font-size: 0.78rem; font-weight: 800; cursor: pointer; white-space: nowrap; display: flex; align-items: center; gap: 5px;">
             <span>🔴</span> Live Updates
@@ -15401,6 +15850,16 @@
     setCardFormat,
     setCardFileType,
     setCardTemplate,
+    selectFanArenaMatch,
+    setFanArenaFormat,
+    setFanArenaFileType,
+    filterFanArenaMatches,
+    searchFanArenaMatches,
+    refreshFanArena,
+    castFanArenaVote,
+    renderFanArenaGraphic,
+    downloadFanArenaCard,
+    renderFanArenaTab,
     showLiveCardDownloadAlert,
     resolveTeamCrestUrl,
     preloadTeamCrest,
