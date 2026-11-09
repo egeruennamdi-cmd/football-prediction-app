@@ -24,6 +24,7 @@
     root.resolveTeamIdentity = api.resolveTeamIdentity;
     root.resolveTeamCrestUrl = api.resolveTeamCrestUrl;
     root.renderTeamLogoHtml = api.renderTeamLogoHtml;
+    root.NEUTRAL_CREST_PLACEHOLDER = api.NEUTRAL_CREST_PLACEHOLDER;
   }
   if (typeof globalThis !== 'undefined') {
     globalThis.TeamCrestRegistry = api;
@@ -31,6 +32,7 @@
     globalThis.resolveTeamIdentity = api.resolveTeamIdentity;
     globalThis.resolveTeamCrestUrl = api.resolveTeamCrestUrl;
     globalThis.renderTeamLogoHtml = api.renderTeamLogoHtml;
+    globalThis.NEUTRAL_CREST_PLACEHOLDER = api.NEUTRAL_CREST_PLACEHOLDER;
   }
   if (typeof window !== 'undefined') {
     window.TeamCrestRegistry = api;
@@ -38,6 +40,7 @@
     window.resolveTeamIdentity = api.resolveTeamIdentity;
     window.resolveTeamCrestUrl = api.resolveTeamCrestUrl;
     window.renderTeamLogoHtml = api.renderTeamLogoHtml;
+    window.NEUTRAL_CREST_PLACEHOLDER = api.NEUTRAL_CREST_PLACEHOLDER;
   }
 })(typeof globalThis !== 'undefined' ? globalThis : (typeof window !== 'undefined' ? window : this), function () {
   'use strict';
@@ -49,7 +52,7 @@
    * Rendered whenever a genuine authentic club crest cannot be resolved.
    * NEVER substitutes an unrelated club's logo (such as Liverpool or Arsenal).
    */
-  const NEUTRAL_CREST_PLACEHOLDER = 'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48" width="48" height="48"><path d="M24 4 L40 10 L40 24 C40 33 33 41 24 44 C15 41 8 33 8 24 L8 10 Z" fill="%231e293b" stroke="%233b82f6" stroke-width="2"/><circle cx="24" cy="22" r="9" fill="%230f172a" stroke="%2360a5fa" stroke-width="1.5"/><circle cx="24" cy="22" r="3" fill="%2360a5fa"/></svg>';
+  const NEUTRAL_CREST_PLACEHOLDER = 'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA0OCA0OCIgd2lkdGg9IjQ4IiBoZWlnaHQ9IjQ4Ij48cGF0aCBkPSJNMjQgNCBMNDAgMTAgTDQwIDI0IEM0MCAzMyAzMyA0MSAyNCA0NCBDMTUgNDEgOCAzMyA4IDI0IEw4IDEwIFoiIGZpbGw9IiMxZTI5M2IiIHN0cm9rZT0iIzNiODJmNiIgc3Ryb2tlLXdpZHRoPSIyIi8+PGNpcmNsZSBjeD0iMjQiIGN5PSIyMiIgcj0iOSIgZmlsbD0iIzBmMTcyYSIgc3Ryb2tlPSIjNjBhNWZhIiBzdHJva2Utd2lkdGg9IjEuNSIvPjxjaXJjbGUgY3g9IjI0IiBjeT0iMjIiIHI9IjMiIGZpbGw9IiM2MGE1ZmEiLz48L3N2Zz4=';
 
   /**
    * Authoritative Team ID to Official Logo URL formula
@@ -1149,12 +1152,13 @@
   function renderTeamLogoHtml(team, isHome = true, size = 36, options = {}) {
     const url = resolveTeamCrestUrl(team, isHome);
     const name = typeof team === 'object' ? (team.name || 'Team') : String(team || 'Team');
+    const escapedName = String(name).replace(/"/g, '&quot;');
     const opts = typeof options === 'string' ? { className: options } : (options || {});
     const classNameAttr = opts.className ? ` class="${opts.className}"` : '';
     const isInline = opts.inline === true;
     const baseDisplay = isInline ? 'display:inline-block;vertical-align:middle;flex-shrink:0;' : 'display:block;margin:0 auto;';
     const customStyle = opts.style ? `${opts.style};` : '';
-    return `<img src="${url}" alt="${name}"${classNameAttr} style="width:${size}px;height:${size}px;object-fit:contain;${baseDisplay}${customStyle}" onerror="this.onerror=null;this.src='${NEUTRAL_CREST_PLACEHOLDER}';" loading="lazy">`;
+    return `<img src="${url}" alt="${escapedName}"${classNameAttr} style="width:${size}px;height:${size}px;object-fit:contain;${baseDisplay}${customStyle}" onerror="this.onerror=null;this.src='${NEUTRAL_CREST_PLACEHOLDER}';" loading="lazy">`;
   }
 
   return {

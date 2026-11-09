@@ -937,20 +937,22 @@ function renderMatchCards(fixtures) {
 
       <div class="teams-wrapper">
         <div class="team home-team">
+          <span class="team-role-label">HOME TEAM</span>
           <div class="team-logo">${homeLogo}</div>
           <span class="team-name" title="${homeName}">${homeName}</span>
-          <div style="display: flex; gap: 3px; margin-top: 4px;" class="form-badges-container">${homeFormHtml}</div>
+          <div class="form-badges-container" title="Recent Form">${homeFormHtml}</div>
         </div>
 
         <div class="vs-divider">
-          <span style="font-size: 0.75rem; color: var(--text-muted); font-weight: 700; text-transform: uppercase;">vs</span>
+          <span class="vs-text">VS</span>
           <span class="vs-scores">${scoresDisplay}</span>
         </div>
 
         <div class="team away-team">
+          <span class="team-role-label">AWAY TEAM</span>
           <div class="team-logo">${awayLogo}</div>
           <span class="team-name" title="${awayName}">${awayName}</span>
-          <div style="display: flex; gap: 3px; margin-top: 4px;" class="form-badges-container">${awayFormHtml}</div>
+          <div class="form-badges-container" title="Recent Form">${awayFormHtml}</div>
         </div>
       </div>
 
@@ -1909,7 +1911,7 @@ window.renderDailyBets = renderDailyBets;
 
 const NEUTRAL_CREST_PLACEHOLDER = (typeof window !== 'undefined' && window.TeamIdentityService && window.TeamIdentityService.NEUTRAL_CREST_PLACEHOLDER)
   ? window.TeamIdentityService.NEUTRAL_CREST_PLACEHOLDER
-  : 'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48" width="48" height="48"><path d="M24 4 L40 10 L40 24 C40 33 33 41 24 44 C15 41 8 33 8 24 L8 10 Z" fill="%231e293b" stroke="%233b82f6" stroke-width="2"/><circle cx="24" cy="22" r="9" fill="%230f172a" stroke="%2360a5fa" stroke-width="1.5"/><circle cx="24" cy="22" r="3" fill="%2360a5fa"/></svg>';
+  : 'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA0OCA0OCIgd2lkdGg9IjQ4IiBoZWlnaHQ9IjQ4Ij48cGF0aCBkPSJNMjQgNCBMNDAgMTAgTDQwIDI0IEM0MCAzMyAzMyA0MSAyNCA0NCBDMTUgNDEgOCAzMyA4IDI0IEw4IDEwIFoiIGZpbGw9IiMxZTI5M2IiIHN0cm9rZT0iIzNiODJmNiIgc3Ryb2tlLXdpZHRoPSIyIi8+PGNpcmNsZSBjeD0iMjQiIGN5PSIyMiIgcj0iOSIgZmlsbD0iIzBmMTcyYSIgc3Ryb2tlPSIjNjBhNWZhIiBzdHJva2Utd2lkdGg9IjEuNSIvPjxjaXJjbGUgY3g9IjI0IiBjeT0iMjIiIHI9IjMiIGZpbGw9IiM2MGE1ZmEiLz48L3N2Zz4=';
 
 var HOT_TRENDS_MARKET_MAP = (typeof window !== 'undefined' && window.HOT_TRENDS_MARKET_MAP) ? window.HOT_TRENDS_MARKET_MAP : {
   'uo05': 'Over 0.5 Match Goals',
@@ -2130,7 +2132,7 @@ function getTickerCrestHtml(team, isHome) {
   }
   const crestUrl = (typeof resolveTeamCrestUrl === 'function')
     ? resolveTeamCrestUrl(team || teamName, isHome)
-    : ((team?.logo && String(team.logo).startsWith('http')) ? team.logo : (typeof NEUTRAL_CREST_PLACEHOLDER !== 'undefined' ? NEUTRAL_CREST_PLACEHOLDER : 'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48" width="48" height="48"><path d="M24 4 L40 10 L40 24 C40 33 33 41 24 44 C15 41 8 33 8 24 L8 10 Z" fill="%231e293b" stroke="%233b82f6" stroke-width="2"/></svg>'));
+    : ((team?.logo && String(team.logo).startsWith('http')) ? team.logo : (typeof NEUTRAL_CREST_PLACEHOLDER !== 'undefined' ? NEUTRAL_CREST_PLACEHOLDER : 'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA0OCA0OCIgd2lkdGg9IjQ4IiBoZWlnaHQ9IjQ4Ij48cGF0aCBkPSJNMjQgNCBMNDAgMTAgTDQwIDI0IEM0MCAzMyAzMyA0MSAyNCA0NCBDMTUgNDEgOCAzMyA4IDI0IEw4IDEwIFoiIGZpbGw9IiMxZTI5M2IiIHN0cm9rZT0iIzNiODJmNiIgc3Ryb2tlLXdpZHRoPSIyIi8+PGNpcmNsZSBjeD0iMjQiIGN5PSIyMiIgcj0iOSIgZmlsbD0iIzBmMTcyYSIgc3Ryb2tlPSIjNjBhNWZhIiBzdHJva2Utd2lkdGg9IjEuNSIvPjxjaXJjbGUgY3g9IjI0IiBjeT0iMjIiIHI9IjMiIGZpbGw9IiM2MGE1ZmEiLz48L3N2Zz4='));
   return `<img src="${crestUrl}" alt="${teamName}" class="ticker-team-crest" style="width:18px;height:18px;object-fit:contain;display:inline-block;vertical-align:middle;flex-shrink:0;" loading="lazy">`;
 }
 
@@ -12343,15 +12345,15 @@ function buildMatchCardElement(match) {
   const homeName = match.homeTeam?.name || 'Home';
   const awayName = match.awayTeam?.name || 'Away';
   const homeLogo = (typeof window !== 'undefined' && typeof window.renderTeamLogoHtml === 'function')
-    ? window.renderTeamLogoHtml(match.homeTeam || homeName, true, 32)
+    ? window.renderTeamLogoHtml(match.homeTeam || homeName, true, 36)
     : (match.homeTeam?.logo && String(match.homeTeam.logo).startsWith('http')
-        ? `<img src="${match.homeTeam.logo}" alt="${homeName}" style="width:32px;height:32px;object-fit:contain;display:block;margin:0 auto;" loading="lazy">`
+        ? `<img src="${match.homeTeam.logo}" alt="${homeName}" style="width:36px;height:36px;object-fit:contain;display:block;margin:0 auto;" loading="lazy">`
         : match.homeTeam?.logo || '⚽');
 
   const awayLogo = (typeof window !== 'undefined' && typeof window.renderTeamLogoHtml === 'function')
-    ? window.renderTeamLogoHtml(match.awayTeam || awayName, false, 32)
+    ? window.renderTeamLogoHtml(match.awayTeam || awayName, false, 36)
     : (match.awayTeam?.logo && String(match.awayTeam.logo).startsWith('http')
-        ? `<img src="${match.awayTeam.logo}" alt="${awayName}" style="width:32px;height:32px;object-fit:contain;display:block;margin:0 auto;" loading="lazy">`
+        ? `<img src="${match.awayTeam.logo}" alt="${awayName}" style="width:36px;height:36px;object-fit:contain;display:block;margin:0 auto;" loading="lazy">`
         : match.awayTeam?.logo || '⚽');
   const homeForm = Array.isArray(match.homeTeam?.form) ? match.homeTeam.form : ['W', 'D', 'W', 'L', 'W'];
   const awayForm = Array.isArray(match.awayTeam?.form) ? match.awayTeam.form : ['D', 'W', 'L', 'W', 'W'];
@@ -12408,21 +12410,23 @@ function buildMatchCardElement(match) {
     </div>
 
     <div class="teams-wrapper">
-      <div class="team">
+      <div class="team home-team">
+        <span class="team-role-label">HOME TEAM</span>
         <div class="team-logo">${homeLogo}</div>
         <span class="team-name" title="${homeName}">${homeName}</span>
-        <div style="display: flex; gap: 3px; margin-top: 4px;" class="form-badges-container">${homeFormHtml}</div>
+        <div class="form-badges-container" title="Recent Form">${homeFormHtml}</div>
       </div>
 
       <div class="vs-divider">
-        <span style="font-size: 0.75rem; color: var(--text-muted);">vs</span>
+        <span class="vs-text">VS</span>
         <span class="vs-scores">${scoresDisplay}</span>
       </div>
 
-      <div class="team">
+      <div class="team away-team">
+        <span class="team-role-label">AWAY TEAM</span>
         <div class="team-logo">${awayLogo}</div>
         <span class="team-name" title="${awayName}">${awayName}</span>
-        <div style="display: flex; gap: 3px; margin-top: 4px;" class="form-badges-container">${awayFormHtml}</div>
+        <div class="form-badges-container" title="Recent Form">${awayFormHtml}</div>
       </div>
     </div>
 

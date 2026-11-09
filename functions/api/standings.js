@@ -152,7 +152,7 @@ const VERIFIED_CUSTOM_CRESTS = {
   "KF Laçi": "https://upload.wikimedia.org/wikipedia/en/7/78/La%C3%A7i_Club_Logo.svg"
 };
 
-const NEUTRAL_CREST_PLACEHOLDER = 'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48" width="48" height="48"><path d="M24 4 L40 10 L40 24 C40 33 33 41 24 44 C15 41 8 33 8 24 L8 10 Z" fill="%231e293b" stroke="%233b82f6" stroke-width="2"/><circle cx="24" cy="22" r="9" fill="%230f172a" stroke="%2360a5fa" stroke-width="1.5"/><circle cx="24" cy="22" r="3" fill="%2360a5fa"/></svg>';
+const NEUTRAL_CREST_PLACEHOLDER = 'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA0OCA0OCIgd2lkdGg9IjQ4IiBoZWlnaHQ9IjQ4Ij48cGF0aCBkPSJNMjQgNCBMNDAgMTAgTDQwIDI0IEM0MCAzMyAzMyA0MSAyNCA0NCBDMTUgNDEgOCAzMyA4IDI0IEw4IDEwIFoiIGZpbGw9IiMxZTI5M2IiIHN0cm9rZT0iIzNiODJmNiIgc3Ryb2tlLXdpZHRoPSIyIi8+PGNpcmNsZSBjeD0iMjQiIGN5PSIyMiIgcj0iOSIgZmlsbD0iIzBmMTcyYSIgc3Ryb2tlPSIjNjBhNWZhIiBzdHJva2Utd2lkdGg9IjEuNSIvPjxjaXJjbGUgY3g9IjI0IiBjeT0iMjIiIHI9IjMiIGZpbGw9IiM2MGE1ZmEiLz48L3N2Zz4=';
 
 function resolveAuthenticCrest(teamName, rawLogo) {
   if (rawLogo && typeof rawLogo === 'string' && rawLogo.startsWith('http') && !rawLogo.includes('⚽')) {
