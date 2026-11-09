@@ -294,6 +294,9 @@
         <button type="button" class="btn btn-primary add-to-slip-btn" id="match-detail-add-slip-btn" data-match-id="${match.id || matchId}" onclick="window.addMatchToSlip ? window.addMatchToSlip('${match.id || matchId}', event) : window.addMatchCardToBetslip('${match.id || matchId}', event)" style="flex: 1; min-width: 180px; padding: 12px 18px; font-weight: 800; border-radius: 10px; display: flex; align-items: center; justify-content: center; gap: 8px; background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%); color: #ffffff; border: none; cursor: pointer; transition: all 0.2s ease;">
           <span style="font-size: 1.1rem; line-height: 1; display: inline-flex; align-items: center;">➕</span> <span>Add to Slip</span>
         </button>
+        <button type="button" class="btn btn-secondary" onclick="window.openFanArenaModal ? window.openFanArenaModal('${match.id || matchId}', event) : openFanArenaModal('${match.id || matchId}', event)" style="flex: 1; min-width: 180px; padding: 12px 18px; font-weight: 800; border-radius: 10px; display: flex; align-items: center; justify-content: center; gap: 8px; background: rgba(168, 85, 247, 0.15); border: 1.5px solid rgba(168, 85, 247, 0.4); color: #c084fc;">
+          <span>🗳️</span> <span>Fan Arena & Social Card</span>
+        </button>
         <button type="button" class="btn btn-secondary" onclick="window.addMatchToDoctor('${match.id || matchId}')" style="flex: 1; min-width: 180px; padding: 12px 18px; font-weight: 800; border-radius: 10px; display: flex; align-items: center; justify-content: center; gap: 8px;">
           <span>🩺</span> <span>Diagnose in Bet Doctor</span>
         </button>

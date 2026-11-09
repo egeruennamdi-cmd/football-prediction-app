@@ -13120,3 +13120,282 @@ textarea:focus-visible,
     min-height: 26px !important;
   }
 }
+
+
+/* ==========================================================================
+   DEEPPREDICTBET FAN ARENA — BRANDING, VOTING & SOCIAL CARD STYLES
+   ========================================================================== */
+.fan-arena-overlay {
+  display: none;
+  position: fixed;
+  inset: 0;
+  z-index: 10000010;
+  align-items: center;
+  justify-content: center;
+  background: rgba(7, 11, 20, 0.88);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  padding: 16px;
+  overflow-y: auto;
+}
+
+.fan-arena-modal-content {
+  background: linear-gradient(135deg, rgba(15, 23, 42, 0.98) 0%, rgba(10, 15, 29, 0.98) 100%);
+  border: 1px solid rgba(168, 85, 247, 0.35);
+  box-shadow: 0 24px 60px rgba(0, 0, 0, 0.8), 0 0 40px rgba(168, 85, 247, 0.15);
+  border-radius: 18px;
+  width: 100%;
+  max-width: 760px;
+  max-height: 92vh;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  color: var(--text-primary);
+  animation: modalScaleIn 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.fan-arena-header {
+  padding: 20px 24px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  background: rgba(15, 23, 42, 0.7);
+}
+
+.fan-arena-badge-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: rgba(168, 85, 247, 0.15);
+  border: 1px solid rgba(168, 85, 247, 0.4);
+  color: #c084fc;
+  font-size: 0.75rem;
+  font-weight: 800;
+  letter-spacing: 0.5px;
+  padding: 4px 10px;
+  border-radius: 20px;
+  text-transform: uppercase;
+}
+
+.fan-arena-body {
+  padding: 22px 24px;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+/* Voting Grid */
+.fan-arena-voting-section {
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 14px;
+  padding: 18px 20px;
+}
+
+.fan-arena-voting-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 14px;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.fan-arena-voting-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
+}
+
+@media (max-width: 600px) {
+  .fan-arena-voting-grid {
+    grid-template-columns: 1fr;
+    gap: 10px;
+  }
+}
+
+.fan-vote-card {
+  background: rgba(15, 23, 42, 0.8);
+  border: 1.5px solid rgba(255, 255, 255, 0.1);
+  border-radius: 12px;
+  padding: 14px 16px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  position: relative;
+  overflow: hidden;
+  text-align: left;
+}
+
+.fan-vote-card:hover {
+  border-color: rgba(168, 85, 247, 0.5);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.3);
+}
+
+.fan-vote-card.voted {
+  border-color: #38bdf8;
+  background: rgba(56, 189, 248, 0.12);
+  box-shadow: 0 0 20px rgba(56, 189, 248, 0.25);
+}
+
+.fan-vote-card.voted::after {
+  content: '✓ YOUR VOTE';
+  position: absolute;
+  top: 8px;
+  right: 10px;
+  font-size: 0.65rem;
+  font-weight: 800;
+  color: #38bdf8;
+  background: rgba(56, 189, 248, 0.2);
+  padding: 2px 6px;
+  border-radius: 10px;
+}
+
+.fan-vote-name {
+  font-weight: 800;
+  font-size: 0.95rem;
+  color: #ffffff;
+  display: block;
+  margin-bottom: 6px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.fan-vote-pct {
+  font-size: 1.4rem;
+  font-weight: 900;
+  font-family: var(--font-display);
+  color: var(--accent-gold);
+  display: block;
+  margin-bottom: 6px;
+}
+
+.fan-vote-card:nth-child(1) .fan-vote-pct { color: #38bdf8; }
+.fan-vote-card:nth-child(2) .fan-vote-pct { color: #94a3b8; }
+.fan-vote-card:nth-child(3) .fan-vote-pct { color: #c084fc; }
+
+.fan-vote-bar {
+  width: 100%;
+  height: 6px;
+  background: rgba(255, 255, 255, 0.08);
+  border-radius: 4px;
+  overflow: hidden;
+  margin-bottom: 6px;
+}
+
+.fan-vote-fill {
+  height: 100%;
+  border-radius: 4px;
+  transition: width 0.3s ease;
+}
+
+.fan-vote-fill.home { background: #38bdf8; }
+.fan-vote-fill.draw { background: #94a3b8; }
+.fan-vote-fill.away { background: #c084fc; }
+
+.fan-vote-count {
+  font-size: 0.72rem;
+  color: #64748b;
+  font-weight: 600;
+}
+
+/* Tabs & Selector */
+.fan-arena-controls-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.fan-arena-tabs-group {
+  display: inline-flex;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 10px;
+  padding: 4px;
+  gap: 4px;
+}
+
+.fan-arena-format-tab,
+.fan-arena-type-tab {
+  background: transparent;
+  border: none;
+  color: var(--text-muted);
+  font-size: 0.8rem;
+  font-weight: 700;
+  padding: 6px 14px;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.fan-arena-format-tab.active,
+.fan-arena-type-tab.active {
+  background: rgba(56, 189, 248, 0.18);
+  color: #ffffff;
+  border: 1px solid rgba(56, 189, 248, 0.35);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.25);
+}
+
+/* Preview Canvas Container */
+.fan-arena-canvas-container {
+  background: rgba(0, 0, 0, 0.5);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 14px;
+  padding: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 280px;
+  overflow: hidden;
+}
+
+/* Prominent Actions */
+.fan-arena-actions-bar {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+  align-items: center;
+}
+
+.fan-arena-download-btn {
+  flex: 2;
+  min-width: 220px;
+  height: 48px;
+  background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 50%, #7c3aed 100%);
+  color: #ffffff;
+  border: none;
+  border-radius: 10px;
+  font-weight: 900;
+  font-size: 0.95rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  cursor: pointer;
+  box-shadow: 0 8px 24px rgba(37, 99, 235, 0.4);
+  transition: all 0.2s ease;
+}
+
+.fan-arena-download-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 12px 28px rgba(37, 99, 235, 0.55);
+}
+
+.fan-arena-share-btn {
+  flex: 1;
+  min-width: 140px;
+  height: 48px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  font-weight: 700;
+  font-size: 0.85rem;
+  border-radius: 10px;
+  cursor: pointer;
+}
