@@ -28,6 +28,10 @@
     root.downloadFanArenaCard = api.downloadFanArenaCard;
     root.shareFanArenaToWhatsApp = api.shareFanArenaToWhatsApp;
     root.copyFanArenaLink = api.copyFanArenaLink;
+    root.generateFanArenaCardCanvas = api.generateFanArenaCardCanvas;
+    root.getMatchFanVotes = api.getMatchFanVotes;
+    root.generateFanArenaFilename = api.generateDownloadFilename;
+    root.FAN_ARENA_FORMATS = api.FAN_ARENA_FORMATS;
   }
   if (typeof globalThis !== 'undefined') {
     globalThis.FanArenaEngine = api;
@@ -37,6 +41,10 @@
     globalThis.downloadFanArenaCard = api.downloadFanArenaCard;
     globalThis.shareFanArenaToWhatsApp = api.shareFanArenaToWhatsApp;
     globalThis.copyFanArenaLink = api.copyFanArenaLink;
+    globalThis.generateFanArenaCardCanvas = api.generateFanArenaCardCanvas;
+    globalThis.getMatchFanVotes = api.getMatchFanVotes;
+    globalThis.generateFanArenaFilename = api.generateDownloadFilename;
+    globalThis.FAN_ARENA_FORMATS = api.FAN_ARENA_FORMATS;
   }
   if (typeof window !== 'undefined') {
     window.FanArenaEngine = api;
@@ -46,6 +54,10 @@
     window.downloadFanArenaCard = api.downloadFanArenaCard;
     window.shareFanArenaToWhatsApp = api.shareFanArenaToWhatsApp;
     window.copyFanArenaLink = api.copyFanArenaLink;
+    window.generateFanArenaCardCanvas = api.generateFanArenaCardCanvas;
+    window.getMatchFanVotes = api.getMatchFanVotes;
+    window.generateFanArenaFilename = api.generateDownloadFilename;
+    window.FAN_ARENA_FORMATS = api.FAN_ARENA_FORMATS;
   }
 })(typeof globalThis !== 'undefined' ? globalThis : (typeof window !== 'undefined' ? window : this), function () {
   'use strict';
@@ -300,7 +312,9 @@
     const match = resolveMatch(matchInput) || matchInput;
     if (!match || typeof document === 'undefined') return null;
 
-    const fmt = FAN_ARENA_FORMATS[formatKey] || FAN_ARENA_FORMATS.square;
+    const k = (formatKey || 'square').toLowerCase();
+    const activeFmtKey = (k === 'story' ? 'portrait' : (k === 'original' ? 'landscape' : k));
+    const fmt = FAN_ARENA_FORMATS[activeFmtKey] || FAN_ARENA_FORMATS.square;
     const width = fmt.width;
     const height = fmt.height;
 
@@ -418,7 +432,7 @@
     // FORMAT RENDERING IMPLEMENTATION
     // ------------------------------------------------------------------------
 
-    if (formatKey === 'square') {
+    if (activeFmtKey === 'square') {
       // ======================================================================
       // 1080 × 1080 SQUARE (Instagram & Facebook Feeds)
       // ======================================================================
@@ -561,7 +575,7 @@
       ctx.textAlign = 'right';
       ctx.fillText('18+ · Gamble Responsibly · Community Voting', 1030, 1025);
 
-    } else if (formatKey === 'portrait') {
+    } else if (activeFmtKey === 'portrait') {
       // ======================================================================
       // 1080 × 1920 PORTRAIT / STORY (WhatsApp Status & Stories)
       // ======================================================================
@@ -704,7 +718,7 @@
       ctx.textAlign = 'right';
       ctx.fillText('18+ · Gamble Responsibly · Community Voting', 1030, 1840);
 
-    } else if (formatKey === 'landscape') {
+    } else if (activeFmtKey === 'landscape') {
       // ======================================================================
       // 1200 × 675 LANDSCAPE (Facebook & X Posts)
       // ======================================================================
@@ -851,7 +865,8 @@
    * Helper: Generate Meaningful Unique Filename
    */
   function generateDownloadFilename(match, formatKey, ext = 'png') {
-    const fmt = FAN_ARENA_FORMATS[formatKey] || FAN_ARENA_FORMATS.square;
+    const k = (formatKey || 'square').toLowerCase();
+    const fmt = FAN_ARENA_FORMATS[k] || (k === 'story' ? FAN_ARENA_FORMATS.portrait : (k === 'original' ? FAN_ARENA_FORMATS.landscape : FAN_ARENA_FORMATS.square));
     const h = (match?.homeTeam?.name || (typeof match?.homeTeam === 'string' ? match.homeTeam : 'Home')).replace(/[^a-zA-Z0-9]/g, '-');
     const a = (match?.awayTeam?.name || (typeof match?.awayTeam === 'string' ? match.awayTeam : 'Away')).replace(/[^a-zA-Z0-9]/g, '-');
     const cleanExt = (ext === 'jpeg' || ext === 'jpg') ? 'jpg' : 'png';

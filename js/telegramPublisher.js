@@ -4104,6 +4104,7 @@
     liveUpdatesAttachGraphic: true,
     liveUpdatesGraphicDataUrl: '',
     liveUpdatesCardFormat: 'landscape',
+    liveUpdatesCardTemplate: 'ai_centre',
     liveUpdatesCardFileType: 'png',
     liveUpdatesCardDownloading: false,
     liveUpdatesAutoRefresh: true,
@@ -9851,6 +9852,9 @@
   function setLiveEventType(eventType, eventData = null) {
     state.liveUpdatesSelectedEventType = eventType;
     state.liveUpdatesSelectedEvent = eventData;
+    if (eventType === 'FAN_ARENA') {
+      state.liveUpdatesCardTemplate = 'fan_arena';
+    }
 
     const match = state.liveUpdatesSelectedMatch;
     if (match) {
@@ -9869,6 +9873,39 @@
     const imgEl = document.getElementById('tg-live-graphic-preview-img');
     if (imgEl && state.liveUpdatesGraphicDataUrl) {
       imgEl.src = state.liveUpdatesGraphicDataUrl;
+    }
+  }
+
+  function setCardTemplate(templateKey) {
+    state.liveUpdatesCardTemplate = templateKey;
+    if (templateKey === 'fan_arena') {
+      state.liveUpdatesSelectedEventType = 'FAN_ARENA';
+    } else if (state.liveUpdatesSelectedEventType === 'FAN_ARENA') {
+      state.liveUpdatesSelectedEventType = 'STATUS_UPDATE';
+    }
+
+    const match = state.liveUpdatesSelectedMatch;
+    if (match) {
+      state.liveUpdatesCaption = generateLiveCaption(match, state.liveUpdatesSelectedEventType, state.liveUpdatesSelectedEvent);
+      renderLiveMatchGraphic(match, state.liveUpdatesSelectedEventType, state.liveUpdatesSelectedEvent, state.liveUpdatesCardFormat || 'landscape');
+      const txtEl = document.getElementById('tg-live-caption-input');
+      if (txtEl) txtEl.value = state.liveUpdatesCaption;
+      updateLiveCharCountDisplay();
+    }
+
+    if (typeof document !== 'undefined') {
+      document.querySelectorAll('.tg-card-template-btn').forEach(btn => {
+        const isAct = btn.getAttribute('data-template') === templateKey;
+        btn.style.background = isAct ? (templateKey === 'fan_arena' ? 'rgba(168,85,247,0.35)' : '#2563eb') : 'rgba(255,255,255,0.05)';
+        btn.style.color = isAct ? (templateKey === 'fan_arena' ? '#c084fc' : '#ffffff') : '#94a3b8';
+        btn.style.borderColor = isAct ? (templateKey === 'fan_arena' ? '#a855f7' : '#3b82f6') : 'rgba(255,255,255,0.1)';
+      });
+      const titleEl = document.getElementById('tg-live-graphic-title-text');
+      if (titleEl) {
+        titleEl.textContent = (state.liveUpdatesCardTemplate === 'fan_arena' || state.liveUpdatesSelectedEventType === 'FAN_ARENA')
+          ? 'DeepPredictBet Fan Arena Card:'
+          : 'DeepPredictBet AI Match Centre Card:';
+      }
     }
   }
 
@@ -9899,6 +9936,22 @@
         return `⚠️ PENALTY AWARDED: ${comp}\n\n${h} ${hs} – ${as} ${a}\n${timeStr} Penalty awarded to ${team || h}.\n\nhttps://deeppredictbet.com`;
       case 'KICKOFF':
         return `⏱️ KICKOFF! ${comp}\n\n${h} vs ${a} is now underway!\nScore: 0 – 0\n\nTrack in-play predictions on DeepPredictBet:\nhttps://deeppredictbet.com`;
+      case 'FAN_ARENA': {
+        let hPct = 45, dPct = 25, aPct = 30, total = 1200;
+        try {
+          const fn = (typeof getMatchFanVotes === 'function' ? getMatchFanVotes : (typeof window !== 'undefined' && window.FanArenaEngine ? window.FanArenaEngine.getMatchFanVotes : null));
+          if (fn) {
+            const votes = fn(match.id, match);
+            if (votes) {
+              hPct = votes.homePercent;
+              dPct = votes.drawPercent;
+              aPct = votes.awayPercent;
+              total = votes.totalVotes;
+            }
+          }
+        } catch (_) {}
+        return `🗳️ DEEPPREDICTBET FAN ARENA: WHO IS WINNING?\n\n⚽ ${h} vs ${a} (${comp})\n\n📊 Fan Predictions (${total.toLocaleString()} votes):\n• ${h} Win: ${hPct}%\n• Draw: ${dPct}%\n• ${a} Win: ${aPct}%\n\n🗳️ Cast your vote & view AI predictive analysis on DeepPredictBet:\nhttps://deeppredictbet.com\n\n18+ · Gamble Responsibly`;
+      }
       default:
         return `📢 MATCH UPDATE: ${comp}\n\n${h} ${hs} – ${as} ${a}\n${match.statusShort || 'LIVE'} ${timeStr}\n\nDeepPredictBet Match Centre: https://deeppredictbet.com`;
     }
@@ -10772,7 +10825,21 @@
   function renderLiveMatchGraphic(match, eventType, eventData, formatKey = state.liveUpdatesCardFormat || 'landscape') {
     if (!match || typeof document === 'undefined') return '';
     try {
-      const canvas = generateMatchCardCanvas(match, eventType, eventData, formatKey);
+      const isFanArena = state.liveUpdatesCardTemplate === 'fan_arena' || eventType === 'FAN_ARENA';
+      let canvas = null;
+      if (isFanArena) {
+        if (typeof generateFanArenaCardCanvas === 'function') {
+          canvas = generateFanArenaCardCanvas(match, formatKey);
+        } else if (typeof window !== 'undefined' && window.FanArenaEngine && typeof window.FanArenaEngine.generateFanArenaCardCanvas === 'function') {
+          canvas = window.FanArenaEngine.generateFanArenaCardCanvas(match, formatKey);
+        } else if (typeof window !== 'undefined' && typeof window.generateFanArenaCardCanvas === 'function') {
+          canvas = window.generateFanArenaCardCanvas(match, formatKey);
+        } else {
+          canvas = generateMatchCardCanvas(match, eventType, eventData, formatKey);
+        }
+      } else {
+        canvas = generateMatchCardCanvas(match, eventType, eventData, formatKey);
+      }
       if (!canvas) return '';
 
       const mimeType = (state.liveUpdatesCardFileType || 'png') === 'jpeg' ? 'image/jpeg' : 'image/png';
@@ -10790,6 +10857,11 @@
       if (badgeEl) {
         const fmt = MATCH_CARD_FORMATS[formatKey] || MATCH_CARD_FORMATS.landscape;
         badgeEl.textContent = `${fmt.name} (${fmt.width} × ${fmt.height} px · ${fmt.aspectRatio})`;
+      }
+
+      const titleEl = document.getElementById('tg-live-graphic-title-text');
+      if (titleEl) {
+        titleEl.textContent = isFanArena ? 'DeepPredictBet Fan Arena Card:' : 'DeepPredictBet AI Match Centre Card:';
       }
 
       return state.liveUpdatesGraphicDataUrl;
@@ -10823,12 +10895,28 @@
     const cleanExt = (fileType || state.liveUpdatesCardFileType || 'png').toLowerCase().includes('jp') ? 'jpg' : 'png';
     const mime = cleanExt === 'jpg' ? 'image/jpeg' : 'image/png';
     const quality = mime === 'image/jpeg' ? 0.95 : 1.0;
-    const filename = generateMatchCardFilename(match, fmtKey, cleanExt);
+    const isFanArena = state.liveUpdatesCardTemplate === 'fan_arena' || state.liveUpdatesSelectedEventType === 'FAN_ARENA';
+    let filename = '';
+    if (isFanArena) {
+      if (typeof generateDownloadFilename === 'function') {
+        filename = generateDownloadFilename(match, fmtKey, cleanExt);
+      } else if (typeof window !== 'undefined' && window.FanArenaEngine && typeof window.FanArenaEngine.generateDownloadFilename === 'function') {
+        filename = window.FanArenaEngine.generateDownloadFilename(match, fmtKey, cleanExt);
+      } else if (typeof window !== 'undefined' && typeof window.generateFanArenaFilename === 'function') {
+        filename = window.generateFanArenaFilename(match, fmtKey, cleanExt);
+      } else {
+        filename = generateMatchCardFilename(match, fmtKey, cleanExt);
+      }
+    } else {
+      filename = generateMatchCardFilename(match, fmtKey, cleanExt);
+    }
 
     state.liveUpdatesCardDownloading = true;
 
     try {
-      const canvas = generateMatchCardCanvas(match, state.liveUpdatesSelectedEventType, state.liveUpdatesSelectedEvent, fmtKey);
+      const canvas = isFanArena
+        ? (typeof generateFanArenaCardCanvas === 'function' ? generateFanArenaCardCanvas(match, fmtKey) : (window.FanArenaEngine ? window.FanArenaEngine.generateFanArenaCardCanvas(match, fmtKey) : (window.generateFanArenaCardCanvas ? window.generateFanArenaCardCanvas(match, fmtKey) : generateMatchCardCanvas(match, state.liveUpdatesSelectedEventType, state.liveUpdatesSelectedEvent, fmtKey))))
+        : generateMatchCardCanvas(match, state.liveUpdatesSelectedEventType, state.liveUpdatesSelectedEvent, fmtKey);
       if (!canvas) throw new Error('Could not create off-screen canvas element.');
 
       let downloaded = false;
@@ -11465,6 +11553,9 @@
                   <button type="button" onclick="window.TelegramPublisher.setLiveEventType('PENALTY')" style="padding: 6px 10px; font-size: 0.72rem; font-weight: 700; border-radius: 6px; cursor: pointer; background: ${state.liveUpdatesSelectedEventType === 'PENALTY' ? 'rgba(245,158,11,0.3)' : 'rgba(255,255,255,0.05)'}; color: #fde68a; border: 1px solid ${state.liveUpdatesSelectedEventType === 'PENALTY' ? '#f59e0b' : 'rgba(255,255,255,0.1)'};">
                     ⚠️ Penalty
                   </button>
+                  <button type="button" onclick="window.TelegramPublisher.setLiveEventType('FAN_ARENA')" style="padding: 6px 10px; font-size: 0.72rem; font-weight: 800; border-radius: 6px; cursor: pointer; background: ${state.liveUpdatesSelectedEventType === 'FAN_ARENA' ? 'rgba(168,85,247,0.35)' : 'rgba(255,255,255,0.05)'}; color: #c084fc; border: 1px solid ${state.liveUpdatesSelectedEventType === 'FAN_ARENA' ? '#a855f7' : 'rgba(168,85,247,0.3)'};">
+                    🗳️ Fan Arena (Voting)
+                  </button>
                 </div>
               </div>
 
@@ -11486,9 +11577,24 @@
 
                             <!-- Branded Match Graphic Preview & Download Studio -->
               <div id="tg-live-graphic-container" style="display: block; background: rgba(0,0,0,0.3); border: 1px solid rgba(56,189,248,0.25); border-radius: 14px; padding: 14px; margin-bottom: 6px;">
+                <!-- Card Style Selector: AI Match Centre vs Fan Arena -->
+                <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px; flex-wrap: wrap; gap: 8px; background: rgba(0,0,0,0.4); padding: 8px 12px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.08);">
+                  <div style="display: flex; align-items: center; gap: 8px;">
+                    <span style="font-size: 0.7rem; font-weight: 800; color: #94a3b8; text-transform: uppercase;">CARD STYLE:</span>
+                    <button type="button" class="tg-card-template-btn" data-template="ai_centre" onclick="window.TelegramPublisher.setCardTemplate('ai_centre')" style="padding: 5px 12px; font-size: 0.74rem; font-weight: 800; border-radius: 6px; cursor: pointer; background: ${(state.liveUpdatesCardTemplate || 'ai_centre') === 'ai_centre' ? '#2563eb' : 'rgba(255,255,255,0.05)'}; color: ${(state.liveUpdatesCardTemplate || 'ai_centre') === 'ai_centre' ? '#ffffff' : '#94a3b8'}; border: 1px solid ${(state.liveUpdatesCardTemplate || 'ai_centre') === 'ai_centre' ? '#3b82f6' : 'rgba(255,255,255,0.1)'}; transition: all 0.15s ease;">
+                      🤖 AI Match Centre
+                    </button>
+                    <button type="button" class="tg-card-template-btn" data-template="fan_arena" onclick="window.TelegramPublisher.setCardTemplate('fan_arena')" style="padding: 5px 12px; font-size: 0.74rem; font-weight: 800; border-radius: 6px; cursor: pointer; background: ${state.liveUpdatesCardTemplate === 'fan_arena' ? 'rgba(168,85,247,0.35)' : 'rgba(255,255,255,0.05)'}; color: ${state.liveUpdatesCardTemplate === 'fan_arena' ? '#c084fc' : '#94a3b8'}; border: 1px solid ${state.liveUpdatesCardTemplate === 'fan_arena' ? '#a855f7' : 'rgba(255,255,255,0.1)'}; transition: all 0.15s ease;">
+                      🗳️ Fan Arena (Voting Card)
+                    </button>
+                  </div>
+                  <span style="font-size: 0.68rem; color: #94a3b8; font-weight: 600;">
+                    ${state.liveUpdatesCardTemplate === 'fan_arena' ? '✨ Live Community Voting & Percentages' : '⚡ Tactical Live In-Play Match Event'}
+                  </span>
+                </div>
                 <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; flex-wrap: wrap; gap: 6px;">
                   <span style="font-size: 0.75rem; font-weight: 800; color: #ffffff; text-transform: uppercase; display: flex; align-items: center; gap: 6px;">
-                    <span>🎨</span> <span>DeepPredictBet AI Match Centre Card:</span>
+                    <span>${state.liveUpdatesCardTemplate === 'fan_arena' ? '🗳️' : '🎨'}</span> <span id="tg-live-graphic-title-text">${state.liveUpdatesCardTemplate === 'fan_arena' ? 'DeepPredictBet Fan Arena Card:' : 'DeepPredictBet AI Match Centre Card:'}</span>
                   </span>
                   <span id="tg-live-graphic-fmt-badge" style="font-size: 0.68rem; color: #38bdf8; font-weight: 800; background: rgba(56,189,248,0.15); padding: 2px 8px; border-radius: 6px; border: 1px solid rgba(56,189,248,0.3);">
                     ${activeFormat.name} (${activeFormat.width} × ${activeFormat.height} px · ${activeFormat.aspectRatio})
@@ -15294,6 +15400,7 @@
     downloadMatchCard,
     setCardFormat,
     setCardFileType,
+    setCardTemplate,
     showLiveCardDownloadAlert,
     resolveTeamCrestUrl,
     preloadTeamCrest,
