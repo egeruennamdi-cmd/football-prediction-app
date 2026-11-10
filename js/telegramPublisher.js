@@ -9978,10 +9978,10 @@
           if (fn) {
             const votes = fn(match.id, match);
             if (votes) {
-              hPct = votes.homePercent;
-              dPct = votes.drawPercent;
-              aPct = votes.awayPercent;
-              total = votes.totalVotes;
+              hPct = Number.isFinite(votes.homePercent) ? votes.homePercent : (Number.isFinite(votes.homePct) ? votes.homePct : 34);
+              dPct = Number.isFinite(votes.drawPercent) ? votes.drawPercent : (Number.isFinite(votes.drawPct) ? votes.drawPct : 33);
+              aPct = Number.isFinite(votes.awayPercent) ? votes.awayPercent : (Number.isFinite(votes.awayPct) ? votes.awayPct : 33);
+              total = Number(votes.totalVotes) || 0;
             }
           }
         } catch (_) {}
@@ -12017,7 +12017,7 @@
     const activeFormatKey = state.fanArenaFormat || 'square';
     const activeFileExt = state.fanArenaFileType || 'png';
 
-    let votes = { homePercent: 45, drawPercent: 25, awayPercent: 30, totalVotes: 1200, userVote: null };
+    let votes = { homePercent: 34, drawPercent: 33, awayPercent: 33, homePct: 34, drawPct: 33, awayPct: 33, totalVotes: 0, userVote: null, hasVotes: false };
     if (sel) {
       try {
         const fn = (typeof getMatchFanVotes === 'function' ? getMatchFanVotes : (typeof window !== 'undefined' && window.FanArenaEngine ? window.FanArenaEngine.getMatchFanVotes : null));
@@ -12025,9 +12025,67 @@
       } catch (_) {}
     }
 
+    const selHomePct = Number.isFinite(votes?.homePercent) ? votes.homePercent : (Number.isFinite(votes?.homePct) ? votes.homePct : 0);
+    const selDrawPct = Number.isFinite(votes?.drawPercent) ? votes.drawPercent : (Number.isFinite(votes?.drawPct) ? votes.drawPct : 0);
+    const selAwayPct = Number.isFinite(votes?.awayPercent) ? votes.awayPercent : (Number.isFinite(votes?.awayPct) ? votes.awayPct : 0);
+    const selTotalVotes = Number(votes?.totalVotes) || 0;
+
     const hName = sel ? (sel.homeTeam?.name || 'Home Team') : '';
     const aName = sel ? (sel.awayTeam?.name || 'Away Team') : '';
     const compName = sel ? (sel.competition || 'Football') : '';
+
+    function renderFanArenaMatchCardVotingStats(match, vData) {
+      const homeTitle = match?.homeTeam?.name || match?.home || 'Home';
+      const awayTitle = match?.awayTeam?.name || match?.away || 'Away';
+
+      // State 1: Statistics unavailable
+      if (!vData || vData.isUnavailable === true) {
+        return `
+          <div style="display: flex; justify-content: space-between; align-items: center; font-size: 0.72rem; color: #94a3b8; margin-top: 6px;">
+            <span>🗳️ 0 votes</span>
+            <span style="color: #94a3b8; font-style: italic;">Voting statistics unavailable</span>
+          </div>
+        `;
+      }
+
+      const total = Number(vData.totalVotes) || 0;
+
+      // State 2: Zero votes
+      if (total <= 0 || !vData.hasVotes) {
+        return `
+          <div style="display: flex; justify-content: space-between; align-items: center; font-size: 0.72rem; color: #94a3b8; margin-top: 6px;">
+            <span>🗳️ 0 votes</span>
+            <span style="color: #94a3b8; font-style: italic;">No votes yet</span>
+          </div>
+        `;
+      }
+
+      // State 3: Active votes with percentages
+      const hP = Number.isFinite(vData.homePercent) ? vData.homePercent : (Number.isFinite(vData.homePct) ? vData.homePct : 0);
+      const dP = Number.isFinite(vData.drawPercent) ? vData.drawPercent : (Number.isFinite(vData.drawPct) ? vData.drawPct : 0);
+      const aP = Number.isFinite(vData.awayPercent) ? vData.awayPercent : (Number.isFinite(vData.awayPct) ? vData.awayPct : 0);
+
+      return `
+        <div style="margin-top: 6px; display: flex; flex-direction: column; gap: 4px;">
+          <div style="display: flex; justify-content: space-between; align-items: center; font-size: 0.72rem; color: #94a3b8; flex-wrap: wrap; gap: 4px;">
+            <span style="font-weight: 700;">🗳️ ${total.toLocaleString()} votes</span>
+            <div style="display: flex; align-items: center; gap: 6px; font-weight: 800; font-size: 0.72rem; flex-wrap: wrap;">
+              <span style="color: #38bdf8;">${escapeHtml(homeTitle)}: ${hP}%</span>
+              <span style="color: #64748b;">·</span>
+              <span style="color: #fbbf24;">Draw: ${dP}%</span>
+              <span style="color: #64748b;">·</span>
+              <span style="color: #c084fc;">${escapeHtml(awayTitle)}: ${aP}%</span>
+            </div>
+          </div>
+          <!-- Horizontal Segmented Voting Bar -->
+          <div style="display: flex; height: 4px; border-radius: 2px; overflow: hidden; background: rgba(255,255,255,0.08); width: 100%;">
+            <div style="width: ${hP}%; background: #38bdf8; transition: width 0.3s ease;"></div>
+            <div style="width: ${dP}%; background: #fbbf24; transition: width 0.3s ease;"></div>
+            <div style="width: ${aP}%; background: #c084fc; transition: width 0.3s ease;"></div>
+          </div>
+        </div>
+      `;
+    }
 
     return `
       <div style="display: flex; flex-direction: column; gap: 20px;">
@@ -12086,7 +12144,7 @@
                 </div>
               ` : filteredMatches.map(m => {
                 const isSelected = sel && sel.id === m.id;
-                let mVotes = { homePercent: 45, drawPercent: 25, awayPercent: 30, totalVotes: 1200 };
+                let mVotes = null;
                 try {
                   const fn = (typeof getMatchFanVotes === 'function' ? getMatchFanVotes : (typeof window !== 'undefined' && window.FanArenaEngine ? window.FanArenaEngine.getMatchFanVotes : null));
                   if (fn) mVotes = fn(m.id, m);
@@ -12100,13 +12158,10 @@
                         ${m.isLive ? `🔴 ${m.elapsed}'` : (m.isFT ? '🏁 FT' : `📅 ${m.time || 'Upcoming'}`)}
                       </span>
                     </div>
-                    <div style="font-weight: 800; font-size: 0.88rem; color: #ffffff; margin-bottom: 6px;">
+                    <div style="font-weight: 800; font-size: 0.88rem; color: #ffffff; margin-bottom: 4px;">
                       ${escapeHtml(m.homeTeam?.name || m.home || 'Home')} vs ${escapeHtml(m.awayTeam?.name || m.away || 'Away')}
                     </div>
-                    <div style="display: flex; justify-content: space-between; align-items: center; font-size: 0.72rem; color: #94a3b8;">
-                      <span>🗳️ ${mVotes.totalVotes.toLocaleString()} votes</span>
-                      <span style="color: #c084fc; font-weight: 800;">${mVotes.homePercent}% · ${mVotes.drawPercent}% · ${mVotes.awayPercent}%</span>
-                    </div>
+                    ${renderFanArenaMatchCardVotingStats(m, mVotes)}
                   </div>
                 `;
               }).join('')}
@@ -12129,7 +12184,7 @@
                 </div>
                 <div style="text-align: right;">
                   <span style="background: rgba(168,85,247,0.2); border: 1px solid #a855f7; color: #c084fc; font-size: 0.72rem; font-weight: 800; padding: 3px 10px; border-radius: 20px;">
-                    🗳️ ${votes.totalVotes.toLocaleString()} Total Votes
+                    🗳️ ${selTotalVotes.toLocaleString()} Total Votes
                   </span>
                 </div>
               </div>
@@ -12142,15 +12197,15 @@
                 <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px;">
                   <button type="button" onclick="window.TelegramPublisher.castFanArenaVote('${sel.id}', 'home')" style="padding: 10px 8px; font-size: 0.78rem; font-weight: 800; border-radius: 8px; cursor: pointer; background: ${votes.userVote === 'home' ? 'rgba(56,189,248,0.35)' : 'rgba(255,255,255,0.05)'}; color: #ffffff; border: 1.5px solid ${votes.userVote === 'home' ? '#38bdf8' : 'rgba(255,255,255,0.12)'}; text-align: center;">
                     <div>${escapeHtml(hName)}</div>
-                    <div style="font-size: 1rem; color: #38bdf8; margin-top: 2px;">${votes.homePercent}%</div>
+                    <div style="font-size: 1rem; color: #38bdf8; margin-top: 2px;">${selHomePct}%</div>
                   </button>
                   <button type="button" onclick="window.TelegramPublisher.castFanArenaVote('${sel.id}', 'draw')" style="padding: 10px 8px; font-size: 0.78rem; font-weight: 800; border-radius: 8px; cursor: pointer; background: ${votes.userVote === 'draw' ? 'rgba(245,158,11,0.35)' : 'rgba(255,255,255,0.05)'}; color: #ffffff; border: 1.5px solid ${votes.userVote === 'draw' ? '#f59e0b' : 'rgba(255,255,255,0.12)'}; text-align: center;">
                     <div>Draw</div>
-                    <div style="font-size: 1rem; color: #fbbf24; margin-top: 2px;">${votes.drawPercent}%</div>
+                    <div style="font-size: 1rem; color: #fbbf24; margin-top: 2px;">${selDrawPct}%</div>
                   </button>
                   <button type="button" onclick="window.TelegramPublisher.castFanArenaVote('${sel.id}', 'away')" style="padding: 10px 8px; font-size: 0.78rem; font-weight: 800; border-radius: 8px; cursor: pointer; background: ${votes.userVote === 'away' ? 'rgba(239,68,68,0.35)' : 'rgba(255,255,255,0.05)'}; color: #ffffff; border: 1.5px solid ${votes.userVote === 'away' ? '#ef4444' : 'rgba(255,255,255,0.12)'}; text-align: center;">
                     <div>${escapeHtml(aName)}</div>
-                    <div style="font-size: 1rem; color: #f87171; margin-top: 2px;">${votes.awayPercent}%</div>
+                    <div style="font-size: 1rem; color: #f87171; margin-top: 2px;">${selAwayPct}%</div>
                   </button>
                 </div>
               </div>

@@ -19,6 +19,10 @@
   const api = factory();
   if (typeof module !== 'undefined' && module.exports) {
     module.exports = api;
+    Object.assign(module.exports, api);
+  }
+  if (typeof exports !== 'undefined' && exports) {
+    Object.assign(exports, api);
   }
   if (typeof root !== 'undefined') {
     root.FanArenaEngine = api;
@@ -30,6 +34,7 @@
     root.copyFanArenaLink = api.copyFanArenaLink;
     root.generateFanArenaCardCanvas = api.generateFanArenaCardCanvas;
     root.getMatchFanVotes = api.getMatchFanVotes;
+    root.calculateVotingPercentages = api.calculateVotingPercentages;
     root.generateFanArenaFilename = api.generateDownloadFilename;
     root.FAN_ARENA_FORMATS = api.FAN_ARENA_FORMATS;
   }
@@ -43,6 +48,7 @@
     globalThis.copyFanArenaLink = api.copyFanArenaLink;
     globalThis.generateFanArenaCardCanvas = api.generateFanArenaCardCanvas;
     globalThis.getMatchFanVotes = api.getMatchFanVotes;
+    globalThis.calculateVotingPercentages = api.calculateVotingPercentages;
     globalThis.generateFanArenaFilename = api.generateDownloadFilename;
     globalThis.FAN_ARENA_FORMATS = api.FAN_ARENA_FORMATS;
   }
@@ -56,6 +62,7 @@
     window.copyFanArenaLink = api.copyFanArenaLink;
     window.generateFanArenaCardCanvas = api.generateFanArenaCardCanvas;
     window.getMatchFanVotes = api.getMatchFanVotes;
+    window.calculateVotingPercentages = api.calculateVotingPercentages;
     window.generateFanArenaFilename = api.generateDownloadFilename;
     window.FAN_ARENA_FORMATS = api.FAN_ARENA_FORMATS;
   }
@@ -132,28 +139,152 @@
   }
 
   /**
+   * Mathematically Rigorous Voting Percentage Calculation
+   * Enforces:
+   * 1. Numeric percentages rounded consistently to whole percentages.
+   * 2. Sum strictly equals 100% when totalVotes > 0 (Largest Remainder Method).
+   * 3. Zero total votes safely handled without division by zero.
+   * 4. Missing/null/undefined safely guarded.
+   * 5. Populates both naming conventions: homePercent / drawPercent / awayPercent AND homePct / drawPct / awayPct.
+   */
+  function calculateVotingPercentages(homeVotes, drawVotes, awayVotes) {
+    const h = Math.max(0, Math.floor(Number(homeVotes) || 0));
+    const d = Math.max(0, Math.floor(Number(drawVotes) || 0));
+    const a = Math.max(0, Math.floor(Number(awayVotes) || 0));
+    const total = h + d + a;
+
+    if (total <= 0) {
+      return {
+        totalVotes: 0,
+        homePercent: 0,
+        drawPercent: 0,
+        awayPercent: 0,
+        homePct: 0,
+        drawPct: 0,
+        awayPct: 0,
+        hasVotes: false
+      };
+    }
+
+    const rawH = (h / total) * 100;
+    const rawD = (d / total) * 100;
+    const rawA = (a / total) * 100;
+
+    let roundH = Math.round(rawH);
+    let roundD = Math.round(rawD);
+    let roundA = Math.round(rawA);
+
+    const diff = 100 - (roundH + roundD + roundA);
+    if (diff !== 0) {
+      const remainders = [
+        { key: 'h', rem: rawH - Math.floor(rawH) },
+        { key: 'd', rem: rawD - Math.floor(rawD) },
+        { key: 'a', rem: rawA - Math.floor(rawA) }
+      ];
+      if (diff > 0) {
+        remainders.sort((x, y) => y.rem - x.rem);
+        for (let i = 0; i < diff && i < remainders.length; i++) {
+          if (remainders[i].key === 'h') roundH++;
+          else if (remainders[i].key === 'd') roundD++;
+          else if (remainders[i].key === 'a') roundA++;
+        }
+      } else {
+        remainders.sort((x, y) => x.rem - y.rem);
+        for (let i = 0; i < Math.abs(diff) && i < remainders.length; i++) {
+          if (remainders[i].key === 'h' && roundH > 0) roundH--;
+          else if (remainders[i].key === 'd' && roundD > 0) roundD--;
+          else if (remainders[i].key === 'a' && roundA > 0) roundA--;
+        }
+      }
+    }
+
+    // Absolute guarantee: total must be exactly 100%
+    if (roundH + roundD + roundA !== 100) {
+      roundD = Math.max(0, 100 - roundH - roundA);
+    }
+
+    return {
+      totalVotes: total,
+      homePercent: roundH,
+      drawPercent: roundD,
+      awayPercent: roundA,
+      homePct: roundH,
+      drawPct: roundD,
+      awayPct: roundA,
+      hasVotes: true
+    };
+  }
+
+  /**
    * Deterministic Base Votes & Storage Retrieval
    */
   function getMatchFanVotes(matchId, matchObj) {
     const match = matchObj || resolveMatch(matchId);
     const mId = String(matchId || (match ? match.id : 'default'));
 
+    // 1. Check if match explicitly has voting disabled or statistics unavailable
+    if (match && (match.votingUnavailable === true || match.fanVotesUnavailable === true || match.votes === null)) {
+      return {
+        matchId: mId,
+        homeVotes: 0,
+        drawVotes: 0,
+        awayVotes: 0,
+        totalVotes: 0,
+        homePercent: 0,
+        drawPercent: 0,
+        awayPercent: 0,
+        homePct: 0,
+        drawPct: 0,
+        awayPct: 0,
+        hasVotes: false,
+        isUnavailable: true,
+        userVote: null
+      };
+    }
+
     const hName = match?.homeTeam?.name || (typeof match?.homeTeam === 'string' ? match.homeTeam : 'Home');
     const aName = match?.awayTeam?.name || (typeof match?.awayTeam === 'string' ? match.awayTeam : 'Away');
 
-    // Hash seed for deterministic organic baseline
-    const seedStr = mId + hName + aName;
-    let seed = 0;
-    for (let i = 0; i < seedStr.length; i++) {
-      seed = (seed * 31 + seedStr.charCodeAt(i)) % 10000;
+    let baseHome = 0;
+    let baseDraw = 0;
+    let baseAway = 0;
+    let hasCustomVotes = false;
+
+    // 2. Check if match carries explicit persisted or external vote counts
+    if (match) {
+      const v = match.fanVotes || match.votes || match.communityVotes;
+      if (v && typeof v === 'object') {
+        const vH = Number(v.home ?? v.homeVotes ?? v.homeCount);
+        const vD = Number(v.draw ?? v.drawVotes ?? v.drawCount);
+        const vA = Number(v.away ?? v.awayVotes ?? v.awayCount);
+        if (Number.isFinite(vH) && Number.isFinite(vD) && Number.isFinite(vA)) {
+          baseHome = Math.max(0, Math.floor(vH));
+          baseDraw = Math.max(0, Math.floor(vD));
+          baseAway = Math.max(0, Math.floor(vA));
+          hasCustomVotes = true;
+        }
+      } else if (Number.isFinite(match.homeVotes) && Number.isFinite(match.drawVotes) && Number.isFinite(match.awayVotes)) {
+        baseHome = Math.max(0, Math.floor(match.homeVotes));
+        baseDraw = Math.max(0, Math.floor(match.drawVotes));
+        baseAway = Math.max(0, Math.floor(match.awayVotes));
+        hasCustomVotes = true;
+      }
     }
 
-    // Baseline distributions derived from realistic fan sentiment
-    const baseHome = 450 + (seed % 380);
-    const baseDraw = 180 + ((seed * 3) % 190);
-    const baseAway = 280 + ((seed * 7) % 320);
+    // 3. Deterministic organic baseline derived from match ID and team identities
+    // Preserves historical records and isolates votes strictly to this fixture
+    if (!hasCustomVotes) {
+      const seedStr = mId + hName + aName;
+      let seed = 0;
+      for (let i = 0; i < seedStr.length; i++) {
+        seed = (seed * 31 + seedStr.charCodeAt(i)) % 10000;
+      }
+      baseHome = 450 + (seed % 380);
+      baseDraw = 180 + ((seed * 3) % 190);
+      baseAway = 280 + ((seed * 7) % 320);
+    }
 
-    // Read stored user vote & overrides from localStorage if in browser
+    // 4. Read stored user vote & overrides from localStorage if in browser
     let userVote = null;
     let deltaHome = 0;
     let deltaDraw = 0;
@@ -165,9 +296,9 @@
         const storedTallies = localStorage.getItem(`dp_fan_deltas_${mId}`);
         if (storedTallies) {
           const parsed = JSON.parse(storedTallies);
-          deltaHome = parsed.home || 0;
-          deltaDraw = parsed.draw || 0;
-          deltaAway = parsed.away || 0;
+          deltaHome = Number(parsed.home) || 0;
+          deltaDraw = Number(parsed.draw) || 0;
+          deltaAway = Number(parsed.away) || 0;
         }
       } catch (e) {
         console.warn('[FanArena] LocalStorage read error:', e);
@@ -177,21 +308,23 @@
     const homeVotes = Math.max(0, baseHome + deltaHome);
     const drawVotes = Math.max(0, baseDraw + deltaDraw);
     const awayVotes = Math.max(0, baseAway + deltaAway);
-    const totalVotes = homeVotes + drawVotes + awayVotes;
 
-    const homePct = totalVotes > 0 ? Math.round((homeVotes / totalVotes) * 100) : 34;
-    const awayPct = totalVotes > 0 ? Math.round((awayVotes / totalVotes) * 100) : 33;
-    const drawPct = totalVotes > 0 ? Math.max(0, 100 - homePct - awayPct) : 33;
+    const p = calculateVotingPercentages(homeVotes, drawVotes, awayVotes);
 
     return {
       matchId: mId,
       homeVotes,
       drawVotes,
       awayVotes,
-      totalVotes,
-      homePct,
-      drawPct,
-      awayPct,
+      totalVotes: p.totalVotes,
+      homePercent: p.homePercent,
+      drawPercent: p.drawPercent,
+      awayPercent: p.awayPercent,
+      homePct: p.homePct,
+      drawPct: p.drawPct,
+      awayPct: p.awayPct,
+      hasVotes: p.hasVotes,
+      isUnavailable: false,
       userVote
     };
   }
@@ -1197,6 +1330,7 @@
   return {
     FAN_ARENA_FORMATS,
     getMatchFanVotes,
+    calculateVotingPercentages,
     castFanVote,
     generateFanArenaCardCanvas,
     downloadFanArenaCard,
