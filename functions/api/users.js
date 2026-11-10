@@ -5,6 +5,7 @@
  */
 
 import { sendAccountVerificationEmail } from './services/_brevoEmailService.js';
+import { generateSecureToken, hashToken, putTokenKv } from './services/_tokenSecurityService.js';
 
 const CF_ACCOUNT_ID = '2e500cb9c6dde4a2a8f47853fe5efe7c';
 const CF_KV_NAMESPACE_ID = 'c24f3ae03abd42788257bec2f7d3c065';
@@ -264,13 +265,13 @@ export async function onRequestPost(context) {
       members[existingIndex] = registeredUser;
     } else {
       // NEW REGISTRATION: Enforce role = 'USER' and coinsBalance = 500 for unauthenticated callers
-      const vRand = Math.random().toString(36).substring(2, 10);
-      const vTime = Date.now().toString(36);
-      const verificationToken = `vfy_${vRand}${vTime}`;
+      // Cryptographically secure 256-bit CSPRNG token generation via Web Crypto
+      const verificationToken = generateSecureToken('vfy');
+      const verificationTokenHash = await hashToken(verificationToken);
       const verificationTokenExpires = Date.now() + (24 * 60 * 60 * 1000); // 24 hours
 
       registeredUser = {
-        id: body.id || `usr_${Math.random().toString(36).substring(2, 9)}`,
+        id: body.id || `usr_${generateSecureToken('id').substring(4, 16)}`,
         fullName: cleanName,
         email: cleanEmail,
         username: cleanUser || cleanName.split(' ')[0] || 'Punter',
@@ -278,7 +279,7 @@ export async function onRequestPost(context) {
         role: isAdmin ? (body.role || 'USER') : 'USER',
         coinsBalance: isAdmin && body.coinsBalance !== undefined ? body.coinsBalance : 500,
         emailVerified: false,
-        verificationToken: verificationToken,
+        verificationTokenHash: verificationTokenHash,
         verificationTokenExpires: verificationTokenExpires,
         savedTickets: body.savedTickets || [],
         watchlist: body.watchlist || [],
@@ -290,16 +291,12 @@ export async function onRequestPost(context) {
       };
       members.unshift(registeredUser);
 
-      // Store one-time verification token in KV with 86400s TTL for instant lookup
-      if (context.env && context.env.USERS_KV) {
-        try {
-          await context.env.USERS_KV.put(`verify_token:${verificationToken}`, JSON.stringify({
-            email: cleanEmail,
-            username: registeredUser.username,
-            expires: verificationTokenExpires
-          }), { expirationTtl: 86400 });
-        } catch (e) {}
-      }
+      // Store one-time verification token hash in KV with 86400s TTL for instant lookup
+      await putTokenKv(context.env, `verify_token:${verificationTokenHash}`, {
+        email: cleanEmail,
+        username: registeredUser.username,
+        expires: verificationTokenExpires
+      }, 86400);
 
       // Non-blocking Brevo transactional verification email dispatch
       const origin = new URL(context.request.url).origin;
@@ -309,7 +306,7 @@ export async function onRequestPost(context) {
           email: cleanEmail,
           name: cleanName,
           verificationUrl,
-          token: verificationToken
+          token: verificationTokenHash
         });
       } catch (e) {
         console.warn('[Users/Register] Brevo dispatch warning:', e.message);
@@ -322,6 +319,7 @@ export async function onRequestPost(context) {
     const safeUser = { ...registeredUser };
     delete safeUser.passwordHash;
     delete safeUser.verificationToken;
+    delete safeUser.verificationTokenHash;
     delete safeUser.verificationTokenExpires;
 
     return new Response(JSON.stringify({

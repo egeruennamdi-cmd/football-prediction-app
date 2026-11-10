@@ -5,6 +5,7 @@
  */
 
 import { corsHeaders, getMembers, saveMembers } from './_kvHelper.js';
+import { hashToken, getTokenKv, deleteTokenKv, isTokenExpired, verifyTokenMatch } from './services/_tokenSecurityService.js';
 
 function getCorsHeaders() {
   return {
@@ -97,20 +98,18 @@ async function processVerification(context, { token, email }) {
     };
   }
 
-  // 1. Direct KV Lookup if USERS_KV is present
-  let kvRecord = null;
-  if (context.env && context.env.USERS_KV) {
-    try {
-      const raw = await context.env.USERS_KV.get(`verify_token:${token}`);
-      if (raw) kvRecord = JSON.parse(raw);
-    } catch (e) {}
+  const tokenHash = await hashToken(token);
+
+  // 1. Direct KV Lookup: check cryptographic hash key first, then legacy unhashed fallback
+  let kvRecord = await getTokenKv(context.env, `verify_token:${tokenHash}`);
+  if (!kvRecord) {
+    kvRecord = await getTokenKv(context.env, `verify_token:${token}`);
   }
 
-  // Check TTL on KV token
-  if (kvRecord && kvRecord.expires && Date.now() > kvRecord.expires) {
-    if (context.env && context.env.USERS_KV) {
-      try { await context.env.USERS_KV.delete(`verify_token:${token}`); } catch (e) {}
-    }
+  // Check server-side expiration TTL
+  if (kvRecord && isTokenExpired(kvRecord.expires)) {
+    await deleteTokenKv(context.env, `verify_token:${tokenHash}`);
+    await deleteTokenKv(context.env, `verify_token:${token}`);
     return {
       success: false,
       code: 'TOKEN_EXPIRED',
@@ -118,17 +117,24 @@ async function processVerification(context, { token, email }) {
     };
   }
 
-  // 2. Authoritative members_list search
+  // 2. Authoritative members_list search with safe migration & timing-safe matching
   const members = await getMembers(context);
   const targetEmail = (kvRecord && kvRecord.email) ? kvRecord.email.toLowerCase() : email;
 
-  const userIndex = members.findIndex(m =>
-    (m.verificationToken && m.verificationToken === token) ||
-    (targetEmail && m.email && m.email.toLowerCase() === targetEmail && m.verificationToken === token) ||
-    (kvRecord && m.email && m.email.toLowerCase() === kvRecord.email.toLowerCase())
-  );
+  let matchedIndex = -1;
+  for (let i = 0; i < members.length; i++) {
+    const m = members[i];
+    const isCandidateUser = !targetEmail || (m.email && m.email.toLowerCase() === targetEmail);
+    if (!isCandidateUser && !kvRecord) continue;
 
-  if (userIndex < 0) {
+    const storedHashOrToken = m.verificationTokenHash || m.verificationToken;
+    if (storedHashOrToken && await verifyTokenMatch(token, storedHashOrToken)) {
+      matchedIndex = i;
+      break;
+    }
+  }
+
+  if (matchedIndex < 0) {
     return {
       success: false,
       code: 'INVALID_TOKEN',
@@ -136,7 +142,7 @@ async function processVerification(context, { token, email }) {
     };
   }
 
-  const user = members[userIndex];
+  const user = members[matchedIndex];
 
   // If already verified
   if (user.emailVerified) {
@@ -150,7 +156,7 @@ async function processVerification(context, { token, email }) {
   }
 
   // Verify expiration on user record if KV didn't catch it
-  if (user.verificationTokenExpires && Date.now() > user.verificationTokenExpires) {
+  if (isTokenExpired(user.verificationTokenExpires)) {
     return {
       success: false,
       code: 'TOKEN_EXPIRED',
@@ -158,21 +164,19 @@ async function processVerification(context, { token, email }) {
     };
   }
 
-  // Authoritatively activate verification
+  // Authoritatively activate verification & single-use consumption
   user.emailVerified = true;
   user.emailVerifiedAt = new Date().toISOString();
   delete user.verificationToken;
+  delete user.verificationTokenHash;
   delete user.verificationTokenExpires;
 
-  members[userIndex] = user;
+  members[matchedIndex] = user;
   await saveMembers(context, members);
 
-  // Invalidate one-time KV token
-  if (context.env && context.env.USERS_KV) {
-    try {
-      await context.env.USERS_KV.delete(`verify_token:${token}`);
-    } catch (e) {}
-  }
+  // Invalidate one-time KV token entry
+  await deleteTokenKv(context.env, `verify_token:${tokenHash}`);
+  await deleteTokenKv(context.env, `verify_token:${token}`);
 
   return {
     success: true,

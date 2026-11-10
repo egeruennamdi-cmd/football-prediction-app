@@ -8,6 +8,15 @@
  */
 
 import { sendPasswordResetEmail, sendPasswordChangedAlert } from './services/_brevoEmailService.js';
+import {
+  generateSecureToken,
+  hashToken,
+  putTokenKv,
+  getTokenKv,
+  deleteTokenKv,
+  isTokenExpired,
+  verifyTokenMatch
+} from './services/_tokenSecurityService.js';
 
 const CF_ACCOUNT_ID = '2e500cb9c6dde4a2a8f47853fe5efe7c';
 const CF_KV_NAMESPACE_ID = 'c24f3ae03abd42788257bec2f7d3c065';
@@ -406,31 +415,28 @@ export async function onRequestPost(context) {
       const targetEmail = user.email || cleanEmail;
       const targetName = user.fullName || user.username || 'Punter';
 
-      // Generate 60-minute cryptographic reset token
-      const randomPart = Math.random().toString(36).substring(2, 10);
-      const timePart = Date.now().toString(36);
-      const resetToken = `rst_${randomPart}${timePart}`;
-      const resetTokenExpires = Date.now() + (60 * 60 * 1000); // 1 hour
+      // Generate 60-minute cryptographically secure reset token (256-bit CSPRNG)
+      const resetToken = generateSecureToken('rst');
+      const resetTokenHash = await hashToken(resetToken);
+      const resetTokenExpires = Date.now() + (60 * 60 * 1000); // 60 minutes
 
-      user.resetToken = resetToken;
+      // Store one-way SHA-256 hash in user record (never raw token)
+      user.resetTokenHash = resetTokenHash;
       user.resetTokenExpires = resetTokenExpires;
+      delete user.resetToken; // Purge legacy raw token
       members[existingIndex] = user;
 
-      // 1. Direct KV key with 3600-second TTL for instant edge lookup
-      if (context.env && context.env.USERS_KV) {
-        try {
-          await context.env.USERS_KV.put(`reset_token:${resetToken}`, JSON.stringify({
-            email: targetEmail,
-            username: user.username || '',
-            expires: resetTokenExpires
-          }), { expirationTtl: 3600 });
-        } catch (e) {}
-      }
+      // 1. Direct KV key using token hash with 3600-second TTL for edge lookup
+      await putTokenKv(context.env, `reset_token:${resetTokenHash}`, {
+        email: targetEmail,
+        username: user.username || '',
+        expires: resetTokenExpires
+      }, 3600);
 
       // 2. Persist to members_list
       await saveMembers(context, members);
 
-      // Construct live reset link
+      // Construct live reset link with raw token (delivered only to authorized email)
       const origin = new URL(context.request.url).origin;
       const resetLink = `${origin}/?action=reset-password&token=${resetToken}&email=${encodeURIComponent(targetEmail)}`;
 
@@ -493,20 +499,20 @@ export async function onRequestPost(context) {
         });
       }
 
-      // Check direct KV token storage first
-      let kvTokenData = null;
-      if (context.env && context.env.USERS_KV) {
-        try {
-          const raw = await context.env.USERS_KV.get(`reset_token:${token}`);
-          if (raw) kvTokenData = JSON.parse(raw);
-        } catch (e) {}
+      // Compute candidate token SHA-256 hash
+      const tokenHash = await hashToken(token);
+
+      // Check direct KV token storage (modern hash key first, then fallback to legacy raw token)
+      let kvTokenData = await getTokenKv(context.env, `reset_token:${tokenHash}`);
+      let kvTokenKeyUsed = `reset_token:${tokenHash}`;
+      if (!kvTokenData) {
+        kvTokenData = await getTokenKv(context.env, `reset_token:${token}`);
+        if (kvTokenData) kvTokenKeyUsed = `reset_token:${token}`;
       }
 
       // If token expired in KV
-      if (kvTokenData && kvTokenData.expires && Date.now() > kvTokenData.expires) {
-        if (context.env && context.env.USERS_KV) {
-          try { await context.env.USERS_KV.delete(`reset_token:${token}`); } catch (e) {}
-        }
+      if (kvTokenData && kvTokenData.expires && isTokenExpired(kvTokenData.expires)) {
+        await deleteTokenKv(context.env, kvTokenKeyUsed);
         return new Response(JSON.stringify({
           success: false,
           error: 'This password reset link has expired (valid for 60 minutes). Please request a new link.'
@@ -536,9 +542,10 @@ export async function onRequestPost(context) {
 
       const user = members[existingIndex];
 
-      // Validate token match either via direct KV record or user.resetToken
-      const isValidToken = (kvTokenData && kvTokenData.email.toLowerCase() === (user.email || '').toLowerCase()) ||
-                           (user.resetToken && user.resetToken === token);
+      // Validate token match either via direct KV match or user.resetTokenHash / legacy user.resetToken
+      const matchesKvOwner = Boolean(kvTokenData && kvTokenData.email && kvTokenData.email.toLowerCase() === (user.email || '').toLowerCase());
+      const matchesUserRecord = await verifyTokenMatch(token, user.resetTokenHash || user.resetToken);
+      const isValidToken = matchesKvOwner || matchesUserRecord;
 
       if (!isValidToken) {
         return new Response(JSON.stringify({
@@ -551,7 +558,7 @@ export async function onRequestPost(context) {
       }
 
       // Validate token expiration on user record if KV didn't catch it
-      if (user.resetTokenExpires && Date.now() > user.resetTokenExpires) {
+      if (user.resetTokenExpires && isTokenExpired(user.resetTokenExpires)) {
         return new Response(JSON.stringify({
           success: false,
           error: 'This password reset link has expired (valid for 60 minutes). Please request a new link.'
@@ -561,21 +568,19 @@ export async function onRequestPost(context) {
         });
       }
 
-      // Token is valid: update password and invalidate token
+      // Token is valid: update password and atomically invalidate token (single-use enforcement)
       user.passwordHash = newPasswordHash;
       user.passwordUpdatedAt = new Date().toISOString();
       delete user.resetToken;
+      delete user.resetTokenHash;
       delete user.resetTokenExpires;
 
       members[existingIndex] = user;
       await saveMembers(context, members);
 
-      // Clean up KV reset token entry
-      if (context.env && context.env.USERS_KV) {
-        try {
-          await context.env.USERS_KV.delete(`reset_token:${token}`);
-        } catch (e) {}
-      }
+      // Clean up KV reset token entry (both hash and raw key if any)
+      await deleteTokenKv(context.env, `reset_token:${tokenHash}`);
+      await deleteTokenKv(context.env, `reset_token:${token}`);
 
       // Security Notification: Dispatch Password Changed Confirmation Alert via Brevo
       try {

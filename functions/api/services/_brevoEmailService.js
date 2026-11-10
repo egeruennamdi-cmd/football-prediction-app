@@ -8,8 +8,10 @@
  * - Reply-To: DeepPredictBet Support <support@deeppredictbet.com>
  * - Branding: Deep (#10b981 - Royal Green), Predict (#38bdf8 - Royal Blue), Bet (#ef4444 - Royal Red)
  * - Zero API key exposure to clients, logs, or public payloads
- * - High-resilience delivery with idempotency, timeout protection & plain-text fallbacks
+ * - High-resilience delivery with distributed edge idempotency, timeout protection & plain-text fallbacks
  */
+
+import { hashToken, putTokenKv, getTokenKv, deleteTokenKv } from './_tokenSecurityService.js';
 
 const BREVO_API_URL = 'https://api.brevo.com/v3/smtp/email';
 const DEFAULT_SENDER_NAME = 'DeepPredictBet';
@@ -54,22 +56,91 @@ export function escapeHtml(str) {
 }
 
 /**
- * Generates an idempotency key to prevent accidental duplicate dispatches
+ * Generates an anonymized deterministic idempotency key
+ * Computes SHA-256 hash to ensure zero PII (email/token) exposure in storage keys
  */
-function buildIdempotencyKey(toEmail, templateType, uniqueRef = '') {
+export async function buildDistributedIdempotencyKey(toEmail, templateType, uniqueRef = '') {
+  const rawKey = `${normalizeEmail(toEmail)}:${templateType}:${uniqueRef || ''}`;
+  const keyHash = await hashToken(rawKey);
+  return `idemp_email:${keyHash}`;
+}
+
+export function buildIdempotencyKey(toEmail, templateType, uniqueRef = '') {
   return `${normalizeEmail(toEmail)}:${templateType}:${uniqueRef || ''}`;
 }
 
 /**
- * Checks and records recent dispatch to enforce duplicate suppression
+ * Distributed edge idempotency checker across local memory and Cloudflare KV
  */
-function checkAndRecordIdempotency(key) {
+export async function checkDistributedIdempotency(env, storageKey) {
+  const now = Date.now();
+
+  // Tier 1: Local In-Memory Cache (ultrafast sub-millisecond check for warm isolates)
+  const mem = recentDispatches.get(storageKey);
+  if (mem && (now - mem.timestamp) < 90000) {
+    if (mem.result && (mem.result.status === 'ACCEPTED' || mem.result.status === 'ACCEPTED_SIMULATION' || mem.result.success)) {
+      return { isDuplicate: true, cachedResult: mem.result };
+    }
+  }
+
+  // Tier 2: Distributed Cloudflare KV Coordination across edge isolates
+  try {
+    const kvRecord = await getTokenKv(env, storageKey);
+    if (kvRecord) {
+      if (kvRecord.status === 'ACCEPTED' || kvRecord.status === 'ACCEPTED_SIMULATION' || kvRecord.success) {
+        recentDispatches.set(storageKey, { timestamp: kvRecord.timestamp || now, result: kvRecord });
+        return { isDuplicate: true, cachedResult: kvRecord };
+      }
+      if (kvRecord.status === 'IN_FLIGHT' && (now - (kvRecord.timestamp || 0)) < 30000) {
+        return {
+          isDuplicate: true,
+          inFlight: true,
+          cachedResult: {
+            code: 'DUPLICATE_IN_FLIGHT',
+            message: 'Simultaneous duplicate email dispatch currently in-flight on another edge isolate.'
+          }
+        };
+      }
+    }
+  } catch (e) {
+    console.warn('[BrevoIdempotency] KV lookup non-blocking warning:', e.message);
+  }
+
+  return { isDuplicate: false };
+}
+
+export async function lockDistributedIdempotency(env, storageKey) {
+  const lockData = { status: 'IN_FLIGHT', timestamp: Date.now() };
+  recentDispatches.set(storageKey, { timestamp: Date.now(), result: lockData });
+  try {
+    await putTokenKv(env, storageKey, lockData, 90);
+  } catch (_) {}
+}
+
+export async function commitDistributedIdempotency(env, storageKey, result) {
+  const record = { status: 'ACCEPTED', timestamp: Date.now(), ...result };
+  recentDispatches.set(storageKey, { timestamp: Date.now(), result: record });
+  try {
+    await putTokenKv(env, storageKey, record, 90);
+  } catch (_) {}
+}
+
+export async function releaseDistributedIdempotency(env, storageKey) {
+  recentDispatches.delete(storageKey);
+  try {
+    await deleteTokenKv(env, storageKey);
+  } catch (_) {}
+}
+
+/**
+ * Backward-compatible synchronous memory helpers
+ */
+export function checkAndRecordIdempotency(key) {
   const now = Date.now();
   const existing = recentDispatches.get(key);
   if (existing && (now - existing.timestamp) < 60000) {
     return { isDuplicate: true, cachedResult: existing.result };
   }
-  // Housekeep old entries
   if (recentDispatches.size > 500) {
     for (const [k, v] of recentDispatches.entries()) {
       if (now - v.timestamp > 120000) recentDispatches.delete(k);
@@ -78,7 +149,7 @@ function checkAndRecordIdempotency(key) {
   return { isDuplicate: false };
 }
 
-function storeIdempotencyResult(key, result) {
+export function storeIdempotencyResult(key, result) {
   recentDispatches.set(key, { timestamp: Date.now(), result });
 }
 
@@ -296,18 +367,23 @@ export async function sendTransactionalEmail(env, {
     };
   }
 
-  // 3. Idempotency Check
+  // 3. Distributed Idempotency Check across Isolates & Memory
+  const distributedStorageKey = await buildDistributedIdempotencyKey(to, templateType, uniqueRef);
   const idempotencyKey = buildIdempotencyKey(to, templateType, uniqueRef);
-  const idempotencyCheck = checkAndRecordIdempotency(idempotencyKey);
-  if (idempotencyCheck.isDuplicate) {
+
+  const distributedCheck = await checkDistributedIdempotency(env, distributedStorageKey);
+  if (distributedCheck.isDuplicate) {
     return {
+      ...(distributedCheck.cachedResult || {}),
       success: true,
       code: 'DUPLICATE_SUPPRESSED',
       message: 'Duplicate email suppressed within rate-limit window.',
-      cached: true,
-      ...idempotencyCheck.cachedResult
+      cached: true
     };
   }
+
+  // Set atomic/distributed in-flight lock to prevent simultaneous duplicate dispatches
+  await lockDistributedIdempotency(env, distributedStorageKey);
 
   // 4. Resolve Environment Secrets
   const brevoApiKey = (env && env.BREVO_API_KEY) || (typeof process !== 'undefined' && process.env && process.env.BREVO_API_KEY) || '';
@@ -324,10 +400,12 @@ export async function sendTransactionalEmail(env, {
       provider: 'brevo_simulation',
       messageId: `sim_${Date.now()}_${Math.random().toString(36).substring(2, 8)}`,
       status: 'ACCEPTED_SIMULATION',
+      deliveryStatus: 'ACCEPTED_FOR_RELAY_SIMULATION',
       to: normalizeEmail(to),
       subject
     };
     storeIdempotencyResult(idempotencyKey, simResult);
+    await commitDistributedIdempotency(env, distributedStorageKey, simResult);
     return simResult;
   }
 
@@ -384,11 +462,15 @@ export async function sendTransactionalEmail(env, {
         provider: 'brevo',
         messageId: responseData.messageId || `msg_${Date.now()}`,
         status: 'ACCEPTED',
+        deliveryStatus: 'ACCEPTED_FOR_RELAY', // Distinct from confirmed inbox delivery
         timestamp: new Date().toISOString()
       };
       storeIdempotencyResult(idempotencyKey, result);
+      await commitDistributedIdempotency(env, distributedStorageKey, result);
       return result;
     } else {
+      // Release distributed lock so legitimate retries can proceed
+      await releaseDistributedIdempotency(env, distributedStorageKey);
       const errCode = responseData.code || `HTTP_${response.status}`;
       const errMsg = responseData.message || response.statusText || 'Brevo API rejected email request';
       return {
@@ -401,6 +483,8 @@ export async function sendTransactionalEmail(env, {
     }
   } catch (err) {
     if (timeoutId) clearTimeout(timeoutId);
+    // Release distributed lock so legitimate retries can proceed
+    await releaseDistributedIdempotency(env, distributedStorageKey);
     const isTimeout = err.name === 'AbortError' || err.message.includes('timeout');
     return {
       success: false,
