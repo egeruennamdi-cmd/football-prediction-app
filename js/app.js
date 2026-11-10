@@ -10687,9 +10687,40 @@ function checkPasswordResetUrlParams() {
       setTimeout(() => {
         activateResetPasswordView(token, email || '');
       }, 300);
+    } else if (action === 'verify-email' && token) {
+      setTimeout(() => {
+        handleEmailVerificationUrlAction(token, email || '');
+      }, 300);
     }
   } catch (e) {}
 }
+
+
+async function handleEmailVerificationUrlAction(token, email) {
+  if (typeof showToast === 'function') showToast('⏳ Verifying your email address...', 'info');
+  try {
+    const res = await fetch('/api/verify-email', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ token, email })
+    });
+    const data = await res.json().catch(() => ({}));
+    if (res.ok && data.success) {
+      const msg = data.alreadyVerified ? '✅ Email already verified! Welcome back to DeepPredictBet.' : '🎉 Email verified successfully! Your DeepPredictBet account is active.';
+      if (typeof showToast === 'function') showToast(msg, 'success'); else alert(msg);
+      try { window.history.replaceState({}, document.title, window.location.pathname); } catch (_) {}
+      if (!localStorage.getItem('userLoggedIn') && typeof openAuthModal === 'function') {
+        setTimeout(() => openAuthModal('login'), 800);
+      }
+    } else {
+      const errMsg = (data && data.error) || 'Email verification link is invalid or has expired.';
+      if (typeof showToast === 'function') showToast('⚠️ ' + errMsg, 'error'); else alert('⚠️ ' + errMsg);
+    }
+  } catch (err) {
+    console.warn('[VerifyEmail] Verification error:', err.message);
+  }
+}
+window.handleEmailVerificationUrlAction = handleEmailVerificationUrlAction;
 window.checkPasswordResetUrlParams = checkPasswordResetUrlParams;
 if (document.readyState === 'loading') {
   document.addEventListener('DOMContentLoaded', checkPasswordResetUrlParams);

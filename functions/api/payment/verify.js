@@ -4,6 +4,8 @@
  * Strictly validates plan, currency, and amount. Rejects any client-side tampering.
  */
 
+import { sendVipPaymentSuccessEmail } from '../services/_brevoEmailService.js';
+
 const CF_ACCOUNT_ID = '2e500cb9c6dde4a2a8f47853fe5efe7c';
 const CF_KV_NAMESPACE_ID = 'c24f3ae03abd42788257bec2f7d3c065';
 const CF_API_TOKEN = 'cfoat_M5XWA9h4W490gp-jkOQPlyJj-Yhxbvf9FhHVlGFpWvE.Eq4GTdNoGZ6XPS-XwBawDnD5ThF_olt2iwFbRgdtDRo';
@@ -200,6 +202,19 @@ export async function onRequestPost(context) {
         }
       } catch (kvErr) {
         console.warn('[Payment Verify] Non-blocking KV sync warning:', kvErr.message);
+      }
+
+      // Non-blocking Transactional VIP Payment & Entitlement Confirmation via Brevo
+      try {
+        await sendVipPaymentSuccessEmail(context.env, {
+          email: userEmail,
+          name: userEmail.split('@')[0] || 'VIP Member',
+          plan: plan,
+          transaction: transactionRecord,
+          subscription: verifiedSubscription
+        });
+      } catch (emailErr) {
+        console.warn('[Payment Verify] Brevo email dispatch warning:', emailErr.message);
       }
     }
 

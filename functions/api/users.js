@@ -4,6 +4,8 @@
  * Hardened with Privilege Gating, Zero-Downtime Environment Variables, and IDOR Prevention.
  */
 
+import { sendAccountVerificationEmail } from './services/_brevoEmailService.js';
+
 const CF_ACCOUNT_ID = '2e500cb9c6dde4a2a8f47853fe5efe7c';
 const CF_KV_NAMESPACE_ID = 'c24f3ae03abd42788257bec2f7d3c065';
 const FALLBACK_CF_API_TOKEN = 'cfoat_M5XWA9h4W490gp-jkOQPlyJj-Yhxbvf9FhHVlGFpWvE.Eq4GTdNoGZ6XPS-XwBawDnD5ThF_olt2iwFbRgdtDRo';
@@ -262,6 +264,11 @@ export async function onRequestPost(context) {
       members[existingIndex] = registeredUser;
     } else {
       // NEW REGISTRATION: Enforce role = 'USER' and coinsBalance = 500 for unauthenticated callers
+      const vRand = Math.random().toString(36).substring(2, 10);
+      const vTime = Date.now().toString(36);
+      const verificationToken = `vfy_${vRand}${vTime}`;
+      const verificationTokenExpires = Date.now() + (24 * 60 * 60 * 1000); // 24 hours
+
       registeredUser = {
         id: body.id || `usr_${Math.random().toString(36).substring(2, 9)}`,
         fullName: cleanName,
@@ -270,6 +277,9 @@ export async function onRequestPost(context) {
         passwordHash: body.passwordHash || '',
         role: isAdmin ? (body.role || 'USER') : 'USER',
         coinsBalance: isAdmin && body.coinsBalance !== undefined ? body.coinsBalance : 500,
+        emailVerified: false,
+        verificationToken: verificationToken,
+        verificationTokenExpires: verificationTokenExpires,
         savedTickets: body.savedTickets || [],
         watchlist: body.watchlist || [],
         alerts: body.alerts || { telegram: true, scanner: true, digest: false },
@@ -279,6 +289,31 @@ export async function onRequestPost(context) {
         createdAt: body.createdAt || new Date().toISOString()
       };
       members.unshift(registeredUser);
+
+      // Store one-time verification token in KV with 86400s TTL for instant lookup
+      if (context.env && context.env.USERS_KV) {
+        try {
+          await context.env.USERS_KV.put(`verify_token:${verificationToken}`, JSON.stringify({
+            email: cleanEmail,
+            username: registeredUser.username,
+            expires: verificationTokenExpires
+          }), { expirationTtl: 86400 });
+        } catch (e) {}
+      }
+
+      // Non-blocking Brevo transactional verification email dispatch
+      const origin = new URL(context.request.url).origin;
+      const verificationUrl = `${origin}/?action=verify-email&token=${verificationToken}&email=${encodeURIComponent(cleanEmail)}`;
+      try {
+        await sendAccountVerificationEmail(context.env, {
+          email: cleanEmail,
+          name: cleanName,
+          verificationUrl,
+          token: verificationToken
+        });
+      } catch (e) {
+        console.warn('[Users/Register] Brevo dispatch warning:', e.message);
+      }
     }
 
     // Persist to Cloudflare KV
@@ -286,10 +321,12 @@ export async function onRequestPost(context) {
 
     const safeUser = { ...registeredUser };
     delete safeUser.passwordHash;
+    delete safeUser.verificationToken;
+    delete safeUser.verificationTokenExpires;
 
     return new Response(JSON.stringify({
       success: true,
-      message: 'Account registered and synced to global cloud database!',
+      message: 'Account registered and synced to global cloud database! Verification email sent.',
       user: safeUser,
       totalUsers: members.length
     }), {

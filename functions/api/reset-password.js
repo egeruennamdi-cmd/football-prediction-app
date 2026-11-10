@@ -7,6 +7,8 @@
  *    and invalidates the one-time token.
  */
 
+import { sendPasswordResetEmail, sendPasswordChangedAlert } from './services/_brevoEmailService.js';
+
 const CF_ACCOUNT_ID = '2e500cb9c6dde4a2a8f47853fe5efe7c';
 const CF_KV_NAMESPACE_ID = 'c24f3ae03abd42788257bec2f7d3c065';
 const FALLBACK_CF_API_TOKEN = 'cfoat_M5XWA9h4W490gp-jkOQPlyJj-Yhxbvf9FhHVlGFpWvE.Eq4GTdNoGZ6XPS-XwBawDnD5ThF_olt2iwFbRgdtDRo';
@@ -122,13 +124,29 @@ async function saveMembers(context, members) {
   }
 }
 
-async function sendResetEmail(toEmail, recipientName, resetUrl, context) {
+async function sendResetEmail(toEmail, recipientName, resetUrl, context, token = '') {
   const env = (context && context.env) || {};
   const fromName = 'DeepPredictBet Security';
   const defaultFrom = 'support@deeppredictbet.com';
+
+  // 1. Authoritative Brevo Transactional Email Service (DeepPredictBet Primary Partner)
+  try {
+    const brevoRes = await sendPasswordResetEmail(env, {
+      email: toEmail,
+      name: recipientName,
+      resetUrl,
+      token
+    });
+    if (brevoRes && brevoRes.success) {
+      return { success: true, provider: 'brevo', messageId: brevoRes.messageId };
+    }
+  } catch (brevoErr) {
+    console.warn('[ResetPassword] Brevo service warning:', brevoErr.message);
+  }
+
   const resendApiKey = env.RESEND_API_KEY || FALLBACK_RESEND_API_KEY;
 
-  // 1. Resend (https://resend.com) - Premier Cloudflare Workers Email Partner
+  // 2. Resend (https://resend.com) - Secondary Cloudflare Workers Partner
   if (resendApiKey) {
     try {
       // If custom domain sender is configured, try it first
@@ -417,7 +435,7 @@ export async function onRequestPost(context) {
       const resetLink = `${origin}/?action=reset-password&token=${resetToken}&email=${encodeURIComponent(targetEmail)}`;
 
       // Attempt email dispatch
-      const emailResult = await sendResetEmail(targetEmail, targetName, resetLink, context);
+      const emailResult = await sendResetEmail(targetEmail, targetName, resetLink, context, resetToken);
       const emailSent = Boolean(emailResult && emailResult.success);
 
       let message = '';
@@ -557,6 +575,17 @@ export async function onRequestPost(context) {
         try {
           await context.env.USERS_KV.delete(`reset_token:${token}`);
         } catch (e) {}
+      }
+
+      // Security Notification: Dispatch Password Changed Confirmation Alert via Brevo
+      try {
+        await sendPasswordChangedAlert(context.env, {
+          email: user.email,
+          name: user.fullName || user.username,
+          timestamp: user.passwordUpdatedAt
+        });
+      } catch (alertErr) {
+        console.warn('[ResetPassword] Security alert dispatch warning:', alertErr.message);
       }
 
       return new Response(JSON.stringify({
