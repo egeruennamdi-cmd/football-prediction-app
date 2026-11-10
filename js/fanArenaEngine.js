@@ -37,6 +37,12 @@
     root.calculateVotingPercentages = api.calculateVotingPercentages;
     root.generateFanArenaFilename = api.generateDownloadFilename;
     root.FAN_ARENA_FORMATS = api.FAN_ARENA_FORMATS;
+    root.generateFanArenaSocialCaption = api.generateFanArenaSocialCaption;
+    root.getFanArenaCaption = api.getFanArenaCaption;
+    root.updateFanArenaCaption = api.updateFanArenaCaption;
+    root.regenerateFanArenaCaption = api.regenerateFanArenaCaption;
+    root.restoreFanArenaCaption = api.restoreFanArenaCaption;
+    root.copyFanArenaCaption = api.copyFanArenaCaption;
   }
   if (typeof globalThis !== 'undefined') {
     globalThis.FanArenaEngine = api;
@@ -51,6 +57,12 @@
     globalThis.calculateVotingPercentages = api.calculateVotingPercentages;
     globalThis.generateFanArenaFilename = api.generateDownloadFilename;
     globalThis.FAN_ARENA_FORMATS = api.FAN_ARENA_FORMATS;
+    globalThis.generateFanArenaSocialCaption = api.generateFanArenaSocialCaption;
+    globalThis.getFanArenaCaption = api.getFanArenaCaption;
+    globalThis.updateFanArenaCaption = api.updateFanArenaCaption;
+    globalThis.regenerateFanArenaCaption = api.regenerateFanArenaCaption;
+    globalThis.restoreFanArenaCaption = api.restoreFanArenaCaption;
+    globalThis.copyFanArenaCaption = api.copyFanArenaCaption;
   }
   if (typeof window !== 'undefined') {
     window.FanArenaEngine = api;
@@ -65,6 +77,12 @@
     window.calculateVotingPercentages = api.calculateVotingPercentages;
     window.generateFanArenaFilename = api.generateDownloadFilename;
     window.FAN_ARENA_FORMATS = api.FAN_ARENA_FORMATS;
+    window.generateFanArenaSocialCaption = api.generateFanArenaSocialCaption;
+    window.getFanArenaCaption = api.getFanArenaCaption;
+    window.updateFanArenaCaption = api.updateFanArenaCaption;
+    window.regenerateFanArenaCaption = api.regenerateFanArenaCaption;
+    window.restoreFanArenaCaption = api.restoreFanArenaCaption;
+    window.copyFanArenaCaption = api.copyFanArenaCaption;
   }
 })(typeof globalThis !== 'undefined' ? globalThis : (typeof window !== 'undefined' ? window : this), function () {
   'use strict';
@@ -654,15 +672,15 @@
       ctx.textAlign = 'center';
       ctx.fillText('🗳️ WHO IS WINNING? — FAN ARENA POLL', 540, 450);
 
-      ctx.fillStyle = '#c084fc';
-      ctx.font = '600 16px system-ui, -apple-system, sans-serif';
-      ctx.fillText(`👥 ${voteData.totalVotes.toLocaleString()} Verified Fan Votes Cast · Real-Time Community Prediction`, 540, 482);
+      ctx.fillStyle = '#38bdf8';
+      ctx.font = '800 18px system-ui, -apple-system, sans-serif';
+      ctx.fillText('💬 CAST YOUR VOTE IN THE COMMENTS!', 540, 482);
 
-      // 3 Voting Bars
+      // 3 Voting Bars (Zero-Percent Social Poll for Social Comment Voting)
       const options = [
-        { label: `1 · ${h} Win`, pct: voteData.homePct, votes: voteData.homeVotes, color: '#38bdf8', y: 520 },
-        { label: 'X · Match Draw', pct: voteData.drawPct, votes: voteData.drawVotes, color: '#94a3b8', y: 660 },
-        { label: `2 · ${a} Win`, pct: voteData.awayPct, votes: voteData.awayVotes, color: '#c084fc', y: 800 }
+        { label: `1 · ${h} Win`, color: '#38bdf8', y: 520 },
+        { label: 'X · Match Draw', color: '#94a3b8', y: 660 },
+        { label: `2 · ${a} Win`, color: '#c084fc', y: 800 }
       ];
 
       options.forEach(opt => {
@@ -679,24 +697,16 @@
         ctx.textAlign = 'left';
         ctx.fillText(opt.label, 110, opt.y + 44);
 
-        // Percentage & Counts
+        // Zero-Percent Social Poll Display (0% fill for social media comment voting)
         ctx.fillStyle = opt.color;
         ctx.font = '900 32px system-ui, -apple-system, sans-serif';
         ctx.textAlign = 'right';
-        ctx.fillText(`${opt.pct}%`, 970, opt.y + 45);
+        ctx.fillText('0%', 970, opt.y + 45);
 
-        ctx.fillStyle = '#64748b';
-        ctx.font = '600 14px system-ui, -apple-system, sans-serif';
-        ctx.fillText(`${opt.votes.toLocaleString()} votes`, 880, opt.y + 45);
-
-        // Progress Bar
+        // Progress Bar (Empty track only, 0% fill width)
         const barW = 860;
         ctx.fillStyle = 'rgba(255, 255, 255, 0.08)';
         ctx.fillRect(110, opt.y + 68, barW, 16);
-
-        ctx.fillStyle = opt.color;
-        const fillW = Math.max(12, Math.round(barW * (opt.pct / 100)));
-        ctx.fillRect(110, opt.y + 68, fillW, 16);
       });
 
       // Mandatory Compliance Footer
@@ -800,15 +810,15 @@
       ctx.font = '800 22px system-ui, -apple-system, sans-serif';
       ctx.fillText('FAN ARENA MATCH POLL', 540, 715);
 
-      ctx.fillStyle = '#94a3b8';
-      ctx.font = '600 18px system-ui, -apple-system, sans-serif';
-      ctx.fillText(`👥 ${voteData.totalVotes.toLocaleString()} Fan Votes Recorded · Cast Your Vote Live`, 540, 755);
+      ctx.fillStyle = '#38bdf8';
+      ctx.font = '800 20px system-ui, -apple-system, sans-serif';
+      ctx.fillText('💬 CAST YOUR VOTE IN THE COMMENTS!', 540, 755);
 
-      // 3 Large Voting Outcome Cards
+      // 3 Large Voting Outcome Cards (Zero-Percent Social Poll)
       const optionsP = [
-        { title: `1 · ${h} to Win`, pct: voteData.homePct, votes: voteData.homeVotes, color: '#38bdf8', y: 810 },
-        { title: 'X · Match to End in Draw', pct: voteData.drawPct, votes: voteData.drawVotes, color: '#94a3b8', y: 1110 },
-        { title: `2 · ${a} to Win`, pct: voteData.awayPct, votes: voteData.awayVotes, color: '#c084fc', y: 1410 }
+        { title: `1 · ${h} to Win`, color: '#38bdf8', y: 810 },
+        { title: 'X · Match to End in Draw', color: '#94a3b8', y: 1110 },
+        { title: `2 · ${a} to Win`, color: '#c084fc', y: 1410 }
       ];
 
       optionsP.forEach(opt => {
@@ -823,23 +833,16 @@
         ctx.textAlign = 'left';
         ctx.fillText(opt.title, 120, opt.y + 65);
 
+        // Zero-Percent Social Poll Display
         ctx.fillStyle = opt.color;
         ctx.font = '900 56px system-ui, -apple-system, sans-serif';
         ctx.textAlign = 'right';
-        ctx.fillText(`${opt.pct}%`, 960, opt.y + 75);
+        ctx.fillText('0%', 960, opt.y + 75);
 
-        ctx.fillStyle = '#64748b';
-        ctx.font = '600 18px system-ui, -apple-system, sans-serif';
-        ctx.fillText(`${opt.votes.toLocaleString()} fan votes`, 120, opt.y + 115);
-
-        // Large Progress Bar
+        // Large Empty Progress Bar (0% fill width)
         const barW = 840;
         ctx.fillStyle = 'rgba(255, 255, 255, 0.08)';
         ctx.fillRect(120, opt.y + 160, barW, 26);
-
-        ctx.fillStyle = opt.color;
-        const fillW = Math.max(16, Math.round(barW * (opt.pct / 100)));
-        ctx.fillRect(120, opt.y + 160, fillW, 26);
       });
 
       // Mandatory Compliance Footer
@@ -939,15 +942,15 @@
       ctx.textAlign = 'center';
       ctx.fillText('🗳️ WHO IS WINNING? — FAN ARENA POLL', 887, 145);
 
-      ctx.fillStyle = '#c084fc';
-      ctx.font = '600 14px system-ui, -apple-system, sans-serif';
-      ctx.fillText(`👥 ${voteData.totalVotes.toLocaleString()} Votes Cast · Community Prediction`, 887, 175);
+      ctx.fillStyle = '#38bdf8';
+      ctx.font = '800 15px system-ui, -apple-system, sans-serif';
+      ctx.fillText('💬 CAST YOUR VOTE IN THE COMMENTS!', 887, 175);
 
-      // 3 Voting Rows in Right Column
+      // 3 Voting Rows in Right Column (Zero-Percent Social Poll)
       const optionsL = [
-        { label: `1 · ${h} Win`, pct: voteData.homePct, votes: voteData.homeVotes, color: '#38bdf8', y: 205 },
-        { label: 'X · Match Draw', pct: voteData.drawPct, votes: voteData.drawVotes, color: '#94a3b8', y: 325 },
-        { label: `2 · ${a} Win`, pct: voteData.awayPct, votes: voteData.awayVotes, color: '#c084fc', y: 445 }
+        { label: `1 · ${h} Win`, color: '#38bdf8', y: 205 },
+        { label: 'X · Match Draw', color: '#94a3b8', y: 325 },
+        { label: `2 · ${a} Win`, color: '#c084fc', y: 445 }
       ];
 
       optionsL.forEach(opt => {
@@ -962,23 +965,16 @@
         ctx.textAlign = 'left';
         ctx.fillText(opt.label, 650, opt.y + 36);
 
+        // Zero-Percent Social Poll Display
         ctx.fillStyle = opt.color;
         ctx.font = '900 26px system-ui, -apple-system, sans-serif';
         ctx.textAlign = 'right';
-        ctx.fillText(`${opt.pct}%`, 1125, opt.y + 36);
+        ctx.fillText('0%', 1125, opt.y + 36);
 
-        ctx.fillStyle = '#64748b';
-        ctx.font = '600 13px system-ui, -apple-system, sans-serif';
-        ctx.fillText(`${opt.votes.toLocaleString()} votes`, 1050, opt.y + 36);
-
-        // Progress Bar
+        // Empty Progress Bar (0% fill)
         const barW = 475;
         ctx.fillStyle = 'rgba(255, 255, 255, 0.08)';
         ctx.fillRect(650, opt.y + 55, barW, 14);
-
-        ctx.fillStyle = opt.color;
-        const fillW = Math.max(10, Math.round(barW * (opt.pct / 100)));
-        ctx.fillRect(650, opt.y + 55, fillW, 14);
       });
 
       // Mandatory Compliance Footer
@@ -1159,6 +1155,269 @@
     document.body.removeChild(textArea);
   }
 
+  // =========================================================================
+  // DEDICATED FACTUAL SOCIAL CAPTION SYSTEM (EDITABLE & DYNAMIC)
+  // =========================================================================
+
+  const captionVariants = new Map(); // matchId -> variantIndex (0..3)
+  const activeCaptions = new Map();   // matchId -> edited or generated text
+
+  function toHashtag(str) {
+    if (!str) return '';
+    return str.replace(/[^a-zA-Z0-9]/g, '');
+  }
+
+  /**
+   * Factual Social Caption Generator for Social Media Match Polls
+   * Tailored for manual publishing on Facebook, Instagram, WhatsApp Status, and X.
+   */
+  function generateFanArenaSocialCaption(match, variantIndex = 0) {
+    if (!match) return '';
+
+    const h = match.homeTeam?.name || (typeof match.homeTeam === 'string' ? match.homeTeam : 'Home Team');
+    const a = match.awayTeam?.name || (typeof match.awayTeam === 'string' ? match.awayTeam : 'Away Team');
+    const comp = match.competition || match.league || 'Football';
+    const dateStr = match.date || 'Today';
+    const timeStr = match.time || '16:30';
+
+    const hTag = toHashtag(h);
+    const aTag = toHashtag(a);
+    const compTag = toHashtag(comp);
+    const siteUrl = 'https://deeppredictbet.com';
+
+    const varIdx = Math.abs(Number(variantIndex) || 0) % 4;
+
+    const isLive = Boolean(match.isLive);
+    const isFT = Boolean(match.isFT || (match.status && match.status.toUpperCase() === 'FT') || (match.time && match.time.toUpperCase().includes('FT')));
+
+    if (isFT) {
+      const score = (match.homeScore !== undefined && match.awayScore !== undefined) ? `${match.homeScore} - ${match.awayScore}` : (match.score || '');
+      const scoreLine = score ? `\n📊 Final Score: ${h} ${score} ${a}` : '';
+      return `🏁 FAN ARENA POLL REVIEW: ${h} vs ${a}
+${scoreLine}
+🏆 ${comp} · ${dateStr}
+
+Did this match outcome match your pre-match prediction?
+1️⃣ ${h} Win
+🤝 Match Draw
+2️⃣ ${a} Win
+
+💬 CAST YOUR VOTE IN THE COMMENTS!
+Did you see this result coming? Share your tactical review and verdict below 👇
+
+🌐 Full match stats & verified AI predictive ratings:
+${siteUrl}
+
+#DeepPredictBet #FanArena #${compTag} #FootballDebate #MatchPrediction #${hTag} #${aTag}`;
+    }
+
+    if (isLive) {
+      const score = (match.homeScore !== undefined && match.awayScore !== undefined) ? `${match.homeScore} - ${match.awayScore}` : (match.score || '');
+      const scoreText = score ? ` (${score})` : '';
+      const elapsed = match.elapsed ? ` · ⏱️ ${match.elapsed}'` : '';
+      return `🔴 LIVE MATCH POLL: ${h} vs ${a}${scoreText}
+🏆 ${comp}${elapsed}
+
+Who takes the win from here?
+1️⃣ ${h} Win
+🤝 Draw
+2️⃣ ${a} Win
+
+💬 CAST YOUR VOTE IN THE COMMENTS!
+Drop your live in-play prediction below 👇
+
+🌐 Follow live probability updates:
+${siteUrl}
+
+#DeepPredictBet #FanArena #${compTag} #LiveFootball #${hTag} #${aTag}`;
+    }
+
+    if (varIdx === 0) {
+      return `⚽ THE FAN ARENA POLL IS OPEN!
+
+🔥 ${h} vs ${a}
+🏆 ${comp}
+📅 ${dateStr} · ⏰ Kickoff: ${timeStr}
+
+Cast your verdict on this clash:
+1️⃣ ${h} Win
+🤝 Match Draw
+2️⃣ ${a} Win
+
+💬 CAST YOUR VOTE IN THE COMMENTS!
+Drop your predicted scoreline and match reasoning below 👇
+
+🌐 Verified AI football predictions & analytics:
+${siteUrl}
+
+#DeepPredictBet #FanArena #${compTag} #FootballDebate #MatchPrediction #${hTag} #${aTag}`;
+    } else if (varIdx === 1) {
+      return `🔥 FOOTBALL FANS, WE WANT YOUR VERDICT!
+
+⚔️ ${h} vs ${a}
+🏆 ${comp}
+📅 ${dateStr} · ⏰ Local Kickoff: ${timeStr}
+
+Who takes all three points?
+1️⃣ ${h} to Win
+🤝 Draw
+2️⃣ ${a} to Win
+
+💬 CAST YOUR VOTE IN THE COMMENTS!
+Who gets your backing today? Drop your scoreline and explain why 👇
+
+🌐 Free AI tactical match previews & odds value:
+${siteUrl}
+
+#DeepPredictBet #FanArena #${compTag} #MatchPrediction #FootballCommunity #${hTag} #${aTag}`;
+    } else if (varIdx === 2) {
+      return `💬 WHO GETS YOUR VOTE IN THIS SHOWDOWN?
+
+🏟️ ${h} vs ${a}
+🏆 ${comp} · 📅 ${dateStr} (${timeStr})
+
+Match Outcome Voting:
+1️⃣ ${h} Win
+🤝 Stalemate / Draw
+2️⃣ ${a} Win
+
+💬 CAST YOUR VOTE IN THE COMMENTS!
+Let's hear your score predictions and tactical takes below! 👇
+
+🌐 Official DeepPredictBet Fan Arena:
+${siteUrl}
+
+#DeepPredictBet #FanArena #${compTag} #FootballDebate #${hTag} #${aTag}`;
+    } else {
+      return `⚡ MATCH PREDICTION POLL — WHO TAKES THE POINTS?
+
+🔥 ${h} vs ${a}
+🏆 ${comp} · 📅 ${dateStr} · ⏰ ${timeStr}
+
+Select your choice:
+1️⃣ ${h} Victory
+🤝 Shared Points (Draw)
+2️⃣ ${a} Victory
+
+💬 CAST YOUR VOTE IN THE COMMENTS!
+Tell us who wins and why! ⚽👇
+
+🌐 In-depth Poisson algorithms & betting intelligence:
+${siteUrl}
+
+#DeepPredictBet #FanArena #${compTag} #FootballPrediction #${hTag} #${aTag}`;
+    }
+  }
+
+  function getFanArenaCaption(matchIdInput, matchObj) {
+    const match = matchObj || resolveMatch(matchIdInput) || state.activeMatch;
+    const mId = String(matchIdInput || (match ? match.id : state.activeMatchId || 'default'));
+    if (activeCaptions.has(mId)) {
+      return activeCaptions.get(mId);
+    }
+    const vIdx = captionVariants.get(mId) || 0;
+    const generated = generateFanArenaSocialCaption(match, vIdx);
+    activeCaptions.set(mId, generated);
+    return generated;
+  }
+
+  function updateFanArenaCaption(matchIdInput, newText) {
+    const mId = String(matchIdInput || state.activeMatchId || 'default');
+    activeCaptions.set(mId, newText);
+  }
+
+  function regenerateFanArenaCaption(matchIdInput, matchObj, textareaId) {
+    const match = matchObj || resolveMatch(matchIdInput) || state.activeMatch;
+    const mId = String(matchIdInput || (match ? match.id : state.activeMatchId || 'default'));
+    const currentIdx = captionVariants.get(mId) || 0;
+    const nextIdx = (currentIdx + 1) % 4;
+    captionVariants.set(mId, nextIdx);
+
+    const freshText = generateFanArenaSocialCaption(match, nextIdx);
+    activeCaptions.set(mId, freshText);
+
+    if (typeof document !== 'undefined') {
+      if (textareaId) {
+        const el = document.getElementById(textareaId);
+        if (el) el.value = freshText;
+      }
+      const modalTextarea = document.getElementById('fan-arena-modal-social-caption-textarea');
+      if (modalTextarea && String(state.activeMatchId) === mId) {
+        modalTextarea.value = freshText;
+      }
+      const tgTextarea = document.getElementById('tg-fa-social-caption-textarea');
+      if (tgTextarea) {
+        tgTextarea.value = freshText;
+      }
+    }
+    return freshText;
+  }
+
+  function restoreFanArenaCaption(matchIdInput, matchObj, textareaId) {
+    const match = matchObj || resolveMatch(matchIdInput) || state.activeMatch;
+    const mId = String(matchIdInput || (match ? match.id : state.activeMatchId || 'default'));
+    captionVariants.set(mId, 0);
+
+    const originalText = generateFanArenaSocialCaption(match, 0);
+    activeCaptions.set(mId, originalText);
+
+    if (typeof document !== 'undefined') {
+      if (textareaId) {
+        const el = document.getElementById(textareaId);
+        if (el) el.value = originalText;
+      }
+      const modalTextarea = document.getElementById('fan-arena-modal-social-caption-textarea');
+      if (modalTextarea && String(state.activeMatchId) === mId) {
+        modalTextarea.value = originalText;
+      }
+      const tgTextarea = document.getElementById('tg-fa-social-caption-textarea');
+      if (tgTextarea) {
+        tgTextarea.value = originalText;
+      }
+    }
+    return originalText;
+  }
+
+  function copyFanArenaCaption(matchIdInput, buttonEl, textareaId) {
+    let text = '';
+    const mId = String(matchIdInput || state.activeMatchId || 'default');
+    if (textareaId && typeof document !== 'undefined') {
+      const el = document.getElementById(textareaId);
+      if (el) text = el.value;
+    }
+    if (!text && activeCaptions.has(mId)) {
+      text = activeCaptions.get(mId);
+    }
+    if (!text) {
+      text = getFanArenaCaption(mId);
+    }
+
+    const setFeedback = () => {
+      if (buttonEl) {
+        const origHtml = buttonEl.innerHTML;
+        buttonEl.innerHTML = '<span>✅</span> <span>Copied!</span>';
+        buttonEl.style.filter = 'brightness(1.2)';
+        setTimeout(() => {
+          buttonEl.innerHTML = origHtml;
+          buttonEl.style.filter = 'none';
+        }, 2000);
+      }
+      if (typeof window !== 'undefined' && typeof window.showToast === 'function') {
+        window.showToast('📋 Social caption copied to clipboard!');
+      }
+    };
+
+    if (typeof navigator !== 'undefined' && navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(text).then(setFeedback).catch(() => {
+        fallbackCopy(text);
+        setFeedback();
+      });
+    } else {
+      fallbackCopy(text);
+      setFeedback();
+    }
+  }
+
   /**
    * Open the Fan Arena Modal
    */
@@ -1305,6 +1564,12 @@
 
     // 3. Render Canvas Preview
     renderCanvasPreview();
+
+    // 4. Update Factual Social Caption in Modal
+    const modalCaptionTextarea = document.getElementById('fan-arena-modal-social-caption-textarea');
+    if (modalCaptionTextarea) {
+      modalCaptionTextarea.value = getFanArenaCaption(match.id, match);
+    }
   }
 
   /**
@@ -1342,6 +1607,12 @@
     setFanArenaExportType,
     preloadMatchAssets,
     generateDownloadFilename,
-    resolveMatch
+    resolveMatch,
+    generateFanArenaSocialCaption,
+    getFanArenaCaption,
+    updateFanArenaCaption,
+    regenerateFanArenaCaption,
+    restoreFanArenaCaption,
+    copyFanArenaCaption
   };
 });

@@ -12034,6 +12034,19 @@
     const aName = sel ? (sel.awayTeam?.name || 'Away Team') : '';
     const compName = sel ? (sel.competition || 'Football') : '';
 
+    let captionText = '';
+    if (sel) {
+      try {
+        if (typeof window !== 'undefined' && window.FanArenaEngine && typeof window.FanArenaEngine.getFanArenaCaption === 'function') {
+          captionText = window.FanArenaEngine.getFanArenaCaption(sel.id, sel);
+        } else if (typeof getFanArenaCaption === 'function') {
+          captionText = getFanArenaCaption(sel.id, sel);
+        } else if (typeof generateFanArenaSocialCaption === 'function') {
+          captionText = generateFanArenaSocialCaption(sel);
+        }
+      } catch (_) {}
+    }
+
     function renderFanArenaMatchCardVotingStats(match, vData) {
       const homeTitle = match?.homeTeam?.name || match?.home || 'Home';
       const awayTitle = match?.awayTeam?.name || match?.away || 'Away';
@@ -12303,6 +12316,49 @@
                     </button>
                   </div>
 
+                </div>
+              </div>
+
+              <!-- Dedicated Factual Social Caption (Editable) Section -->
+              <div style="background: rgba(0,0,0,0.3); border: 1px solid rgba(168,85,247,0.35); border-radius: 14px; padding: 16px;">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; flex-wrap: wrap; gap: 6px;">
+                  <span style="font-size: 0.82rem; font-weight: 900; color: #ffffff; text-transform: uppercase; display: flex; align-items: center; gap: 6px;">
+                    <span>✍️</span> <span>Factual Social Caption (Editable):</span>
+                  </span>
+                  <span style="font-size: 0.68rem; color: #c084fc; font-weight: 700; background: rgba(168,85,247,0.18); padding: 2px 8px; border-radius: 6px; border: 1px solid rgba(168,85,247,0.3);">
+                    Poll Call-To-Action
+                  </span>
+                </div>
+                <p style="font-size: 0.72rem; color: #94a3b8; margin: 0 0 10px 0;">
+                  Tailored for Facebook, Instagram, WhatsApp Status & 𝕏 football polls. Edit freely before copying.
+                </p>
+
+                <!-- Caption Textarea -->
+                <textarea id="tg-fa-social-caption-textarea"
+                          oninput="window.FanArenaEngine ? window.FanArenaEngine.updateFanArenaCaption('${sel.id}', this.value) : null"
+                          style="width: 100%; box-sizing: border-box; min-height: 165px; background: rgba(0,0,0,0.5); border: 1.5px solid rgba(255,255,255,0.15); border-radius: 10px; color: #f8fafc; padding: 12px; font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace; font-size: 0.78rem; line-height: 1.5; resize: vertical;"
+                          placeholder="Generating factual social caption...">${escapeHtml(captionText)}</textarea>
+
+                <!-- Caption Action Toolbar -->
+                <div style="display: flex; gap: 8px; flex-wrap: wrap; margin-top: 10px;">
+                  <button type="button"
+                          id="tg-fa-caption-copy-btn"
+                          onclick="window.FanArenaEngine ? window.FanArenaEngine.copyFanArenaCaption('${sel.id}', this, 'tg-fa-social-caption-textarea') : null"
+                          style="flex: 2; min-width: 150px; min-height: 38px; background: linear-gradient(135deg, #10b981 0%, #059669 100%); color: #ffffff; border: none; padding: 10px 14px; border-radius: 8px; font-weight: 800; font-size: 0.8rem; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 6px; box-shadow: 0 2px 8px rgba(16,185,129,0.3);">
+                    <span>📋</span> <span>Copy Caption</span>
+                  </button>
+
+                  <button type="button"
+                          onclick="window.FanArenaEngine ? window.FanArenaEngine.regenerateFanArenaCaption('${sel.id}', null, 'tg-fa-social-caption-textarea') : null"
+                          style="flex: 1; min-width: 130px; min-height: 38px; background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.15); color: #cbd5e1; padding: 10px 12px; border-radius: 8px; font-weight: 700; font-size: 0.78rem; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 6px;">
+                    <span>🔄</span> <span>Regenerate Caption</span>
+                  </button>
+
+                  <button type="button"
+                          onclick="window.FanArenaEngine ? window.FanArenaEngine.restoreFanArenaCaption('${sel.id}', null, 'tg-fa-social-caption-textarea') : null"
+                          style="flex: 1; min-width: 120px; min-height: 38px; background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.15); color: #94a3b8; padding: 10px 12px; border-radius: 8px; font-weight: 700; font-size: 0.78rem; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 6px;">
+                    <span>↩️</span> <span>Restore Original</span>
+                  </button>
                 </div>
               </div>
 

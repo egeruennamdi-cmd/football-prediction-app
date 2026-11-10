@@ -13354,6 +13354,21 @@ textarea:focus-visible,
   overflow: hidden;
 }
 
+/* Factual Social Caption Section */
+.fan-arena-caption-section {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-top: 4px;
+  margin-bottom: 4px;
+}
+
+.fan-arena-caption-section textarea:focus {
+  outline: none;
+  border-color: #a855f7 !important;
+  box-shadow: 0 0 10px rgba(168, 85, 247, 0.3);
+}
+
 /* Prominent Actions */
 .fan-arena-actions-bar {
   display: flex;
