@@ -4624,6 +4624,159 @@ window.openSupportModal = openSupportModal;
 window.closeSupportModal = closeSupportModal;
 window.switchSupportTab = switchSupportTab;
 
+// --- Corporate Contact Form & In-Modal Ticket Handlers ---
+async function submitSupportTicket() {
+  const subjectEl = document.getElementById("support-subject");
+  const descEl = document.getElementById("support-desc");
+  const messageEl = document.getElementById("support-message");
+  if (!subjectEl || !descEl) return;
+
+  const subject = subjectEl.value.trim();
+  const message = descEl.value.trim();
+  const email = (localStorage.getItem('currentUserEmail') || 'support-guest@deeppredictbet.com').trim();
+  const name = (localStorage.getItem('currentUsername') || 'Visitor').trim();
+
+  if (!subject || !message) {
+    if (messageEl) {
+      messageEl.style.color = '#ef4444';
+      messageEl.textContent = 'Please enter both a subject and a description.';
+    }
+    return;
+  }
+
+  if (messageEl) {
+    messageEl.style.color = '#38bdf8';
+    messageEl.textContent = 'Submitting your support inquiry...';
+  }
+
+  try {
+    const res = await fetch('/api/contact', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        name,
+        email: email.includes('@') ? email : 'guest@deeppredictbet.com',
+        category: 'Account Assistance',
+        subject,
+        message,
+        contextData: { page: 'Support Modal' }
+      })
+    });
+    const json = await res.json();
+    if (res.ok && json.success) {
+      if (messageEl) {
+        messageEl.style.color = '#10b981';
+        messageEl.textContent = '✅ Inquiry submitted! Our support team will respond shortly.';
+      }
+      subjectEl.value = '';
+      descEl.value = '';
+      if (typeof showToast === 'function') showToast('✅ Support inquiry submitted!');
+    } else {
+      throw new Error(json.message || 'Submission failed');
+    }
+  } catch (err) {
+    if (messageEl) {
+      messageEl.style.color = '#ef4444';
+      messageEl.textContent = '⚠️ ' + (err.message || 'Unable to submit. Please email support@deeppredictbet.com');
+    }
+  }
+}
+
+async function submitSupportTicketInline() {
+  return submitSupportTicket();
+}
+
+window.submitSupportTicket = submitSupportTicket;
+window.submitSupportTicketInline = submitSupportTicketInline;
+
+window.submitContactForm = async function(event) {
+  if (event) event.preventDefault();
+  const form = document.getElementById('contact-us-form');
+  const btn = document.getElementById('contact-form-submit-btn');
+  const statusEl = document.getElementById('contact-form-status');
+  if (!form) return;
+
+  const nameInput = document.getElementById('contact-name');
+  const emailInput = document.getElementById('contact-email');
+  const categoryInput = document.getElementById('contact-category');
+  const subjectInput = document.getElementById('contact-subject');
+  const messageInput = document.getElementById('contact-message');
+  const hpInput = document.getElementById('contact-hp');
+  const consentInput = document.getElementById('contact-consent');
+
+  if (consentInput && !consentInput.checked) {
+    if (statusEl) {
+      statusEl.style.display = 'block';
+      statusEl.style.color = '#ef4444';
+      statusEl.textContent = 'Please confirm consent to proceed with your enquiry.';
+    }
+    return;
+  }
+
+  const payload = {
+    name: nameInput ? nameInput.value.trim() : '',
+    email: emailInput ? emailInput.value.trim() : '',
+    category: categoryInput ? categoryInput.value : 'General Enquiry',
+    subject: subjectInput ? subjectInput.value.trim() : '',
+    message: messageInput ? messageInput.value.trim() : '',
+    website: hpInput ? hpInput.value.trim() : '',
+    contextData: {
+      page: window.location.pathname,
+      userAgent: typeof navigator !== 'undefined' ? navigator.userAgent : 'Unknown'
+    }
+  };
+
+  if (!payload.name || !payload.email || !payload.subject || !payload.message) {
+    if (statusEl) {
+      statusEl.style.display = 'block';
+      statusEl.style.color = '#ef4444';
+      statusEl.textContent = 'Please fill out all required fields.';
+    }
+    return;
+  }
+
+  if (btn) {
+    btn.disabled = true;
+    btn.innerHTML = '<span>⏳</span> <span>Sending Enquiry...</span>';
+  }
+  if (statusEl) {
+    statusEl.style.display = 'block';
+    statusEl.style.color = '#38bdf8';
+    statusEl.textContent = 'Connecting to DeepPredictBet contact service...';
+  }
+
+  try {
+    const res = await fetch('/api/contact', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload)
+    });
+    const json = await res.json();
+    if (res.ok && json.success) {
+      if (statusEl) {
+        statusEl.style.color = '#10b981';
+        statusEl.innerHTML = `✅ <strong>Message Delivered!</strong> ${json.message || 'Your enquiry has been received.'}`;
+      }
+      form.reset();
+      if (typeof showToast === 'function') {
+        showToast('✅ Enquiry sent! Confirmation dispatched to your email.');
+      }
+    } else {
+      throw new Error(json.message || 'Submission failed');
+    }
+  } catch (err) {
+    if (statusEl) {
+      statusEl.style.color = '#ef4444';
+      statusEl.textContent = '⚠️ ' + (err.message || 'Unable to submit enquiry at this time. Please email support@deeppredictbet.com directly.');
+    }
+  } finally {
+    if (btn) {
+      btn.disabled = false;
+      btn.innerHTML = '<span>✉️</span> <span>Send Enquiry</span>';
+    }
+  }
+};
+
 // User Profile Modal Controllers
 
 try { if (typeof openScoutModal === 'function') window.openScoutModal = openScoutModal; } catch (e) {}
@@ -13678,8 +13831,22 @@ function toggleMobileFooterAccordion(itemId) {
 }
 window.toggleMobileFooterAccordion = toggleMobileFooterAccordion;
 
+/**
+ * Update dynamic copyright year in footer elements
+ */
+function updateFooterCopyrightYear() {
+  if (typeof document === 'undefined') return;
+  const currentYear = String(new Date().getFullYear());
+  const elD = document.getElementById('footer-dynamic-year');
+  if (elD) elD.textContent = currentYear;
+  const elM = document.getElementById('footer-dynamic-year-m');
+  if (elM) elM.textContent = currentYear;
+}
+window.updateFooterCopyrightYear = updateFooterCopyrightYear;
+
 // Auto-initialize Today's Football Insights & Recent Settled Predictions
 function initDynamicHomePreviews() {
+  updateFooterCopyrightYear();
   if (typeof renderTodayInsightsPreview === 'function') renderTodayInsightsPreview();
   if (typeof renderRecentSettledPredictions === 'function') renderRecentSettledPredictions();
 }

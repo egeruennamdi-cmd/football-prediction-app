@@ -268,7 +268,8 @@
       { id: 'performance', label: 'My Performance', icon: '📈' },
       { id: 'alerts', label: 'Alerts', icon: '🔔' },
       { id: 'subscription', label: 'Subscription', icon: '💎', badge: isVip ? 'VIP' : (isPro ? 'PRO' : null) },
-      { id: 'usage', label: 'Usage', icon: '⚡' }
+      { id: 'usage', label: 'Usage', icon: '⚡' },
+      { id: 'support', label: 'Help & Support', icon: '🛟' }
     ];
 
     container.innerHTML = `
@@ -377,9 +378,9 @@
                   <span style="background: #f59e0b; color: #000; font-size: 0.6rem; padding: 1px 6px; border-radius: 10px; font-weight: 900;">ADMIN</span>
                 </a>
               ` : ''}
-              <button type="button" class="dp-sidebar-item" onclick="window.openCustomerDashboardHelp()">
-                <span class="dp-icon">❓</span>
-                <span>Help & FAQs</span>
+              <button type="button" class="dp-sidebar-item ${currentCustomerTab === 'support' ? 'active' : ''}" onclick="window.switchCustomerDashboardTab('support')">
+                <span class="dp-icon">🛟</span>
+                <span>Help & Support</span>
               </button>
               <button type="button" class="dp-sidebar-item" onclick="if(typeof openProfileModal==='function') openProfileModal('info');">
                 <span class="dp-icon">👤</span>
@@ -460,8 +461,8 @@
               <button onclick="window.switchCustomerDashboardTab('usage'); window.toggleCustomerMobileMoreSheet();" class="btn btn-secondary" style="padding: 10px; font-size: 0.8rem; text-align: left; display: flex; align-items: center; gap: 8px;">
                 <span>⚡</span> Usage
               </button>
-              <button onclick="window.openCustomerDashboardHelp(); window.toggleCustomerMobileMoreSheet();" class="btn btn-secondary" style="padding: 10px; font-size: 0.8rem; text-align: left; display: flex; align-items: center; gap: 8px;">
-                <span>❓</span> Help & FAQs
+              <button onclick="window.switchCustomerDashboardTab('support'); window.toggleCustomerMobileMoreSheet();" class="btn btn-secondary" style="padding: 10px; font-size: 0.8rem; text-align: left; display: flex; align-items: center; gap: 8px;">
+                <span>🛟</span> Help & Support
               </button>
             </div>
 
@@ -563,6 +564,8 @@
         return renderCustomerSubscriptionTab(data);
       case 'usage':
         return renderCustomerUsageTab(data);
+      case 'support':
+        return renderCustomerSupportTab(data);
       case 'overview':
       default:
         return renderCustomerOverviewTab(data);
@@ -1699,6 +1702,166 @@
     `;
   }
 
+  /* --- 11. HELP & SUPPORT TAB --- */
+  function renderCustomerSupportTab(data) {
+    const username = data.username || 'Punter';
+
+    return `
+      <div>
+        <!-- TAB HEADER -->
+        <div style="margin-bottom: 22px;">
+          <h2 style="font-family: var(--font-display); font-size: 1.4rem; font-weight: 900; color: #ffffff; margin: 0; display: flex; align-items: center; gap: 8px;">
+            🛟 Help & Customer Support
+          </h2>
+          <p style="font-size: 0.85rem; color: #94a3b8; margin: 4px 0 0;">
+            Direct assistance, account support, and platform problem resolution for registered members.
+          </p>
+        </div>
+
+        <!-- 3 CONTACT CHANNELS CARDS -->
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 16px; margin-bottom: 28px;">
+          
+          <!-- Channel 1: CUSTOMER SUPPORT -->
+          <div class="glass-card" style="padding: 20px; background: rgba(15,23,42,0.85); border: 1.5px solid rgba(56,189,248,0.3); border-radius: 16px; display: flex; flex-direction: column; justify-content: space-between;">
+            <div>
+              <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 8px;">
+                <span style="font-size: 1.3rem;">🎧</span>
+                <h3 style="font-size: 1.05rem; font-weight: 800; color: #ffffff; margin: 0;">Customer Support</h3>
+              </div>
+              <p style="font-size: 0.82rem; color: #94a3b8; line-height: 1.5; margin: 0 0 14px;">
+                For account verification, technical troubleshooting, VIP subscription help, and platform enquiries.
+              </p>
+              <div style="font-size: 0.78rem; color: #cbd5e1; margin-bottom: 14px;">
+                <span style="color: #64748b;">Primary Email:</span><br>
+                <a href="mailto:support@deeppredictbet.com?subject=DeepPredictBet%20Account%20Support%20Request" style="color: #38bdf8; font-weight: 800; text-decoration: none; word-break: break-all;">
+                  support@deeppredictbet.com
+                </a>
+              </div>
+            </div>
+            <a href="mailto:support@deeppredictbet.com?subject=DeepPredictBet%20Account%20Support%20Request" class="btn btn-primary" style="display: inline-flex; align-items: center; justify-content: center; gap: 8px; padding: 10px 14px; font-size: 0.82rem; font-weight: 800; text-decoration: none; border-radius: 10px;">
+              <span>✉️</span> Email Customer Support
+            </a>
+          </div>
+
+          <!-- Channel 2: GENERAL & CORPORATE ENQUIRIES -->
+          <div class="glass-card" style="padding: 20px; background: rgba(15,23,42,0.85); border: 1.5px solid rgba(16,185,129,0.3); border-radius: 16px; display: flex; flex-direction: column; justify-content: space-between;">
+            <div>
+              <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 8px;">
+                <span style="font-size: 1.3rem;">🏢</span>
+                <h3 style="font-size: 1.05rem; font-weight: 800; color: #ffffff; margin: 0;">General &amp; Corporate</h3>
+              </div>
+              <p style="font-size: 0.82rem; color: #94a3b8; line-height: 1.5; margin: 0 0 14px;">
+                For corporate communications, institutional partnerships, commercial collaborations, and media press.
+              </p>
+              <div style="font-size: 0.78rem; color: #cbd5e1; margin-bottom: 14px;">
+                <span style="color: #64748b;">Corporate Desk:</span><br>
+                <a href="mailto:info@deeppredictbet.com?subject=DeepPredictBet%20Corporate%20Enquiry" style="color: #10b981; font-weight: 800; text-decoration: none; word-break: break-all;">
+                  info@deeppredictbet.com
+                </a>
+              </div>
+            </div>
+            <a href="mailto:info@deeppredictbet.com?subject=DeepPredictBet%20Corporate%20Enquiry" class="btn btn-secondary" style="display: inline-flex; align-items: center; justify-content: center; gap: 8px; padding: 10px 14px; font-size: 0.82rem; font-weight: 800; text-decoration: none; border-radius: 10px; border-color: rgba(16,185,129,0.4); color: #10b981;">
+              <span>💼</span> Contact General Enquiries
+            </a>
+          </div>
+
+          <!-- Channel 3: KNOWLEDGE BASE & FAQS -->
+          <div class="glass-card" style="padding: 20px; background: rgba(15,23,42,0.85); border: 1.5px solid rgba(168,85,247,0.3); border-radius: 16px; display: flex; flex-direction: column; justify-content: space-between;">
+            <div>
+              <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 8px;">
+                <span style="font-size: 1.3rem;">📚</span>
+                <h3 style="font-size: 1.05rem; font-weight: 800; color: #ffffff; margin: 0;">Help &amp; Support Centre</h3>
+              </div>
+              <p style="font-size: 0.82rem; color: #94a3b8; line-height: 1.5; margin: 0 0 14px;">
+                Browse our complete knowledge base, FAQs, tool tutorials, and accumulator auditing guides.
+              </p>
+              <div style="font-size: 0.78rem; color: #cbd5e1; margin-bottom: 14px;">
+                <span style="color: #64748b;">Instant Answers:</span><br>
+                <span style="color: #c084fc; font-weight: 700;">8 Detailed Platform Guides &amp; FAQs</span>
+              </div>
+            </div>
+            <a href="/support" onclick="if(typeof navigateTo==='function'){navigateTo('/support'); return false;}" class="btn btn-secondary" style="display: inline-flex; align-items: center; justify-content: center; gap: 8px; padding: 10px 14px; font-size: 0.82rem; font-weight: 800; text-decoration: none; border-radius: 10px; border-color: rgba(168,85,247,0.4); color: #c084fc;">
+              <span>🔍</span> Open Help Centre
+            </a>
+          </div>
+
+        </div>
+
+        <!-- REPORT A PROBLEM INTERACTIVE FORM -->
+        <div class="glass-card" style="padding: 24px; background: rgba(15,23,42,0.92); border: 1px solid rgba(59,130,246,0.3); border-radius: 18px; margin-bottom: 24px;">
+          <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 12px; margin-bottom: 18px; border-bottom: 1px solid rgba(255,255,255,0.08); padding-bottom: 12px;">
+            <div>
+              <h3 style="font-family: var(--font-display); font-size: 1.15rem; font-weight: 900; color: #ffffff; margin: 0;">
+                🛠️ Report a Platform Problem
+              </h3>
+              <p style="font-size: 0.78rem; color: #94a3b8; margin: 3px 0 0;">
+                Submit technical bugs, feature malfunctions, or match data discrepancies directly to our engineering desk.
+              </p>
+            </div>
+            <span style="background: rgba(56,189,248,0.15); border: 1px solid rgba(56,189,248,0.3); color: #38bdf8; font-size: 0.72rem; font-weight: 800; padding: 4px 10px; border-radius: 12px;">
+              👤 Account: ${escapeHtml(username)}
+            </span>
+          </div>
+
+          <form id="dashboard-report-problem-form" onsubmit="window.submitDashboardProblemReport(event)" style="display: flex; flex-direction: column; gap: 14px;">
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 14px;">
+              <div>
+                <label style="font-size: 0.75rem; font-weight: 700; color: #cbd5e1; display: block; margin-bottom: 6px;">
+                  Page or Feature Area <span style="color: #ef4444;">*</span>
+                </label>
+                <select id="report-problem-feature" required style="width: 100%; background: #0b1120; border: 1px solid rgba(255,255,255,0.15); border-radius: 8px; padding: 9px 12px; color: #ffffff; font-size: 0.82rem; outline: none;">
+                  <option value="AI Match Centre">AI Match Centre &amp; Predictions</option>
+                  <option value="Bet Doctor">Bet Doctor Accumulator Audit</option>
+                  <option value="Bet Code Converter">Multi-Bookmaker Bet Code Converter</option>
+                  <option value="Value Intelligence">Value Intelligence Scanner</option>
+                  <option value="Strategy Backtester">Strategy Backtesting Engine</option>
+                  <option value="Betslip Builder">Betslip Builder &amp; Generator</option>
+                  <option value="Fan Arena">Fan Arena Poll &amp; Social Export</option>
+                  <option value="VIP Subscription">VIP Membership / Payment</option>
+                  <option value="Authentication">Login / Password / Verification</option>
+                  <option value="Other">Other Platform Feature</option>
+                </select>
+              </div>
+
+              <div>
+                <label style="font-size: 0.75rem; font-weight: 700; color: #cbd5e1; display: block; margin-bottom: 6px;">
+                  Problem Category <span style="color: #ef4444;">*</span>
+                </label>
+                <select id="report-problem-category" required style="width: 100%; background: #0b1120; border: 1px solid rgba(255,255,255,0.15); border-radius: 8px; padding: 9px 12px; color: #ffffff; font-size: 0.82rem; outline: none;">
+                  <option value="Technical Issue">Technical Error / Crash</option>
+                  <option value="Incorrect Match Information">Incorrect Match Information / Score</option>
+                  <option value="Feature Malfunction">Feature Malfunction / Button Unresponsive</option>
+                  <option value="Subscription Access Problem">Subscription / VIP Access Problem</option>
+                  <option value="Login Difficulty">Login / Authentication Difficulty</option>
+                  <option value="Other Platform Problem">Other Platform Problem</option>
+                </select>
+              </div>
+            </div>
+
+            <div>
+              <label style="font-size: 0.75rem; font-weight: 700; color: #cbd5e1; display: block; margin-bottom: 6px;">
+                Detailed Description <span style="color: #ef4444;">*</span>
+              </label>
+              <textarea id="report-problem-desc" required rows="4" placeholder="Please describe what happened, what you expected, and any error message displayed..." style="width: 100%; background: #0b1120; border: 1px solid rgba(255,255,255,0.15); border-radius: 8px; padding: 10px 12px; color: #ffffff; font-size: 0.82rem; outline: none; resize: vertical; min-height: 90px; box-sizing: border-box;"></textarea>
+            </div>
+
+            <div style="font-size: 0.72rem; color: #64748b; line-height: 1.4;">
+              🔒 For your security, please do not include passwords, payment credentials, or personal identity numbers. Technical diagnostic metadata (Account ID, Browser User-Agent, and Timestamp) will be attached automatically to assist our developers.
+            </div>
+
+            <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 10px;">
+              <button type="submit" id="report-problem-submit-btn" class="btn btn-primary" style="padding: 10px 22px; font-size: 0.84rem; font-weight: 800; border-radius: 10px; display: inline-flex; align-items: center; gap: 8px;">
+                <span>🚀</span> <span>Submit Problem Report</span>
+              </button>
+              <div id="report-problem-status" style="font-size: 0.8rem; font-weight: 700; display: none;"></div>
+            </div>
+          </form>
+        </div>
+
+      </div>
+    `;
+  }
+
   function renderCustomerWatchlistSnapshotHtml(watchlistIds) {
     const rawMatches = (typeof MATCH_DATA !== 'undefined' && Array.isArray(MATCH_DATA)) ? MATCH_DATA : [];
     const matches = rawMatches.filter(m => watchlistIds.includes(m.id));
@@ -1801,12 +1964,78 @@
 
   window.openCustomerDashboardHelp = function () {
     if (typeof window.trackEvent === 'function') {
-      window.trackEvent('ALERT_OPENED', { tool: 'alerts', alert_type: 'telegram' });
+      window.trackEvent('HELP_ACCESSED', { origin: 'dashboard' });
     }
-    if (typeof window.showAppNotification === 'function') {
-      window.showAppNotification('Need help? Join our official Telegram support: @deeppredictbet', 'info');
-    } else {
-      alert('DeepPredictBet Support: Join our Telegram community at https://t.me/deeppredictbet');
+    if (typeof window.switchCustomerDashboardTab === 'function') {
+      window.switchCustomerDashboardTab('support');
+    } else if (typeof window.navigateTo === 'function') {
+      window.navigateTo('/support');
+    }
+  };
+
+  window.submitDashboardProblemReport = async function(event) {
+    if (event) event.preventDefault();
+    const btn = document.getElementById('report-problem-submit-btn');
+    const statusEl = document.getElementById('report-problem-status');
+    const featureEl = document.getElementById('report-problem-feature');
+    const categoryEl = document.getElementById('report-problem-category');
+    const descEl = document.getElementById('report-problem-desc');
+    if (!descEl || !descEl.value.trim()) return;
+
+    const data = getCustomerSessionData();
+    const userEmail = (localStorage.getItem('currentUserEmail') || 'user@deeppredictbet.com').trim();
+    const username = data.username || 'Punter';
+
+    if (btn) {
+      btn.disabled = true;
+      btn.innerHTML = '<span>⏳</span> <span>Submitting...</span>';
+    }
+    if (statusEl) {
+      statusEl.style.display = 'block';
+      statusEl.style.color = '#38bdf8';
+      statusEl.textContent = 'Submitting problem report to Customer Support...';
+    }
+
+    try {
+      const res = await fetch('/api/contact', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          name: username,
+          email: userEmail,
+          category: 'Technical Support',
+          subject: `[Problem Report: ${featureEl ? featureEl.value : 'General'}] ${categoryEl ? categoryEl.value : 'Issue'}`,
+          message: descEl.value.trim(),
+          contextData: {
+            userId: username,
+            page: featureEl ? featureEl.value : 'Dashboard',
+            userAgent: typeof navigator !== 'undefined' ? navigator.userAgent : 'Unknown',
+            timestamp: new Date().toISOString()
+          }
+        })
+      });
+
+      const json = await res.json();
+      if (res.ok && json.success) {
+        if (statusEl) {
+          statusEl.style.color = '#10b981';
+          statusEl.textContent = '✅ Problem report submitted successfully! A confirmation receipt has been sent to your email.';
+        }
+        if (descEl) descEl.value = '';
+        if (typeof showToast === 'function') showToast('✅ Problem report sent to Support Desk!');
+      } else {
+        throw new Error(json.message || 'Submission failed');
+      }
+    } catch (err) {
+      if (statusEl) {
+        statusEl.style.color = '#ef4444';
+        statusEl.textContent = '⚠️ ' + (err.message || 'Could not submit report. Please email support@deeppredictbet.com');
+      }
+    } finally {
+      if (btn) {
+        btn.disabled = false;
+        btn.innerHTML = '<span>🚀</span> <span>Submit Problem Report</span>';
+      }
     }
   };
 

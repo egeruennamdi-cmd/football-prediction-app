@@ -10569,6 +10569,10 @@ body.is-desktop .mobile-hamburger-btn {
     grid-template-columns: repeat(3, 1fr);
     gap: 24px;
   }
+  .footer-grid-4col {
+    grid-template-columns: repeat(2, 1fr) !important;
+    gap: 24px !important;
+  }
 }
 
 @media (max-width: 640px) {

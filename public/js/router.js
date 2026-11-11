@@ -217,13 +217,28 @@
     '/vip': {
       redirect: '/pricing'
     },
+    '/contact': {
+      viewId: 'view-contact',
+      title: 'Contact DeepPredictBet — Customer Support & Corporate Enquiries',
+      navKey: 'contact'
+    },
+    '/support': {
+      viewId: 'view-help',
+      title: 'Help & Support Centre — DeepPredictBet',
+      navKey: 'help'
+    },
+    '/about': {
+      viewId: 'view-about',
+      title: 'About DeepPredictBet Limited — Football Intelligence & Analytics',
+      navKey: 'about'
+    },
     '/help': {
       viewId: 'view-help',
-      title: 'Help Center, Guides & FAQs — DeepPredictBet',
+      title: 'Help & Support Centre — DeepPredictBet',
       navKey: 'help'
     },
     '/faq': {
-      redirect: '/help'
+      redirect: '/support'
     },
     '/terms': {
       viewId: 'view-command-center',
@@ -336,8 +351,11 @@
     '#ai-scout': '/ai-scout',
     '#pricing': '/pricing',
     '#vip': '/pricing',
-    '#help': '/help',
-    '#faq': '/help',
+    '#contact': '/contact',
+    '#support': '/support',
+    '#about': '/about',
+    '#help': '/support',
+    '#faq': '/support',
     '#terms': '/terms',
     '#terms-of-service': '/terms',
     '#privacy': '/privacy',
@@ -456,6 +474,11 @@
 
     // 1. PUBLIC ROUTES ALLOWLIST
     const PUBLIC_ROUTES = [
+      '/contact',
+      '/support',
+      '/help',
+      '/faq',
+      '/about',
       '/terms', '/terms-of-service',
       '/privacy', '/privacy-policy',
       '/disclaimer',

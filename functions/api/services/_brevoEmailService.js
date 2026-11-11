@@ -767,3 +767,172 @@ export async function sendAccountSecurityAlert(env, { email, name, title, detail
     tags: ['security', 'account-alert']
   });
 }
+
+/**
+ * 6. Contact Form Department Notification Email
+ * Delivers incoming contact enquiries to authorized department (support or info)
+ * Sets user's email as replyTo so operators can reply directly.
+ */
+export async function sendContactFormNotification(env, {
+  userName,
+  userEmail,
+  category,
+  subject: rawSubject,
+  message,
+  contextData = null,
+  recipientEmail = 'support@deeppredictbet.com'
+}) {
+  const cleanCategory = category || 'General Enquiry';
+  const cleanSubject = rawSubject ? String(rawSubject).replace(/[\r\n]/g, '').slice(0, 150) : 'New Website Enquiry';
+  const cleanName = userName ? String(userName).replace(/[\r\n]/g, '').slice(0, 80) : 'Website Visitor';
+  const cleanEmail = normalizeEmail(userEmail);
+  const nowStr = new Date().toUTCString();
+
+  const emailSubject = `📩 [${cleanCategory}] ${cleanSubject}`;
+
+  const contentHtml = `
+    <p style="margin-top: 0;">You have received a new communication via the DeepPredictBet Contact Centre:</p>
+    
+    <table width="100%" border="0" cellpadding="0" cellspacing="0" style="background: rgba(0,0,0,0.4); border: 1px solid rgba(56, 189, 248, 0.3); border-radius: 10px; margin: 16px 0; padding: 14px;">
+      <tr>
+        <td style="padding: 6px 10px; font-size: 13px; color: #94a3b8; width: 120px;"><strong>Sender Name:</strong></td>
+        <td style="padding: 6px 10px; font-size: 13.5px; font-weight: 700; color: #ffffff;">${escapeHtml(cleanName)}</td>
+      </tr>
+      <tr>
+        <td style="padding: 6px 10px; font-size: 13px; color: #94a3b8;"><strong>Sender Email:</strong></td>
+        <td style="padding: 6px 10px; font-size: 13.5px; color: #38bdf8;">${escapeHtml(cleanEmail)}</td>
+      </tr>
+      <tr>
+        <td style="padding: 6px 10px; font-size: 13px; color: #94a3b8;"><strong>Category:</strong></td>
+        <td style="padding: 6px 10px; font-size: 13px; font-weight: 800; color: #10b981;">${escapeHtml(cleanCategory)}</td>
+      </tr>
+      <tr>
+        <td style="padding: 6px 10px; font-size: 13px; color: #94a3b8;"><strong>Submitted At:</strong></td>
+        <td style="padding: 6px 10px; font-size: 12.5px; color: #cbd5e1;">${escapeHtml(nowStr)}</td>
+      </tr>
+      ${contextData && contextData.page ? `
+      <tr>
+        <td style="padding: 6px 10px; font-size: 13px; color: #94a3b8;"><strong>Origin Page:</strong></td>
+        <td style="padding: 6px 10px; font-size: 12.5px; color: #cbd5e1;">${escapeHtml(contextData.page)}</td>
+      </tr>
+      ` : ''}
+      ${contextData && contextData.userId ? `
+      <tr>
+        <td style="padding: 6px 10px; font-size: 13px; color: #94a3b8;"><strong>User ID:</strong></td>
+        <td style="padding: 6px 10px; font-size: 12.5px; color: #cbd5e1;">${escapeHtml(contextData.userId)}</td>
+      </tr>
+      ` : ''}
+    </table>
+
+    <h3 style="font-size: 14px; font-weight: 800; color: #f8fafc; margin: 18px 0 8px;">Message Content:</h3>
+    <div style="background: rgba(255,255,255,0.04); border-left: 3px solid #38bdf8; border-radius: 4px; padding: 14px 16px; font-size: 13.5px; line-height: 1.6; color: #e2e8f0; white-space: pre-wrap;">${escapeHtml(message)}</div>
+  `;
+
+  const html = renderBaseEmailHtml({
+    title: emailSubject,
+    preheader: `New ${cleanCategory} message from ${cleanName}`,
+    headline: `Inbound Message: ${cleanCategory}`,
+    contentHtml,
+    ctaText: `Reply to ${cleanName}`,
+    ctaUrl: `mailto:${cleanEmail}?subject=Re:%20${encodeURIComponent(cleanSubject)}`,
+    accentColor: '#10b981',
+    noticeText: 'DeepPredictBet Corporate Contact Infrastructure'
+  });
+
+  const textContent = renderBaseEmailText({
+    headline: `Inbound Message: ${cleanCategory}`,
+    contentText: `From: ${cleanName} <${cleanEmail}>\nCategory: ${cleanCategory}\nSubject: ${cleanSubject}\nDate: ${nowStr}\n\nMessage:\n${message}`,
+    ctaText: 'Reply via Email',
+    ctaUrl: `mailto:${cleanEmail}`
+  });
+
+  return await sendTransactionalEmail(env, {
+    to: recipientEmail,
+    toName: recipientEmail === 'info@deeppredictbet.com' ? 'DeepPredictBet General Enquiries' : 'DeepPredictBet Customer Support',
+    replyTo: cleanEmail,
+    replyToName: cleanName,
+    subject: emailSubject,
+    htmlContent: html,
+    textContent,
+    templateType: 'contact_notification',
+    uniqueRef: `contact_${Date.now()}_${Math.random().toString(36).slice(2, 7)}`,
+    tags: ['contact', 'inbound-enquiry', cleanCategory.toLowerCase().replace(/[^a-z0-9]/g, '-')]
+  });
+}
+
+/**
+ * 7. Contact Form Customer Acknowledgement Email
+ * Dispatched to the user confirming receipt of their enquiry.
+ */
+export async function sendContactFormAcknowledgement(env, {
+  userName,
+  userEmail,
+  category,
+  subject: rawSubject
+}) {
+  const cleanCategory = category || 'General Enquiry';
+  const cleanSubject = rawSubject ? String(rawSubject).replace(/[\r\n]/g, '').slice(0, 150) : 'Website Enquiry';
+  const cleanName = userName ? String(userName).replace(/[\r\n]/g, '').slice(0, 80) : 'Valued Visitor';
+  const cleanEmail = normalizeEmail(userEmail);
+
+  const isCorporate = ['General Enquiry', 'Business Partnership', 'Media & Press'].includes(cleanCategory);
+  const deptEmail = isCorporate ? 'info@deeppredictbet.com' : 'support@deeppredictbet.com';
+  const deptName = isCorporate ? 'DeepPredictBet General Enquiries' : 'DeepPredictBet Customer Support';
+
+  const subject = `Receipt Confirmation: We received your enquiry [${cleanCategory}]`;
+
+  const contentHtml = `
+    <p style="margin-top: 0;">Hello <strong>${escapeHtml(cleanName)}</strong>,</p>
+    <p>Thank you for contacting <strong>DeepPredictBet Limited</strong>. We have successfully received your enquiry and forwarded it to our <strong>${escapeHtml(deptName)}</strong> desk.</p>
+    
+    <table width="100%" border="0" cellpadding="0" cellspacing="0" style="background: rgba(0,0,0,0.3); border: 1px solid rgba(56, 189, 248, 0.25); border-radius: 8px; margin: 16px 0; padding: 12px 14px;">
+      <tr>
+        <td style="padding: 4px 8px; font-size: 13px; color: #94a3b8; width: 110px;">Category:</td>
+        <td style="padding: 4px 8px; font-size: 13px; font-weight: 700; color: #ffffff;">${escapeHtml(cleanCategory)}</td>
+      </tr>
+      <tr>
+        <td style="padding: 4px 8px; font-size: 13px; color: #94a3b8;">Subject:</td>
+        <td style="padding: 4px 8px; font-size: 13px; color: #38bdf8;">${escapeHtml(cleanSubject)}</td>
+      </tr>
+      <tr>
+        <td style="padding: 4px 8px; font-size: 13px; color: #94a3b8;">Assigned Desk:</td>
+        <td style="padding: 4px 8px; font-size: 13px; color: #10b981;">${escapeHtml(deptEmail)}</td>
+      </tr>
+    </table>
+
+    <p style="font-size: 13.5px; color: #cbd5e1; line-height: 1.5;">
+      Our team typically reviews and responds to messages during standard business hours. If your request is urgent regarding account access, password recovery, or active VIP services, you may also review our instant guides in the Help &amp; Support Centre.
+    </p>
+  `;
+
+  const html = renderBaseEmailHtml({
+    title: subject,
+    preheader: `Thank you for contacting DeepPredictBet. We received your ${cleanCategory} message.`,
+    headline: 'Enquiry Received',
+    contentHtml,
+    ctaText: 'Visit Help & Support Centre',
+    ctaUrl: 'https://deeppredictbet.com/support',
+    accentColor: '#38bdf8',
+    noticeText: `DeepPredictBet Limited · Official Support Desk: ${deptEmail}`
+  });
+
+  const textContent = renderBaseEmailText({
+    headline: 'Enquiry Received',
+    contentText: `Hello ${cleanName},\n\nThank you for reaching out to DeepPredictBet. We have received your message regarding "${cleanSubject}" (${cleanCategory}). Our team will review your enquiry and respond to ${cleanEmail}.\n\nIf you need immediate assistance, visit our Help & Support Centre.`,
+    ctaText: 'Visit Help & Support Centre',
+    ctaUrl: 'https://deeppredictbet.com/support'
+  });
+
+  return await sendTransactionalEmail(env, {
+    to: cleanEmail,
+    toName: cleanName,
+    replyTo: deptEmail,
+    replyToName: deptName,
+    subject,
+    htmlContent: html,
+    textContent,
+    templateType: 'contact_acknowledgement',
+    uniqueRef: `ack_${cleanEmail}_${Date.now()}`,
+    tags: ['contact', 'acknowledgement']
+  });
+}
