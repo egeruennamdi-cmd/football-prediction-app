@@ -90,7 +90,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@400;500;600;700;800&display=swap">
-  <link rel="stylesheet" href="/css/main.css?v=20260925_mobile_footer_v1">
+  <link rel="stylesheet" href="/css/main.css?v=20261109_crest_v1">
   <link rel="stylesheet" href="/css/authEntry.css?v=20261103_auth_v1">
 
   <!-- Senior Engineering Guard: Desktop vs Mobile/Tablet/iPad Navigation Gating -->
@@ -9495,6 +9495,156 @@
     </div>
   </div>
 
+  <!-- --- DEEPPREDICTBET FAN ARENA MODAL (VOTING & SOCIAL SHARING CARDS) --- -->
+  <div class="modal-overlay fan-arena-overlay" id="fan-arena-modal" role="dialog" aria-modal="true" aria-labelledby="fan-arena-modal-match-title" onclick="closeFanArenaModal()">
+    <div class="modal-content fan-arena-modal-content" onclick="event.stopPropagation()">
+      <!-- Modal Header -->
+      <div class="fan-arena-header">
+        <div>
+          <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 6px;">
+            <span style="font-size: 1.15rem; font-weight: 900; color: #38bdf8; font-family: var(--font-display); letter-spacing: 0.5px;">⚡ DEEPPREDICTBET</span>
+            <span class="fan-arena-badge-pill">🗳️ FAN ARENA</span>
+          </div>
+          <h2 id="fan-arena-modal-match-title" style="font-family: var(--font-display); font-size: 1.4rem; font-weight: 900; color: #ffffff; margin: 0; line-height: 1.2;">
+            Match Poll & Social Card
+          </h2>
+          <span id="fan-arena-modal-match-sub" style="font-size: 0.78rem; color: #94a3b8; font-weight: 600;">
+            Competition · Match Date & Time
+          </span>
+        </div>
+        <button class="modal-close" onclick="closeFanArenaModal()" aria-label="Close Fan Arena">&times;</button>
+      </div>
+
+      <!-- Modal Body -->
+      <div class="fan-arena-body">
+        <!-- 1. Interactive Fan Voting Section ("WHO IS WINNING?") -->
+        <div class="fan-arena-voting-section">
+          <div class="fan-arena-voting-header">
+            <div>
+              <h3 id="fan-arena-modal-voting-heading" style="font-family: var(--font-display); font-size: 1.1rem; font-weight: 800; color: #ffffff; margin: 0 0 2px 0;">
+                🗳️ WHO IS WINNING?
+              </h3>
+              <span id="fan-arena-modal-voting-sub" style="font-size: 0.75rem; color: #94a3b8;">Cast your vote to update community consensus & social card in real-time</span>
+            </div>
+            <span class="badge" id="fan-arena-total-votes-display" style="background: rgba(168, 85, 247, 0.15); color: #c084fc; font-weight: 800; border: 1px solid rgba(168, 85, 247, 0.35); padding: 4px 10px; border-radius: 20px; font-size: 0.75rem;">
+              👥 Calculating votes...
+            </span>
+          </div>
+
+          <div class="fan-arena-voting-grid">
+            <!-- Home Vote Button -->
+            <button type="button" class="fan-vote-card" id="fan-vote-btn-home" onclick="castFanVote(null, 'home')">
+              <span class="fan-vote-name">Home Team</span>
+              <span class="fan-vote-pct">0%</span>
+              <div class="fan-vote-bar"><div class="fan-vote-fill home" style="width: 0%;"></div></div>
+              <span class="fan-vote-count">0 votes</span>
+            </button>
+
+            <!-- Draw Vote Button -->
+            <button type="button" class="fan-vote-card" id="fan-vote-btn-draw" onclick="castFanVote(null, 'draw')">
+              <span class="fan-vote-name">Draw</span>
+              <span class="fan-vote-pct">0%</span>
+              <div class="fan-vote-bar"><div class="fan-vote-fill draw" style="width: 0%;"></div></div>
+              <span class="fan-vote-count">0 votes</span>
+            </button>
+
+            <!-- Away Vote Button -->
+            <button type="button" class="fan-vote-card" id="fan-vote-btn-away" onclick="castFanVote(null, 'away')">
+              <span class="fan-vote-name">Away Team</span>
+              <span class="fan-vote-pct">0%</span>
+              <div class="fan-vote-bar"><div class="fan-vote-fill away" style="width: 0%;"></div></div>
+              <span class="fan-vote-count">0 votes</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- 2. Controls & Formats Row -->
+        <div class="fan-arena-controls-row">
+          <div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap;">
+            <span style="font-size: 0.76rem; font-weight: 800; color: #94a3b8; text-transform: uppercase;">Card Format:</span>
+            <div class="fan-arena-tabs-group">
+              <button type="button" class="fan-arena-format-tab active" data-format="square" onclick="FanArenaEngine.setFanArenaFormat('square')">Square (1:1)</button>
+              <button type="button" class="fan-arena-format-tab" data-format="portrait" onclick="FanArenaEngine.setFanArenaFormat('portrait')">Story / Status (9:16)</button>
+              <button type="button" class="fan-arena-format-tab" data-format="landscape" onclick="FanArenaEngine.setFanArenaFormat('landscape')">Landscape (16:9)</button>
+            </div>
+          </div>
+
+          <div style="display: flex; align-items: center; gap: 8px;">
+            <span style="font-size: 0.76rem; font-weight: 800; color: #94a3b8; text-transform: uppercase;">Image Type:</span>
+            <div class="fan-arena-tabs-group">
+              <button type="button" class="fan-arena-type-tab active" data-type="png" onclick="FanArenaEngine.setFanArenaExportType('png')">PNG</button>
+              <button type="button" class="fan-arena-type-tab" data-type="jpeg" onclick="FanArenaEngine.setFanArenaExportType('jpeg')">JPEG</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- 3. High-Definition Canvas Preview Container -->
+        <div class="fan-arena-canvas-container" id="fan-arena-canvas-preview-container">
+          <span style="color: #94a3b8; font-size: 0.85rem;">Rendering Fan Arena match card preview...</span>
+        </div>
+
+        <!-- 3.5. Dedicated Factual Social Caption (Editable) -->
+        <div class="fan-arena-caption-section" style="background: rgba(15, 23, 42, 0.7); border: 1px solid rgba(168, 85, 247, 0.35); border-radius: 12px; padding: 14px;">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px; flex-wrap: wrap; gap: 6px;">
+            <span style="font-size: 0.8rem; font-weight: 900; color: #ffffff; text-transform: uppercase; display: flex; align-items: center; gap: 6px;">
+              <span>✍️</span> <span>Factual Social Caption (Editable):</span>
+            </span>
+            <span style="font-size: 0.68rem; color: #c084fc; font-weight: 700; background: rgba(168, 85, 247, 0.18); padding: 2px 8px; border-radius: 6px; border: 1px solid rgba(168, 85, 247, 0.3);">
+              Poll Call-To-Action
+            </span>
+          </div>
+          <p style="font-size: 0.72rem; color: #94a3b8; margin: 0 0 8px 0;">
+            Pre-formatted for social poll engagement. Customize before copying or downloading.
+          </p>
+          <textarea id="fan-arena-modal-social-caption-textarea"
+                    oninput="if(window.FanArenaEngine){window.FanArenaEngine.updateFanArenaCaption(null, this.value);}"
+                    style="width: 100%; box-sizing: border-box; min-height: 140px; background: rgba(0, 0, 0, 0.5); border: 1.5px solid rgba(255, 255, 255, 0.15); border-radius: 8px; color: #f8fafc; padding: 10px; font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace; font-size: 0.76rem; line-height: 1.5; resize: vertical;"
+                    placeholder="Generating factual social caption..."></textarea>
+          <div style="display: flex; gap: 8px; flex-wrap: wrap; margin-top: 8px;">
+            <button type="button"
+                    id="fan-arena-modal-caption-copy-btn"
+                    onclick="if(window.FanArenaEngine){window.FanArenaEngine.copyFanArenaCaption(null, this, 'fan-arena-modal-social-caption-textarea');}"
+                    style="flex: 2; min-width: 140px; background: linear-gradient(135deg, #10b981 0%, #059669 100%); color: #ffffff; border: none; padding: 8px 12px; border-radius: 8px; font-weight: 800; font-size: 0.78rem; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 6px;">
+              <span>📋</span> <span>Copy Caption</span>
+            </button>
+            <button type="button"
+                    onclick="if(window.FanArenaEngine){window.FanArenaEngine.regenerateFanArenaCaption(null, null, 'fan-arena-modal-social-caption-textarea');}"
+                    style="flex: 1; min-width: 110px; background: rgba(255, 255, 255, 0.06); border: 1px solid rgba(255, 255, 255, 0.15); color: #cbd5e1; padding: 8px 10px; border-radius: 8px; font-weight: 700; font-size: 0.75rem; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 6px;">
+              <span>🔄</span> <span>Regenerate</span>
+            </button>
+            <button type="button"
+                    onclick="if(window.FanArenaEngine){window.FanArenaEngine.restoreFanArenaCaption(null, null, 'fan-arena-modal-social-caption-textarea');}"
+                    style="flex: 1; min-width: 110px; background: rgba(255, 255, 255, 0.06); border: 1px solid rgba(255, 255, 255, 0.15); color: #94a3b8; padding: 8px 10px; border-radius: 8px; font-weight: 700; font-size: 0.75rem; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 6px;">
+              <span>↩️</span> <span>Restore</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- 4. Action Controls Bar -->
+        <div class="fan-arena-actions-bar">
+          <button type="button" class="btn btn-primary fan-arena-download-btn" onclick="downloadFanArenaCard()">
+            <span style="font-size: 1.2rem;">📥</span>
+            <span>DOWNLOAD MATCH CARD</span>
+          </button>
+          <button type="button" class="btn btn-secondary fan-arena-share-btn" onclick="shareFanArenaToWhatsApp()">
+            <span style="font-size: 1.1rem;">💬</span>
+            <span>WhatsApp</span>
+          </button>
+          <button type="button" class="btn btn-secondary fan-arena-share-btn" onclick="copyFanArenaLink()">
+            <span style="font-size: 1.1rem;">🔗</span>
+            <span>Copy Link</span>
+          </button>
+        </div>
+
+        <!-- 5. Compliance & Branding Note -->
+        <div style="display: flex; justify-content: space-between; align-items: center; font-size: 0.75rem; color: #64748b; padding-top: 4px; border-top: 1px solid rgba(255, 255, 255, 0.05); flex-wrap: wrap; gap: 6px;">
+          <span>⚡ Official DeepPredictBet Fan Arena · https://deeppredictbet.com</span>
+          <span style="font-weight: 700; color: #94a3b8;">18+ · Gamble Responsibly · Community Voting</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
   <!-- --- MOBILE APP BOTTOM NAVIGATION BAR --- -->
   <nav id="mobile-app-bottom-nav" class="mobile-bottom-nav">
     <a href="/" class="bottom-nav-item active" onclick="if(typeof navigateTo==='function'){navigateTo('/'); return false;}">
@@ -9522,7 +9672,7 @@
   </nav>
 
   <!-- --- LOAD SCRIPTS (Parallel Non-Blocking Architecture) --- -->
-  <script defer src="/js/teamCrests.js?v=20261106_v10"></script>
+  <script defer src="/js/teamCrests.js?v=20261109_crest_v1"></script>
   <script defer src="/js/data.js?v=20261106_v10"></script>
   <script defer src="/js/analytics.js?v=20260924_multipage_v3"></script>
   <script defer src="/js/vipManager.js?v=20260924_multipage_v3"></script>
@@ -9538,15 +9688,16 @@
   <script defer src="/js/advancedFiltersEngine.js?v=20260929_v1"></script>
   <script defer src="/js/strategyBacktestingEngine.js?v=20260929_v1"></script>
   <script defer src="/js/topTipsTrackerEngine.js?v=20261106_v10"></script>
-  <script defer src="/js/ui.js?v=20261106_v10"></script>
+  <script defer src="/js/ui.js?v=20261109_crest_v1"></script>
   <script defer src="/js/pages.js?v=20261106_v11"></script>
   <script defer src="/js/authEntry.js?v=20261106_v10"></script>
   <script defer src="/js/router.js?v=20261106_v10"></script>
   <script defer src="/js/standingsEngine.js?v=20261102_standings_v1"></script>
   <script defer src="/js/predictionLedger.js?v=20261103_v1"></script>
-  <script defer src="/js/telegramPublisher.js?v=20261110_tg_fan_arena_v2"></script>
+  <script defer src="/js/telegramPublisher.js?v=20261111_tg_fan_arena_v4"></script>
   <script defer src="/js/dashboard.js?v=20261106_v10"></script>
-  <script defer src="/js/app.js?v=20261106_v10"></script>
+  <script defer src="/js/fanArenaEngine.js?v=20261111_fan_v4"></script>
+  <script defer src="/js/app.js?v=20261109_crest_v1"></script>
   <script defer src="/js/liveFixtures.js?v=20260924_multipage_v3"></script>
   <script>
     // Clean global helper bindings

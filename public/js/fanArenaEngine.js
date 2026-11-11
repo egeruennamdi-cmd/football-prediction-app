@@ -43,6 +43,10 @@
     root.regenerateFanArenaCaption = api.regenerateFanArenaCaption;
     root.restoreFanArenaCaption = api.restoreFanArenaCaption;
     root.copyFanArenaCaption = api.copyFanArenaCaption;
+    root.formatFanArenaStatusLine = api.formatFanArenaStatusLine;
+    root.parseMatchDateTime = api.parseMatchDateTime;
+    root.getFanArenaPollConfig = api.getFanArenaPollConfig;
+    root.drawResponsiveTeamName = api.drawResponsiveTeamName;
   }
   if (typeof globalThis !== 'undefined') {
     globalThis.FanArenaEngine = api;
@@ -63,6 +67,10 @@
     globalThis.regenerateFanArenaCaption = api.regenerateFanArenaCaption;
     globalThis.restoreFanArenaCaption = api.restoreFanArenaCaption;
     globalThis.copyFanArenaCaption = api.copyFanArenaCaption;
+    globalThis.formatFanArenaStatusLine = api.formatFanArenaStatusLine;
+    globalThis.parseMatchDateTime = api.parseMatchDateTime;
+    globalThis.getFanArenaPollConfig = api.getFanArenaPollConfig;
+    globalThis.drawResponsiveTeamName = api.drawResponsiveTeamName;
   }
   if (typeof window !== 'undefined') {
     window.FanArenaEngine = api;
@@ -83,6 +91,10 @@
     window.regenerateFanArenaCaption = api.regenerateFanArenaCaption;
     window.restoreFanArenaCaption = api.restoreFanArenaCaption;
     window.copyFanArenaCaption = api.copyFanArenaCaption;
+    window.formatFanArenaStatusLine = api.formatFanArenaStatusLine;
+    window.parseMatchDateTime = api.parseMatchDateTime;
+    window.getFanArenaPollConfig = api.getFanArenaPollConfig;
+    window.drawResponsiveTeamName = api.drawResponsiveTeamName;
   }
 })(typeof globalThis !== 'undefined' ? globalThis : (typeof window !== 'undefined' ? window : this), function () {
   'use strict';
@@ -445,6 +457,297 @@
     });
   }
 
+  const MONTHS_SHORT = ['JAN', 'FEB', 'MAR', 'APR', 'MAY', 'JUN', 'JUL', 'AUG', 'SEP', 'OCT', 'NOV', 'DEC'];
+
+  /**
+   * Parse match date and time authoritatively from fixture object.
+   * Handles dateSlot ("YYYY-MM-DD-HHmm"), rawDate, match.date, match.time.
+   * Cleans relative labels like "Today", "Tomorrow", "Yesterday", "future".
+   */
+  function parseMatchDateTime(match) {
+    if (!match) {
+      return { day: '12', month: 'NOV', year: '2026', dateFormatted: '12 NOV 2026', time: '16:30' };
+    }
+
+    let explicitTime = null;
+    const timeCandidate = match.time || match.kickoffTime;
+    if (typeof timeCandidate === 'string') {
+      const timeMatch = timeCandidate.match(/(\d{1,2}):(\d{2})/);
+      if (timeMatch) {
+        explicitTime = `${timeMatch[1].padStart(2, '0')}:${timeMatch[2]}`;
+      }
+    }
+
+    // 1. Authoritative dateSlot (e.g. "2026-11-12-1630")
+    if (typeof match.dateSlot === 'string' && /^\d{4}-\d{2}-\d{2}-\d{4}$/.test(match.dateSlot)) {
+      const parts = match.dateSlot.split('-');
+      const y = parseInt(parts[0], 10);
+      const m = parseInt(parts[1], 10) - 1;
+      const d = parseInt(parts[2], 10);
+      const hh = parts[3].slice(0, 2);
+      const mm = parts[3].slice(2, 4);
+      return {
+        day: String(d).padStart(2, '0'),
+        month: MONTHS_SHORT[m] || 'NOV',
+        year: String(y),
+        dateFormatted: `${String(d).padStart(2, '0')} ${MONTHS_SHORT[m] || 'NOV'} ${y}`,
+        time: explicitTime || `${hh}:${mm}`
+      };
+    }
+
+    // 2. Parse date string (e.g. "Today · 12 Nov 2026", "02 Nov 2026", "2026-11-02")
+    if (typeof match.date === 'string') {
+      const cleanDate = match.date
+        .replace(/\b(today|tomorrow|yesterday|future)\b/gi, '')
+        .replace(/^[^\w\d]+|[^\w\d]+$/g, '')
+        .trim();
+      if (cleanDate) {
+        // e.g. "12 Nov 2026", "02 Nov 2026"
+        const dmyMatch = cleanDate.match(/^(\d{1,2})[\s\-\/\.]*([a-zA-Z]+)[\s\-\/\.]*(\d{4})/);
+        if (dmyMatch) {
+          const dVal = parseInt(dmyMatch[1], 10);
+          const mStr = dmyMatch[2].slice(0, 3).toUpperCase();
+          const yVal = parseInt(dmyMatch[3], 10);
+          if (MONTHS_SHORT.includes(mStr)) {
+            return {
+              day: String(dVal).padStart(2, '0'),
+              month: mStr,
+              year: String(yVal),
+              dateFormatted: `${String(dVal).padStart(2, '0')} ${mStr} ${yVal}`,
+              time: explicitTime || '16:30'
+            };
+          }
+        }
+        // e.g. "2026-11-02"
+        const ymdMatch = cleanDate.match(/^(\d{4})[\s\-\/\.]+(\d{1,2})[\s\-\/\.]+(\d{1,2})/);
+        if (ymdMatch) {
+          const yVal = parseInt(ymdMatch[1], 10);
+          const mVal = parseInt(ymdMatch[2], 10) - 1;
+          const dVal = parseInt(ymdMatch[3], 10);
+          return {
+            day: String(dVal).padStart(2, '0'),
+            month: MONTHS_SHORT[mVal] || 'NOV',
+            year: String(yVal),
+            dateFormatted: `${String(dVal).padStart(2, '0')} ${MONTHS_SHORT[mVal] || 'NOV'} ${yVal}`,
+            time: explicitTime || '16:30'
+          };
+        }
+      }
+    }
+
+    // 3. Authoritative rawDate (ISO string or unix ms timestamp)
+    if (match.rawDate) {
+      const parsed = new Date(match.rawDate);
+      if (!isNaN(parsed.getTime())) {
+        if (!explicitTime) {
+          const hh = String(parsed.getUTCHours()).padStart(2, '0');
+          const mm = String(parsed.getUTCMinutes()).padStart(2, '0');
+          explicitTime = `${hh}:${mm}`;
+        }
+        const dVal = parsed.getUTCDate();
+        const mStr = MONTHS_SHORT[parsed.getUTCMonth()] || 'NOV';
+        const yVal = parsed.getUTCFullYear();
+        return {
+          day: String(dVal).padStart(2, '0'),
+          month: mStr,
+          year: String(yVal),
+          dateFormatted: `${String(dVal).padStart(2, '0')} ${mStr} ${yVal}`,
+          time: explicitTime || '16:30'
+        };
+      }
+    }
+
+    return {
+      day: '12',
+      month: 'NOV',
+      year: '2026',
+      dateFormatted: '12 NOV 2026',
+      time: explicitTime || '16:30'
+    };
+  }
+
+  /**
+   * Central Authoritative Match Status Line Formatter
+   * Rules:
+   * - Upcoming: "KICKOFF · 12 NOV 2026 · 16:30" (DD MMM YYYY, 24h time, zero relative labels, zero duplicates)
+   * - Completed: "FT · 02 NOV 2026" (DD MMM YYYY, FT status, NO kickoff time, zero duplicates)
+   * - Live: "LIVE · 65'"
+   * - Half-Time: "LIVE · HT"
+   * - Postponed: "POSTPONED"
+   * - Cancelled: "CANCELLED"
+   * - Abandoned: "ABANDONED"
+   */
+  function formatFanArenaStatusLine(match) {
+    if (!match) return 'KICKOFF · 12 NOV 2026 · 16:30';
+
+    const statusUpper = (match.status || '').toUpperCase();
+    const statusShortUpper = (match.statusShort || '').toUpperCase();
+    const timeUpper = (typeof match.time === 'string' ? match.time : '').toUpperCase();
+
+    // 1. Postponed
+    if (statusUpper === 'POSTPONED' || statusShortUpper === 'PST' || timeUpper.includes('POSTP')) {
+      return 'POSTPONED';
+    }
+    // 2. Cancelled
+    if (statusUpper === 'CANCELLED' || statusUpper === 'CANCELED' || statusShortUpper === 'CANC' || timeUpper.includes('CANC')) {
+      return 'CANCELLED';
+    }
+    // 3. Abandoned
+    if (statusUpper === 'ABANDONED' || statusShortUpper === 'ABD' || timeUpper.includes('ABAND')) {
+      return 'ABANDONED';
+    }
+
+    // 4. Live / In-Play
+    if (match.isLive || statusUpper === 'LIVE' || statusShortUpper === 'LIVE' || statusShortUpper === '1H' || statusShortUpper === '2H' || statusShortUpper === 'ET') {
+      const min = match.elapsed ? `${match.elapsed}'` : 'LIVE';
+      return `LIVE · ${min}`;
+    }
+
+    // 5. Half-Time
+    if (match.isHT || statusShortUpper === 'HT' || statusUpper === 'HALF-TIME' || timeUpper.includes('HT')) {
+      return 'LIVE · HT';
+    }
+
+    // 6. Completed (FT)
+    const isFT = Boolean(
+      match.isFT ||
+      statusUpper === 'FT' ||
+      statusShortUpper === 'FT' ||
+      statusUpper === 'AET' ||
+      statusShortUpper === 'AET' ||
+      statusUpper === 'PEN' ||
+      statusShortUpper === 'PEN' ||
+      timeUpper.includes('FT')
+    );
+
+    const dt = parseMatchDateTime(match);
+
+    if (isFT) {
+      return `FT · ${dt.dateFormatted}`;
+    }
+
+    // 7. Upcoming
+    return `KICKOFF · ${dt.dateFormatted} · ${dt.time}`;
+  }
+
+  /**
+   * Central Fan Arena Poll Configuration
+   * Determines status-based headings, supporting messages, options and comment prompts.
+   */
+  function getFanArenaPollConfig(match) {
+    const statusUpper = (match?.status || '').toUpperCase();
+    const statusShortUpper = (match?.statusShort || '').toUpperCase();
+    const timeUpper = (typeof match?.time === 'string' ? match.time : '').toUpperCase();
+
+    const isFT = Boolean(
+      match?.isFT ||
+      statusUpper === 'FT' ||
+      statusShortUpper === 'FT' ||
+      statusUpper === 'AET' ||
+      statusShortUpper === 'AET' ||
+      statusUpper === 'PEN' ||
+      statusShortUpper === 'PEN' ||
+      timeUpper.includes('FT')
+    );
+
+    const isLive = Boolean(
+      match?.isLive ||
+      match?.isHT ||
+      statusUpper === 'LIVE' ||
+      statusShortUpper === 'LIVE' ||
+      statusShortUpper === '1H' ||
+      statusShortUpper === '2H' ||
+      statusShortUpper === 'HT' ||
+      statusShortUpper === 'ET'
+    );
+
+    const h = match?.homeTeam?.name || (typeof match?.homeTeam === 'string' ? match.homeTeam : 'Home Team');
+    const a = match?.awayTeam?.name || (typeof match?.awayTeam === 'string' ? match.awayTeam : 'Away Team');
+
+    if (isFT) {
+      return {
+        type: 'completed',
+        mainHeading: '🏁 POST-MATCH FAN DEBATE',
+        portraitHeading1: '🏁 POST-MATCH',
+        portraitHeading2: 'FAN DEBATE',
+        supportingMessage: "THE FINAL WHISTLE HAS SOUNDED. WHAT'S YOUR VERDICT?",
+        commentsCta: '💬 SHARE YOUR VERDICT IN THE COMMENTS!',
+        options: [
+          { key: 'home', label: `1 · ${h} had the better performance`, color: '#38bdf8' },
+          { key: 'draw', label: 'X · Both teams were evenly matched', color: '#94a3b8' },
+          { key: 'away', label: `2 · ${a} had the better performance`, color: '#c084fc' }
+        ],
+        modalOptions: {
+          home: `${h} had the better performance`,
+          draw: 'Both teams were evenly matched',
+          away: `${a} had the better performance`
+        }
+      };
+    }
+
+    if (isLive) {
+      return {
+        type: 'live',
+        mainHeading: '🔴 LIVE MATCH FAN DEBATE',
+        portraitHeading1: '🔴 LIVE MATCH',
+        portraitHeading2: 'FAN DEBATE',
+        supportingMessage: "THE ACTION IS UNDERWAY. WHAT'S YOUR TAKE?",
+        commentsCta: '💬 CAST YOUR VOTE IN THE COMMENTS!',
+        options: [
+          { key: 'home', label: `1 · ${h} Win`, color: '#38bdf8' },
+          { key: 'draw', label: 'X · Match Draw', color: '#94a3b8' },
+          { key: 'away', label: `2 · ${a} Win`, color: '#c084fc' }
+        ],
+        modalOptions: {
+          home: `${h} Win`,
+          draw: 'Match Draw',
+          away: `${a} Win`
+        }
+      };
+    }
+
+    // Default: Upcoming
+    return {
+      type: 'upcoming',
+      mainHeading: 'WHO WILL WIN? — FAN ARENA POLL',
+      portraitHeading1: 'WHO WILL WIN?',
+      portraitHeading2: 'FAN ARENA POLL',
+      supportingMessage: '💬 CAST YOUR VOTE IN THE COMMENTS!',
+      commentsCta: '💬 CAST YOUR VOTE IN THE COMMENTS!',
+      options: [
+        { key: 'home', label: `1 · ${h} Win`, color: '#38bdf8' },
+        { key: 'draw', label: 'X · Match Draw', color: '#94a3b8' },
+        { key: 'away', label: `2 · ${a} Win`, color: '#c084fc' }
+      ],
+      modalOptions: {
+        home: `${h} to Win`,
+        draw: 'Match Draw',
+        away: `${a} to Win`
+      }
+    };
+  }
+
+  /**
+   * Responsive Team Name Drawing on Canvas
+   * Dynamically measures and reduces font size to fit full team name without slicing.
+   */
+  function drawResponsiveTeamName(ctx, text, x, y, maxW, defaultSize = 28) {
+    let size = defaultSize;
+    ctx.font = `800 ${size}px system-ui, -apple-system, sans-serif`;
+    while (size > 14 && ctx.measureText(text).width > maxW) {
+      size -= 1;
+      ctx.font = `800 ${size}px system-ui, -apple-system, sans-serif`;
+    }
+    let rendered = text;
+    if (ctx.measureText(rendered).width > maxW) {
+      while (rendered.length > 4 && ctx.measureText(rendered + '…').width > maxW) {
+        rendered = rendered.slice(0, -1);
+      }
+      rendered += '…';
+    }
+    ctx.fillText(rendered, x, y);
+  }
+
   /**
    * Preload All Required Assets For Match
    */
@@ -492,32 +795,32 @@
     }
 
     // Dynamic Real Match Status & Score Adaptation
-    let statusLabel = 'UPCOMING';
-    let statusColor = '#10b981';
-    let statusBg = 'rgba(16, 185, 129, 0.2)';
+    const statusLine = formatFanArenaStatusLine(match);
+    const pollConfig = getFanArenaPollConfig(match);
+
+    let statusLabel = statusLine;
+    let statusColor = '#38bdf8';
+    let statusBg = 'rgba(56, 189, 248, 0.2)';
     let scoreDisplay = 'VS';
 
     const hasRealScores = match.scores && match.scores.home !== null && match.scores.home !== undefined;
     const hs = hasRealScores ? match.scores.home : (match.homeScore != null ? match.homeScore : null);
     const as = hasRealScores ? match.scores.away : (match.awayScore != null ? match.awayScore : null);
 
-    if (match.isLive) {
-      statusLabel = `🔴 ${match.elapsed || 'LIVE'}' IN-PLAY`;
-      statusColor = '#ef4444';
-      statusBg = 'rgba(239, 68, 68, 0.25)';
-      scoreDisplay = `${hs ?? 0} - ${as ?? 0}`;
-    } else if (match.isHT || match.statusShort === 'HT') {
-      statusLabel = '⏸️ HALF-TIME';
-      statusColor = '#f59e0b';
-      statusBg = 'rgba(245, 158, 11, 0.25)';
-      scoreDisplay = `${hs ?? 0} - ${as ?? 0}`;
-    } else if (match.isFT || match.statusShort === 'FT' || match.status === 'FT') {
-      statusLabel = '🏁 FULL-TIME';
+    if (pollConfig.type === 'completed') {
       statusColor = '#94a3b8';
       statusBg = 'rgba(148, 163, 184, 0.2)';
       scoreDisplay = `${hs ?? 0} - ${as ?? 0}`;
+    } else if (pollConfig.type === 'live') {
+      statusColor = '#ef4444';
+      statusBg = 'rgba(239, 68, 68, 0.25)';
+      scoreDisplay = `${hs ?? 0} - ${as ?? 0}`;
+    } else if (statusLine === 'POSTPONED' || statusLine === 'CANCELLED' || statusLine === 'ABANDONED') {
+      statusColor = statusLine === 'POSTPONED' ? '#f59e0b' : '#ef4444';
+      statusBg = statusLine === 'POSTPONED' ? 'rgba(245, 158, 11, 0.25)' : 'rgba(239, 68, 68, 0.25)';
+      scoreDisplay = (hs !== null && as !== null) ? `${hs} - ${as}` : 'VS';
     } else {
-      statusLabel = `📅 KICKOFF ${match.time || match.kickoffTime || '16:30'}`;
+      // Upcoming
       statusColor = '#38bdf8';
       statusBg = 'rgba(56, 189, 248, 0.2)';
       scoreDisplay = (hs !== null && as !== null) ? `${hs} - ${as}` : 'VS';
@@ -626,15 +929,13 @@
       // Scoreboard Area
       drawCrestLocal(230, 240, 140, 140, hLogoUrl, h, true);
       ctx.fillStyle = '#ffffff';
-      ctx.font = '800 28px system-ui, -apple-system, sans-serif';
       ctx.textAlign = 'center';
-      ctx.fillText(h.length > 16 ? h.slice(0, 15) + '…' : h, 230, 345);
+      drawResponsiveTeamName(ctx, h, 230, 345, 300, 28);
 
       drawCrestLocal(850, 240, 140, 140, aLogoUrl, a, false);
       ctx.fillStyle = '#ffffff';
-      ctx.font = '800 28px system-ui, -apple-system, sans-serif';
       ctx.textAlign = 'center';
-      ctx.fillText(a.length > 16 ? a.slice(0, 15) + '…' : a, 850, 345);
+      drawResponsiveTeamName(ctx, a, 850, 345, 300, 28);
 
       // Center Score / VS Box
       ctx.fillStyle = 'rgba(15, 23, 42, 0.95)';
@@ -648,18 +949,17 @@
       ctx.textAlign = 'center';
       ctx.fillText(scoreDisplay, 540, 250);
 
+      // Single authoritative status line badge
+      ctx.font = 'bold 14px system-ui, -apple-system, sans-serif';
+      const statusTextWidthSq = ctx.measureText(statusLabel).width;
+      const pillWSq = Math.max(statusTextWidthSq + 24, 180);
+      const pillXSq = 540 - (pillWSq / 2);
       ctx.fillStyle = statusBg;
-      ctx.fillRect(440, 268, 200, 30);
+      ctx.fillRect(pillXSq, 268, pillWSq, 28);
       ctx.fillStyle = statusColor;
-      ctx.font = 'bold 15px system-ui, -apple-system, sans-serif';
-      ctx.fillText(statusLabel, 540, 289);
+      ctx.fillText(statusLabel, 540, 287);
 
-      // Match Date & Local Kickoff Time
-      ctx.fillStyle = '#94a3b8';
-      ctx.font = '600 16px system-ui, -apple-system, sans-serif';
-      ctx.fillText(`📅 ${match.date || 'Today'} · Local Kickoff ${match.time || '16:30'}`, 540, 345);
-
-      // Voting Panel ("WHO IS WINNING?")
+      // Voting Panel ("WHO WILL WIN?" or "POST-MATCH FAN DEBATE")
       ctx.fillStyle = 'rgba(15, 23, 42, 0.9)';
       ctx.fillRect(50, 400, 980, 580);
       ctx.strokeStyle = 'rgba(168, 85, 247, 0.35)';
@@ -670,17 +970,17 @@
       ctx.fillStyle = '#ffffff';
       ctx.font = '900 28px system-ui, -apple-system, sans-serif';
       ctx.textAlign = 'center';
-      ctx.fillText('🗳️ WHO IS WINNING? — FAN ARENA POLL', 540, 450);
+      ctx.fillText(pollConfig.mainHeading, 540, 450);
 
       ctx.fillStyle = '#38bdf8';
       ctx.font = '800 18px system-ui, -apple-system, sans-serif';
-      ctx.fillText('💬 CAST YOUR VOTE IN THE COMMENTS!', 540, 482);
+      ctx.fillText(pollConfig.supportingMessage, 540, 482);
 
       // 3 Voting Bars (Zero-Percent Social Poll for Social Comment Voting)
       const options = [
-        { label: `1 · ${h} Win`, color: '#38bdf8', y: 520 },
-        { label: 'X · Match Draw', color: '#94a3b8', y: 660 },
-        { label: `2 · ${a} Win`, color: '#c084fc', y: 800 }
+        { label: pollConfig.options[0].label, color: pollConfig.options[0].color, y: 520 },
+        { label: pollConfig.options[1].label, color: pollConfig.options[1].color, y: 660 },
+        { label: pollConfig.options[2].label, color: pollConfig.options[2].color, y: 800 }
       ];
 
       options.forEach(opt => {
@@ -761,15 +1061,13 @@
       // Scoreboard Area
       drawCrestLocal(240, 330, 170, 170, hLogoUrl, h, true);
       ctx.fillStyle = '#ffffff';
-      ctx.font = '800 32px system-ui, -apple-system, sans-serif';
       ctx.textAlign = 'center';
-      ctx.fillText(h.length > 15 ? h.slice(0, 14) + '…' : h, 240, 460);
+      drawResponsiveTeamName(ctx, h, 240, 460, 320, 32);
 
       drawCrestLocal(840, 330, 170, 170, aLogoUrl, a, false);
       ctx.fillStyle = '#ffffff';
-      ctx.font = '800 32px system-ui, -apple-system, sans-serif';
       ctx.textAlign = 'center';
-      ctx.fillText(a.length > 15 ? a.slice(0, 14) + '…' : a, 840, 460);
+      drawResponsiveTeamName(ctx, a, 840, 460, 320, 32);
 
       // Center Score Box
       ctx.fillStyle = 'rgba(15, 23, 42, 0.95)';
@@ -783,18 +1081,17 @@
       ctx.textAlign = 'center';
       ctx.fillText(scoreDisplay, 540, 345);
 
-      ctx.fillStyle = statusBg;
-      ctx.fillRect(430, 365, 220, 34);
-      ctx.fillStyle = statusColor;
+      // Single authoritative status line badge
       ctx.font = 'bold 16px system-ui, -apple-system, sans-serif';
-      ctx.fillText(statusLabel, 540, 388);
+      const statusTextWidthP = ctx.measureText(statusLabel).width;
+      const pillWP = Math.max(statusTextWidthP + 28, 200);
+      const pillXP = 540 - (pillWP / 2);
+      ctx.fillStyle = statusBg;
+      ctx.fillRect(pillXP, 368, pillWP, 32);
+      ctx.fillStyle = statusColor;
+      ctx.fillText(statusLabel, 540, 390);
 
-      // Match Date & Local Kickoff Time
-      ctx.fillStyle = '#94a3b8';
-      ctx.font = '600 18px system-ui, -apple-system, sans-serif';
-      ctx.fillText(`📅 ${match.date || 'Today'} · Local Kickoff ${match.time || '16:30'}`, 540, 520);
-
-      // Voting Panel ("WHO IS WINNING?")
+      // Voting Panel ("WHO WILL WIN?" or "POST-MATCH FAN DEBATE")
       ctx.fillStyle = 'rgba(15, 23, 42, 0.9)';
       ctx.fillRect(50, 600, 980, 1160);
       ctx.strokeStyle = 'rgba(168, 85, 247, 0.35)';
@@ -804,21 +1101,21 @@
       ctx.fillStyle = '#ffffff';
       ctx.font = '900 36px system-ui, -apple-system, sans-serif';
       ctx.textAlign = 'center';
-      ctx.fillText('🗳️ WHO IS WINNING?', 540, 675);
+      ctx.fillText(pollConfig.portraitHeading1, 540, 675);
 
       ctx.fillStyle = '#c084fc';
-      ctx.font = '800 22px system-ui, -apple-system, sans-serif';
-      ctx.fillText('FAN ARENA MATCH POLL', 540, 715);
+      ctx.font = '800 24px system-ui, -apple-system, sans-serif';
+      ctx.fillText(pollConfig.portraitHeading2, 540, 715);
 
       ctx.fillStyle = '#38bdf8';
       ctx.font = '800 20px system-ui, -apple-system, sans-serif';
-      ctx.fillText('💬 CAST YOUR VOTE IN THE COMMENTS!', 540, 755);
+      ctx.fillText(pollConfig.supportingMessage, 540, 755);
 
       // 3 Large Voting Outcome Cards (Zero-Percent Social Poll)
       const optionsP = [
-        { title: `1 · ${h} to Win`, color: '#38bdf8', y: 810 },
-        { title: 'X · Match to End in Draw', color: '#94a3b8', y: 1110 },
-        { title: `2 · ${a} to Win`, color: '#c084fc', y: 1410 }
+        { title: pollConfig.options[0].label, color: pollConfig.options[0].color, y: 810 },
+        { title: pollConfig.options[1].label, color: pollConfig.options[1].color, y: 1110 },
+        { title: pollConfig.options[2].label, color: pollConfig.options[2].color, y: 1410 }
       ];
 
       optionsP.forEach(opt => {
@@ -897,15 +1194,13 @@
       // Left Column: Match Details & Teams (X: 35 to 580)
       drawCrestLocal(160, 230, 130, 130, hLogoUrl, h, true);
       ctx.fillStyle = '#ffffff';
-      ctx.font = '800 24px system-ui, -apple-system, sans-serif';
       ctx.textAlign = 'center';
-      ctx.fillText(h.length > 15 ? h.slice(0, 14) + '…' : h, 160, 335);
+      drawResponsiveTeamName(ctx, h, 160, 335, 230, 24);
 
       drawCrestLocal(460, 230, 130, 130, aLogoUrl, a, false);
       ctx.fillStyle = '#ffffff';
-      ctx.font = '800 24px system-ui, -apple-system, sans-serif';
       ctx.textAlign = 'center';
-      ctx.fillText(a.length > 15 ? a.slice(0, 14) + '…' : a, 460, 335);
+      drawResponsiveTeamName(ctx, a, 460, 335, 230, 24);
 
       // Center Score / VS Box
       ctx.fillStyle = 'rgba(15, 23, 42, 0.95)';
@@ -919,16 +1214,15 @@
       ctx.textAlign = 'center';
       ctx.fillText(scoreDisplay, 310, 235);
 
+      // Single authoritative status line badge
+      ctx.font = 'bold 12px system-ui, -apple-system, sans-serif';
+      const statusTextWidthL = ctx.measureText(statusLabel).width;
+      const pillWL = Math.min(Math.max(statusTextWidthL + 18, 120), 220);
+      const pillXL = 310 - (pillWL / 2);
       ctx.fillStyle = statusBg;
-      ctx.fillRect(245, 248, 130, 24);
+      ctx.fillRect(pillXL, 248, pillWL, 24);
       ctx.fillStyle = statusColor;
-      ctx.font = 'bold 13px system-ui, -apple-system, sans-serif';
       ctx.fillText(statusLabel, 310, 265);
-
-      // Match Date & Kickoff
-      ctx.fillStyle = '#94a3b8';
-      ctx.font = '600 15px system-ui, -apple-system, sans-serif';
-      ctx.fillText(`📅 ${match.date || 'Today'} · Kickoff ${match.time || '16:30'}`, 310, 380);
 
       // Right Column: Voting Panel Box (X: 610, Y: 105, W: 555, H: 485)
       ctx.fillStyle = 'rgba(15, 23, 42, 0.9)';
@@ -938,19 +1232,24 @@
       ctx.strokeRect(610, 105, 555, 485);
 
       ctx.fillStyle = '#ffffff';
-      ctx.font = '900 22px system-ui, -apple-system, sans-serif';
+      let headSizeL = 20;
+      ctx.font = `900 ${headSizeL}px system-ui, -apple-system, sans-serif`;
+      while (headSizeL > 15 && ctx.measureText(pollConfig.mainHeading).width > 520) {
+        headSizeL -= 1;
+        ctx.font = `900 ${headSizeL}px system-ui, -apple-system, sans-serif`;
+      }
       ctx.textAlign = 'center';
-      ctx.fillText('🗳️ WHO IS WINNING? — FAN ARENA POLL', 887, 145);
+      ctx.fillText(pollConfig.mainHeading, 887, 145);
 
       ctx.fillStyle = '#38bdf8';
-      ctx.font = '800 15px system-ui, -apple-system, sans-serif';
-      ctx.fillText('💬 CAST YOUR VOTE IN THE COMMENTS!', 887, 175);
+      ctx.font = '800 14px system-ui, -apple-system, sans-serif';
+      ctx.fillText(pollConfig.supportingMessage, 887, 175);
 
       // 3 Voting Rows in Right Column (Zero-Percent Social Poll)
       const optionsL = [
-        { label: `1 · ${h} Win`, color: '#38bdf8', y: 205 },
-        { label: 'X · Match Draw', color: '#94a3b8', y: 325 },
-        { label: `2 · ${a} Win`, color: '#c084fc', y: 445 }
+        { label: pollConfig.options[0].label, color: pollConfig.options[0].color, y: 205 },
+        { label: pollConfig.options[1].label, color: pollConfig.options[1].color, y: 325 },
+        { label: pollConfig.options[2].label, color: pollConfig.options[2].color, y: 445 }
       ];
 
       optionsL.forEach(opt => {
@@ -1177,8 +1476,7 @@
     const h = match.homeTeam?.name || (typeof match.homeTeam === 'string' ? match.homeTeam : 'Home Team');
     const a = match.awayTeam?.name || (typeof match.awayTeam === 'string' ? match.awayTeam : 'Away Team');
     const comp = match.competition || match.league || 'Football';
-    const dateStr = match.date || 'Today';
-    const timeStr = match.time || '16:30';
+    const statusLine = formatFanArenaStatusLine(match);
 
     const hTag = toHashtag(h);
     const aTag = toHashtag(a);
@@ -1187,22 +1485,21 @@
 
     const varIdx = Math.abs(Number(variantIndex) || 0) % 4;
 
-    const isLive = Boolean(match.isLive);
-    const isFT = Boolean(match.isFT || (match.status && match.status.toUpperCase() === 'FT') || (match.time && match.time.toUpperCase().includes('FT')));
+    const pollConfig = getFanArenaPollConfig(match);
 
-    if (isFT) {
+    if (pollConfig.type === 'completed') {
       const score = (match.homeScore !== undefined && match.awayScore !== undefined) ? `${match.homeScore} - ${match.awayScore}` : (match.score || '');
       const scoreLine = score ? `\n📊 Final Score: ${h} ${score} ${a}` : '';
-      return `🏁 FAN ARENA POLL REVIEW: ${h} vs ${a}
+      return `🏁 POST-MATCH FAN DEBATE: ${h} vs ${a}
 ${scoreLine}
-🏆 ${comp} · ${dateStr}
+🏆 ${comp} · ${statusLine}
 
-Did this match outcome match your pre-match prediction?
-1️⃣ ${h} Win
-🤝 Match Draw
-2️⃣ ${a} Win
+The final whistle has sounded. Did this match outcome match your pre-match prediction?
+1️⃣ ${h} had the better performance
+🤝 Both teams were evenly matched
+2️⃣ ${a} had the better performance
 
-💬 CAST YOUR VOTE IN THE COMMENTS!
+💬 SHARE YOUR VERDICT IN THE COMMENTS!
 Did you see this result coming? Share your tactical review and verdict below 👇
 
 🌐 Full match stats & verified AI predictive ratings:
@@ -1211,16 +1508,15 @@ ${siteUrl}
 #DeepPredictBet #FanArena #${compTag} #FootballDebate #MatchPrediction #${hTag} #${aTag}`;
     }
 
-    if (isLive) {
+    if (pollConfig.type === 'live') {
       const score = (match.homeScore !== undefined && match.awayScore !== undefined) ? `${match.homeScore} - ${match.awayScore}` : (match.score || '');
       const scoreText = score ? ` (${score})` : '';
-      const elapsed = match.elapsed ? ` · ⏱️ ${match.elapsed}'` : '';
-      return `🔴 LIVE MATCH POLL: ${h} vs ${a}${scoreText}
-🏆 ${comp}${elapsed}
+      return `🔴 LIVE MATCH FAN DEBATE: ${h} vs ${a}${scoreText}
+🏆 ${comp} · ${statusLine}
 
-Who takes the win from here?
+THE ACTION IS UNDERWAY. WHAT'S YOUR TAKE?
 1️⃣ ${h} Win
-🤝 Draw
+🤝 Match Draw
 2️⃣ ${a} Win
 
 💬 CAST YOUR VOTE IN THE COMMENTS!
@@ -1232,12 +1528,12 @@ ${siteUrl}
 #DeepPredictBet #FanArena #${compTag} #LiveFootball #${hTag} #${aTag}`;
     }
 
+    // Upcoming variants
     if (varIdx === 0) {
-      return `⚽ THE FAN ARENA POLL IS OPEN!
+      return `⚽ THE FAN ARENA POLL IS OPEN! — WHO WILL WIN? — FAN ARENA POLL
 
 🔥 ${h} vs ${a}
-🏆 ${comp}
-📅 ${dateStr} · ⏰ Kickoff: ${timeStr}
+🏆 ${comp} · ${statusLine}
 
 Cast your verdict on this clash:
 1️⃣ ${h} Win
@@ -1255,16 +1551,15 @@ ${siteUrl}
       return `🔥 FOOTBALL FANS, WE WANT YOUR VERDICT!
 
 ⚔️ ${h} vs ${a}
-🏆 ${comp}
-📅 ${dateStr} · ⏰ Local Kickoff: ${timeStr}
+🏆 ${comp} · ${statusLine}
 
 Who takes all three points?
 1️⃣ ${h} to Win
-🤝 Draw
+🤝 Match Draw
 2️⃣ ${a} to Win
 
 💬 CAST YOUR VOTE IN THE COMMENTS!
-Who gets your backing today? Drop your scoreline and explain why 👇
+Who gets your backing? Drop your scoreline and explain why 👇
 
 🌐 Free AI tactical match previews & odds value:
 ${siteUrl}
@@ -1274,11 +1569,11 @@ ${siteUrl}
       return `💬 WHO GETS YOUR VOTE IN THIS SHOWDOWN?
 
 🏟️ ${h} vs ${a}
-🏆 ${comp} · 📅 ${dateStr} (${timeStr})
+🏆 ${comp} · ${statusLine}
 
 Match Outcome Voting:
 1️⃣ ${h} Win
-🤝 Stalemate / Draw
+🤝 Match Draw
 2️⃣ ${a} Win
 
 💬 CAST YOUR VOTE IN THE COMMENTS!
@@ -1292,12 +1587,12 @@ ${siteUrl}
       return `⚡ MATCH PREDICTION POLL — WHO TAKES THE POINTS?
 
 🔥 ${h} vs ${a}
-🏆 ${comp} · 📅 ${dateStr} · ⏰ ${timeStr}
+🏆 ${comp} · ${statusLine}
 
 Select your choice:
-1️⃣ ${h} Victory
-🤝 Shared Points (Draw)
-2️⃣ ${a} Victory
+1️⃣ ${h} Win
+🤝 Match Draw
+2️⃣ ${a} Win
 
 💬 CAST YOUR VOTE IN THE COMMENTS!
 Tell us who wins and why! ⚽👇
@@ -1507,13 +1802,22 @@ ${siteUrl}
     const h = match.homeTeam?.name || (typeof match.homeTeam === 'string' ? match.homeTeam : 'Home Team');
     const a = match.awayTeam?.name || (typeof match.awayTeam === 'string' ? match.awayTeam : 'Away Team');
     const voteData = getMatchFanVotes(match.id, match);
+    const statusLine = formatFanArenaStatusLine(match);
+    const pollConfig = getFanArenaPollConfig(match);
 
-    // 1. Update Match Header Title
+    // 1. Update Match Header Title & Subtitle
     const titleEl = document.getElementById('fan-arena-modal-match-title');
     if (titleEl) titleEl.textContent = `${h} vs ${a}`;
 
     const subEl = document.getElementById('fan-arena-modal-match-sub');
-    if (subEl) subEl.textContent = `${match.leagueEmoji || '🏆'} ${match.league || match.competition || 'Top League'} · ${match.date || 'Today'} · Kickoff ${match.time || '16:30'}`;
+    if (subEl) subEl.textContent = `${match.leagueEmoji || '🏆'} ${match.league || match.competition || 'Top League'} · ${statusLine}`;
+
+    // 1b. Update Modal Voting Heading & Subtitle
+    const headingEl = document.getElementById('fan-arena-modal-voting-heading');
+    if (headingEl) headingEl.textContent = pollConfig.mainHeading;
+
+    const subVotingEl = document.getElementById('fan-arena-modal-voting-sub');
+    if (subVotingEl) subVotingEl.textContent = pollConfig.supportingMessage;
 
     // 2. Update Interactive Voting Options
     const optHome = document.getElementById('fan-vote-btn-home');
@@ -1526,10 +1830,13 @@ ${siteUrl}
       optAway.className = `fan-vote-card ${voteData.userVote === 'away' ? 'voted' : ''}`;
 
       const homeNameLabel = optHome.querySelector('.fan-vote-name');
-      if (homeNameLabel) homeNameLabel.textContent = h;
+      if (homeNameLabel) homeNameLabel.textContent = pollConfig.modalOptions.home;
+
+      const drawNameLabel = optDraw.querySelector('.fan-vote-name');
+      if (drawNameLabel) drawNameLabel.textContent = pollConfig.modalOptions.draw;
 
       const awayNameLabel = optAway.querySelector('.fan-vote-name');
-      if (awayNameLabel) awayNameLabel.textContent = a;
+      if (awayNameLabel) awayNameLabel.textContent = pollConfig.modalOptions.away;
 
       const homePctEl = optHome.querySelector('.fan-vote-pct');
       if (homePctEl) homePctEl.textContent = `${voteData.homePct}%`;
@@ -1613,6 +1920,10 @@ ${siteUrl}
     updateFanArenaCaption,
     regenerateFanArenaCaption,
     restoreFanArenaCaption,
-    copyFanArenaCaption
+    copyFanArenaCaption,
+    formatFanArenaStatusLine,
+    parseMatchDateTime,
+    getFanArenaPollConfig,
+    drawResponsiveTeamName
   };
 });

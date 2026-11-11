@@ -9985,7 +9985,17 @@
             }
           }
         } catch (_) {}
-        return `🗳️ DEEPPREDICTBET FAN ARENA: WHO IS WINNING?\n\n⚽ ${h} vs ${a} (${comp})\n\n📊 Fan Predictions (${total.toLocaleString()} votes):\n• ${h} Win: ${hPct}%\n• Draw: ${dPct}%\n• ${a} Win: ${aPct}%\n\n🗳️ Cast your vote & view AI predictive analysis on DeepPredictBet:\nhttps://deeppredictbet.com\n\n18+ · Gamble Responsibly`;
+
+        const formatStatus = (typeof formatFanArenaStatusLine === 'function' ? formatFanArenaStatusLine : (typeof window !== 'undefined' && window.FanArenaEngine ? window.FanArenaEngine.formatFanArenaStatusLine : () => ''));
+        const getPollCfg = (typeof getFanArenaPollConfig === 'function' ? getFanArenaPollConfig : (typeof window !== 'undefined' && window.FanArenaEngine ? window.FanArenaEngine.getFanArenaPollConfig : () => null));
+        const statusLine = formatStatus(match);
+        const pollCfg = getPollCfg(match);
+
+        if (pollCfg?.type === 'completed') {
+          return `🏁 DEEPPREDICTBET POST-MATCH FAN DEBATE\n\n⚽ ${h} vs ${a} (${comp})\n🏆 Status: ${statusLine}\n\n📊 Fan Predictions (${total.toLocaleString()} votes):\n• ${h} Win: ${hPct}%\n• Draw: ${dPct}%\n• ${a} Win: ${aPct}%\n\nThe final whistle has sounded. What's your verdict?\n• 1: ${h} had the better performance\n• X: Both teams were evenly matched\n• 2: ${a} had the better performance\n\n💬 Share your verdict & view full AI post-match stats on DeepPredictBet:\nhttps://deeppredictbet.com\n\n18+ · Gamble Responsibly`;
+        }
+
+        return `🗳️ DEEPPREDICTBET FAN ARENA: WHO IS WINNING?\n\n⚽ ${h} vs ${a} (${comp})\n📅 Status: ${statusLine}\n\n📊 Fan Predictions (${total.toLocaleString()} votes):\n• ${h} Win: ${hPct}%\n• Draw: ${dPct}%\n• ${a} Win: ${aPct}%\n\n🗳️ Cast your vote & view AI predictive analysis on DeepPredictBet:\nhttps://deeppredictbet.com\n\n18+ · Gamble Responsibly`;
       }
       default:
         return `📢 MATCH UPDATE: ${comp}\n\n${h} ${hs} – ${as} ${a}\n${match.statusShort || 'LIVE'} ${timeStr}\n\nDeepPredictBet Match Centre: https://deeppredictbet.com`;
@@ -12017,6 +12027,11 @@
     const activeFormatKey = state.fanArenaFormat || 'square';
     const activeFileExt = state.fanArenaFileType || 'png';
 
+    const formatStatusLine = (typeof formatFanArenaStatusLine === 'function' ? formatFanArenaStatusLine : (typeof window !== 'undefined' && window.FanArenaEngine ? window.FanArenaEngine.formatFanArenaStatusLine : (m) => m?.isFT ? 'FT · ' + (m.date || '') : 'KICKOFF · ' + (m.date || '') + ' · ' + (m.time || '16:30')));
+    const getPollCfg = (typeof getFanArenaPollConfig === 'function' ? getFanArenaPollConfig : (typeof window !== 'undefined' && window.FanArenaEngine ? window.FanArenaEngine.getFanArenaPollConfig : () => ({ modalOptions: { home: 'Home', draw: 'Draw', away: 'Away' } })));
+    const selPollConfig = sel ? getPollCfg(sel) : null;
+    const selStatusLine = sel ? formatStatusLine(sel) : '';
+
     let votes = { homePercent: 34, drawPercent: 33, awayPercent: 33, homePct: 34, drawPct: 33, awayPct: 33, totalVotes: 0, userVote: null, hasVotes: false };
     if (sel) {
       try {
@@ -12167,8 +12182,8 @@
                   <div onclick="window.TelegramPublisher.selectFanArenaMatch('${m.id}')" style="background: ${isSelected ? 'rgba(168,85,247,0.18)' : 'rgba(0,0,0,0.3)'}; border: 1.5px solid ${isSelected ? '#a855f7' : 'rgba(255,255,255,0.06)'}; border-radius: 12px; padding: 12px 14px; cursor: pointer; transition: all 0.15s ease;">
                     <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
                       <span style="font-size: 0.7rem; font-weight: 800; color: #a855f7; text-transform: uppercase;">${escapeHtml(m.competition || 'LEAGUE')}</span>
-                      <span style="font-size: 0.68rem; font-weight: 700; color: ${m.isLive ? '#ef4444' : (m.isFT ? '#94a3b8' : '#10b981')};">
-                        ${m.isLive ? `🔴 ${m.elapsed}'` : (m.isFT ? '🏁 FT' : `📅 ${m.time || 'Upcoming'}`)}
+                      <span style="font-size: 0.68rem; font-weight: 700; color: ${m.isLive ? '#ef4444' : (m.isFT ? '#94a3b8' : '#38bdf8')};">
+                        ${escapeHtml(formatStatusLine(m))}
                       </span>
                     </div>
                     <div style="font-weight: 800; font-size: 0.88rem; color: #ffffff; margin-bottom: 4px;">
@@ -12189,7 +12204,7 @@
               <div style="background: rgba(0,0,0,0.4); border: 1px solid rgba(168,85,247,0.3); border-radius: 12px; padding: 14px 18px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px;">
                 <div>
                   <div style="font-size: 0.7rem; font-weight: 800; color: #a855f7; text-transform: uppercase;">
-                    ${escapeHtml(compName)} · FAN ARENA
+                    ${escapeHtml(compName)} · FAN ARENA · ${escapeHtml(selStatusLine)}
                   </div>
                   <h4 style="margin: 2px 0 0 0; font-size: 1.15rem; font-weight: 900; color: #ffffff;">
                     ${escapeHtml(hName)} vs ${escapeHtml(aName)}
@@ -12205,19 +12220,22 @@
               <!-- Interactive Voting Simulation Bar -->
               <div>
                 <label style="display: block; font-size: 0.72rem; font-weight: 800; color: #94a3b8; margin-bottom: 8px; text-transform: uppercase;">
-                  🗳️ Community Voting Simulator ("WHO IS WINNING?"):
+                  🗳️ Community Voting Simulator (WHO IS WINNING? — ${escapeHtml(selPollConfig?.mainHeading || 'FAN ARENA')}) :
                 </label>
                 <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px;">
                   <button type="button" onclick="window.TelegramPublisher.castFanArenaVote('${sel.id}', 'home')" style="padding: 10px 8px; font-size: 0.78rem; font-weight: 800; border-radius: 8px; cursor: pointer; background: ${votes.userVote === 'home' ? 'rgba(56,189,248,0.35)' : 'rgba(255,255,255,0.05)'}; color: #ffffff; border: 1.5px solid ${votes.userVote === 'home' ? '#38bdf8' : 'rgba(255,255,255,0.12)'}; text-align: center;">
-                    <div>${escapeHtml(hName)}</div>
+                    <div>${escapeHtml(selPollConfig?.modalOptions?.home || hName)}</div>
                     <div style="font-size: 1rem; color: #38bdf8; margin-top: 2px;">${selHomePct}%</div>
                   </button>
                   <button type="button" onclick="window.TelegramPublisher.castFanArenaVote('${sel.id}', 'draw')" style="padding: 10px 8px; font-size: 0.78rem; font-weight: 800; border-radius: 8px; cursor: pointer; background: ${votes.userVote === 'draw' ? 'rgba(245,158,11,0.35)' : 'rgba(255,255,255,0.05)'}; color: #ffffff; border: 1.5px solid ${votes.userVote === 'draw' ? '#f59e0b' : 'rgba(255,255,255,0.12)'}; text-align: center;">
-                    <div>Draw</div>
+                    <div>${escapeHtml(selPollConfig?.modalOptions?.draw || 'Draw')}</div>
                     <div style="font-size: 1rem; color: #fbbf24; margin-top: 2px;">${selDrawPct}%</div>
                   </button>
                   <button type="button" onclick="window.TelegramPublisher.castFanArenaVote('${sel.id}', 'away')" style="padding: 10px 8px; font-size: 0.78rem; font-weight: 800; border-radius: 8px; cursor: pointer; background: ${votes.userVote === 'away' ? 'rgba(239,68,68,0.35)' : 'rgba(255,255,255,0.05)'}; color: #ffffff; border: 1.5px solid ${votes.userVote === 'away' ? '#ef4444' : 'rgba(255,255,255,0.12)'}; text-align: center;">
-                    <div>${escapeHtml(aName)}</div>
+                    <div>${escapeHtml(selPollConfig?.modalOptions?.away || aName)}</div>
+                    <div style="font-size: 1rem; color: #f87171; margin-top: 2px;">${selAwayPct}%</div>
+                  </button>
+                </div>
                     <div style="font-size: 1rem; color: #f87171; margin-top: 2px;">${selAwayPct}%</div>
                   </button>
                 </div>

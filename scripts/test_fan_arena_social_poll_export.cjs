@@ -234,7 +234,7 @@ async function runAllTests() {
 
   await it('generateFanArenaSocialCaption tailors retrospective tone for finished (FT) fixtures', () => {
     const ftCap = FanArenaEngine.generateFanArenaSocialCaption(sampleFinishedMatch, 0);
-    if (!ftCap.includes('🏁 FAN ARENA POLL REVIEW: Manchester United vs Chelsea')) {
+    if (!ftCap.includes('Manchester United vs Chelsea') || (!ftCap.includes('🏁 POST-MATCH FAN DEBATE') && !ftCap.includes('🏁 FAN ARENA POLL REVIEW'))) {
       throw new Error('FT match should produce retrospective review hook');
     }
     if (!ftCap.includes('Final Score: Manchester United 2 - 1 Chelsea')) {
@@ -334,11 +334,11 @@ async function runAllTests() {
     if (!indexHtml.includes('id="fan-arena-modal-social-caption-textarea"')) {
       throw new Error('Modal in index.html missing #fan-arena-modal-social-caption-textarea');
     }
-    if (!indexHtml.includes('/js/telegramPublisher.js?v=20261110_tg_fan_arena_v3')) {
-      throw new Error('index.html missing bumped telegramPublisher.js v3 cache buster');
+    if (!indexHtml.includes('/js/telegramPublisher.js?v=20261110_tg_fan_arena_v3') && !indexHtml.includes('/js/telegramPublisher.js?v=20261111_tg_fan_arena_v4')) {
+      throw new Error('index.html missing bumped telegramPublisher.js v3 or v4 cache buster');
     }
-    if (!indexHtml.includes('/js/fanArenaEngine.js?v=20261110_fan_v3')) {
-      throw new Error('index.html missing bumped fanArenaEngine.js v3 cache buster');
+    if (!indexHtml.includes('/js/fanArenaEngine.js?v=20261110_fan_v3') && !indexHtml.includes('/js/fanArenaEngine.js?v=20261111_fan_v4')) {
+      throw new Error('index.html missing bumped fanArenaEngine.js v3 or v4 cache buster');
     }
   });
 
