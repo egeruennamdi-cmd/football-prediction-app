@@ -3758,8 +3758,11 @@ function initAppEngine() {
   // 3. Priority 1 Core DOM Mount (Active View / FCP Critical) - Each feature strictly isolated
   safeInitFeature('welcome_panel', () => {
     if (typeof renderWelcomePanel === 'function') renderWelcomePanel();
-    if (typeof initCommandCenter === 'function') initCommandCenter();
   }, { dependencies: ['dom_mount'], mountId: 'command-center-welcome' });
+
+  safeInitFeature('command_center', () => {
+    if (typeof initCommandCenter === 'function') initCommandCenter();
+  });
 
   safeInitFeature('date_bar', () => {
     if (typeof renderDeepPredictBetDateBar === 'function') renderDeepPredictBetDateBar();
@@ -3798,26 +3801,21 @@ function initAppEngine() {
 
   // 6. Ensure independent global registration for Ask AI Scout
   safeInitFeature('ask_ai_scout', () => {
-    if (typeof window.executeCommandScoutPrompt !== 'function' && typeof executeCommandScoutPrompt === 'function') {
-      window.executeCommandScoutPrompt = executeCommandScoutPrompt;
-    }
-    if (typeof window.handleCommandScoutSubmit !== 'function' && typeof handleCommandScoutSubmit === 'function') {
-      window.handleCommandScoutSubmit = handleCommandScoutSubmit;
-    }
+    window.executeCommandScoutPrompt = executeCommandScoutPrompt;
+    window.handleCommandScoutSubmit = handleCommandScoutSubmit;
+    window.quickPromptScout = quickPromptScout;
+    window.openGeneralScout = openGeneralScout;
   });
 
   // 7. Ensure independent global registration for AI Bet Doctor
   safeInitFeature('ai_bet_doctor', () => {
-    if (typeof window.runBetDoctorAudit !== 'function' && typeof runBetDoctorAudit === 'function') {
-      window.runBetDoctorAudit = runBetDoctorAudit;
-    }
+    window.runBetDoctorAudit = runBetDoctorAudit;
+    window.runInlineBetDoctorAudit = runInlineBetDoctorAudit;
   });
 
   // 8. Ensure independent global registration for Bet Generator
   safeInitFeature('bet_generator', () => {
-    if (typeof window.generateMachineTicket !== 'function' && typeof generateMachineTicket === 'function') {
-      window.generateMachineTicket = generateMachineTicket;
-    }
+    window.generateMachineTicket = generateMachineTicket;
   });
 
   // 6. Set up parallax glow movement effect on cards (optimized via event delegation on hover only)
@@ -11485,6 +11483,15 @@ function updateAuthUIState() {
       drawerCta.onclick = function() { if (typeof toggleMobileDrawer === 'function') toggleMobileDrawer(); if (typeof openAuthModal === 'function') openAuthModal('signup'); };
     }
   }
+
+  // 4. Dynamically re-render welcome panel if available
+  try {
+    if (typeof renderWelcomePanel === 'function') {
+      renderWelcomePanel();
+    } else if (typeof window !== 'undefined' && typeof window.renderWelcomePanel === 'function') {
+      window.renderWelcomePanel();
+    }
+  } catch (e) {}
 }
 window.updateAuthUIState = updateAuthUIState;
 
@@ -11520,8 +11527,15 @@ function logoutUser(e) {
     }
   } catch (err) {}
 
-  // 3. Immediately wipe the top-right header account area
+  // 3. Immediately wipe the top-right header account area & welcome panel
   updateAuthUIState();
+  try {
+    if (typeof renderWelcomePanel === 'function') {
+      renderWelcomePanel();
+    } else if (typeof window !== 'undefined' && typeof window.renderWelcomePanel === 'function') {
+      window.renderWelcomePanel();
+    }
+  } catch (e) {}
 
   // 4. Close any open modals/drawers
   const profModal = document.getElementById("profile-modal");

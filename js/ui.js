@@ -9783,6 +9783,13 @@ function updateAuthUIState() {
       drawerCta.onclick = function() { if (typeof toggleMobileDrawer === 'function') toggleMobileDrawer(); if (typeof openAuthModal === 'function') openAuthModal('signup'); };
     }
   }
+
+  // 4. Dynamically re-render welcome panel if available
+  try {
+    if (typeof window !== 'undefined' && typeof window.renderWelcomePanel === 'function') {
+      window.renderWelcomePanel();
+    }
+  } catch (e) {}
 }
 window.updateAuthUIState = updateAuthUIState;
 
@@ -9818,8 +9825,13 @@ function logoutUser(e) {
     }
   } catch (err) {}
 
-  // 3. Immediately wipe the top-right header account area
+  // 3. Immediately wipe the top-right header account area & welcome panel
   updateAuthUIState();
+  try {
+    if (typeof window !== 'undefined' && typeof window.renderWelcomePanel === 'function') {
+      window.renderWelcomePanel();
+    }
+  } catch (e) {}
 
   // 4. Close any open modals/drawers
   const profModal = document.getElementById("profile-modal");

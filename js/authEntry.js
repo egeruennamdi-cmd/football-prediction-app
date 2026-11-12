@@ -278,6 +278,9 @@
       if (typeof window.updateAuthUIState === 'function') {
         window.updateAuthUIState();
       }
+      if (typeof window.renderWelcomePanel === 'function') {
+        window.renderWelcomePanel();
+      }
 
       // Remove auth isolated view class
       document.body.classList.remove('auth-view-active');
@@ -437,6 +440,9 @@
 
       if (typeof window.updateAuthUIState === 'function') {
         window.updateAuthUIState();
+      }
+      if (typeof window.renderWelcomePanel === 'function') {
+        window.renderWelcomePanel();
       }
 
       document.body.classList.remove('auth-view-active');

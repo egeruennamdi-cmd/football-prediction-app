@@ -761,6 +761,9 @@
     // Handle Command Center initializer & dynamic widget refreshes
     if (targetViewId === 'view-command-center' || path === '/' || path === '/command-center') {
       try {
+        if (typeof window.renderWelcomePanel === 'function') {
+          window.renderWelcomePanel();
+        }
         if (typeof window.initCommandCenter === 'function') {
           window.initCommandCenter();
         }
