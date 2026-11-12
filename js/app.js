@@ -5326,7 +5326,7 @@ window.addEventListener('load', initHeroScoutDynamicOutput);
 // 🔴 HOT TRENDS TICKER ENGINE (UPCOMING INTELLIGENCE & AUTHENTIC CRESTS)
 // ============================================================================
 
-const NEUTRAL_CREST_PLACEHOLDER = (typeof window !== 'undefined' && window.TeamIdentityService && window.TeamIdentityService.NEUTRAL_CREST_PLACEHOLDER)
+var NEUTRAL_CREST_PLACEHOLDER = (typeof window !== 'undefined' && window.TeamIdentityService && window.TeamIdentityService.NEUTRAL_CREST_PLACEHOLDER)
   ? window.TeamIdentityService.NEUTRAL_CREST_PLACEHOLDER
   : 'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA0OCA0OCIgd2lkdGg9IjQ4IiBoZWlnaHQ9IjQ4Ij48cGF0aCBkPSJNMjQgNCBMNDAgMTAgTDQwIDI0IEM0MCAzMyAzMyA0MSAyNCA0NCBDMTUgNDEgOCAzMyA4IDI0IEw4IDEwIFoiIGZpbGw9IiMxZTI5M2IiIHN0cm9rZT0iIzNiODJmNiIgc3Ryb2tlLXdpZHRoPSIyIi8+PGNpcmNsZSBjeD0iMjQiIGN5PSIyMiIgcj0iOSIgZmlsbD0iIzBmMTcyYSIgc3Ryb2tlPSIjNjBhNWZhIiBzdHJva2Utd2lkdGg9IjEuNSIvPjxjaXJjbGUgY3g9IjI0IiBjeT0iMjIiIHI9IjMiIGZpbGw9IiM2MGE1ZmEiLz48L3N2Zz4=';
 
