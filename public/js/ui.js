@@ -13874,12 +13874,29 @@ if (typeof window !== 'undefined') {
       if (typeof executeCommandScoutPrompt === 'function' && executeCommandScoutPrompt !== window.executeCommandScoutPrompt) {
         return executeCommandScoutPrompt(p);
       }
+      const lower = String(p || '').toLowerCase().trim();
+      if (/(check.*(bet|slip|ticket)|doctor|audit|slip health|risk.*(bet|slip|ticket)|trap|diagnos)/i.test(lower) || lower === 'check my bet') {
+        if (typeof window.navigateTo === 'function') window.navigateTo('/bet-doctor');
+        return;
+      }
+      if (typeof window.openGeneralScout === 'function') {
+        window.openGeneralScout();
+        if (typeof window.sendScoutMessage === 'function') {
+          setTimeout(() => { window.sendScoutMessage(p); }, 300);
+        }
+      }
     };
   }
   if (typeof window.handleCommandScoutSubmit !== 'function') {
     window.handleCommandScoutSubmit = function(e) {
+      if (e && e.preventDefault) e.preventDefault();
       if (typeof handleCommandScoutSubmit === 'function' && handleCommandScoutSubmit !== window.handleCommandScoutSubmit) {
         return handleCommandScoutSubmit(e);
+      }
+      const input = document.getElementById("command-scout-input") || document.getElementById("hero-scout-input");
+      const text = input ? input.value.trim() : "";
+      if (typeof window.executeCommandScoutPrompt === 'function') {
+        window.executeCommandScoutPrompt(text || "Generate 40 selections");
       }
     };
   }

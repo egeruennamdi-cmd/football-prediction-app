@@ -760,18 +760,30 @@
 
     // Handle Command Center initializer & dynamic widget refreshes
     if (targetViewId === 'view-command-center' || path === '/' || path === '/command-center') {
-      if (typeof window.initCommandCenter === 'function') {
-        window.initCommandCenter();
+      try {
+        if (typeof window.initCommandCenter === 'function') {
+          window.initCommandCenter();
+        }
+      } catch (e) {
+        if (window.DPFeatureHealth && typeof window.DPFeatureHealth.recordEvent === 'function') {
+          window.DPFeatureHealth.recordEvent('WELCOME_PANEL_RENDER_FAILED', { error: e.message });
+        }
       }
-      if (typeof window.renderRecentSettledPredictions === 'function') {
-        window.renderRecentSettledPredictions();
-      }
-      if (typeof window.renderDynamicStandings === 'function') {
-        window.renderDynamicStandings();
-      }
-      if (typeof window.initHotTrendsTicker === 'function') {
-        window.initHotTrendsTicker();
-      }
+      try {
+        if (typeof window.renderRecentSettledPredictions === 'function') {
+          window.renderRecentSettledPredictions();
+        }
+      } catch (e) {}
+      try {
+        if (typeof window.renderDynamicStandings === 'function') {
+          window.renderDynamicStandings();
+        }
+      } catch (e) {}
+      try {
+        if (typeof window.initHotTrendsTicker === 'function') {
+          window.initHotTrendsTicker();
+        }
+      } catch (e) {}
     }
 
     // Handle Founder Analytics dashboard initializer

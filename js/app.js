@@ -3164,54 +3164,82 @@ function escapeHtml(str) {
     .replace(/'/g, '&#039;');
 }
 
-function initCommandCenter() {
-  const welcomeEl = document.getElementById("command-center-welcome");
-  const cmdGuestAuthLink = document.getElementById("cmd-guest-auth-link");
-  const scoutInput = document.getElementById("command-scout-input");
+// Pure presentation component for authenticated welcome panel
+function renderWelcomePanel(targetEl) {
+  try {
+    const welcomeEl = targetEl || document.getElementById("command-center-welcome");
+    const cmdGuestAuthLink = document.getElementById("cmd-guest-auth-link");
 
-  // 1. Check Authenticated / Returning User Session
-  const isLoggedIn = localStorage.getItem("userLoggedIn") === "true";
-  const username = localStorage.getItem("currentUsername") || "Punter";
-  const userTier = (typeof window !== 'undefined' && window.Entitlements && typeof window.Entitlements.getUserTier === 'function')
-    ? window.Entitlements.getUserTier()
-    : 'FREE';
-  const isVip = userTier === 'VIP' || userTier === 'ADMIN';
-  const isPro = userTier === 'PRO';
-
-  let tierLabel = '⚡ FREE ACCOUNT';
-  let badgeBg = 'rgba(59,130,246,0.15)';
-  let badgeColor = '#60a5fa';
-  let badgeBorder = '#3b82f6';
-
-  if (userTier === 'ADMIN') {
-    tierLabel = '👑 ADMIN PASS';
-    badgeBg = 'rgba(239,68,68,0.2)';
-    badgeColor = '#f87171';
-    badgeBorder = '#ef4444';
-  } else if (isVip) {
-    let vipPlanName = 'VIP Member';
-    try {
-      const userVip = localStorage.getItem("deeppredictbet_vip");
-      if (userVip) {
-        const parsed = JSON.parse(userVip);
-        if (parsed) vipPlanName = parsed.package || parsed.plan || 'VIP Member';
+    // If mount element is absent, exit safely without side effects
+    if (!welcomeEl) {
+      if (typeof window !== 'undefined' && window.DPFeatureHealth && typeof window.DPFeatureHealth.recordEvent === 'function') {
+        window.DPFeatureHealth.recordEvent('FEATURE_DEPENDENCY_UNAVAILABLE', {
+          feature: 'welcome_panel',
+          dependency: 'dom_mount:#command-center-welcome',
+          reason: 'Mount element not present in DOM'
+        });
       }
-    } catch (e) {}
-    tierLabel = '👑 ' + vipPlanName.toUpperCase();
-    badgeBg = 'rgba(245,158,11,0.2)';
-    badgeColor = '#fbbf24';
-    badgeBorder = '#f59e0b';
-  } else if (isPro) {
-    tierLabel = '⚡ PRO ANALYST';
-    badgeBg = 'rgba(16,185,129,0.2)';
-    badgeColor = '#34d399';
-    badgeBorder = '#10b981';
-  }
+      return { rendered: false, reason: 'mount_absent' };
+    }
 
-  if (isLoggedIn && welcomeEl) {
-    welcomeEl.style.display = "block";
+    // 1. Check Authenticated / Returning User Session
+    let isLoggedIn = false;
+    let username = "Punter";
+    try {
+      isLoggedIn = localStorage.getItem("userLoggedIn") === "true";
+      username = localStorage.getItem("currentUsername") || "Punter";
+    } catch (e) {
+      isLoggedIn = false;
+    }
 
-    // Gather existing local history data without inventing
+    // If user is not logged in, ensure welcome panel is hidden and return cleanly
+    if (!isLoggedIn) {
+      welcomeEl.style.display = "none";
+      welcomeEl.innerHTML = "";
+      if (cmdGuestAuthLink) {
+        cmdGuestAuthLink.innerHTML = `Welcome guest • <a href="javascript:void(0)" onclick="if(typeof openAuthModal==='function'){openAuthModal('login');}" style="color:#38bdf8; text-decoration:underline;">Sign In</a>`;
+      }
+      return { rendered: false, reason: 'unauthenticated' };
+    }
+
+    // Determine user tier & badges
+    const userTier = (typeof window !== 'undefined' && window.Entitlements && typeof window.Entitlements.getUserTier === 'function')
+      ? window.Entitlements.getUserTier()
+      : 'FREE';
+    const isVip = userTier === 'VIP' || userTier === 'ADMIN';
+    const isPro = userTier === 'PRO';
+
+    let tierLabel = '⚡ FREE ACCOUNT';
+    let badgeBg = 'rgba(59,130,246,0.15)';
+    let badgeColor = '#60a5fa';
+    let badgeBorder = '#3b82f6';
+
+    if (userTier === 'ADMIN') {
+      tierLabel = '👑 ADMIN PASS';
+      badgeBg = 'rgba(239,68,68,0.2)';
+      badgeColor = '#f87171';
+      badgeBorder = '#ef4444';
+    } else if (isVip) {
+      let vipPlanName = 'VIP Member';
+      try {
+        const userVip = localStorage.getItem("deeppredictbet_vip");
+        if (userVip) {
+          const parsed = JSON.parse(userVip);
+          if (parsed) vipPlanName = parsed.package || parsed.plan || 'VIP Member';
+        }
+      } catch (e) {}
+      tierLabel = '👑 ' + vipPlanName.toUpperCase();
+      badgeBg = 'rgba(245,158,11,0.2)';
+      badgeColor = '#fbbf24';
+      badgeBorder = '#f59e0b';
+    } else if (isPro) {
+      tierLabel = '⚡ PRO ANALYST';
+      badgeBg = 'rgba(16,185,129,0.2)';
+      badgeColor = '#34d399';
+      badgeBorder = '#10b981';
+    }
+
+    // Gather existing local history data defensively
     let savedTicketsCount = 0;
     try {
       const tickets = JSON.parse(localStorage.getItem("dp_saved_tickets") || "[]");
@@ -3230,6 +3258,7 @@ function initCommandCenter() {
       if (Array.isArray(wl)) watchlistCount = wl.length;
     } catch (e) {}
 
+    welcomeEl.style.display = "block";
     welcomeEl.innerHTML = `
       <div class="command-center-welcome-header">
         <div>
@@ -3270,27 +3299,62 @@ function initCommandCenter() {
     if (cmdGuestAuthLink) {
       cmdGuestAuthLink.innerHTML = `Signed in as <b style="color:#ffffff;">${escapeHtml(username)}</b> • <a href="javascript:void(0)" onclick="if(typeof navigateTo==='function'){navigateTo('/dashboard');}" style="color:#38bdf8; text-decoration:underline;">Account Dashboard</a>`;
     }
-  }
 
-  // 2. Setup Keyboard Accessibility for all command cards
-  const cards = document.querySelectorAll(".command-card");
-  cards.forEach(card => {
-    card.addEventListener("keydown", function(e) {
-      if (e.key === "Enter" || e.key === " ") {
-        e.preventDefault();
-        card.click();
-      }
-    });
-  });
+    if (typeof window !== 'undefined' && window.DPFeatureHealth && typeof window.DPFeatureHealth.recordEvent === 'function') {
+      window.DPFeatureHealth.recordEvent('WELCOME_PANEL_INITIALIZED', {
+        tier: userTier,
+        savedTicketsCount,
+        doctorAuditsCount,
+        watchlistCount
+      });
+      window.DPFeatureHealth.setFeatureStatus('welcome_panel', 'INITIALIZED');
+    }
 
-  // 3. Keep hero-scout-input synced if present
-  if (scoutInput) {
-    scoutInput.addEventListener("input", function() {
-      const heroHidden = document.getElementById("hero-scout-input");
-      if (heroHidden) heroHidden.value = scoutInput.value;
-    });
+    return { rendered: true };
+  } catch (err) {
+    if (typeof window !== 'undefined' && window.DPFeatureHealth && typeof window.DPFeatureHealth.recordEvent === 'function') {
+      window.DPFeatureHealth.recordEvent('WELCOME_PANEL_RENDER_FAILED', { error: err.message });
+      window.DPFeatureHealth.setFeatureStatus('welcome_panel', 'FAILED', { error: err.message });
+    }
+    return { rendered: false, error: err.message };
   }
 }
+window.renderWelcomePanel = renderWelcomePanel;
+
+function initCommandCenter() {
+  // 1. Render welcome panel defensively
+  renderWelcomePanel();
+
+  // 2. Setup Keyboard Accessibility for all command cards defensively
+  try {
+    const cards = document.querySelectorAll(".command-card");
+    if (cards && cards.length) {
+      cards.forEach(card => {
+        if (card.__ccKeyboardBound) return;
+        card.__ccKeyboardBound = true;
+        card.addEventListener("keydown", function(e) {
+          if (e.key === "Enter" || e.key === " ") {
+            e.preventDefault();
+            card.click();
+          }
+        });
+      });
+    }
+  } catch (e) {}
+
+  // 3. Keep hero-scout-input synced if present
+  try {
+    const scoutInput = document.getElementById("command-scout-input");
+    if (scoutInput && !scoutInput.__ccSyncBound) {
+      scoutInput.__ccSyncBound = true;
+      scoutInput.addEventListener("input", function() {
+        const heroHidden = document.getElementById("hero-scout-input");
+        if (heroHidden) heroHidden.value = scoutInput.value;
+      });
+    }
+  } catch (e) {}
+}
+window.initCommandCenter = initCommandCenter;
 
 function handleCommandScoutSubmit(event) {
   if (event && event.preventDefault) event.preventDefault();
@@ -3302,7 +3366,7 @@ function handleCommandScoutSubmit(event) {
   }
   executeCommandScoutPrompt(text);
 }
-
+window.handleCommandScoutSubmit = handleCommandScoutSubmit;
 
 function runInlineBetDoctorAudit() {
   const input = document.getElementById("inline-bet-doctor-input");
@@ -3375,7 +3439,12 @@ function executeCommandScoutPrompt(promptText) {
     }
     setTimeout(() => {
       if (typeof window.navigateTo === 'function') window.navigateTo('/bet-doctor');
-    }, 700);
+      else if (typeof navigateTo === 'function') navigateTo('/bet-doctor');
+      setTimeout(() => {
+        if (typeof window.runBetDoctorAudit === 'function') window.runBetDoctorAudit(true, 'betslip');
+        else if (typeof runBetDoctorAudit === 'function') runBetDoctorAudit(true, 'betslip');
+      }, 350);
+    }, feedbackBox ? 700 : 50);
     return;
   }
 
@@ -3672,27 +3741,84 @@ function initAppEngine() {
     }
   }
 
-  // 3. Priority 1 Core DOM Mount (Active View / FCP Critical)
-  if (typeof initCommandCenter === 'function') initCommandCenter();
-  if (typeof renderDeepPredictBetDateBar === 'function') renderDeepPredictBetDateBar();
-  const initialPath = (window.location.pathname || '').replace(/\/$/, '') || '/';
-  if ((initialPath === '/predictions' || initialPath.startsWith('/predictions/')) && typeof renderMatchCards === 'function') {
-    renderMatchCards(typeof MATCH_DATA !== 'undefined' ? MATCH_DATA : (window.MATCH_DATA || []));
-  }
-  if (typeof renderDailyBets === 'function') renderDailyBets();
-  if (typeof renderTrends === 'function') renderTrends();
+  // Safe isolated feature launcher preventing cross-feature initialization cascade failure
+  const safeInitFeature = (name, fn, opts) => {
+    if (typeof window !== 'undefined' && window.DPFeatureHealth && typeof window.DPFeatureHealth.safeInit === 'function') {
+      return window.DPFeatureHealth.safeInit(name, fn, opts);
+    }
+    try {
+      const res = fn();
+      return { success: true, result: res };
+    } catch (err) {
+      console.warn(`[DeepPredictBet] Feature '${name}' init warning (isolated):`, err);
+      return { success: false, error: err && err.message ? err.message : String(err) };
+    }
+  };
+
+  // 3. Priority 1 Core DOM Mount (Active View / FCP Critical) - Each feature strictly isolated
+  safeInitFeature('welcome_panel', () => {
+    if (typeof renderWelcomePanel === 'function') renderWelcomePanel();
+    if (typeof initCommandCenter === 'function') initCommandCenter();
+  }, { dependencies: ['dom_mount'], mountId: 'command-center-welcome' });
+
+  safeInitFeature('date_bar', () => {
+    if (typeof renderDeepPredictBetDateBar === 'function') renderDeepPredictBetDateBar();
+  });
+
+  safeInitFeature('match_cards', () => {
+    const initialPath = (window.location.pathname || '').replace(/\/$/, '') || '/';
+    if ((initialPath === '/predictions' || initialPath.startsWith('/predictions/')) && typeof renderMatchCards === 'function') {
+      renderMatchCards(typeof MATCH_DATA !== 'undefined' ? MATCH_DATA : (window.MATCH_DATA || []));
+    }
+  });
+
+  safeInitFeature('daily_bets', () => {
+    if (typeof renderDailyBets === 'function') renderDailyBets();
+  });
+
+  safeInitFeature('trends', () => {
+    if (typeof renderTrends === 'function') renderTrends();
+  });
 
   // 4. Initialize Active Betslip Builder with curated picks if empty, or render hydrated state
-  if (window.appState.betslip && window.appState.betslip.length > 0) {
-    if (typeof window.renderBetslip === 'function') window.renderBetslip();
-  } else if (typeof window.generateScoutAccumulator === 'function') {
-    window.generateScoutAccumulator(4);
-  } else if (typeof window.renderBetslip === 'function') {
-    window.renderBetslip();
-  }
+  safeInitFeature('active_betslip_builder', () => {
+    if (window.appState.betslip && window.appState.betslip.length > 0) {
+      if (typeof window.renderBetslip === 'function') window.renderBetslip();
+    } else if (typeof window.generateScoutAccumulator === 'function') {
+      window.generateScoutAccumulator(4);
+    } else if (typeof window.renderBetslip === 'function') {
+      window.renderBetslip();
+    }
+  });
 
   // 5. Initialize advanced filter sub-markets options
-  if (typeof window.onFilterMarketChange === 'function') window.onFilterMarketChange();
+  safeInitFeature('smart_filters', () => {
+    if (typeof window.onFilterMarketChange === 'function') window.onFilterMarketChange();
+  });
+
+  // 6. Ensure independent global registration for Ask AI Scout
+  safeInitFeature('ask_ai_scout', () => {
+    if (typeof window.executeCommandScoutPrompt !== 'function' && typeof executeCommandScoutPrompt === 'function') {
+      window.executeCommandScoutPrompt = executeCommandScoutPrompt;
+    }
+    if (typeof window.handleCommandScoutSubmit !== 'function' && typeof handleCommandScoutSubmit === 'function') {
+      window.handleCommandScoutSubmit = handleCommandScoutSubmit;
+    }
+  });
+
+  // 7. Ensure independent global registration for AI Bet Doctor
+  safeInitFeature('ai_bet_doctor', () => {
+    if (typeof window.runBetDoctorAudit !== 'function' && typeof runBetDoctorAudit === 'function') {
+      window.runBetDoctorAudit = runBetDoctorAudit;
+    }
+  });
+
+  // 8. Ensure independent global registration for Bet Generator
+  safeInitFeature('bet_generator', () => {
+    if (typeof window.generateMachineTicket !== 'function' && typeof generateMachineTicket === 'function') {
+      window.generateMachineTicket = generateMachineTicket;
+    }
+  });
 
   // 6. Set up parallax glow movement effect on cards (optimized via event delegation on hover only)
   document.addEventListener("mousemove", (e) => {
@@ -8195,7 +8321,15 @@ function loadDoctorSample(sampleType) {
 
 function runBetDoctorAudit(showScanAnim = true, explicitSource = null) {
   const container = document.getElementById("bet-doctor-results");
-  if (!container) return;
+  if (!container) {
+    if (typeof window !== 'undefined' && typeof window.navigateTo === 'function' && window.location.pathname !== '/bet-doctor') {
+      window.navigateTo('/bet-doctor');
+      setTimeout(() => {
+        runBetDoctorAudit(showScanAnim, explicitSource);
+      }, 350);
+    }
+    return;
+  }
 
   const codeInput = document.getElementById("bet-doctor-input-code") || document.getElementById("bet-doctor-code-input");
   let codeVal = (codeInput && codeInput.value) ? codeInput.value.trim().toUpperCase() : "";
@@ -12228,14 +12362,14 @@ function populateLeagueDropdown(selectedCountry, targetLeagueVal) {
     MATCH_DATA.forEach(m => {
       if (m && m.league) {
         if (!selectedCountry || selectedCountry === 'all' || (m.country && m.country.toLowerCase() === selectedCountry.toLowerCase())) {
-          if (!leaguesMap.has(m.league)) leaguesMap.set(m.league, m.leagueEmoji || '⚽');
+          const lName = (typeof m.league === 'string') ? m.league : (m.league && m.league.name ? m.league.name : ''); if (lName && !leaguesMap.has(lName)) leaguesMap.set(lName, m.leagueEmoji || '⚽');
         }
       }
     });
   }
 
   let leagueHtml = `<option value="all">🏆 All Leagues (${leaguesMap.size})</option>`;
-  Array.from(leaguesMap.entries()).sort((a, b) => a[0].localeCompare(b[0])).forEach(([name, emoji]) => {
+  Array.from(leaguesMap.entries()).sort((a, b) => String(a[0]).localeCompare(String(b[0]))).forEach(([name, emoji]) => {
     leagueHtml += `<option value="${name}">${emoji} ${name}</option>`;
   });
 
@@ -12260,7 +12394,7 @@ function populateTeamDropdown(selectedCountry, selectedLeague, targetTeamVal) {
     MATCH_DATA.forEach(m => {
       if (!m) return;
       const matchCountry = m.country ? m.country.toLowerCase() : '';
-      const matchLeague = m.league ? m.league.toLowerCase() : '';
+      const matchLeague = m.league ? (typeof m.league === 'string' ? m.league.toLowerCase() : (m.league.name ? m.league.name.toLowerCase() : '')) : '';
 
       const countryMatch = !selectedCountry || selectedCountry === 'all' || matchCountry === selectedCountry.toLowerCase();
       const leagueMatch = !selectedLeague || selectedLeague === 'all' || matchLeague === selectedLeague.toLowerCase();
