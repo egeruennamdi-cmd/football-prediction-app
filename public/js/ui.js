@@ -13558,52 +13558,70 @@ window.executeShowcaseBetCodeConversion = executeShowcaseBetCodeConversion;
 // ==========================================================================
 
 function getSettledMatchesForTimeframe(timeframe) {
-  const matches = (typeof window !== 'undefined' && window.MATCH_DATA) ? window.MATCH_DATA : (typeof MATCH_DATA !== 'undefined' ? MATCH_DATA : []);
-  const isFinished = m => m && (m.isFT || m.statusShort === 'FT' || m.status === 'FT' || m.date === 'yesterday' || m.isYesterday || (m.time && (m.time.includes('FT') || m.time.includes('Yesterday') || m.time.includes('Days Ago') || m.time.includes('Weeks Ago'))));
-  
-  const allSettled = matches.filter(isFinished);
-  if (!allSettled || allSettled.length === 0) return [];
-
-  if (timeframe === '7d') {
-    if (typeof window !== 'undefined' && window.PredictionSettlementLedger && typeof window.PredictionSettlementLedger.getRecentSettledPredictions === 'function') {
-      const q = window.PredictionSettlementLedger.getRecentSettledPredictions({ days: 7, limit: 50 });
-      if (q && Array.isArray(q.records) && q.records.length > 0) return q.records;
+  if (typeof window !== 'undefined' && window.PredictionSettlementLedger && typeof window.PredictionSettlementLedger.getRecentSettledPredictions === 'function') {
+    if (typeof window.PredictionSettlementLedger.syncFromFixturePool === 'function') {
+      try { window.PredictionSettlementLedger.syncFromFixturePool(window.MATCH_DATA); } catch (e) {}
     }
-    return allSettled.filter(m => {
-      const t = String(m.time || '').toLowerCase();
-      return t.includes('yesterday') || t.includes('3 days') || t.includes('4 days') || t.includes('1 week');
-    });
+    if (timeframe === '7d') {
+      const q = window.PredictionSettlementLedger.getRecentSettledPredictions({ limit: 10, minWindowDays: 1, progressive: true });
+      if (q && Array.isArray(q.records)) return q.records;
+    } else if (timeframe === '30d') {
+      const q = window.PredictionSettlementLedger.getRecentSettledPredictions({ limit: 14, minWindowDays: 30, progressive: true });
+      if (q && Array.isArray(q.records)) return q.records;
+    } else {
+      const q = window.PredictionSettlementLedger.getRecentSettledPredictions({ limit: 50, minWindowDays: 365, progressive: true });
+      if (q && Array.isArray(q.records)) return q.records;
+    }
   }
 
-  // '30d', '90d', 'all' return all settled matches currently logged in the audited database
-  return allSettled;
+  const matches = (typeof window !== 'undefined' && window.MATCH_DATA) ? window.MATCH_DATA : (typeof MATCH_DATA !== 'undefined' ? MATCH_DATA : []);
+  const isFinished = m => m && (m.isFT || m.statusShort === 'FT' || m.status === 'FT');
+  return matches.filter(isFinished);
 }
 
 function calculatePerformanceMetrics(timeframe) {
   const matches = (typeof window !== 'undefined' && window.MATCH_DATA) ? window.MATCH_DATA : (typeof MATCH_DATA !== 'undefined' ? MATCH_DATA : []);
-  const isFinished = m => m && (m.isFT || m.statusShort === 'FT' || m.status === 'FT' || m.date === 'yesterday' || m.isYesterday || (m.time && (m.time.includes('FT') || m.time.includes('Yesterday') || m.time.includes('Days Ago') || m.time.includes('Weeks Ago'))));
+  const isFinished = m => m && (m.isFT || m.statusShort === 'FT' || m.status === 'FT');
   
   const settled = getSettledMatchesForTimeframe(timeframe);
   const pending = matches.filter(m => !isFinished(m)).length;
 
   let won = 0;
   let lost = 0;
+  let voidCount = 0;
+  let underReviewCount = 0;
   let totalOdds = 0;
   let netProfit = 0;
 
   settled.forEach(m => {
-    const p = m.predictions || { home: 45, draw: 25, away: 30 };
-    let predOutcome = '1';
-    if (p.draw > p.home && p.draw > p.away) predOutcome = 'X';
-    else if (p.away > p.home && p.away > p.draw) predOutcome = '2';
+    const rawStatus = m.status || m.settledPick?.status;
+    let isWon = false;
+    let isVoidOrReview = false;
 
-    const scores = m.scores || { home: 0, away: 0 };
-    let actualOutcome = '1';
-    if (scores.home === scores.away) actualOutcome = 'X';
-    else if (scores.away > scores.home) actualOutcome = '2';
+    if (rawStatus) {
+      const norm = String(rawStatus).toUpperCase();
+      if (norm === 'WON') isWon = true;
+      else if (norm === 'VOID') { voidCount++; isVoidOrReview = true; }
+      else if (norm === 'UNDER REVIEW') { underReviewCount++; isVoidOrReview = true; }
+    } else if (typeof m.settledPick?.isWon === 'boolean') {
+      isWon = m.settledPick.isWon;
+    } else {
+      const p = m.predictions || { home: 45, draw: 25, away: 30 };
+      let predOutcome = '1';
+      if (p.draw > p.home && p.draw > p.away) predOutcome = 'X';
+      else if (p.away > p.home && p.away > p.draw) predOutcome = '2';
 
-    const isWon = (predOutcome === actualOutcome);
-    const odds = (typeof getMatchOdds === 'function') ? getMatchOdds(m) : (m.odds || 1.85);
+      const scores = m.scores || { home: 0, away: 0 };
+      let actualOutcome = '1';
+      if (scores.home === scores.away) actualOutcome = 'X';
+      else if (scores.away > scores.home) actualOutcome = '2';
+
+      isWon = (predOutcome === actualOutcome);
+    }
+
+    if (isVoidOrReview) return;
+
+    const odds = Number(m.odds || m.settledPick?.odds || ((typeof getMatchOdds === 'function') ? getMatchOdds(m) : 1.85));
 
     totalOdds += odds;
     if (isWon) {
@@ -13615,15 +13633,18 @@ function calculatePerformanceMetrics(timeframe) {
     }
   });
 
-  const total = won + lost;
-  const avgOdds = total > 0 ? (totalOdds / total).toFixed(2) : '1.80';
-  const roi = total > 0 ? ((netProfit / total) * 100).toFixed(1) : '0.0';
+  const total = won + lost + voidCount + underReviewCount;
+  const decisive = won + lost;
+  const avgOdds = decisive > 0 ? (totalOdds / decisive).toFixed(2) : '1.80';
+  const roi = decisive > 0 ? ((netProfit / decisive) * 100).toFixed(1) : '0.0';
   const yieldPct = roi;
 
   return {
     total,
     won,
     lost,
+    voidCount,
+    underReviewCount,
     pending,
     avgOdds,
     pnl: (netProfit >= 0 ? '+' : '') + netProfit.toFixed(2) + 'u',
@@ -13643,6 +13664,16 @@ function switchPerformanceTimeframe(timeframeId) {
     }
   });
 
+  if (typeof window !== 'undefined' && window.PredictionSettlementLedger && typeof window.PredictionSettlementLedger.setTimeframeMode === 'function') {
+    if (timeframeId === '30d') {
+      window.PredictionSettlementLedger.setTimeframeMode('30d');
+    } else if (timeframeId === '90d' || timeframeId === 'all') {
+      window.PredictionSettlementLedger.setTimeframeMode('all');
+    } else {
+      window.PredictionSettlementLedger.setTimeframeMode('progressive');
+    }
+  }
+
   const metrics = calculatePerformanceMetrics(timeframeId);
 
   const totalEl = document.getElementById('perf-kpi-total');
@@ -13653,7 +13684,6 @@ function switchPerformanceTimeframe(timeframeId) {
   const pnlEl = document.getElementById('perf-kpi-pnl');
   const roiEl = document.getElementById('perf-kpi-roi');
   const yieldEl = document.getElementById('perf-kpi-yield');
-  const metaEl = document.getElementById('settled-picks-sample-info');
 
   if (totalEl) totalEl.textContent = metrics.total;
   if (wonEl) wonEl.textContent = metrics.won;
@@ -13674,24 +13704,16 @@ function switchPerformanceTimeframe(timeframeId) {
     yieldEl.className = 'perf-kpi-val ' + (metrics.yieldPct.startsWith('+') ? 'emerald' : 'rose');
   }
 
-  if (metaEl) {
-    if (timeframeId === '7d') {
-      metaEl.textContent = `Showing 8 audited outcomes (${metrics.won} Won, ${metrics.lost} Lost • 7-Day Roll)`;
-    } else if (timeframeId === '30d') {
-      metaEl.textContent = `Showing 11 audited outcomes (${metrics.won} Won, ${metrics.lost} Lost • 30-Day Roll)`;
-    } else if (timeframeId === '90d') {
-      metaEl.textContent = `Audited Sample: 11 production matches in active ledger (Extended 90D ingestion active)`;
-    } else {
-      metaEl.textContent = `All-Time Production Ledger: 11 audited records (${metrics.won} Won, ${metrics.lost} Lost)`;
-    }
-  }
-
   if (typeof renderRecentSettledPredictions === 'function') {
     renderRecentSettledPredictions();
   }
 }
 
 function openFullResultsHistory() {
+  if (typeof window !== 'undefined' && typeof window.navigateTo === 'function') {
+    window.navigateTo('/results');
+    return;
+  }
   if (typeof selectDeepPredictBetDate === 'function') {
     selectDeepPredictBetDate('yesterday');
   } else if (window.appState) {

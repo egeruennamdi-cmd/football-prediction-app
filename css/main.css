@@ -8791,6 +8791,14 @@ body.is-desktop .mobile-hamburger-btn {
   border-left: 4px solid #ef4444;
 }
 
+.settled-pick-card.void {
+  border-left: 4px solid #64748b;
+}
+
+.settled-pick-card.under-review {
+  border-left: 4px solid #f59e0b;
+}
+
 .settled-card-header {
   display: flex;
   justify-content: space-between;
@@ -8932,6 +8940,18 @@ body.is-desktop .mobile-hamburger-btn {
   background: rgba(239, 68, 68, 0.15);
   border: 1px solid rgba(239, 68, 68, 0.35);
   color: #f87171;
+}
+
+.settled-status-badge.badge-void {
+  background: rgba(148, 163, 184, 0.15);
+  border: 1px solid rgba(148, 163, 184, 0.35);
+  color: #cbd5e1;
+}
+
+.settled-status-badge.badge-review {
+  background: rgba(245, 158, 11, 0.16);
+  border: 1px solid rgba(245, 158, 11, 0.4);
+  color: #fbbf24;
 }
 
 /* Footer & CTA */

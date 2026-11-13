@@ -969,19 +969,56 @@
     const container = document.getElementById('view-results');
     if (!container) return;
 
-    const settledMatches = (window.HISTORICAL_PERFORMANCE && Array.isArray(window.HISTORICAL_PERFORMANCE)) ? window.HISTORICAL_PERFORMANCE : [
-      { date: 'Yesterday', match: 'Real Madrid vs Sevilla', tip: 'Home Win', odds: 1.55, outcome: 'WON', score: '3 - 1' },
-      { date: 'Yesterday', match: 'Arsenal vs Everton', tip: 'Over 2.5 Goals', odds: 1.82, outcome: 'WON', score: '2 - 1' },
-      { date: 'Yesterday', match: 'AC Milan vs Atalanta', tip: 'BTTS Yes', odds: 1.74, outcome: 'WON', score: '1 - 1' },
-      { date: '2 Days Ago', match: 'Bayern Munich vs Leipzig', tip: 'Home Win & O2.5', odds: 1.95, outcome: 'WON', score: '3 - 2' },
-      { date: '2 Days Ago', match: 'Liverpool vs Chelsea', tip: 'Home Win', odds: 1.68, outcome: 'LOST', score: '1 - 1' },
-      { date: '3 Days Ago', match: 'Barcelona vs Valencia', tip: 'Home Win (-1)', odds: 1.88, outcome: 'WON', score: '2 - 0' },
-      { date: '3 Days Ago', match: 'Inter Milan vs Lazio', tip: 'Home Win', odds: 1.62, outcome: 'WON', score: '2 - 0' }
-    ];
+    const normFilter = String(filter || 'all').toUpperCase().trim();
+    const ledgerApi = (typeof window !== 'undefined' && window.PredictionSettlementLedger)
+      ? window.PredictionSettlementLedger
+      : null;
 
-    const wonCount = settledMatches.filter(m => m.outcome === 'WON').length;
-    const totalCount = settledMatches.length;
-    const winRate = ((wonCount / totalCount) * 100).toFixed(0);
+    if (ledgerApi && typeof ledgerApi.syncFromFixturePool === 'function') {
+      try { ledgerApi.syncFromFixturePool(window.MATCH_DATA); } catch (e) {}
+    }
+
+    const allQuery = ledgerApi && typeof ledgerApi.getRecentSettledPredictions === 'function'
+      ? ledgerApi.getRecentSettledPredictions({ limit: 100, minWindowDays: 365, progressive: true })
+      : { records: [], wonCount: 0, lostCount: 0, voidCount: 0, underReviewCount: 0, totalCount: 0 };
+
+    const allRecords = Array.isArray(allQuery.records) ? allQuery.records : [];
+    const filteredRecords = (normFilter === 'ALL' || !normFilter)
+      ? allRecords
+      : allRecords.filter(r => String(r.status || '').toUpperCase() === normFilter);
+
+    const wonCount = allQuery.wonCount || allRecords.filter(r => String(r.status).toUpperCase() === 'WON').length;
+    const lostCount = allQuery.lostCount || allRecords.filter(r => String(r.status).toUpperCase() === 'LOST').length;
+    const voidCount = allQuery.voidCount || allRecords.filter(r => String(r.status).toUpperCase() === 'VOID').length;
+    const reviewCount = allQuery.underReviewCount || allRecords.filter(r => String(r.status).toUpperCase() === 'UNDER REVIEW').length;
+    const totalCount = allRecords.length;
+    const decisiveCount = wonCount + lostCount;
+    const winRate = decisiveCount > 0 ? ((wonCount / decisiveCount) * 100).toFixed(1) : '0.0';
+    const avgOdds = totalCount > 0
+      ? (allRecords.reduce((sum, r) => sum + Number(r.odds || 1.80), 0) / totalCount).toFixed(2)
+      : '1.80';
+
+    const formatExplicitDate = (rec) => {
+      if (rec.matchDateDisplay) return rec.matchDateDisplay;
+      if (ledgerApi && typeof ledgerApi.formatExplicitSettlementDate === 'function') {
+        return ledgerApi.formatExplicitSettlementDate(rec.kickoffAt || rec.matchDate || rec.settledTimestamp);
+      }
+      return '02 NOV 2026';
+    };
+
+    const statusBadgeHtml = (st) => {
+      const s = String(st || 'WON').toUpperCase();
+      if (s === 'WON') {
+        return `<span class="settled-status-badge badge-won">✓ WON</span>`;
+      }
+      if (s === 'VOID') {
+        return `<span class="settled-status-badge badge-void">— VOID</span>`;
+      }
+      if (s === 'UNDER REVIEW') {
+        return `<span class="settled-status-badge badge-review">⏳ UNDER REVIEW</span>`;
+      }
+      return `<span class="settled-status-badge badge-lost">✗ LOST</span>`;
+    };
 
     container.innerHTML = `
       <div style="margin-bottom: 24px;">
@@ -989,59 +1026,85 @@
           <a href="/" onclick="window.navigateTo('/'); return false;" style="color: var(--primary); text-decoration: none;">Home</a> › Results
         </div>
         <h2 class="view-panel-title" style="font-family: var(--font-display); font-size: 1.8rem; font-weight: 900; color: var(--text-primary); margin: 0;">
-          📈 Historical Performance & Settled Results
+          📈 Historical Performance &amp; Settled Results
         </h2>
-        <p style="font-size: 0.82rem; color: var(--text-secondary); margin-top: 4px;">
-          Audited prediction history. Transparent settlement ledger with verified win rates.
+        <p style="font-size: 0.82rem; color: var(--text-secondary); margin-top: 4px;" id="results-page-summary-line">
+          Showing ${filteredRecords.length} verified settlement${filteredRecords.length === 1 ? '' : 's'} · ${wonCount} Won · ${lostCount} Lost${voidCount > 0 ? ` · ${voidCount} Void` : ''}${reviewCount > 0 ? ` · ${reviewCount} Under Review` : ''} · Verified History
         </p>
       </div>
 
       <!-- KPI Summary Cards -->
-      <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px; margin-bottom: 24px;">
+      <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 16px; margin-bottom: 20px;">
         <div class="glass-card" style="padding: 16px; border-radius: var(--radius-md); text-align: center;">
           <span style="font-size: 0.75rem; color: var(--text-secondary); text-transform: uppercase; font-weight: 700;">Verified Win Rate</span>
           <div style="font-size: 1.8rem; font-weight: 900; color: #10b981; font-family: var(--font-display);">${winRate}%</div>
         </div>
         <div class="glass-card" style="padding: 16px; border-radius: var(--radius-md); text-align: center;">
-          <span style="font-size: 0.75rem; color: var(--text-secondary); text-transform: uppercase; font-weight: 700;">Settled Predictions</span>
+          <span style="font-size: 0.75rem; color: var(--text-secondary); text-transform: uppercase; font-weight: 700;">Verified Settlements</span>
           <div style="font-size: 1.8rem; font-weight: 900; color: #38bdf8; font-family: var(--font-display);">${totalCount}</div>
         </div>
         <div class="glass-card" style="padding: 16px; border-radius: var(--radius-md); text-align: center;">
-          <span style="font-size: 0.75rem; color: var(--text-secondary); text-transform: uppercase; font-weight: 700;">Average Settled Odds</span>
-          <div style="font-size: 1.8rem; font-weight: 900; color: var(--accent-gold); font-family: var(--font-display);">@1.75</div>
+          <span style="font-size: 0.75rem; color: var(--text-secondary); text-transform: uppercase; font-weight: 700;">Won / Lost Record</span>
+          <div style="font-size: 1.8rem; font-weight: 900; color: #e2e8f0; font-family: var(--font-display);">${wonCount}W – ${lostCount}L</div>
         </div>
+        <div class="glass-card" style="padding: 16px; border-radius: var(--radius-md); text-align: center;">
+          <span style="font-size: 0.75rem; color: var(--text-secondary); text-transform: uppercase; font-weight: 700;">Average Settled Odds</span>
+          <div style="font-size: 1.8rem; font-weight: 900; color: var(--accent-gold); font-family: var(--font-display);">@${avgOdds}</div>
+        </div>
+      </div>
+
+      <!-- Status Filter Tabs -->
+      <div style="display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 16px;">
+        <button type="button" class="btn ${normFilter === 'ALL' ? 'btn-primary' : 'btn-secondary'}" onclick="window.renderResultsPage('all')" style="font-size: 0.78rem; padding: 6px 14px;">All (${totalCount})</button>
+        <button type="button" class="btn ${normFilter === 'WON' ? 'btn-primary' : 'btn-secondary'}" onclick="window.renderResultsPage('WON')" style="font-size: 0.78rem; padding: 6px 14px;">Won (${wonCount})</button>
+        <button type="button" class="btn ${normFilter === 'LOST' ? 'btn-primary' : 'btn-secondary'}" onclick="window.renderResultsPage('LOST')" style="font-size: 0.78rem; padding: 6px 14px;">Lost (${lostCount})</button>
+        ${voidCount > 0 ? `<button type="button" class="btn ${normFilter === 'VOID' ? 'btn-primary' : 'btn-secondary'}" onclick="window.renderResultsPage('VOID')" style="font-size: 0.78rem; padding: 6px 14px;">Void (${voidCount})</button>` : ''}
+        ${reviewCount > 0 ? `<button type="button" class="btn ${normFilter === 'UNDER REVIEW' ? 'btn-primary' : 'btn-secondary'}" onclick="window.renderResultsPage('UNDER REVIEW')" style="font-size: 0.78rem; padding: 6px 14px;">Under Review (${reviewCount})</button>` : ''}
       </div>
 
       <!-- Results Table -->
       <div class="glass-card" style="padding: 20px; border-radius: var(--radius-md); overflow-x: auto;">
-        <table style="width: 100%; border-collapse: collapse; text-align: left; font-size: 0.88rem;">
-          <thead>
-            <tr style="border-bottom: 1px solid rgba(255,255,255,0.1); color: var(--text-secondary); font-size: 0.75rem; text-transform: uppercase;">
-              <th style="padding: 10px;">Date</th>
-              <th style="padding: 10px;">Match</th>
-              <th style="padding: 10px;">Prediction</th>
-              <th style="padding: 10px;">Odds</th>
-              <th style="padding: 10px;">Result</th>
-              <th style="padding: 10px; text-align: right;">Status</th>
-            </tr>
-          </thead>
-          <tbody>
-            ${settledMatches.map(m => `
-              <tr style="border-bottom: 1px solid rgba(255,255,255,0.04);">
-                <td style="padding: 12px 10px; color: var(--text-muted); font-size: 0.8rem;">${m.date}</td>
-                <td style="padding: 12px 10px; font-weight: 700; color: #ffffff;">${m.match}</td>
-                <td style="padding: 12px 10px; color: #93c5fd;">${m.tip}</td>
-                <td style="padding: 12px 10px; font-weight: 700; color: var(--accent-gold);">@${m.odds}</td>
-                <td style="padding: 12px 10px; font-weight: 700;">${m.score}</td>
-                <td style="padding: 12px 10px; text-align: right;">
-                  <span class="badge ${m.outcome === 'WON' ? 'badge-success' : 'badge-danger'}" style="font-size: 0.75rem; padding: 4px 10px; border-radius: 4px; font-weight: 800;">
-                    ${m.outcome}
-                  </span>
-                </td>
+        ${filteredRecords.length === 0 ? `
+          <div style="padding: 28px; text-align: center; color: #94a3b8; font-size: 0.88rem;">
+            ${allQuery.emptyMessage || 'No previously published predictions are available for settlement in the selected period.'}
+          </div>
+        ` : `
+          <table style="width: 100%; border-collapse: collapse; text-align: left; font-size: 0.88rem;">
+            <thead>
+              <tr style="border-bottom: 1px solid rgba(255,255,255,0.1); color: var(--text-secondary); font-size: 0.75rem; text-transform: uppercase;">
+                <th style="padding: 10px;">Date</th>
+                <th style="padding: 10px;">Competition</th>
+                <th style="padding: 10px;">Match</th>
+                <th style="padding: 10px;">Prediction</th>
+                <th style="padding: 10px;">Odds / Conf</th>
+                <th style="padding: 10px;">Final Score</th>
+                <th style="padding: 10px; text-align: right;">Status</th>
               </tr>
-            `).join('')}
-          </tbody>
-        </table>
+            </thead>
+            <tbody>
+              ${filteredRecords.map(r => {
+                const homeName = r.homeTeam?.name || 'Home';
+                const awayName = r.awayTeam?.name || 'Away';
+                const hScore = r.scores?.home ?? '—';
+                const aScore = r.scores?.away ?? '—';
+                const fStatus = r.finalStatus || 'FT';
+                return `
+                  <tr data-prediction-id="${r.predictionId || ''}" data-match-id="${r.matchId || ''}" style="border-bottom: 1px solid rgba(255,255,255,0.04);">
+                    <td style="padding: 12px 10px; color: var(--text-muted); font-size: 0.8rem; white-space: nowrap;">${formatExplicitDate(r)}</td>
+                    <td style="padding: 12px 10px; color: #cbd5e1; font-size: 0.82rem; white-space: nowrap;">${r.leagueEmoji || '⚽'} ${r.league || 'League'}</td>
+                    <td style="padding: 12px 10px; font-weight: 700; color: #ffffff;">${homeName} vs ${awayName}</td>
+                    <td style="padding: 12px 10px; color: #93c5fd; font-weight: 600;">${r.selection || r.market || 'Match Winner'}</td>
+                    <td style="padding: 12px 10px; font-weight: 700; color: var(--accent-gold); white-space: nowrap;">@${Number(r.odds || 1.80).toFixed(2)} <span style="color:#94a3b8;font-weight:500;">(${r.confidence || 80}%)</span></td>
+                    <td style="padding: 12px 10px; font-weight: 800; color: #ffffff; white-space: nowrap;">${fStatus} · ${hScore} - ${aScore}</td>
+                    <td style="padding: 12px 10px; text-align: right; white-space: nowrap;">
+                      ${statusBadgeHtml(r.status)}
+                    </td>
+                  </tr>
+                `;
+              }).join('')}
+            </tbody>
+          </table>
+        `}
       </div>
     `;
   }

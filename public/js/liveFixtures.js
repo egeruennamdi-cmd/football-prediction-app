@@ -409,12 +409,14 @@
 
     const timeStr = rawDate.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' });
     const dayStr  = rawDate.toLocaleDateString('en-GB', { weekday: 'short', day: 'numeric', month: 'short' });
+    const monthsUpper = ['JAN', 'FEB', 'MAR', 'APR', 'MAY', 'JUN', 'JUL', 'AUG', 'SEP', 'OCT', 'NOV', 'DEC'];
+    const explicitDateStr = `${String(rawDate.getUTCDate()).padStart(2, '0')} ${monthsUpper[rawDate.getUTCMonth()] || 'NOV'} ${rawDate.getUTCFullYear()}`;
 
     let timeDisplay;
     if (isLive) {
       timeDisplay = statusShort === 'HT' ? 'Half Time' : `Live ${elapsed || ''}'`;
     } else if (isFT) {
-      timeDisplay = isToday ? `FT · Today` : `FT · ${dayStr}`;
+      timeDisplay = `${statusShort} · ${explicitDateStr}`;
     } else {
       timeDisplay = isToday ? `Today · ${timeStr}` : isTomorrow ? `Tomorrow · ${timeStr}` : `${dayStr} · ${timeStr}`;
     }
@@ -973,11 +975,16 @@
       });
       const results = await Promise.allSettled(fetchPromises);
       const allUpcoming = [];
+      const allFetched = [];
       results.forEach(r => {
         if (r.status === 'fulfilled' && Array.isArray(r.value)) {
+          allFetched.push(...r.value.filter(Boolean));
           allUpcoming.push(...r.value.filter(m => m && !m.isFT && m.statusShort !== 'FT'));
         }
       });
+      if (allFetched.length > 0 && typeof window !== 'undefined' && window.PredictionSettlementLedger && typeof window.PredictionSettlementLedger.syncFromFixturePool === 'function') {
+        try { window.PredictionSettlementLedger.syncFromFixturePool(allFetched); } catch (e) {}
+      }
       if (allUpcoming.length > 0) {
         window.TOP_LEAGUES_FIXTURES_POOL = allUpcoming;
         if (!window.currentLeagueMatches) {
