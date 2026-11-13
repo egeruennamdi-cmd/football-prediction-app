@@ -5080,9 +5080,40 @@ function formatAiScoutResultsHtml(selections, requestedCount = DEFAULT_AI_SCOUT_
   }
 
   // 5. Build Cards List with Authentic Crests & Strict Labeling
+  const sanitizeScoutClubName = (nm, fallback) => {
+    if (!nm || typeof nm !== 'string') return fallback;
+    const t = nm.trim();
+    if (t.startsWith('data:') || t.startsWith('http') || t.includes('base64,') || t.length > 80) return fallback;
+    return t;
+  };
+
+  const renderScoutCrestHtml = (teamInput, clubName, isHome) => {
+    if (typeof window !== 'undefined' && typeof window.renderTeamLogoHtml === 'function') {
+      return window.renderTeamLogoHtml(teamInput || clubName, isHome, 16, { inline: true, className: 'scout-team-crest' });
+    }
+    if (typeof renderTeamLogoHtml === 'function') {
+      return renderTeamLogoHtml(teamInput || clubName, isHome, 16, { inline: true, className: 'scout-team-crest' });
+    }
+    const rawCrest = (typeof resolveTeamCrestUrl === 'function')
+      ? resolveTeamCrestUrl(clubName, isHome)
+      : (typeof teamInput === 'object' ? (teamInput?.logoUrl || teamInput?.logo || teamInput?.crest) : null);
+    const crestStr = (typeof rawCrest === 'string') ? rawCrest.trim() : '';
+    const placeholder = (typeof NEUTRAL_CREST_PLACEHOLDER !== 'undefined') ? NEUTRAL_CREST_PLACEHOLDER : 'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA0OCA0OCIgd2lkdGg9IjQ4IiBoZWlnaHQ9IjQ4Ij48cGF0aCBkPSJNMjQgNCBMNDAgMTAgTDQwIDI0IEM0MCAzMyAzMyA0MSAyNCA0NCBDMTUgNDEgOCAzMyA4IDI0IEw4IDEwIFoiIGZpbGw9IiMxZTI5M2IiIHN0cm9rZT0iIzNiODJmNiIgc3Ryb2tlLXdpZHRoPSIyIi8+PGNpcmNsZSBjeD0iMjQiIGN5PSIyMiIgcj0iOSIgZmlsbD0iIzBmMTcyYSIgc3Ryb2tlPSIjNjBhNWZhIiBzdHJva2Utd2lkdGg9IjEuNSIvPjxjaXJjbGUgY3g9IjI0IiBjeT0iMjIiIHI9IjMiIGZpbGw9IiM2MGE1ZmEiLz48L3N2Zz4=';
+    const isImg = crestStr.startsWith('http://') || crestStr.startsWith('https://') || crestStr.startsWith('/') || crestStr.startsWith('data:image/');
+    if (isImg) {
+      return `<img src="${crestStr}" alt="${escapeScoutHtml(clubName)}" class="scout-team-crest" style="width:16px;height:16px;object-fit:contain;vertical-align:middle;display:inline-block;flex-shrink:0;" loading="lazy" onerror="this.onerror=null;this.src='${placeholder}';" />`;
+    }
+    if (crestStr && crestStr.length <= 4 && !crestStr.includes('data:') && !crestStr.includes('<')) {
+      return `<span style="font-size:14px;line-height:1;display:inline-block;vertical-align:middle;">${crestStr}</span>`;
+    }
+    return `<img src="${placeholder}" alt="${escapeScoutHtml(clubName)}" class="scout-team-crest" style="width:16px;height:16px;object-fit:contain;vertical-align:middle;display:inline-block;flex-shrink:0;" loading="lazy" />`;
+  };
+
   const selectionsList = accSelections.map((s, idx) => {
-    const hName = s.match?.homeTeam?.name || 'Home Team';
-    const aName = s.match?.awayTeam?.name || 'Away Team';
+    const rawHName = s.match?.homeTeam?.name || s.homeTeam || 'Home Team';
+    const rawAName = s.match?.awayTeam?.name || s.awayTeam || 'Away Team';
+    const hName = sanitizeScoutClubName(rawHName, 'Home Team');
+    const aName = sanitizeScoutClubName(rawAName, 'Away Team');
     const leagueName = s.match?.league || 'Football League';
     const isLive = !!(s.match?.isLive && s.match?.rawDate && new Date(s.match.rawDate).toDateString() === new Date().toDateString());
     const timeStr = typeof formatStandardMatchDateString === 'function'
@@ -5094,30 +5125,22 @@ function formatAiScoutResultsHtml(selections, requestedCount = DEFAULT_AI_SCOUT_
     const valid = (typeof num === 'number' && !isNaN(num) && isFinite(num) && num > 1.0);
     const oddVal = valid ? num.toFixed(2) : '—';
 
-    // Authentic club crests resolution
-    const hCrest = (typeof resolveTeamCrestUrl === 'function') ? resolveTeamCrestUrl(hName) : (s.match?.homeTeam?.logo || '');
-    const aCrest = (typeof resolveTeamCrestUrl === 'function') ? resolveTeamCrestUrl(aName) : (s.match?.awayTeam?.logo || '');
-    const isHCrestUrl = hCrest && (hCrest.startsWith('http') || hCrest.startsWith('/'));
-    const isACrestUrl = aCrest && (aCrest.startsWith('http') || aCrest.startsWith('/'));
-
-    const hCrestHtml = isHCrestUrl
-      ? `<img src="${hCrest}" alt="${escapeScoutHtml(hName)}" class="scout-team-crest" style="width:16px;height:16px;object-fit:contain;vertical-align:middle;display:inline-block;" loading="lazy" onerror="this.style.display='none'" />`
-      : `<span>${hCrest || '⚽'}</span>`;
-
-    const aCrestHtml = isACrestUrl
-      ? `<img src="${aCrest}" alt="${escapeScoutHtml(aName)}" class="scout-team-crest" style="width:16px;height:16px;object-fit:contain;vertical-align:middle;display:inline-block;" loading="lazy" onerror="this.style.display='none'" />`
-      : `<span>${aCrest || '⚽'}</span>`;
+    // Authentic club crests resolution - strictly rendered as images or neutral placeholder, never raw data URI text
+    const hCrestHtml = renderScoutCrestHtml(s.match?.homeTeam, hName, true);
+    const aCrestHtml = renderScoutCrestHtml(s.match?.awayTeam, aName, false);
 
     return `
-      <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid rgba(255,255,255,0.08); padding: 8px 0; font-size:0.8rem; gap: 8px;">
-        <div style="display:flex; flex-direction:column; gap:2px; min-width:0;">
-          <div style="font-weight:700; color:#ffffff; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">
+      <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid rgba(255,255,255,0.08); padding: 8px 0; font-size:0.8rem; gap: 8px; width:100%; min-width:0; box-sizing:border-box;">
+        <div style="display:flex; flex-direction:column; gap:2px; min-width:0; flex:1; overflow:hidden;">
+          <div style="font-weight:700; color:#ffffff; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;" title="${escapeScoutHtml(hName)} vs ${escapeScoutHtml(aName)}">
             #${idx+1} ${escapeScoutHtml(hName)} vs ${escapeScoutHtml(aName)}
           </div>
-          <div style="font-size:0.7rem; color:#94a3b8; display:flex; align-items:center; gap:6px;">
-            <span style="color:#60a5fa; font-weight:600; display:inline-flex; align-items:center; gap:4px;">${hCrestHtml}${aCrestHtml} ${leagueName}</span>
-            <span>•</span>
-            <span style="color:${isLive ? '#ef4444' : '#fbbf24'}; font-weight:700; display:inline-flex; align-items:center; gap:3px;">
+          <div style="font-size:0.7rem; color:#94a3b8; display:flex; align-items:center; gap:6px; min-width:0; overflow:hidden;">
+            <span style="color:#60a5fa; font-weight:600; display:inline-flex; align-items:center; gap:4px; min-width:0; max-width:100%; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">
+              ${hCrestHtml}${aCrestHtml} <span style="overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">${leagueName}</span>
+            </span>
+            <span style="flex-shrink:0;">•</span>
+            <span style="color:${isLive ? '#ef4444' : '#fbbf24'}; font-weight:700; display:inline-flex; align-items:center; gap:3px; flex-shrink:0; white-space:nowrap;">
               ${isLive ? '🔴' : '📅'} ${timeStr}
             </span>
           </div>
@@ -5547,10 +5570,12 @@ function getTickerCrestHtml(team, isHome) {
   if (typeof renderTeamLogoHtml === 'function') {
     return renderTeamLogoHtml(team || teamName, isHome, 18, { inline: true, className: 'ticker-team-crest' });
   }
-  const crestUrl = (typeof resolveTeamCrestUrl === 'function')
+  const placeholder = (typeof NEUTRAL_CREST_PLACEHOLDER !== 'undefined') ? NEUTRAL_CREST_PLACEHOLDER : 'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA0OCA0OCIgd2lkdGg9IjQ4IiBoZWlnaHQ9IjQ4Ij48cGF0aCBkPSJNMjQgNCBMNDAgMTAgTDQwIDI0IEM0MCAzMyAzMyA0MSAyNCA0NCBDMTUgNDEgOCAzMyA4IDI0IEw4IDEwIFoiIGZpbGw9IiMxZTI5M2IiIHN0cm9rZT0iIzNiODJmNiIgc3Ryb2tlLXdpZHRoPSIyIi8+PGNpcmNsZSBjeD0iMjQiIGN5PSIyMiIgcj0iOSIgZmlsbD0iIzBmMTcyYSIgc3Ryb2tlPSIjNjBhNWZhIiBzdHJva2Utd2lkdGg9IjEuNSIvPjxjaXJjbGUgY3g9IjI0IiBjeT0iMjIiIHI9IjMiIGZpbGw9IiM2MGE1ZmEiLz48L3N2Zz4=';
+  const rawUrl = (typeof resolveTeamCrestUrl === 'function')
     ? resolveTeamCrestUrl(team || teamName, isHome)
-    : ((team?.logo && String(team.logo).startsWith('http')) ? team.logo : (typeof NEUTRAL_CREST_PLACEHOLDER !== 'undefined' ? NEUTRAL_CREST_PLACEHOLDER : 'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA0OCA0OCIgd2lkdGg9IjQ4IiBoZWlnaHQ9IjQ4Ij48cGF0aCBkPSJNMjQgNCBMNDAgMTAgTDQwIDI0IEM0MCAzMyAzMyA0MSAyNCA0NCBDMTUgNDEgOCAzMyA4IDI0IEw4IDEwIFoiIGZpbGw9IiMxZTI5M2IiIHN0cm9rZT0iIzNiODJmNiIgc3Ryb2tlLXdpZHRoPSIyIi8+PGNpcmNsZSBjeD0iMjQiIGN5PSIyMiIgcj0iOSIgZmlsbD0iIzBmMTcyYSIgc3Ryb2tlPSIjNjBhNWZhIiBzdHJva2Utd2lkdGg9IjEuNSIvPjxjaXJjbGUgY3g9IjI0IiBjeT0iMjIiIHI9IjMiIGZpbGw9IiM2MGE1ZmEiLz48L3N2Zz4='));
-  return `<img src="${crestUrl}" alt="${teamName}" class="ticker-team-crest" style="width:18px;height:18px;object-fit:contain;display:inline-block;vertical-align:middle;flex-shrink:0;" loading="lazy">`;
+    : ((team?.logo && (String(team.logo).startsWith('http') || String(team.logo).startsWith('data:image/'))) ? team.logo : placeholder);
+  const crestUrl = (typeof rawUrl === 'string' && (rawUrl.startsWith('http://') || rawUrl.startsWith('https://') || rawUrl.startsWith('/') || rawUrl.startsWith('data:image/'))) ? rawUrl : placeholder;
+  return `<img src="${crestUrl}" alt="${teamName}" class="ticker-team-crest" style="width:18px;height:18px;object-fit:contain;display:inline-block;vertical-align:middle;flex-shrink:0;" onerror="this.onerror=null;this.src='${placeholder}';" loading="lazy">`;
 }
 
 function getDynamicHotTrends() {
@@ -6623,17 +6648,27 @@ async function showMockTableStandings(leagueName, btn, countryName) {
   const closeFn = () => modal.remove();
 
   const resolveLogo = (clubName, rawLogo) => {
-    if (rawLogo && typeof rawLogo === 'string' && rawLogo.startsWith('http')) {
-      return `<img src="${rawLogo}" style="width:16px;height:16px;object-fit:contain;vertical-align:middle;" onerror="this.outerHTML='⚽'">`;
+    const placeholder = (typeof NEUTRAL_CREST_PLACEHOLDER !== 'undefined') ? NEUTRAL_CREST_PLACEHOLDER : 'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA0OCA0OCIgd2lkdGg9IjQ4IiBoZWlnaHQ9IjQ4Ij48cGF0aCBkPSJNMjQgNCBMNDAgMTAgTDQwIDI0IEM0MCAzMyAzMyA0MSAyNCA0NCBDMTUgNDEgOCAzMyA4IDI0IEw4IDEwIFoiIGZpbGw9IiMxZTI5M2IiIHN0cm9rZT0iIzNiODJmNiIgc3Ryb2tlLXdpZHRoPSIyIi8+PGNpcmNsZSBjeD0iMjQiIGN5PSIyMiIgcj0iOSIgZmlsbD0iIzBmMTcyYSIgc3Ryb2tlPSIjNjBhNWZhIiBzdHJva2Utd2lkdGg9IjEuNSIvPjxjaXJjbGUgY3g9IjI0IiBjeT0iMjIiIHI9IjMiIGZpbGw9IiM2MGE1ZmEiLz48L3N2Zz4=';
+    if (typeof window !== 'undefined' && typeof window.renderTeamLogoHtml === 'function') {
+      return window.renderTeamLogoHtml(clubName, true, 16, { inline: true });
     }
-    if (rawLogo && rawLogo !== '⚽' && !rawLogo.includes('⚽')) return rawLogo;
+    if (rawLogo && typeof rawLogo === 'string' && (rawLogo.startsWith('http://') || rawLogo.startsWith('https://') || rawLogo.startsWith('/') || rawLogo.startsWith('data:image/'))) {
+      return `<img src="${rawLogo}" alt="${clubName || 'Club'}" style="width:16px;height:16px;object-fit:contain;vertical-align:middle;" onerror="this.onerror=null;this.src='${placeholder}';">`;
+    }
+    if (rawLogo && typeof rawLogo === 'string' && rawLogo.length <= 4 && !rawLogo.includes('data:') && !rawLogo.includes('<')) return rawLogo;
     if (!clubName) return '⚽';
     const norm = clubName.toLowerCase().trim();
     if (isNationalComp) {
       if (typeof window.NATIONAL_TEAMS_DATA !== 'undefined') {
         const allN = Object.values(window.NATIONAL_TEAMS_DATA).flatMap(v => Array.isArray(v) ? v : Object.values(v).flat());
         const match = allN.find(n => n.name.toLowerCase() === norm);
-        if (match && (match.logo || match.flag)) return match.logo || match.flag;
+        if (match && (match.logo || match.flag)) {
+          const l = match.logo || match.flag;
+          if (typeof l === 'string' && (l.startsWith('http') || l.startsWith('data:image/'))) {
+            return `<img src="${l}" alt="${clubName}" style="width:16px;height:16px;object-fit:contain;vertical-align:middle;" onerror="this.onerror=null;this.src='${placeholder}';">`;
+          }
+          if (typeof l === 'string' && l.length <= 4) return l;
+        }
       }
     }
     const allClubs = (typeof GLOBAL_CLUBS !== 'undefined' && Array.isArray(GLOBAL_CLUBS)) ? GLOBAL_CLUBS : (window.GLOBAL_CLUBS || []);
@@ -6641,7 +6676,12 @@ async function showMockTableStandings(leagueName, btn, countryName) {
       const cName = (c.name || '').toLowerCase();
       return cName === norm || cName.includes(norm) || norm.includes(cName);
     });
-    if (found && found.logo) return found.logo;
+    if (found && found.logo) {
+      if (typeof found.logo === 'string' && (found.logo.startsWith('http') || found.logo.startsWith('data:image/'))) {
+        return `<img src="${found.logo}" alt="${clubName}" style="width:16px;height:16px;object-fit:contain;vertical-align:middle;" onerror="this.onerror=null;this.src='${placeholder}';">`;
+      }
+      if (typeof found.logo === 'string' && found.logo.length <= 4) return found.logo;
+    }
     return '⚽';
   };
 

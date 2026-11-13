@@ -871,16 +871,29 @@ function renderMatchCards(fixtures) {
 
     const homeName = match.homeTeam?.name || 'Home';
     const awayName = match.awayTeam?.name || 'Away';
-    const homeLogo = (typeof window !== 'undefined' && typeof window.renderTeamLogoHtml === 'function')
-      ? window.renderTeamLogoHtml(match.homeTeam || homeName, true, 36)
-      : (match.homeTeam?.logo && String(match.homeTeam.logo).startsWith('http')
-          ? `<img src="${match.homeTeam.logo}" alt="${homeName}" style="width:36px;height:36px;object-fit:contain;display:block;margin:0 auto;" loading="lazy">`
-          : match.homeTeam?.logo || '⚽');
-    const awayLogo = (typeof window !== 'undefined' && typeof window.renderTeamLogoHtml === 'function')
-      ? window.renderTeamLogoHtml(match.awayTeam || awayName, false, 36)
-      : (match.awayTeam?.logo && String(match.awayTeam.logo).startsWith('http')
-          ? `<img src="${match.awayTeam.logo}" alt="${awayName}" style="width:36px;height:36px;object-fit:contain;display:block;margin:0 auto;" loading="lazy">`
-          : match.awayTeam?.logo || '⚽');
+    const resolveCardLogo = (team, teamName, isHome) => {
+      if (typeof window !== 'undefined' && typeof window.renderTeamLogoHtml === 'function') {
+        return window.renderTeamLogoHtml(team || teamName, isHome, 36);
+      }
+      if (typeof renderTeamLogoHtml === 'function') {
+        return renderTeamLogoHtml(team || teamName, isHome, 36);
+      }
+      const rawCrest = (typeof resolveTeamCrestUrl === 'function')
+        ? resolveTeamCrestUrl(team || teamName, isHome)
+        : (typeof team === 'object' ? (team?.logoUrl || team?.crest || team?.logo) : null);
+      const crestStr = (typeof rawCrest === 'string') ? rawCrest.trim() : '';
+      const placeholder = (typeof NEUTRAL_CREST_PLACEHOLDER !== 'undefined') ? NEUTRAL_CREST_PLACEHOLDER : 'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA0OCA0OCIgd2lkdGg9IjQ4IiBoZWlnaHQ9IjQ4Ij48cGF0aCBkPSJNMjQgNCBMNDAgMTAgTDQwIDI0IEM0MCAzMyAzMyA0MSAyNCA0NCBDMTUgNDEgOCAzMyA4IDI0IEw4IDEwIFoiIGZpbGw9IiMxZTI5M2IiIHN0cm9rZT0iIzNiODJmNiIgc3Ryb2tlLXdpZHRoPSIyIi8+PGNpcmNsZSBjeD0iMjQiIGN5PSIyMiIgcj0iOSIgZmlsbD0iIzBmMTcyYSIgc3Ryb2tlPSIjNjBhNWZhIiBzdHJva2Utd2lkdGg9IjEuNSIvPjxjaXJjbGUgY3g9IjI0IiBjeT0iMjIiIHI9IjMiIGZpbGw9IiM2MGE1ZmEiLz48L3N2Zz4=';
+      const isImg = crestStr.startsWith('http://') || crestStr.startsWith('https://') || crestStr.startsWith('/') || crestStr.startsWith('data:image/');
+      if (isImg) {
+        return `<img src="${crestStr}" alt="${teamName}" style="width:36px;height:36px;object-fit:contain;display:block;margin:0 auto;" onerror="this.onerror=null;this.src='${placeholder}';" loading="lazy">`;
+      }
+      if (crestStr && crestStr.length <= 4 && !crestStr.includes('data:') && !crestStr.includes('<')) {
+        return crestStr;
+      }
+      return `<img src="${placeholder}" alt="${teamName}" style="width:36px;height:36px;object-fit:contain;display:block;margin:0 auto;" loading="lazy">`;
+    };
+    const homeLogo = resolveCardLogo(match.homeTeam, homeName, true);
+    const awayLogo = resolveCardLogo(match.awayTeam, awayName, false);
     const homeForm = Array.isArray(match.homeTeam?.form) ? match.homeTeam.form : ['W', 'D', 'W', 'L', 'W'];
     const awayForm = Array.isArray(match.awayTeam?.form) ? match.awayTeam.form : ['D', 'W', 'L', 'W', 'W'];
 
@@ -4125,17 +4138,27 @@ async function showMockTableStandings(leagueName, btn, countryName) {
   const closeFn = () => modal.remove();
 
   const resolveLogo = (clubName, rawLogo) => {
-    if (rawLogo && typeof rawLogo === 'string' && rawLogo.startsWith('http')) {
-      return `<img src="${rawLogo}" style="width:16px;height:16px;object-fit:contain;vertical-align:middle;" onerror="this.outerHTML='⚽'">`;
+    const placeholder = (typeof NEUTRAL_CREST_PLACEHOLDER !== 'undefined') ? NEUTRAL_CREST_PLACEHOLDER : 'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA0OCA0OCIgd2lkdGg9IjQ4IiBoZWlnaHQ9IjQ4Ij48cGF0aCBkPSJNMjQgNCBMNDAgMTAgTDQwIDI0IEM0MCAzMyAzMyA0MSAyNCA0NCBDMTUgNDEgOCAzMyA4IDI0IEw4IDEwIFoiIGZpbGw9IiMxZTI5M2IiIHN0cm9rZT0iIzNiODJmNiIgc3Ryb2tlLXdpZHRoPSIyIi8+PGNpcmNsZSBjeD0iMjQiIGN5PSIyMiIgcj0iOSIgZmlsbD0iIzBmMTcyYSIgc3Ryb2tlPSIjNjBhNWZhIiBzdHJva2Utd2lkdGg9IjEuNSIvPjxjaXJjbGUgY3g9IjI0IiBjeT0iMjIiIHI9IjMiIGZpbGw9IiM2MGE1ZmEiLz48L3N2Zz4=';
+    if (typeof window !== 'undefined' && typeof window.renderTeamLogoHtml === 'function') {
+      return window.renderTeamLogoHtml(clubName, true, 16, { inline: true });
     }
-    if (rawLogo && rawLogo !== '⚽' && !rawLogo.includes('⚽')) return rawLogo;
+    if (rawLogo && typeof rawLogo === 'string' && (rawLogo.startsWith('http://') || rawLogo.startsWith('https://') || rawLogo.startsWith('/') || rawLogo.startsWith('data:image/'))) {
+      return `<img src="${rawLogo}" alt="${clubName || 'Club'}" style="width:16px;height:16px;object-fit:contain;vertical-align:middle;" onerror="this.onerror=null;this.src='${placeholder}';">`;
+    }
+    if (rawLogo && typeof rawLogo === 'string' && rawLogo.length <= 4 && !rawLogo.includes('data:') && !rawLogo.includes('<')) return rawLogo;
     if (!clubName) return '⚽';
     const norm = clubName.toLowerCase().trim();
     if (isNationalComp) {
       if (typeof window.NATIONAL_TEAMS_DATA !== 'undefined') {
         const allN = Object.values(window.NATIONAL_TEAMS_DATA).flatMap(v => Array.isArray(v) ? v : Object.values(v).flat());
         const match = allN.find(n => n.name.toLowerCase() === norm);
-        if (match && (match.logo || match.flag)) return match.logo || match.flag;
+        if (match && (match.logo || match.flag)) {
+          const l = match.logo || match.flag;
+          if (typeof l === 'string' && (l.startsWith('http') || l.startsWith('data:image/'))) {
+            return `<img src="${l}" alt="${clubName}" style="width:16px;height:16px;object-fit:contain;vertical-align:middle;" onerror="this.onerror=null;this.src='${placeholder}';">`;
+          }
+          if (typeof l === 'string' && l.length <= 4) return l;
+        }
       }
     }
     const allClubs = (typeof GLOBAL_CLUBS !== 'undefined' && Array.isArray(GLOBAL_CLUBS)) ? GLOBAL_CLUBS : (window.GLOBAL_CLUBS || []);
@@ -4143,7 +4166,12 @@ async function showMockTableStandings(leagueName, btn, countryName) {
       const cName = (c.name || '').toLowerCase();
       return cName === norm || cName.includes(norm) || norm.includes(cName);
     });
-    if (found && found.logo) return found.logo;
+    if (found && found.logo) {
+      if (typeof found.logo === 'string' && (found.logo.startsWith('http') || found.logo.startsWith('data:image/'))) {
+        return `<img src="${found.logo}" alt="${clubName}" style="width:16px;height:16px;object-fit:contain;vertical-align:middle;" onerror="this.onerror=null;this.src='${placeholder}';">`;
+      }
+      if (typeof found.logo === 'string' && found.logo.length <= 4) return found.logo;
+    }
     if (norm.includes('man city') || norm.includes('manchester city')) return '🔵';
     if (norm.includes('hull')) return '🐯';
     if (norm.includes('chelsea')) return '🦁';
@@ -7807,10 +7835,43 @@ function formatAiScoutResultsHtml(selections, requestedCount = DEFAULT_AI_SCOUT_
     subtitleText = `AI Scout analyzed your query <i>"${escapeScoutHtml(promptText)}"</i> and curated <b>${finalCount} high-probability selections</b>:`;
   }
 
-  // 5. Build Cards List
+  // 5. Build Cards List with Authentic Crests & Strict Labeling
+  const sanitizeScoutClubName = (nm, fallback) => {
+    if (!nm || typeof nm !== 'string') return fallback;
+    const t = nm.trim();
+    if (t.startsWith('data:') || t.startsWith('http') || t.includes('base64,') || t.length > 80) return fallback;
+    return t;
+  };
+
+  const renderScoutCrestHtml = (teamInput, clubName, isHome) => {
+    if (typeof window !== 'undefined' && typeof window.renderTeamLogoHtml === 'function') {
+      return window.renderTeamLogoHtml(teamInput || clubName, isHome, 16, { inline: true, className: 'scout-team-crest' });
+    }
+    if (typeof renderTeamLogoHtml === 'function') {
+      return renderTeamLogoHtml(teamInput || clubName, isHome, 16, { inline: true, className: 'scout-team-crest' });
+    }
+    const rawCrest = (typeof resolveTeamCrestUrl === 'function')
+      ? resolveTeamCrestUrl(clubName, isHome)
+      : (typeof teamInput === 'object' ? (teamInput?.logoUrl || teamInput?.logo || teamInput?.crest) : null);
+    const crestStr = (typeof rawCrest === 'string') ? rawCrest.trim() : '';
+    const placeholder = (typeof NEUTRAL_CREST_PLACEHOLDER !== 'undefined') ? NEUTRAL_CREST_PLACEHOLDER : 'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA0OCA0OCIgd2lkdGg9IjQ4IiBoZWlnaHQ9IjQ4Ij48cGF0aCBkPSJNMjQgNCBMNDAgMTAgTDQwIDI0IEM0MCAzMyAzMyA0MSAyNCA0NCBDMTUgNDEgOCAzMyA4IDI0IEw4IDEwIFoiIGZpbGw9IiMxZTI5M2IiIHN0cm9rZT0iIzNiODJmNiIgc3Ryb2tlLXdpZHRoPSIyIi8+PGNpcmNsZSBjeD0iMjQiIGN5PSIyMiIgcj0iOSIgZmlsbD0iIzBmMTcyYSIgc3Ryb2tlPSIjNjBhNWZhIiBzdHJva2Utd2lkdGg9IjEuNSIvPjxjaXJjbGUgY3g9IjI0IiBjeT0iMjIiIHI9IjMiIGZpbGw9IiM2MGE1ZmEiLz48L3N2Zz4=';
+    const isImg = crestStr.startsWith('http://') || crestStr.startsWith('https://') || crestStr.startsWith('/') || crestStr.startsWith('data:image/');
+    if (isImg) {
+      return `<img src="${crestStr}" alt="${typeof escapeScoutHtml === 'function' ? escapeScoutHtml(clubName) : clubName}" class="scout-team-crest" style="width:16px;height:16px;object-fit:contain;vertical-align:middle;display:inline-block;flex-shrink:0;" loading="lazy" onerror="this.onerror=null;this.src='${placeholder}';" />`;
+    }
+    if (crestStr && crestStr.length <= 4 && !crestStr.includes('data:') && !crestStr.includes('<')) {
+      return `<span style="font-size:14px;line-height:1;display:inline-block;vertical-align:middle;">${crestStr}</span>`;
+    }
+    return `<img src="${placeholder}" alt="${typeof escapeScoutHtml === 'function' ? escapeScoutHtml(clubName) : clubName}" class="scout-team-crest" style="width:16px;height:16px;object-fit:contain;vertical-align:middle;display:inline-block;flex-shrink:0;" loading="lazy" />`;
+  };
+
   const selectionsList = accSelections.map((s, idx) => {
-    const hName = s.match?.homeTeam?.name || 'Home Team';
-    const aName = s.match?.awayTeam?.name || 'Away Team';
+    const rawHName = s.match?.homeTeam?.name || s.homeTeam || 'Home Team';
+    const rawAName = s.match?.awayTeam?.name || s.awayTeam || 'Away Team';
+    const hName = sanitizeScoutClubName(rawHName, 'Home Team');
+    const aName = sanitizeScoutClubName(rawAName, 'Away Team');
+    const safeHName = typeof escapeScoutHtml === 'function' ? escapeScoutHtml(hName) : hName;
+    const safeAName = typeof escapeScoutHtml === 'function' ? escapeScoutHtml(aName) : aName;
     const leagueName = s.match?.league || 'Football League';
     const isLive = !!(s.match?.isLive && s.match?.rawDate && new Date(s.match.rawDate).toDateString() === new Date().toDateString());
     const timeStr = typeof formatStandardMatchDateString === 'function'
@@ -7821,16 +7882,22 @@ function formatAiScoutResultsHtml(selections, requestedCount = DEFAULT_AI_SCOUT_
     const num = Number(rawVal);
     const valid = (typeof num === 'number' && !isNaN(num) && isFinite(num) && num > 1.0);
     const oddVal = valid ? num.toFixed(2) : '—';
+
+    const hCrestHtml = renderScoutCrestHtml(s.match?.homeTeam, hName, true);
+    const aCrestHtml = renderScoutCrestHtml(s.match?.awayTeam, aName, false);
+
     return `
-      <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid rgba(255,255,255,0.08); padding: 8px 0; font-size:0.8rem; gap: 8px;">
-        <div style="display:flex; flex-direction:column; gap:2px; min-width:0;">
-          <div style="font-weight:700; color:#ffffff; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">
-            #${idx+1} ${hName} vs ${aName}
+      <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid rgba(255,255,255,0.08); padding: 8px 0; font-size:0.8rem; gap: 8px; width:100%; min-width:0; box-sizing:border-box;">
+        <div style="display:flex; flex-direction:column; gap:2px; min-width:0; flex:1; overflow:hidden;">
+          <div style="font-weight:700; color:#ffffff; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;" title="${safeHName} vs ${safeAName}">
+            #${idx+1} ${safeHName} vs ${safeAName}
           </div>
-          <div style="font-size:0.7rem; color:#94a3b8; display:flex; align-items:center; gap:6px;">
-            <span style="color:#60a5fa; font-weight:600;">${leagueName}</span>
-            <span>•</span>
-            <span style="color:${isLive ? '#ef4444' : '#fbbf24'}; font-weight:700; display:inline-flex; align-items:center; gap:3px;">
+          <div style="font-size:0.7rem; color:#94a3b8; display:flex; align-items:center; gap:6px; min-width:0; overflow:hidden;">
+            <span style="color:#60a5fa; font-weight:600; display:inline-flex; align-items:center; gap:4px; min-width:0; max-width:100%; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">
+              ${hCrestHtml}${aCrestHtml} <span style="overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">${leagueName}</span>
+            </span>
+            <span style="flex-shrink:0;">•</span>
+            <span style="color:${isLive ? '#ef4444' : '#fbbf24'}; font-weight:700; display:inline-flex; align-items:center; gap:3px; flex-shrink:0; white-space:nowrap;">
               ${isLive ? '🔴' : '📅'} ${timeStr}
             </span>
           </div>
@@ -12510,17 +12577,30 @@ function buildMatchCardElement(match) {
 
   const homeName = match.homeTeam?.name || 'Home';
   const awayName = match.awayTeam?.name || 'Away';
-  const homeLogo = (typeof window !== 'undefined' && typeof window.renderTeamLogoHtml === 'function')
-    ? window.renderTeamLogoHtml(match.homeTeam || homeName, true, 36)
-    : (match.homeTeam?.logo && String(match.homeTeam.logo).startsWith('http')
-        ? `<img src="${match.homeTeam.logo}" alt="${homeName}" style="width:36px;height:36px;object-fit:contain;display:block;margin:0 auto;" loading="lazy">`
-        : match.homeTeam?.logo || '⚽');
+  const resolveMatchCardLogo = (team, teamName, isHome) => {
+    if (typeof window !== 'undefined' && typeof window.renderTeamLogoHtml === 'function') {
+      return window.renderTeamLogoHtml(team || teamName, isHome, 36);
+    }
+    if (typeof renderTeamLogoHtml === 'function') {
+      return renderTeamLogoHtml(team || teamName, isHome, 36);
+    }
+    const rawCrest = (typeof resolveTeamCrestUrl === 'function')
+      ? resolveTeamCrestUrl(team || teamName, isHome)
+      : (typeof team === 'object' ? (team?.logoUrl || team?.crest || team?.logo) : null);
+    const crestStr = (typeof rawCrest === 'string') ? rawCrest.trim() : '';
+    const placeholder = (typeof NEUTRAL_CREST_PLACEHOLDER !== 'undefined') ? NEUTRAL_CREST_PLACEHOLDER : 'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA0OCA0OCIgd2lkdGg9IjQ4IiBoZWlnaHQ9IjQ4Ij48cGF0aCBkPSJNMjQgNCBMNDAgMTAgTDQwIDI0IEM0MCAzMyAzMyA0MSAyNCA0NCBDMTUgNDEgOCAzMyA4IDI0IEw4IDEwIFoiIGZpbGw9IiMxZTI5M2IiIHN0cm9rZT0iIzNiODJmNiIgc3Ryb2tlLXdpZHRoPSIyIi8+PGNpcmNsZSBjeD0iMjQiIGN5PSIyMiIgcj0iOSIgZmlsbD0iIzBmMTcyYSIgc3Ryb2tlPSIjNjBhNWZhIiBzdHJva2Utd2lkdGg9IjEuNSIvPjxjaXJjbGUgY3g9IjI0IiBjeT0iMjIiIHI9IjMiIGZpbGw9IiM2MGE1ZmEiLz48L3N2Zz4=';
+    const isImg = crestStr.startsWith('http://') || crestStr.startsWith('https://') || crestStr.startsWith('/') || crestStr.startsWith('data:image/');
+    if (isImg) {
+      return `<img src="${crestStr}" alt="${teamName}" style="width:36px;height:36px;object-fit:contain;display:block;margin:0 auto;" onerror="this.onerror=null;this.src='${placeholder}';" loading="lazy">`;
+    }
+    if (crestStr && crestStr.length <= 4 && !crestStr.includes('data:') && !crestStr.includes('<')) {
+      return crestStr;
+    }
+    return `<img src="${placeholder}" alt="${teamName}" style="width:36px;height:36px;object-fit:contain;display:block;margin:0 auto;" loading="lazy">`;
+  };
 
-  const awayLogo = (typeof window !== 'undefined' && typeof window.renderTeamLogoHtml === 'function')
-    ? window.renderTeamLogoHtml(match.awayTeam || awayName, false, 36)
-    : (match.awayTeam?.logo && String(match.awayTeam.logo).startsWith('http')
-        ? `<img src="${match.awayTeam.logo}" alt="${awayName}" style="width:36px;height:36px;object-fit:contain;display:block;margin:0 auto;" loading="lazy">`
-        : match.awayTeam?.logo || '⚽');
+  const homeLogo = resolveMatchCardLogo(match.homeTeam, homeName, true);
+  const awayLogo = resolveMatchCardLogo(match.awayTeam, awayName, false);
   const homeForm = Array.isArray(match.homeTeam?.form) ? match.homeTeam.form : ['W', 'D', 'W', 'L', 'W'];
   const awayForm = Array.isArray(match.awayTeam?.form) ? match.awayTeam.form : ['D', 'W', 'L', 'W', 'W'];
 

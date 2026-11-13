@@ -233,9 +233,9 @@
                 ? window.renderTeamLogoHtml(match.homeTeam || home, true, 52)
                 : (typeof renderTeamLogoHtml === 'function'
                     ? renderTeamLogoHtml(match.homeTeam || home, true, 52)
-                    : (String(homeLogo).startsWith('http')
+                    : ((String(homeLogo).startsWith('http') || String(homeLogo).startsWith('data:image/') || String(homeLogo).startsWith('/'))
                         ? `<img src="${homeLogo}" alt="${home}" style="width:52px;height:52px;object-fit:contain;display:block;" loading="lazy">`
-                        : `<div style="font-size: 2.2rem;">${homeLogo}</div>`))}
+                        : `<div style="font-size: 2.2rem;">${(homeLogo && homeLogo.length <= 4 && !homeLogo.includes('data:') && !homeLogo.includes('<')) ? homeLogo : '⚽'}</div>`))}
             </div>
             <h1 style="font-family: var(--font-display); font-size: 1.6rem; font-weight: 900; color: #ffffff; margin: 0; line-height: 1.2;">${home}</h1>
             <span style="font-size: 0.78rem; color: #93c5fd; font-weight: 700; text-transform: uppercase;">Home Club</span>
@@ -258,9 +258,9 @@
                 ? window.renderTeamLogoHtml(match.awayTeam || away, false, 52)
                 : (typeof renderTeamLogoHtml === 'function'
                     ? renderTeamLogoHtml(match.awayTeam || away, false, 52)
-                    : (String(awayLogo).startsWith('http')
+                    : ((String(awayLogo).startsWith('http') || String(awayLogo).startsWith('data:image/') || String(awayLogo).startsWith('/'))
                         ? `<img src="${awayLogo}" alt="${away}" style="width:52px;height:52px;object-fit:contain;display:block;" loading="lazy">`
-                        : `<div style="font-size: 2.2rem;">${awayLogo}</div>`))}
+                        : `<div style="font-size: 2.2rem;">${(awayLogo && awayLogo.length <= 4 && !awayLogo.includes('data:') && !awayLogo.includes('<')) ? awayLogo : '⚽'}</div>`))}
             </div>
             <h1 style="font-family: var(--font-display); font-size: 1.6rem; font-weight: 900; color: #ffffff; margin: 0; line-height: 1.2;">${away}</h1>
             <span style="font-size: 0.78rem; color: #93c5fd; font-weight: 700; text-transform: uppercase;">Away Club</span>

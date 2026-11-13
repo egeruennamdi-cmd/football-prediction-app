@@ -346,6 +346,53 @@
     'deportivo alaves': 542,
     'alavés': 542,
 
+    'deportivo la coruna': 544,
+    'deportivo la coruña': 544,
+    'deportivo de la coruna': 544,
+    'deportivo de la coruña': 544,
+    'rc deportivo': 544,
+    'rcd la coruna': 544,
+    'rcd la coruña': 544,
+    'deportivo': 544,
+
+    'granada': 715,
+    'granada cf': 715,
+
+    'cadiz': 724,
+    'cadiz cf': 724,
+    'cádiz': 724,
+
+    'almeria': 723,
+    'ud almeria': 723,
+    'almería': 723,
+
+    'levante': 539,
+    'levante ud': 539,
+
+    'real zaragoza': 717,
+    'zaragoza': 717,
+
+    'sporting gijon': 719,
+    'sporting de gijon': 719,
+
+    'real oviedo': 722,
+    'oviedo': 722,
+
+    'racing santander': 726,
+    'racing de santander': 726,
+
+    'tenerife': 729,
+    'cd tenerife': 729,
+
+    'eibar': 535,
+    'sd eibar': 535,
+
+    'elche': 797,
+    'elche cf': 797,
+
+    'malaga': 537,
+    'málaga': 537,
+
     'getafe': 546,
     'getafe cf': 546,
 
@@ -1150,15 +1197,18 @@
    * On error or unresolved identity, cleanly falls back to NEUTRAL_CREST_PLACEHOLDER.
    */
   function renderTeamLogoHtml(team, isHome = true, size = 36, options = {}) {
-    const url = resolveTeamCrestUrl(team, isHome);
+    const rawUrl = resolveTeamCrestUrl(team, isHome);
     const name = typeof team === 'object' ? (team.name || 'Team') : String(team || 'Team');
-    const escapedName = String(name).replace(/"/g, '&quot;');
+    const safeName = (typeof name === 'string' && !name.startsWith('data:') && !name.startsWith('http') && name.length <= 80) ? name : (isHome ? 'Home Team' : 'Away Team');
+    const escapedName = String(safeName).replace(/"/g, '&quot;');
     const opts = typeof options === 'string' ? { className: options } : (options || {});
     const classNameAttr = opts.className ? ` class="${opts.className}"` : '';
     const isInline = opts.inline === true;
     const baseDisplay = isInline ? 'display:inline-block;vertical-align:middle;flex-shrink:0;' : 'display:block;margin:0 auto;';
     const customStyle = opts.style ? `${opts.style};` : '';
-    return `<img src="${url}" alt="${escapedName}"${classNameAttr} style="width:${size}px;height:${size}px;object-fit:contain;${baseDisplay}${customStyle}" onerror="this.onerror=null;this.src='${NEUTRAL_CREST_PLACEHOLDER}';" loading="lazy">`;
+    const isImage = typeof rawUrl === 'string' && (rawUrl.startsWith('http://') || rawUrl.startsWith('https://') || rawUrl.startsWith('/') || rawUrl.startsWith('data:image/'));
+    const finalUrl = isImage ? rawUrl : NEUTRAL_CREST_PLACEHOLDER;
+    return `<img src="${finalUrl}" alt="${escapedName}"${classNameAttr} style="width:${size}px;height:${size}px;object-fit:contain;${baseDisplay}${customStyle}" onerror="this.onerror=null;this.src='${NEUTRAL_CREST_PLACEHOLDER}';" loading="lazy">`;
   }
 
   return {
