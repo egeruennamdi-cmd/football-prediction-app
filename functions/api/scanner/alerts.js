@@ -11,7 +11,7 @@
  */
 
 import { getMembers } from '../integrations/telegram/_kvHelper.js';
-import { sendTelegramMessage } from '../integrations/telegram/_telegramService.js';
+import { sendMessage } from '../integrations/telegram/_telegramService.js';
 
 const COOLDOWN_DEFAULT_MS = 15 * 60 * 1000; // 15 minutes default cooldown per rule+match
 
@@ -213,11 +213,11 @@ export async function onRequestPost(context) {
         `<i>Decision-support signal based on observed match/market data. Not a guaranteed outcome.</i>`
       ].filter(Boolean).join('\n');
 
-      const sendResult = await sendTelegramMessage(context.env, chatId, htmlMessage, {
+      const sendResult = await sendMessage(context.env, chatId, htmlMessage, {
         disableWebPagePreview: true
       });
 
-      const confirmedDelivered = Boolean(sendResult && sendResult.success && sendResult.messageId);
+      const confirmedDelivered = Boolean(sendResult && sendResult.success && sendResult.result && sendResult.result.message_id);
       if (confirmedDelivered) {
         state.cooldowns[dedupKey] = now;
       }
