@@ -13,15 +13,17 @@ function checkIsAdmin(context) {
   try {
     const url = new URL(context.request.url);
     const authHeader = context.request.headers.get('Authorization') || '';
+    const xAdminKey = context.request.headers.get('X-Admin-Key') || '';
     const adminKeyParam = url.searchParams.get('adminKey') || '';
     const adminSecret = (context.env && context.env.ADMIN_SECRET_KEY) || DEFAULT_ADMIN_KEY;
+    const bearerToken = authHeader.startsWith('Bearer ') ? authHeader.slice(7).trim() : authHeader.trim();
 
-    return authHeader.includes(adminSecret) ||
-           authHeader.includes('deep_admin_78_key') ||
+    return bearerToken === adminSecret ||
+           bearerToken === 'deep_admin_78_key' ||
+           xAdminKey === adminSecret ||
+           xAdminKey === 'deep_admin_78_key' ||
            adminKeyParam === adminSecret ||
-           adminKeyParam === 'deep_admin_78_key' ||
-           authHeader.includes('admin@deeppredictbet.com') ||
-           authHeader.includes('Egeruennamdi78');
+           adminKeyParam === 'deep_admin_78_key';
   } catch (e) {
     return false;
   }

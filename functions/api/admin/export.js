@@ -30,22 +30,41 @@ export async function onRequestGet(context) {
   try {
     const url = new URL(context.request.url);
     const authHeader = context.request.headers.get('Authorization') || '';
+    const xAdminKey = context.request.headers.get('X-Admin-Key') || '';
     const adminKey = url.searchParams.get('adminKey') || '';
     const period = (url.searchParams.get('period') || '30d').toLowerCase();
     
     // SERVER-SIDE AUTHORIZATION CHECK
     const adminSecret = (context.env && context.env.ADMIN_SECRET_KEY) || 'deep_admin_78_key';
-    const isAuthorized = authHeader.includes(adminSecret) || 
-                         authHeader.includes('deep_admin_78_key') || 
-                         adminKey === adminSecret || 
-                         adminKey === 'deep_admin_78_key' || 
-                         authHeader.includes('admin@deeppredictbet.com') ||
-                         authHeader.includes('Egeruennamdi78');
+    const bearerToken = authHeader.startsWith('Bearer ') ? authHeader.slice(7).trim() : authHeader.trim();
+    let isAuthorized = (
+      bearerToken === adminSecret ||
+      bearerToken === 'deep_admin_78_key' ||
+      xAdminKey === adminSecret ||
+      xAdminKey === 'deep_admin_78_key' ||
+      adminKey === adminSecret ||
+      adminKey === 'deep_admin_78_key'
+    );
+
+    if (!isAuthorized && bearerToken && bearerToken.startsWith('dp_sess_') && context.env && context.env.USERS_KV) {
+      try {
+        const stored = await context.env.USERS_KV.get('members_list');
+        if (stored) {
+          const members = JSON.parse(stored);
+          if (Array.isArray(members)) {
+            const matched = members.find(m => m && m.sessionId === bearerToken);
+            if (matched && String(matched.role || '').toUpperCase() === 'ADMIN') {
+              isAuthorized = true;
+            }
+          }
+        }
+      } catch (e) {}
+    }
 
     if (!isAuthorized) {
       return new Response(JSON.stringify({
         success: false,
-        error: 'Unauthorized. Server-side Administrator verification required.'
+        error: 'Forbidden: Administrator authorization required.'
       }), {
         status: 403,
         headers: { 'Content-Type': 'application/json' }
@@ -132,7 +151,7 @@ export async function onRequestGet(context) {
       [],
       ['--- SECTION 8: DATA QUALITY & SYSTEM HEALTH ---'],
       ['Subsystem', 'Operational Status', 'Telemetry'],
-      ['Cloudflare KV Edge Store', 'OPERATIONAL', 'Namespace c24f3ae03abd42788257bec2f7d3c065'],
+      ['Primary Storage Engine', 'OPERATIONAL', 'Synchronized & Active'],
       ['BetPaddi Converter Gateway', 'ACTIVE', 'Latency 32ms, zero dropped packets'],
       ['RapidAPI / API-Football', 'ACTIVE', '78 requests remaining in current window'],
       ['Data Completeness', '99.4%', 'Zero missing match data fields'],
@@ -153,7 +172,7 @@ export async function onRequestGet(context) {
     });
 
   } catch (err) {
-    return new Response('Error generating CSV export: ' + err.message, {
+    return new Response('Unable to generate export report at this time.', {
       status: 500,
       headers: { 'Content-Type': 'text/plain' }
     });

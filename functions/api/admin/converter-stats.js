@@ -48,22 +48,40 @@ export async function onRequestOptions() {
 export async function onRequestGet(context) {
   try {
     const authHeader = context.request.headers.get("Authorization") || "";
-    const emailHeader = (context.request.headers.get("X-User-Email") || "").trim().toLowerCase();
+    const xAdminKey = context.request.headers.get("X-Admin-Key") || "";
     const url = new URL(context.request.url);
     const adminKey = url.searchParams.get('adminKey') || '';
 
     const adminSecret = (context.env && context.env.ADMIN_SECRET_KEY) || 'deep_admin_78_key';
-    const isAuthorized = authHeader.includes(adminSecret) ||
-                         authHeader.includes('deep_admin_78_key') ||
-                         adminKey === adminSecret ||
-                         adminKey === 'deep_admin_78_key' ||
-                         AUTHORITATIVE_ADMINS.includes(emailHeader) ||
-                         authHeader.includes('admin@deeppredictbet.com');
+    const bearerToken = authHeader.startsWith('Bearer ') ? authHeader.slice(7).trim() : authHeader.trim();
+    let isAuthorized = (
+      bearerToken === adminSecret ||
+      bearerToken === 'deep_admin_78_key' ||
+      xAdminKey === adminSecret ||
+      xAdminKey === 'deep_admin_78_key' ||
+      adminKey === adminSecret ||
+      adminKey === 'deep_admin_78_key'
+    );
+
+    if (!isAuthorized && bearerToken && bearerToken.startsWith('dp_sess_')) {
+      try {
+        const rawMembers = await kvGet(context, 'members_list');
+        if (rawMembers) {
+          const members = JSON.parse(rawMembers);
+          if (Array.isArray(members)) {
+            const matched = members.find(m => m && m.sessionId === bearerToken);
+            if (matched && String(matched.role || '').toUpperCase() === 'ADMIN' && AUTHORITATIVE_ADMINS.includes(String(matched.email || '').toLowerCase())) {
+              isAuthorized = true;
+            }
+          }
+        }
+      } catch (e) {}
+    }
 
     if (!isAuthorized) {
       return new Response(JSON.stringify({
         success: false,
-        error: "Unauthorized. Administrator authorization required."
+        error: "Forbidden: Administrator authorization required."
       }), { status: 403, headers: corsHeaders() });
     }
 

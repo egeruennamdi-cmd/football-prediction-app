@@ -8998,12 +8998,11 @@ async function handleAuthLogin(e) {
 
     // 3. Login Successful: Authoritative session & UI state hydration
     const cleanId = identifier.toLowerCase();
-    const isAdminUser = (
+    const isAdminUser = Boolean(
       (loggedInUser.email && loggedInUser.email.toLowerCase() === 'admin@deeppredictbet.com') ||
       (loggedInUser.email && loggedInUser.email.toLowerCase() === 'egeruennamdi@gmail.com') ||
       (loggedInUser.username && loggedInUser.username.toLowerCase() === 'egeruennamdi78') ||
-      (loggedInUser.username && loggedInUser.username.toLowerCase() === 'egeruennamdi') ||
-      (loggedInUser.role && loggedInUser.role.toUpperCase() === 'ADMIN')
+      (loggedInUser.username && loggedInUser.username.toLowerCase() === 'egeruennamdi')
     );
 
     try {
@@ -9011,7 +9010,7 @@ async function handleAuthLogin(e) {
       localStorage.setItem("currentUserFullName", (loggedInUser && (loggedInUser.fullName || loggedInUser.name)) || "");
       localStorage.setItem("currentUsername", (loggedInUser && loggedInUser.username) || (loggedInUser && loggedInUser.fullName) || identifier);
       localStorage.setItem("currentUserEmail", (loggedInUser && loggedInUser.email) || identifier);
-      localStorage.setItem("user_role", isAdminUser ? "ADMIN" : (loggedInUser.role || "USER"));
+      localStorage.setItem("user_role", isAdminUser ? "ADMIN" : (loggedInUser.role && String(loggedInUser.role).toUpperCase() !== "ADMIN" ? loggedInUser.role : "USER"));
       if (loggedInUser && loggedInUser.sessionExpiresAt) {
         localStorage.setItem("dp_session_expires_at", String(loggedInUser.sessionExpiresAt));
       } else {
@@ -9023,6 +9022,9 @@ async function handleAuthLogin(e) {
       }
       if (isAdminUser) {
         sessionStorage.setItem("dp_founder_authenticated", "true");
+      } else {
+        sessionStorage.removeItem("dp_founder_authenticated");
+        localStorage.removeItem("dp_founder_authenticated");
       }
     } catch(err) {}
 
@@ -9180,6 +9182,8 @@ async function handleAuthSignup(e) {
   // 2. Member synced via Cloudflare Edge API and persistent storage
 
   try {
+    sessionStorage.removeItem("dp_founder_authenticated");
+    localStorage.removeItem("dp_founder_authenticated");
     localStorage.setItem("userLoggedIn", "true");
     localStorage.setItem("currentUserFullName", fullName || "");
     localStorage.setItem("currentUsername", username);
@@ -9828,11 +9832,19 @@ function updateAuthUIState() {
     profileAvatarInitial.innerText = isLoggedIn ? displayName.charAt(0).toUpperCase() : "👤";
   }
 
-  // Authoritative RBAC check for User Account Hub: Show Founder Console ONLY for ADMIN
+  // Authoritative RBAC check for User Account Hub & Admin Triggers: Show ONLY for ADMIN
+  const isUserAdmin = typeof isAdmin === 'function' ? isAdmin() : (typeof window.isAdmin === 'function' ? window.isAdmin() : false);
   const founderBtn = document.getElementById("prof-founder-console-btn");
   if (founderBtn) {
-    const isUserAdmin = typeof isAdmin === 'function' ? isAdmin() : (typeof window.isAdmin === 'function' ? window.isAdmin() : false);
     founderBtn.style.display = isUserAdmin ? "flex" : "none";
+  }
+  const genTgBtn = document.getElementById("generator-send-telegram-btn");
+  if (genTgBtn) {
+    genTgBtn.style.display = isUserAdmin ? "inline-flex" : "none";
+  }
+  const docTgBtn = document.getElementById("doctor-send-telegram-btn");
+  if (docTgBtn) {
+    docTgBtn.style.display = isUserAdmin ? "inline-flex" : "none";
   }
 
   const mobileAuthText = document.getElementById("mobile-drawer-auth-text");

@@ -238,12 +238,11 @@
 
       // C. Successful Authentication Session Storage
       const cleanId = identifier.toLowerCase();
-      const isAdminUser = (
+      const isAdminUser = Boolean(
         (loggedInUser.email && loggedInUser.email.toLowerCase() === 'admin@deeppredictbet.com') ||
         (loggedInUser.email && loggedInUser.email.toLowerCase() === 'egeruennamdi@gmail.com') ||
         (loggedInUser.username && loggedInUser.username.toLowerCase() === 'egeruennamdi78') ||
-        (loggedInUser.username && loggedInUser.username.toLowerCase() === 'egeruennamdi') ||
-        (loggedInUser.role && String(loggedInUser.role).toUpperCase() === 'ADMIN')
+        (loggedInUser.username && loggedInUser.username.toLowerCase() === 'egeruennamdi')
       );
 
       try {
@@ -251,7 +250,7 @@
         localStorage.setItem('currentUserFullName', (loggedInUser && (loggedInUser.fullName || loggedInUser.name)) || '');
         localStorage.setItem('currentUsername', (loggedInUser && loggedInUser.username) || (loggedInUser && loggedInUser.fullName) || identifier);
         localStorage.setItem('currentUserEmail', (loggedInUser && loggedInUser.email) || identifier);
-        localStorage.setItem('user_role', isAdminUser ? 'ADMIN' : (loggedInUser.role || 'USER'));
+        localStorage.setItem('user_role', isAdminUser ? 'ADMIN' : (loggedInUser.role && String(loggedInUser.role).toUpperCase() !== 'ADMIN' ? loggedInUser.role : 'USER'));
         if (serverSessionId) {
           localStorage.setItem('dp_session_id', serverSessionId);
         }
@@ -262,6 +261,9 @@
         }
         if (isAdminUser) {
           sessionStorage.setItem('dp_founder_authenticated', 'true');
+        } else {
+          sessionStorage.removeItem('dp_founder_authenticated');
+          localStorage.removeItem('dp_founder_authenticated');
         }
         localStorage.setItem('dp_auth_sync', 'login_' + Date.now());
       } catch (err) {}
@@ -286,16 +288,18 @@
       document.body.classList.remove('auth-view-active');
 
       // Resolve destination according to permissions & preserved target
+      // Never auto-hijack login into internal /admin screens unless an authorized admin explicitly requested /admin
       let targetDestination = '/dashboard';
       const preservedTarget = sessionStorage.getItem('auth_redirect_target');
+      const adminRoutes = ['/admin', '/admin/analytics', '/founder-analytics', '/social', '/social-publisher', '/telegram-publisher', '/social-command-center'];
 
       if (preservedTarget && preservedTarget !== '/' && preservedTarget !== '/login') {
         sessionStorage.removeItem('auth_redirect_target');
-        targetDestination = preservedTarget;
-      } else if (isAdminUser) {
-        targetDestination = '/admin';
-      } else {
-        targetDestination = '/dashboard';
+        const cleanPreserved = preservedTarget.split('?')[0].split('#')[0].trim().toLowerCase();
+        const isPreservedAdminRoute = adminRoutes.includes(cleanPreserved) || cleanPreserved.startsWith('/admin/');
+        if (!isPreservedAdminRoute || isAdminUser) {
+          targetDestination = preservedTarget;
+        }
       }
 
       const displayUser = loggedInUser.username || loggedInUser.fullName || identifier;
@@ -320,7 +324,7 @@
 
       return false;
     } catch (err) {
-      alert(`❌ Error during authentication: ${err.message || 'Please try again.'}`);
+      alert('❌ Unable to complete sign-in right now. Please try again.');
       return false;
     } finally {
       if (submitBtn && origBtnHtml) {
@@ -421,6 +425,8 @@
 
       // Session persistence
       try {
+        sessionStorage.removeItem('dp_founder_authenticated');
+        localStorage.removeItem('dp_founder_authenticated');
         localStorage.setItem('userLoggedIn', 'true');
         localStorage.setItem('currentUserFullName', fullName || '');
         localStorage.setItem('currentUsername', username);
@@ -537,7 +543,7 @@
 
       return false;
     } catch (err) {
-      alert(`❌ Request failed: ${err.message || 'Network error'}. Please try again.`);
+      alert('❌ Unable to process password reset request right now. Please try again.');
       return false;
     } finally {
       if (submitBtn && origBtnHtml) {

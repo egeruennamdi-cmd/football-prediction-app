@@ -2061,9 +2061,11 @@
             <button type="button" class="btn btn-secondary" onclick="TopTipsTrackerEngine.shareTip('${tip.tipId}')" style="width: 100%; font-weight: 700; padding: 9px; border-radius: 8px;">
               🔗 Share Tip Intelligence Report
             </button>
+            ${(typeof window !== 'undefined' && typeof window.isAdmin === 'function' && window.isAdmin()) ? `
             <button type="button" class="btn btn-secondary" onclick="TopTipsTrackerEngine.sendToTelegramPublisher('${tip.tipId}')" style="width: 100%; font-weight: 700; padding: 9px; border-radius: 8px; background: rgba(56, 189, 248, 0.12); border: 1px solid rgba(56, 189, 248, 0.35); color: #38bdf8;">
               📢 Send to Telegram Command Center
             </button>
+            ` : ''}
           </div>
 
         </div>
@@ -2242,14 +2244,16 @@
     exportCsv: exportCsv,
     renderWorkspace: renderWorkspace,
     sendToTelegramPublisher(tipId) {
+      if (typeof window === 'undefined' || typeof window.isAdmin !== 'function' || !window.isAdmin()) return;
       const tip = state.cachedTips.find(t => t.tipId === tipId);
       if (!tip) return;
       if (typeof window !== 'undefined' && window.TelegramPublisher && typeof window.TelegramPublisher.importFromTopTipsTracker === 'function') {
         const res = window.TelegramPublisher.importFromTopTipsTracker([tip]);
         if (res && res.success) {
           if (typeof showToast === 'function') showToast('📢 Top Tip sent to Telegram Command Center!', 'success');
-          const el = document.getElementById('telegram-command-center-section') || document.getElementById('telegram-publisher-section');
-          if (el) el.scrollIntoView({ behavior: 'smooth' });
+          if (typeof window.navigateTo === 'function') {
+            window.navigateTo('/admin#publisher');
+          }
         }
       }
     }

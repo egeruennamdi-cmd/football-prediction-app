@@ -8693,9 +8693,11 @@ function runBetDoctorAudit(showScanAnim = true, explicitSource = null) {
           <button id="doctor-convert-bookies-btn" onclick="convertAuditedTicket('${displayCode}', '${bookieVal}')" class="btn btn-secondary" style="font-weight: 700; font-size: 0.78rem; padding: 10px 16px; border: 1px solid var(--brand-royal-blue); cursor: pointer;">
             📲 Convert to Bookies
           </button>
+          ${(typeof isAdmin === 'function' ? isAdmin() : (typeof window !== 'undefined' && typeof window.isAdmin === 'function' && window.isAdmin())) ? `
           <button id="doctor-send-telegram-btn" onclick="sendBetDoctorToTelegram()" class="btn btn-secondary" style="font-weight: 700; font-size: 0.78rem; padding: 10px 16px; border: 1px solid rgba(56,189,248,0.4); background: rgba(56,189,248,0.12); color: #38bdf8; cursor: pointer; display: inline-flex; align-items: center; gap: 6px;">
             📢 Send to Telegram
           </button>
+          ` : ''}
         </div>
       </div>
 
@@ -10254,6 +10256,9 @@ window.copyEngineTargetCode = copyEngineTargetCode;
 window.saveGeneratedTicket = saveGeneratedTicket;
 
 function sendBetGeneratorToTelegram() {
+  const isUserAdmin = typeof isAdmin === 'function' ? isAdmin() : (typeof window !== 'undefined' && typeof window.isAdmin === 'function' && window.isAdmin());
+  if (!isUserAdmin) return;
+
   const codeEl = document.getElementById("ticket-booking-code");
   const code = codeEl ? codeEl.innerText.trim() : "DP-TICKET";
   const legs = (window.appState && window.appState.betslip) ? window.appState.betslip : [];
@@ -10274,10 +10279,8 @@ function sendBetGeneratorToTelegram() {
 
   if (typeof window !== 'undefined' && window.TelegramPublisher && typeof window.TelegramPublisher.importFromBetGenerator === 'function') {
     window.TelegramPublisher.importFromBetGenerator(ticketData);
-    if (typeof window.switchTool === 'function') {
-      window.switchTool('telegram-publisher');
-    } else if (typeof window.navigateTo === 'function') {
-      window.navigateTo('/telegram-publisher');
+    if (typeof window.navigateTo === 'function') {
+      window.navigateTo('/admin#publisher');
     }
     if (typeof showAppNotification === 'function') {
       showAppNotification(`📢 Ticket [${code}] sent to Telegram Command Center!`, "success");
@@ -10290,6 +10293,9 @@ function sendBetGeneratorToTelegram() {
 }
 
 function sendBetDoctorToTelegram() {
+  const isUserAdmin = typeof isAdmin === 'function' ? isAdmin() : (typeof window !== 'undefined' && typeof window.isAdmin === 'function' && window.isAdmin());
+  if (!isUserAdmin) return;
+
   const doctor = window.doctorState || {};
   const legs = (window.appState && window.appState.betslip && window.appState.betslip.length > 0)
     ? window.appState.betslip
@@ -10312,10 +10318,8 @@ function sendBetDoctorToTelegram() {
 
   if (typeof window !== 'undefined' && window.TelegramPublisher && typeof window.TelegramPublisher.importFromBetDoctor === 'function') {
     window.TelegramPublisher.importFromBetDoctor(doctorData);
-    if (typeof window.switchTool === 'function') {
-      window.switchTool('telegram-publisher');
-    } else if (typeof window.navigateTo === 'function') {
-      window.navigateTo('/telegram-publisher');
+    if (typeof window.navigateTo === 'function') {
+      window.navigateTo('/admin#publisher');
     }
     if (typeof showAppNotification === 'function') {
       showAppNotification("📢 Audited ticket sent to Telegram Command Center!", "success");
@@ -10553,6 +10557,8 @@ async function handleAuthSignup(e) {
   // 2. Member synced via Cloudflare Edge API and persistent storage
 
   try {
+    sessionStorage.removeItem("dp_founder_authenticated");
+    localStorage.removeItem("dp_founder_authenticated");
     localStorage.setItem("userLoggedIn", "true");
     localStorage.setItem("currentUserFullName", fullName || "");
     localStorage.setItem("currentUsername", username);
@@ -11364,12 +11370,11 @@ async function handleAuthLogin(e) {
 
     // 3. Login Successful: Authoritative session & UI state hydration
     const cleanId = identifier.toLowerCase();
-    const isAdminUser = (
+    const isAdminUser = Boolean(
       (loggedInUser.email && loggedInUser.email.toLowerCase() === 'admin@deeppredictbet.com') ||
       (loggedInUser.email && loggedInUser.email.toLowerCase() === 'egeruennamdi@gmail.com') ||
       (loggedInUser.username && loggedInUser.username.toLowerCase() === 'egeruennamdi78') ||
-      (loggedInUser.username && loggedInUser.username.toLowerCase() === 'egeruennamdi') ||
-      (loggedInUser.role && loggedInUser.role.toUpperCase() === 'ADMIN')
+      (loggedInUser.username && loggedInUser.username.toLowerCase() === 'egeruennamdi')
     );
 
     try {
@@ -11377,7 +11382,7 @@ async function handleAuthLogin(e) {
       localStorage.setItem("currentUserFullName", (loggedInUser && (loggedInUser.fullName || loggedInUser.name)) || "");
       localStorage.setItem("currentUsername", (loggedInUser && loggedInUser.username) || (loggedInUser && loggedInUser.fullName) || identifier);
       localStorage.setItem("currentUserEmail", (loggedInUser && loggedInUser.email) || identifier);
-      localStorage.setItem("user_role", isAdminUser ? "ADMIN" : (loggedInUser.role || "USER"));
+      localStorage.setItem("user_role", isAdminUser ? "ADMIN" : (loggedInUser.role && String(loggedInUser.role).toUpperCase() !== "ADMIN" ? loggedInUser.role : "USER"));
       if (loggedInUser && loggedInUser.sessionExpiresAt) {
         localStorage.setItem("dp_session_expires_at", String(loggedInUser.sessionExpiresAt));
       } else {
@@ -11389,6 +11394,9 @@ async function handleAuthLogin(e) {
       }
       if (isAdminUser) {
         sessionStorage.setItem("dp_founder_authenticated", "true");
+      } else {
+        sessionStorage.removeItem("dp_founder_authenticated");
+        localStorage.removeItem("dp_founder_authenticated");
       }
     } catch(err) {}
 
@@ -11501,11 +11509,19 @@ function updateAuthUIState() {
     profileAvatarInitial.textContent = isLoggedIn ? displayName.charAt(0).toUpperCase() : "👤"; profileAvatarInitial.innerText = isLoggedIn ? displayName.charAt(0).toUpperCase() : "👤";
   }
 
-  // Authoritative RBAC check for User Account Hub: Show Founder Console ONLY for ADMIN
+  // Authoritative RBAC check for User Account Hub & Admin Triggers: Show ONLY for ADMIN
+  const isUserAdmin = typeof isAdmin === 'function' ? isAdmin() : (typeof window.isAdmin === 'function' ? window.isAdmin() : false);
   const founderBtn = document.getElementById("prof-founder-console-btn");
   if (founderBtn) {
-    const isUserAdmin = typeof isAdmin === 'function' ? isAdmin() : (typeof window.isAdmin === 'function' ? window.isAdmin() : false);
     founderBtn.style.display = isUserAdmin ? "flex" : "none";
+  }
+  const genTgBtn = document.getElementById("generator-send-telegram-btn");
+  if (genTgBtn) {
+    genTgBtn.style.display = isUserAdmin ? "inline-flex" : "none";
+  }
+  const docTgBtn = document.getElementById("doctor-send-telegram-btn");
+  if (docTgBtn) {
+    docTgBtn.style.display = isUserAdmin ? "inline-flex" : "none";
   }
 
   const mobileAuthText = document.getElementById("mobile-drawer-auth-text");

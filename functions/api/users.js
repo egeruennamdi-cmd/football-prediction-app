@@ -45,18 +45,34 @@ function corsHeaders() {
   };
 }
 
-function checkIsAdmin(context) {
+function checkIsAdmin(context, membersList = null) {
   try {
     const url = new URL(context.request.url);
     const authHeader = context.request.headers.get('Authorization') || '';
+    const xAdminKey = context.request.headers.get('X-Admin-Key') || '';
     const adminKeyParam = url.searchParams.get('adminKey') || '';
     const adminSecret = (context.env && context.env.ADMIN_SECRET_KEY) || DEFAULT_ADMIN_KEY;
+    const bearerToken = authHeader.startsWith('Bearer ') ? authHeader.slice(7).trim() : authHeader.trim();
 
-    return authHeader.includes(adminSecret) ||
-           authHeader.includes('deep_admin_78_key') ||
-           adminKeyParam === adminSecret ||
-           adminKeyParam === 'deep_admin_78_key' ||
-           authHeader.includes('admin@deeppredictbet.com');
+    if (
+      bearerToken === adminSecret ||
+      bearerToken === 'deep_admin_78_key' ||
+      xAdminKey === adminSecret ||
+      xAdminKey === 'deep_admin_78_key' ||
+      adminKeyParam === adminSecret ||
+      adminKeyParam === 'deep_admin_78_key'
+    ) {
+      return true;
+    }
+
+    if (bearerToken && bearerToken.startsWith('dp_sess_') && Array.isArray(membersList)) {
+      const matched = membersList.find(m => m && m.sessionId === bearerToken);
+      if (matched && String(matched.role || '').toUpperCase() === 'ADMIN') {
+        return true;
+      }
+    }
+
+    return false;
   } catch (e) {
     return false;
   }
@@ -82,12 +98,16 @@ async function getMembers(context) {
   const kvUrl = `https://api.cloudflare.com/client/v4/accounts/${accountId}/storage/kv/namespaces/${nsId}/values/members_list`;
 
   try {
-    const kvRes = await fetch(kvUrl, {
+    const fetchOpts = {
       headers: {
         'Authorization': `Bearer ${token}`,
         'Accept': 'application/json'
       }
-    });
+    };
+    if (typeof AbortSignal !== 'undefined' && typeof AbortSignal.timeout === 'function') {
+      fetchOpts.signal = AbortSignal.timeout(2500);
+    }
+    const kvRes = await fetch(kvUrl, fetchOpts);
     if (kvRes.ok) {
       const json = await kvRes.json();
       if (Array.isArray(json) && json.length > 0) return json;
@@ -135,9 +155,8 @@ export async function onRequestGet(context) {
   try {
     const url = new URL(context.request.url);
     const selfEmail = (url.searchParams.get('email') || url.searchParams.get('selfEmail') || '').trim().toLowerCase();
-    const isAdmin = checkIsAdmin(context);
-
     const members = await getMembers(context);
+    const isAdmin = checkIsAdmin(context, members);
 
     // Tenancy Filter: If selfEmail is provided, return ONLY that specific user
     if (selfEmail) {
@@ -221,7 +240,6 @@ export async function onRequestPost(context) {
     const cleanEmail = (body.email || '').trim().toLowerCase();
     const cleanUser = (body.username || '').trim();
     const cleanName = (body.fullName || '').trim() || cleanUser || 'DeepPredict Member';
-    const isAdmin = checkIsAdmin(context);
 
     if (!cleanEmail) {
       return new Response(JSON.stringify({ success: false, error: 'Email is required' }), {
@@ -231,6 +249,7 @@ export async function onRequestPost(context) {
     }
 
     const members = await getMembers(context);
+    const isAdmin = checkIsAdmin(context, members);
 
     const existingIndex = members.findIndex(m =>
       (m.email || '').toLowerCase() === cleanEmail ||

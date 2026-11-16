@@ -456,6 +456,41 @@
     return { path: '/', config: ROUTE_CONFIGS['/'] };
   }
 
+  const ADMIN_RESTRICTED_PATHS = [
+    '/admin',
+    '/admin/analytics',
+    '/founder-analytics',
+    '/social',
+    '/social-publisher',
+    '/telegram-publisher',
+    '/social-command-center'
+  ];
+
+  function isAdminRestrictedPath(p) {
+    if (!p || typeof p !== 'string') return false;
+    const clean = p.split('?')[0].split('#')[0].trim().toLowerCase();
+    return ADMIN_RESTRICTED_PATHS.includes(clean) || clean.startsWith('/admin/');
+  }
+
+  function checkVerifiedAdminSession() {
+    if (typeof window.isAdmin === 'function') {
+      return window.isAdmin();
+    }
+    if (typeof localStorage === 'undefined' || localStorage.getItem('userLoggedIn') !== 'true') {
+      return false;
+    }
+    const role = (localStorage.getItem('user_role') || '').trim().toUpperCase();
+    if (role !== 'ADMIN') return false;
+    const email = (localStorage.getItem('currentUserEmail') || '').trim().toLowerCase();
+    const username = (localStorage.getItem('currentUsername') || '').trim().toLowerCase();
+    return (
+      email === 'admin@deeppredictbet.com' ||
+      email === 'egeruennamdi@gmail.com' ||
+      username === 'egeruennamdi78' ||
+      username === 'egeruennamdi'
+    );
+  }
+
   // 5. Main Route Navigation Renderer
   function handleRouteNavigation(options = {}) {
     // Check if there is an old hash that needs to be upgraded to a clean route
@@ -490,6 +525,23 @@
     // 2. UNAUTHENTICATED VISITORS:
     // https://deeppredictbet.com/ ALWAYS opens the DeepPredictBet authentication page first.
     if (!isLoggedIn) {
+      // Never expose admin routes or save admin redirect targets for unauthenticated visitors
+      if (isAdminRestrictedPath(path) || isAdminRestrictedPath(currentPath)) {
+        try {
+          sessionStorage.removeItem('auth_redirect_target');
+          sessionStorage.removeItem('dp_founder_authenticated');
+          localStorage.removeItem('dp_founder_authenticated');
+        } catch (e) {}
+        const founderEl = document.getElementById('view-founder-analytics');
+        if (founderEl) {
+          founderEl.innerHTML = '';
+          founderEl.style.display = 'none';
+          founderEl.classList.remove('active');
+        }
+        window.history.replaceState(null, '', '/');
+        return handleRouteNavigation();
+      }
+
       if (path === '/' || path === '/login') {
         if (typeof document !== 'undefined') {
           document.body.classList.add('auth-view-active');
@@ -510,12 +562,16 @@
 
         document.title = 'DeepPredictBet — AI-Powered Football Predictions';
 
-        // Check for pending redirect notice
+        // Check for pending redirect notice (never show internal admin routes)
         const noticeEl = document.getElementById('auth-entry-notice');
         const pendingTarget = typeof sessionStorage !== 'undefined' ? sessionStorage.getItem('auth_redirect_target') : null;
+        if (pendingTarget && isAdminRestrictedPath(pendingTarget)) {
+          try { sessionStorage.removeItem('auth_redirect_target'); } catch (e) {}
+        }
+        const safePendingTarget = typeof sessionStorage !== 'undefined' ? sessionStorage.getItem('auth_redirect_target') : null;
         if (noticeEl) {
-          if (pendingTarget && pendingTarget !== '/' && pendingTarget !== '/login') {
-            const cleanName = pendingTarget.replace(/^\//, '').replace(/-/g, ' ').toUpperCase();
+          if (safePendingTarget && safePendingTarget !== '/' && safePendingTarget !== '/login' && !isAdminRestrictedPath(safePendingTarget)) {
+            const cleanName = safePendingTarget.replace(/^\//, '').replace(/-/g, ' ').toUpperCase();
             noticeEl.textContent = `🔒 Please sign in to access ${cleanName}`;
             noticeEl.style.display = 'block';
           } else {
@@ -531,10 +587,12 @@
 
         return;
       } else if (!PUBLIC_ROUTES.includes(path)) {
-        // Protected Route Interception: Safely preserve original destination
+        // Protected Route Interception: Safely preserve original destination (except internal admin routes)
         try {
-          const fullDest = window.location.pathname + window.location.search + window.location.hash;
-          sessionStorage.setItem('auth_redirect_target', fullDest);
+          if (!isAdminRestrictedPath(path)) {
+            const fullDest = window.location.pathname + window.location.search + window.location.hash;
+            sessionStorage.setItem('auth_redirect_target', fullDest);
+          }
         } catch (e) {}
 
         window.history.replaceState(null, '', '/login');
@@ -546,26 +604,38 @@
         document.body.classList.remove('auth-view-active');
       }
 
+      const isUserAdmin = checkVerifiedAdminSession();
+      if (!isUserAdmin) {
+        try {
+          sessionStorage.removeItem('dp_founder_authenticated');
+          localStorage.removeItem('dp_founder_authenticated');
+        } catch (e) {}
+      }
+
       // If authenticated user visits '/login', restore preserved target or redirect to designated dashboard
       if (path === '/login') {
         const preservedTarget = typeof sessionStorage !== 'undefined' ? sessionStorage.getItem('auth_redirect_target') : null;
         if (preservedTarget && preservedTarget !== '/' && preservedTarget !== '/login' && preservedTarget !== '/command-center') {
           sessionStorage.removeItem('auth_redirect_target');
-          window.history.replaceState(null, '', preservedTarget);
-          return handleRouteNavigation();
+          if (!isAdminRestrictedPath(preservedTarget) || isUserAdmin) {
+            window.history.replaceState(null, '', preservedTarget);
+            return handleRouteNavigation();
+          }
         }
 
-        const isUserAdmin = typeof window.isAdmin === 'function' ? window.isAdmin() : false;
-        const targetDashboard = isUserAdmin ? '/admin' : '/dashboard';
-        window.history.replaceState(null, '', targetDashboard);
+        window.history.replaceState(null, '', '/dashboard');
         return handleRouteNavigation();
       }
 
-      // RBAC check: non-admins cannot access /admin
-      if (path === '/admin' || path === '/admin/analytics' || path === '/founder-analytics') {
-        const isUserAdmin = typeof window.isAdmin === 'function' ? window.isAdmin() : false;
-        const isFounderAuth = typeof localStorage !== 'undefined' && (localStorage.getItem('dp_founder_authenticated') === 'true' || sessionStorage.getItem('dp_founder_authenticated') === 'true');
-        if (!isUserAdmin && !isFounderAuth) {
+      // RBAC check: non-admins cannot access /admin or any admin route
+      if (isAdminRestrictedPath(path) || isAdminRestrictedPath(currentPath) || config.viewId === 'view-founder-analytics') {
+        if (!isUserAdmin) {
+          const founderEl = document.getElementById('view-founder-analytics');
+          if (founderEl) {
+            founderEl.innerHTML = '';
+            founderEl.style.display = 'none';
+            founderEl.classList.remove('active');
+          }
           window.history.replaceState(null, '', '/dashboard');
           return handleRouteNavigation();
         }
@@ -579,15 +649,16 @@
 
     const targetViewId = config.viewId || 'view-command-center';
 
-    // ROLE-BASED ACCESS CONTROL (RBAC) FOR FOUNDER / ADMIN CONSOLE
-    // If user is not yet signed in as admin, allow view-founder-analytics to mount so the
-    // Founder Passkey Auth Gate (renderFounderAuthGate) is displayed directly without disruptive redirects.
-    if (!options.skipAuthCheck && (targetViewId === 'view-founder-analytics' || path === '/admin' || path === '/admin/analytics' || path === '/founder-analytics')) {
-      const isFounderAuth = typeof localStorage !== 'undefined' && (localStorage.getItem('dp_founder_authenticated') === 'true' || sessionStorage.getItem('dp_founder_authenticated') === 'true');
-      const isUserAdmin = typeof window.isAdmin === 'function' ? window.isAdmin() : false;
-      if (!isUserAdmin && !isFounderAuth) {
-        console.info('[Router] Founder passkey verification gate active for /admin view.');
+    // Strict secondary RBAC guard on view-founder-analytics
+    if (targetViewId === 'view-founder-analytics' && !checkVerifiedAdminSession()) {
+      const founderEl = document.getElementById('view-founder-analytics');
+      if (founderEl) {
+        founderEl.innerHTML = '';
+        founderEl.style.display = 'none';
+        founderEl.classList.remove('active');
       }
+      window.history.replaceState(null, '', isLoggedIn ? '/dashboard' : '/');
+      return handleRouteNavigation();
     }
 
     // Hide all page-view containers

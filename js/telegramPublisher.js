@@ -6567,6 +6567,7 @@
   async function checkAndDispatchDueSchedules() {
     if (_isCheckingDueSchedules) return;
     if (!Array.isArray(state.schedules) || state.schedules.length === 0) return;
+    if (typeof window !== 'undefined' && typeof window.isAdmin === 'function' && !window.isAdmin()) return;
 
     _isCheckingDueSchedules = true;
     try {

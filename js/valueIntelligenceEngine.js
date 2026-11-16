@@ -893,6 +893,7 @@ https://deeppredictbet.pages.dev/value-bets`;
    * Send verified Value Opportunity directly to Telegram Publisher / Command Center
    */
   function sendToTelegramPublisher(opportunityId) {
+    if (typeof window === 'undefined' || typeof window.isAdmin !== 'function' || !window.isAdmin()) return;
     const opp = state.opportunities.find(o => o.opportunityId === opportunityId);
     if (!opp) {
       notify("Opportunity not found.", "warning");
@@ -901,10 +902,8 @@ https://deeppredictbet.pages.dev/value-bets`;
 
     if (typeof window !== 'undefined' && window.TelegramPublisher && typeof window.TelegramPublisher.importFromValueIntelligence === 'function') {
       window.TelegramPublisher.importFromValueIntelligence([opp]);
-      if (typeof window.switchTool === 'function') {
-        window.switchTool('telegram-publisher');
-      } else if (typeof window.navigateTo === 'function') {
-        window.navigateTo('/telegram-publisher');
+      if (typeof window.navigateTo === 'function') {
+        window.navigateTo('/admin#publisher');
       }
       notify(`📢 Sent ${opp.match} (${opp.selectionName}) to Telegram Command Center!`, "success");
     } else {
@@ -1435,9 +1434,11 @@ https://deeppredictbet.pages.dev/value-bets`;
                   <button type="button" onclick="ValueIntelligenceEngine.askAiScout('${opp.opportunityId}')" class="btn btn-secondary" style="font-size: 0.78rem; font-weight: 700; padding: 7px 12px; border-radius: 6px; cursor: pointer; display: inline-flex; align-items: center; gap: 5px; border: 1px solid rgba(255,255,255,0.12);">
                     <span>💬 Ask AI Scout</span>
                   </button>
+                  ${(typeof window !== 'undefined' && typeof window.isAdmin === 'function' && window.isAdmin()) ? `
                   <button type="button" onclick="ValueIntelligenceEngine.sendToTelegramPublisher('${opp.opportunityId}')" class="btn btn-secondary" style="font-size: 0.78rem; font-weight: 700; padding: 7px 12px; border-radius: 6px; cursor: pointer; display: inline-flex; align-items: center; gap: 5px; border: 1px solid rgba(56,189,248,0.35); background: rgba(56,189,248,0.12); color: #38bdf8;">
                     <span>📢 Send to Telegram</span>
                   </button>
+                  ` : ''}
                 </div>
 
                 <div style="display: flex; gap: 6px; align-items: center;">
