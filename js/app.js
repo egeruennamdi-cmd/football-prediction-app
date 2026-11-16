@@ -4473,8 +4473,11 @@ function submitPunterTip() {
   }, 1500);
 }
 
-// 4. Live In-Play Scanner Rules Creator
+// 4. Live In-Play & Market Intelligence Scanner Rules Creator
 function createScannerRule() {
+  if (typeof window !== 'undefined' && window.MatchMarketIntelligenceEngine && typeof window.MatchMarketIntelligenceEngine.addRule === 'function') {
+    return window.MatchMarketIntelligenceEngine.addRule();
+  }
   const param = document.getElementById("alert-param").value;
   const cond = document.getElementById("alert-cond").value;
   const val = parseFloat(document.getElementById("alert-val").value);
@@ -4502,12 +4505,19 @@ function createScannerRule() {
 }
 
 function removeScannerRule(ruleId) {
+  if (typeof window !== 'undefined' && window.MatchMarketIntelligenceEngine && typeof window.MatchMarketIntelligenceEngine.deleteRule === 'function') {
+    return window.MatchMarketIntelligenceEngine.deleteRule(ruleId);
+  }
   window.appState.liveRules = (window.appState.liveRules || []).filter(r => r.id !== ruleId);
   renderScannerRules();
   showAppNotification("Scanner rule deleted.");
 }
 
 function renderScannerRules() {
+  if (typeof window !== 'undefined' && window.MatchMarketIntelligenceEngine && typeof window.MatchMarketIntelligenceEngine.renderScannerWorkspace === 'function') {
+    window.MatchMarketIntelligenceEngine.renderScannerWorkspace();
+    return;
+  }
   const container = document.getElementById("active-alert-rules");
   if (!container) return;
 
@@ -4525,26 +4535,18 @@ function renderScannerRules() {
   `).join("");
 }
 
-// Background Live Scanner Alerts checker
+// Background Smart Alerts Evaluator (Deterministic with 15-minute cooldown deduplication)
 function startLiveAlertsScanner() {
   if (window.__dpLiveAlertsScannerStarted) return;
   window.__dpLiveAlertsScannerStarted = true;
 
   setInterval(() => {
     if (typeof document !== 'undefined' && document.hidden) return;
-    const rules = window.appState.liveRules || [];
-    if (rules.length === 0) return;
-
-    const activeLiveMatches = (typeof MATCH_DATA !== 'undefined' && Array.isArray(MATCH_DATA))
-      ? MATCH_DATA.filter(m => m.isLive)
-      : [];
-    if (activeLiveMatches.length === 0) return;
-
-    const randomMatch = activeLiveMatches[Math.floor(Math.random() * activeLiveMatches.length)];
-    const randomRule = rules[Math.floor(Math.random() * rules.length)];
-
-    showAppNotification(`🚨 IN-PLAY ALERT: ${randomMatch.homeTeam.name} vs ${randomMatch.awayTeam.name} matched rule [${randomRule.label}]`);
-  }, 12000);
+    if (typeof window !== 'undefined' && window.MatchMarketIntelligenceEngine && typeof window.MatchMarketIntelligenceEngine.evaluateRulesAgainstMatches === 'function') {
+      const enriched = window.MatchMarketIntelligenceEngine.getAllEnrichedMatches();
+      window.MatchMarketIntelligenceEngine.evaluateRulesAgainstMatches(enriched);
+    }
+  }, 15000);
 }
 
 // 5. Strategy Backtester SVG ROI Line Graph Chart

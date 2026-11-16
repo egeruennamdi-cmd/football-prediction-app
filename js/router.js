@@ -137,14 +137,50 @@
     '/live-scanner': {
       viewId: 'view-scanner',
       scannerMode: 'live',
-      title: 'Live Scanner — DeepPredict Real-Time In-Play Suite',
+      title: 'Live In-Play Intelligence — DeepPredict Match & Market Engine',
       navKey: 'live-scanner'
     },
     '/pre-match-scanner': {
       viewId: 'view-scanner',
       scannerMode: 'prematch',
-      title: 'Pre-Match Scanner — DeepPredict Odds & Trend Finder',
+      title: 'Pre-Match Intelligence — DeepPredict Match & Market Engine',
       navKey: 'pre-match-scanner'
+    },
+    '/scanner/overview': {
+      viewId: 'view-scanner',
+      scannerMode: 'overview',
+      title: 'Intelligence Overview — DeepPredict Match & Market Engine',
+      navKey: 'live-scanner'
+    },
+    '/scanner/odds-movement': {
+      viewId: 'view-scanner',
+      scannerMode: 'odds',
+      title: 'Odds Movement Intelligence — DeepPredict Match & Market Engine',
+      navKey: 'live-scanner'
+    },
+    '/scanner/value-opportunities': {
+      viewId: 'view-scanner',
+      scannerMode: 'value',
+      title: 'AI Value Opportunities — DeepPredict Match & Market Engine',
+      navKey: 'live-scanner'
+    },
+    '/scanner/match-analysis': {
+      viewId: 'view-scanner',
+      scannerMode: 'analysis',
+      title: 'Explainable AI Match Analysis — DeepPredict Match & Market Engine',
+      navKey: 'live-scanner'
+    },
+    '/scanner/alerts': {
+      viewId: 'view-scanner',
+      scannerMode: 'alerts',
+      title: 'Smart Alert Centre & Telegram Delivery — DeepPredict Match & Market Engine',
+      navKey: 'live-scanner'
+    },
+    '/scanner/performance': {
+      viewId: 'view-scanner',
+      scannerMode: 'history',
+      title: 'Historical Model Calibration & Performance — DeepPredict Match & Market Engine',
+      navKey: 'live-scanner'
     },
     '/scanner': {
       redirect: '/live-scanner'
@@ -802,6 +838,9 @@
     // Handle scanner mode if view-scanner is target
     if (targetViewId === 'view-scanner') {
       const mode = config.scannerMode || 'live';
+      if (window.MatchMarketIntelligenceEngine && typeof window.MatchMarketIntelligenceEngine.init === 'function') {
+        window.MatchMarketIntelligenceEngine.init(mode);
+      }
       if (typeof window.switchScannerMode === 'function') {
         const modeBtn = document.querySelector(`.tabs-container .tab-btn[onclick*="${mode}"]`);
         window.switchScannerMode(mode, modeBtn, true); // true = skip pushState loop

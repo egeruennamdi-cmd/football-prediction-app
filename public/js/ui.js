@@ -1480,35 +1480,48 @@ window.switchTool = function switchTool(toolId, btn, skipRouterPush) {
   // VIP Feature Access: Tools display inline status without modal popup obstruction
 }
 
-// Switch between Live In-Play and Pre-Match Odds scanner modes
+// Switch between Live In-Play, Pre-Match, and all 8 Match & Market Intelligence Engine sections
 function switchScannerMode(mode, btn, skipRouterPush) {
   const scannerRouteMap = {
+    'overview': '/scanner/overview',
     'live': '/live-scanner',
-    'prematch': '/pre-match-scanner'
+    'prematch': '/pre-match-scanner',
+    'odds': '/scanner/odds-movement',
+    'value': '/scanner/value-opportunities',
+    'analysis': '/scanner/match-analysis',
+    'alerts': '/scanner/alerts',
+    'history': '/scanner/performance'
   };
+  const cleanMode = scannerRouteMap[mode] ? mode : 'live';
   const isScannerViewActive = document.getElementById('view-scanner')?.classList.contains('active');
-  if (!skipRouterPush && isScannerViewActive && scannerRouteMap[mode] && window.location.pathname !== scannerRouteMap[mode]) {
-    window.history.pushState(null, '', scannerRouteMap[mode]);
+  if (!skipRouterPush && isScannerViewActive && scannerRouteMap[cleanMode] && window.location.pathname !== scannerRouteMap[cleanMode]) {
+    window.history.pushState(null, '', scannerRouteMap[cleanMode]);
     if (typeof updateNavActiveStates === 'function') {
-      updateNavActiveStates(scannerRouteMap[mode], 'scanner');
+      updateNavActiveStates(scannerRouteMap[cleanMode], 'scanner');
     }
   }
-  if (!btn) return;
-  // Update button active state
-  const parent = btn.parentElement;
-  if (parent) {
-    const buttons = parent.querySelectorAll(".tab-btn");
-    buttons.forEach(b => b.classList.remove("active"));
-  }
-  if (btn.classList) btn.classList.add("active");
 
-  // Get table header and container
+  if (btn) {
+    const parent = btn.parentElement;
+    if (parent) {
+      const buttons = parent.querySelectorAll(".tab-btn");
+      buttons.forEach(b => b.classList.remove("active"));
+    }
+    if (btn.classList) btn.classList.add("active");
+  }
+
+  // Delegate full 8-section workspace rendering to MatchMarketIntelligenceEngine when available
+  if (typeof window !== 'undefined' && window.MatchMarketIntelligenceEngine && typeof window.MatchMarketIntelligenceEngine.switchSection === 'function') {
+    window.MatchMarketIntelligenceEngine.switchSection(cleanMode, true);
+    return;
+  }
+
+  // Fallback legacy table header and container
   const header = document.getElementById("scanner-table-header");
   const container = document.getElementById("scanner-rows-container");
   if (!header || !container) return;
 
-  if (mode === 'live') {
-    // Set headers for live
+  if (cleanMode === 'live') {
     header.innerHTML = `
       <span>Match & Clock</span>
       <span>Live Stats Summary</span>
@@ -1517,7 +1530,6 @@ function switchScannerMode(mode, btn, skipRouterPush) {
     `;
     renderLiveScanner();
   } else {
-    // Set headers for pre-match
     header.innerHTML = `
       <span>Match & Kick-Off</span>
       <span>Pre-Match Criteria</span>
@@ -1530,6 +1542,11 @@ function switchScannerMode(mode, btn, skipRouterPush) {
 
 // Render Pre-match Dropping Odds Scanner
 function renderPrematchScanner() {
+  if (typeof window !== 'undefined' && window.MatchMarketIntelligenceEngine && typeof window.MatchMarketIntelligenceEngine.getAllEnrichedMatches === 'function') {
+    const upcoming = window.MatchMarketIntelligenceEngine.getAllEnrichedMatches().filter(m => !m.isLive && !m.isFinished);
+    window.MatchMarketIntelligenceEngine.renderLegacyPrematchRows(upcoming);
+    return;
+  }
   const container = document.getElementById("scanner-rows-container");
   if (!container) return;
   container.innerHTML = "";
@@ -1621,6 +1638,11 @@ function renderPrematchScanner() {
 
 // Render Live Match Scanner
 function renderLiveScanner() {
+  if (typeof window !== 'undefined' && window.MatchMarketIntelligenceEngine && typeof window.MatchMarketIntelligenceEngine.getAllEnrichedMatches === 'function') {
+    const liveMatches = window.MatchMarketIntelligenceEngine.getAllEnrichedMatches().filter(m => m.isLive);
+    window.MatchMarketIntelligenceEngine.renderLegacyLiveRows(liveMatches);
+    return;
+  }
   const container = document.getElementById("scanner-rows-container");
   if (!container) return;
   container.innerHTML = "";
