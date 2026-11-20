@@ -380,6 +380,14 @@ function selectCardExpandedTip(matchId, tipText, odds, categoryLabel, event) {
   if (typeof showAppNotification === 'function') {
     showAppNotification(`🎯 Tip Updated: ${tipText} (@${parsedOdds.toFixed(2)})`);
   }
+
+  // If this match is already in window.appState.betslip, synchronize it as a MANUAL selection
+  if (typeof window !== 'undefined' && window.appState && Array.isArray(window.appState.betslip)) {
+    const existingItem = window.appState.betslip.find(item => String(item.fixtureId || item.matchId || (item.match && item.match.id)) === sId);
+    if (existingItem && window.IntelligentMarketRotationEngine && typeof window.IntelligentMarketRotationEngine.setManualMarketForFixture === 'function') {
+      window.IntelligentMarketRotationEngine.setManualMarketForFixture(sId, null, tipText, parsedOdds);
+    }
+  }
 }
 window.selectCardExpandedTip = selectCardExpandedTip;
 
@@ -8326,6 +8334,24 @@ function generateMachineTicket(isUserAction = true) {
       }
     }
     
+    // 0.5 Delegate to AI-Powered Intelligent Market Rotation Engine when available
+    if (typeof window !== 'undefined' && window.IntelligentMarketRotationEngine && typeof window.IntelligentMarketRotationEngine.rotateMarkets === 'function') {
+      const rotRes = window.IntelligentMarketRotationEngine.rotateMarkets({
+        preserveFixtures: false,
+        isUserAction
+      });
+      if (!rotRes || rotRes.validationError) return rotRes;
+
+      const drawer = document.getElementById("floating-betslip-drawer");
+      if (drawer) drawer.classList.add("open");
+
+      if (isUserAction && typeof window !== 'undefined' && window.Entitlements) {
+        window.Entitlements.recordFeatureUsage('generator');
+        window.Entitlements.renderUsageBadge('generator', 'machine-usage-badge');
+      }
+      return rotRes;
+    }
+
     // 1. Resolve dataset robustly: strictly future upcoming matches only
     const futurePool = (typeof getStrictlyFutureMatchesPool === 'function')
       ? getStrictlyFutureMatchesPool()

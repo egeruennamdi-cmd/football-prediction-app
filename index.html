@@ -5353,32 +5353,49 @@
                 </div>
               </div>
 
-              <!-- Match Count select -->
-              <div class="form-group" style="margin-top: 12px; display: flex; flex-direction: column; gap: 6px; width: 100%; min-width: 0; box-sizing: border-box;">
-                <label for="machine-match-count"
-                  style="font-size: 0.85rem; font-weight: 600; color: var(--text-secondary);">Number of Matches</label>
-                <select id="machine-match-count"
-                  style="width: 100%; max-width: 100%; box-sizing: border-box; background: var(--bg-dark-accent); border: 1px solid var(--border-color); border-radius: var(--radius-sm); padding: 8px 12px; color: var(--text-primary); outline: none; cursor: pointer;">
-                  <option value="3">3 matches</option>
-                  <option value="4" selected>4 matches</option>
-                  <option value="5">5 matches</option>
-                  <option value="6">6 matches</option>
-                  <option value="8">8 matches</option>
-                  <option value="10">10 matches</option>
-                  <option value="15">15 matches</option>
-                  <option value="20">20 matches</option>
-                  <option value="25">25 matches</option>
-                  <option value="30">30 matches</option>
-                  <option value="35">35 matches</option>
-                  <option value="40">40 matches</option>
-                </select>
+              <!-- Flexible Fixture Quantity Input (No Hardcoded 10/20/30/40 Restriction) -->
+              <div class="form-group" style="margin-top: 12px; display: flex; flex-direction: column; gap: 8px; width: 100%; min-width: 0; box-sizing: border-box;">
+                <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 6px;">
+                  <label for="machine-match-count"
+                    style="font-size: 0.85rem; font-weight: 700; color: var(--text-secondary); margin: 0;">
+                    Fixture Quantity (Any Positive Whole Number)
+                  </label>
+                  <span style="font-size: 0.68rem; color: #38bdf8; font-weight: 700;">1 &ndash; 100 Eligible Fixtures &bull; 100% Unique Markets</span>
+                </div>
+                <div style="display: flex; gap: 8px; align-items: center;">
+                  <input type="number" id="machine-match-count" min="1" max="100" step="1" value="5"
+                    placeholder="Enter fixture quantity (e.g. 5, 7, 15, 25, 50, 75, 100)"
+                    style="flex: 1; min-width: 0; box-sizing: border-box; background: var(--bg-dark-accent); border: 1px solid rgba(59, 130, 246, 0.45); border-radius: var(--radius-sm); padding: 10px 12px; color: #ffffff; font-size: 0.92rem; font-weight: 800; font-family: var(--font-display); outline: none;">
+                </div>
+                <!-- Quick Quantity Chips (Examples including non-multiples of 10) -->
+                <div style="display: flex; gap: 5px; flex-wrap: wrap; align-items: center;">
+                  <span style="font-size: 0.66rem; color: var(--text-muted); font-weight: 600;">Quick Set:</span>
+                  <button type="button" onclick="if(window.IntelligentMarketRotationEngine)window.IntelligentMarketRotationEngine.setFixtureQuantityInput(5);" style="background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.12); color: #cbd5e1; font-size: 0.66rem; font-weight: 700; padding: 3px 8px; border-radius: 6px; cursor: pointer;">5</button>
+                  <button type="button" onclick="if(window.IntelligentMarketRotationEngine)window.IntelligentMarketRotationEngine.setFixtureQuantityInput(7);" style="background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.12); color: #cbd5e1; font-size: 0.66rem; font-weight: 700; padding: 3px 8px; border-radius: 6px; cursor: pointer;">7</button>
+                  <button type="button" onclick="if(window.IntelligentMarketRotationEngine)window.IntelligentMarketRotationEngine.setFixtureQuantityInput(15);" style="background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.12); color: #cbd5e1; font-size: 0.66rem; font-weight: 700; padding: 3px 8px; border-radius: 6px; cursor: pointer;">15</button>
+                  <button type="button" onclick="if(window.IntelligentMarketRotationEngine)window.IntelligentMarketRotationEngine.setFixtureQuantityInput(25);" style="background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.12); color: #cbd5e1; font-size: 0.66rem; font-weight: 700; padding: 3px 8px; border-radius: 6px; cursor: pointer;">25</button>
+                  <button type="button" onclick="if(window.IntelligentMarketRotationEngine)window.IntelligentMarketRotationEngine.setFixtureQuantityInput(50);" style="background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.12); color: #cbd5e1; font-size: 0.66rem; font-weight: 700; padding: 3px 8px; border-radius: 6px; cursor: pointer;">50</button>
+                  <button type="button" onclick="if(window.IntelligentMarketRotationEngine)window.IntelligentMarketRotationEngine.setFixtureQuantityInput(75);" style="background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.12); color: #cbd5e1; font-size: 0.66rem; font-weight: 700; padding: 3px 8px; border-radius: 6px; cursor: pointer;">75</button>
+                  <button type="button" onclick="if(window.IntelligentMarketRotationEngine)window.IntelligentMarketRotationEngine.setFixtureQuantityInput(100);" style="background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.12); color: #cbd5e1; font-size: 0.66rem; font-weight: 700; padding: 3px 8px; border-radius: 6px; cursor: pointer;">100</button>
+                </div>
+                <label style="display: inline-flex; align-items: center; gap: 6px; font-size: 0.7rem; color: #94a3b8; cursor: pointer; margin-top: 2px;">
+                  <input type="checkbox" id="imre-strict-checkbox-filter" style="accent-color: #3b82f6; cursor: pointer;">
+                  <span>Restrict rotation strictly to checked market boxes above (reports shortage if fewer than fixture count)</span>
+                </label>
               </div>
 
-              <button type="button" class="btn btn-primary" id="btn-generate-machine-ticket"
-                onclick="generateMachineTicket()"
-                style="margin-top: 16px; width: 100%; max-width: 100%; box-sizing: border-box; touch-action: manipulation; cursor: pointer; position: relative; z-index: 10;">
-                ⚡ Generate Bet Slip
-              </button>
+              <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 10px; margin-top: 16px; width: 100%;">
+                <button type="button" class="btn btn-primary" id="btn-generate-machine-ticket"
+                  onclick="generateMachineTicket()"
+                  style="width: 100%; box-sizing: border-box; touch-action: manipulation; cursor: pointer; position: relative; z-index: 10; font-weight: 800;">
+                  ⚡ Generate Bet Slip
+                </button>
+                <button type="button" class="btn btn-primary" id="btn-ai-market-rotation"
+                  onclick="if(typeof window.triggerAiMarketRotation==='function'){window.triggerAiMarketRotation();}else if(window.IntelligentMarketRotationEngine){window.IntelligentMarketRotationEngine.rotateMarkets();}"
+                  style="width: 100%; box-sizing: border-box; touch-action: manipulation; cursor: pointer; position: relative; z-index: 10; font-weight: 900; background: linear-gradient(135deg, #10b981 0%, #0284c7 100%); border: 1px solid #38bdf8; box-shadow: 0 4px 16px rgba(16, 185, 129, 0.35); letter-spacing: 0.4px;">
+                  🔄 AI MARKET ROTATION
+                </button>
+              </div>
 
               <!-- Mobile Quick Ticket Summary Card (Pops right under button on mobile) -->
               <div id="mobile-ticket-quick-card"
@@ -5422,8 +5439,12 @@
                 <div class="machine-ticket-header">
                   <h4 style="font-family: var(--font-display); font-size: 1.1rem; color: var(--text-primary);">
                     DEEPPREDICT MACHINE TICKET</h4>
-                  <span style="font-size: 0.7rem; color: var(--text-muted);">Simulated Ledger Slip</span>
+                  <span style="font-size: 0.7rem; color: var(--text-muted);">AI Intelligent Market Rotation Ledger</span>
                 </div>
+
+                <!-- Rotation Status & Shortage Warning Banners -->
+                <div id="imre-rotation-status-banner" style="display: none; padding: 8px 12px; background: rgba(15, 23, 42, 0.85); border-bottom: 1px solid rgba(56, 189, 248, 0.25);"></div>
+                <div id="imre-shortage-warning-banner" style="display: none; padding: 10px 12px; background: rgba(245, 158, 11, 0.14); border-bottom: 1px solid rgba(245, 158, 11, 0.4); font-size: 0.74rem;"></div>
 
                 <!-- Ticket Rows -->
                 <div class="machine-ticket-body" id="ticket-body-container">
@@ -9903,7 +9924,8 @@
   <script defer src="/js/featureRegistry.js?v=20261113_settled_v1"></script>
   <script defer src="/js/predictionLedger.js?v=20261113_settled_v1"></script>
   <script defer src="/js/matchMarketIntelligenceEngine.js?v=20261116_mmie_v1"></script>
-  <script defer src="/js/ui.js?v=20261116_mmie_v1"></script>
+  <script defer src="/js/intelligentMarketRotationEngine.js?v=20261120_imre_v1"></script>
+  <script defer src="/js/ui.js?v=20261120_imre_v1"></script>
   <script defer src="/js/pages.js?v=20261113_crest_fix_v1"></script>
   <script defer src="/js/authEntry.js?v=20261116_public_ux_v1"></script>
   <script defer src="/js/router.js?v=20261116_mmie_v1"></script>
@@ -9911,7 +9933,7 @@
   <script defer src="/js/telegramPublisher.js?v=20261116_public_ux_v1"></script>
   <script defer src="/js/dashboard.js?v=20261116_public_ux_v1"></script>
   <script defer src="/js/fanArenaEngine.js?v=20261111_fan_v4"></script>
-  <script defer src="/js/app.js?v=20261116_mmie_v1"></script>
+  <script defer src="/js/app.js?v=20261120_imre_v1"></script>
   <script defer src="/js/liveFixtures.js?v=20261113_settled_v1"></script>
   <script>
     // Clean global helper bindings

@@ -420,9 +420,17 @@ function addMatchCardToBetslip(matchId, e) {
   });
 
   if (existingIdx !== -1) {
+    const canonMeta = (typeof window !== 'undefined' && window.IntelligentMarketRotationEngine && typeof window.IntelligentMarketRotationEngine.resolveCanonicalMarketMeta === 'function')
+      ? window.IntelligentMarketRotationEngine.resolveCanonicalMarketMeta(tip)
+      : { canonicalMarketId: 'MKT_MANUAL', marketName: tip };
     window.appState.betslip[existingIdx].tip = tip;
+    window.appState.betslip[existingIdx].selectedOutcome = tip;
+    window.appState.betslip[existingIdx].marketId = canonMeta.canonicalMarketId;
+    window.appState.betslip[existingIdx].marketName = canonMeta.marketName;
     window.appState.betslip[existingIdx].odds = odds;
     window.appState.betslip[existingIdx].match = match;
+    window.appState.betslip[existingIdx].selectionOrigin = 'MANUAL';
+    window.appState.betslip[existingIdx].locked = true;
 
     if (typeof renderBetslip === 'function') renderBetslip();
     if (drawer && !drawer.classList.contains("open")) drawer.classList.add("open");
@@ -442,19 +450,33 @@ function addMatchCardToBetslip(matchId, e) {
     return;
   }
 
-  // 3. Betslip Capacity Management (Max 50 selections)
-  // If at capacity (50), displace the oldest pick so the user's explicit action always adds the desired match!
+  // 3. Betslip Capacity Management (Max 100 selections)
   let displacedPick = null;
-  if (window.appState.betslip.length >= 50) {
+  if (window.appState.betslip.length >= 100) {
     displacedPick = window.appState.betslip.shift();
   }
 
-  // 4. Push new selection
+  // 4. Push new manual selection with canonical market ID & MANUAL origin protection
+  const manualCanonMeta = (typeof window !== 'undefined' && window.IntelligentMarketRotationEngine && typeof window.IntelligentMarketRotationEngine.resolveCanonicalMarketMeta === 'function')
+    ? window.IntelligentMarketRotationEngine.resolveCanonicalMarketMeta(tip)
+    : { canonicalMarketId: 'MKT_MANUAL', marketName: tip };
   window.appState.betslip.push({
+    fixtureId: String(match.id),
     matchId: String(match.id),
+    homeTeam: homeName,
+    awayTeam: awayName,
+    competition: match.league || '',
+    league: match.league || '',
+    kickoffTime: match.time || '',
+    time: match.time || '',
+    marketId: manualCanonMeta.canonicalMarketId,
+    marketName: manualCanonMeta.marketName,
+    selectedOutcome: tip,
     match: match,
     tip: tip,
-    odds: odds
+    odds: odds,
+    selectionOrigin: 'MANUAL',
+    locked: true
   });
 
   // 5. Render betslip
@@ -1284,7 +1306,7 @@ function renderBetslip() {
     if (emptyState) emptyState.style.display = "none";
     if (itemsContainer) {
       itemsContainer.style.display = "flex";
-      itemsContainer.innerHTML = "";
+      let allRowsHtml = "";
       
       betslipList.forEach((item, index) => {
         let rawOdds = (typeof item.odds !== 'undefined' && item.odds !== null) ? item.odds : (item.price || item.odd);
@@ -1301,7 +1323,12 @@ function renderBetslip() {
         if (timeStr && (timeStr.includes('FT') || timeStr.includes('Yesterday') || timeStr.includes('Days Ago') || timeStr.includes('Weeks Ago'))) {
           timeStr = '20th, September 2026, 16:30';
         }
-        const tipVal = item.tip || item.market || '1X';
+        const tipVal = item.selectedOutcome || item.tip || item.market || '1X';
+        const isManualOrigin = String(item.selectionOrigin || '').toUpperCase() === 'MANUAL' || item.locked === true;
+        const originBadgeHtml = isManualOrigin
+          ? `<span style="background: rgba(245,158,11,0.18); border: 1px solid #f59e0b; color: #fbbf24; font-size: 0.58rem; font-weight: 800; padding: 1px 5px; border-radius: 8px;">🔒 MANUAL</span>`
+          : `<span style="background: rgba(56,189,248,0.15); border: 1px solid rgba(56,189,248,0.4); color: #38bdf8; font-size: 0.58rem; font-weight: 800; padding: 1px 5px; border-radius: 8px;">🤖 AUTO</span>`;
+        const itemFid = String(item.fixtureId || item.matchId || (item.match && item.match.id) || index).replace(/'/g, "\\'");
 
         const isClasicoPair = (homeName.toLowerCase().includes('real madrid') && awayName.toLowerCase().includes('barcelona')) || (homeName.toLowerCase().includes('barcelona') && awayName.toLowerCase().includes('real madrid'));
         if (isClasicoPair && (timeStr.includes('October 2026') || timeStr.includes('26th') || timeStr.includes('25th'))) {
@@ -1310,27 +1337,30 @@ function renderBetslip() {
           timeStr = '25th, October 2026, 21:00';
         }
 
-        const row = document.createElement("div");
-        row.className = "betslip-item";
-        row.innerHTML = `
-          <div style="display: flex; flex-direction: column; gap: 2px; flex: 1; padding-right: 8px; pointer-events: none;">
-            <div style="font-weight: 700; color: var(--text-primary); font-size: 0.76rem; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">
-              ${homeName} vs ${awayName}
+        allRowsHtml += `
+          <div class="betslip-item" data-fixture-id="${item.fixtureId || item.matchId || ''}" data-market-id="${item.marketId || ''}" data-origin="${isManualOrigin ? 'MANUAL' : 'AUTOMATIC'}">
+            <div style="display: flex; flex-direction: column; gap: 2px; flex: 1; padding-right: 8px; pointer-events: none;">
+              <div style="font-weight: 700; color: var(--text-primary); font-size: 0.76rem; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; display: flex; align-items: center; gap: 6px;">
+                <span>${homeName} vs ${awayName}</span>
+                ${originBadgeHtml}
+              </div>
+              <div style="font-size: 0.68rem; color: var(--text-secondary); display: flex; align-items: center; gap: 4px; flex-wrap: wrap;">
+                ${leagueName ? `<span style="color: #60a5fa; font-weight: 600;">${leagueName} •</span>` : ''}
+                <span style="color: ${isLive ? '#ef4444' : '#fbbf24'}; font-weight: 700;">${isLive ? '🔴' : '📅'} ${timeStr}</span>
+                <span>•</span>
+                <span>Tip: <b style="color: var(--accent-gold);">${tipVal}</b></span>
+                ${item.modelProbability ? `<span style="color: #34d399; font-weight: 700;">(${item.modelProbability}% Prob${item.expectedValue > 0 ? ', +' + Number(item.expectedValue).toFixed(1) + '% EV' : ''})</span>` : ''}
+              </div>
             </div>
-            <div style="font-size: 0.68rem; color: var(--text-secondary); display: flex; align-items: center; gap: 4px; flex-wrap: wrap;">
-              ${leagueName ? `<span style="color: #60a5fa; font-weight: 600;">${leagueName} •</span>` : ''}
-              <span style="color: ${isLive ? '#ef4444' : '#fbbf24'}; font-weight: 700;">${isLive ? '🔴' : '📅'} ${timeStr}</span>
-              <span>•</span>
-              <span>Tip: <b style="color: var(--accent-gold);">${tipVal}</b></span>
+            <div style="display: flex; align-items: center; gap: 6px;">
+              <button type="button" onclick="if(window.IntelligentMarketRotationEngine){window.IntelligentMarketRotationEngine.toggleManualLock('${itemFid}');}" title="${isManualOrigin ? 'Unlock manual selection for AI rotation' : 'Lock selection as MANUAL'}" style="background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.14); color: ${isManualOrigin ? '#fbbf24' : '#94a3b8'}; font-size: 0.62rem; padding: 2px 5px; border-radius: 4px; cursor: pointer;">${isManualOrigin ? '🔓' : '🔒'}</button>
+              <span style="font-weight: 700; color: var(--text-primary); font-size: 0.8rem; pointer-events: none;">${itemOddsDisplay}</span>
+              <button type="button" class="betslip-item-remove" data-index="${index}" onclick="removeBetslipItem(${index}, event)" aria-label="Remove match" title="Remove selection">&times;</button>
             </div>
-          </div>
-          <div style="display: flex; align-items: center; gap: 10px;">
-            <span style="font-weight: 700; color: var(--text-primary); font-size: 0.8rem; pointer-events: none;">${itemOddsDisplay}</span>
-            <button type="button" class="betslip-item-remove" data-index="${index}" onclick="removeBetslipItem(${index}, event)" aria-label="Remove match" title="Remove selection">&times;</button>
           </div>
         `;
-        itemsContainer.appendChild(row);
       });
+      itemsContainer.innerHTML = allRowsHtml;
 
       const oddsCalc = calculateBetslipTotalOdds(betslipList);
       if (totalOddsVal) {
@@ -8068,8 +8098,23 @@ function evaluateDoctorSelection(selection, isOptimized) {
       marketName = 'Double Chance';
     }
 
-    // Authoritative odds verification: query match market pool
-    if (match) {
+    // Authoritative odds & market uniqueness verification: query IntelligentMarketRotationEngine first
+    if (typeof window !== 'undefined' && window.IntelligentMarketRotationEngine && typeof window.IntelligentMarketRotationEngine.findUniqueDoctorPrescriptionMarket === 'function') {
+      try {
+        const uniquePresc = window.IntelligentMarketRotationEngine.findUniqueDoctorPrescriptionMarket(
+          { ...selection, matchId, fixtureId, prediction: tip, probability, match },
+          (window.appState && Array.isArray(window.appState.betslip)) ? window.appState.betslip : []
+        );
+        if (uniquePresc) {
+          altTip = uniquePresc.prescribedSelectionId;
+          altOdds = uniquePresc.prescribedOdds;
+          delta = uniquePresc.deltaWinRate;
+          rationale = uniquePresc.reason;
+          marketId = uniquePresc.canonicalMarketId;
+          marketName = uniquePresc.prescribedMarket;
+        }
+      } catch (e) {}
+    } else if (match) {
       try {
         const pool = typeof getMatchMarketPool === 'function' ? getMatchMarketPool(match) : [];
         if (pool && pool.length > 0) {
@@ -8088,7 +8133,7 @@ function evaluateDoctorSelection(selection, isOptimized) {
       matchId: matchId,
       marketId: marketId,
       originalSelectionId: tip,
-      originalMarket: tip.includes('Over') ? 'Total Goals' : '1X2 Match Winner',
+      originalMarket: selection.marketName || (tip.includes('Over') ? 'Total Goals' : '1X2 Match Winner'),
       originalOdds: odds,
       prescribedSelectionId: altTip,
       prescribedMarket: marketName,
@@ -8098,7 +8143,8 @@ function evaluateDoctorSelection(selection, isOptimized) {
       reason: rationale,
       rationale: rationale,
       deltaWinRate: delta,
-      prescriptionType: 'replace'
+      prescriptionType: 'replace',
+      selectionOrigin: selection.selectionOrigin || 'AUTOMATIC'
     };
   }
 
@@ -8449,7 +8495,7 @@ function runBetDoctorAudit(showScanAnim = true, explicitSource = null) {
       const tip = item.tip || 'Match Tip';
       const league = match.league || item.league || 'League Match';
       const matchId = String(item.matchId || item.id || (match && match.id) || `doc-${hName}-${aName}`);
-      const fixtureId = `${String(hName).toLowerCase().trim()}-${String(aName).toLowerCase().trim()}`;
+      const fixtureId = item.fixtureId || `${String(hName).toLowerCase().trim()}-${String(aName).toLowerCase().trim()}`;
       return evaluateDoctorSelection({
         matchId: matchId,
         fixtureId: fixtureId,
@@ -8460,6 +8506,11 @@ function runBetDoctorAudit(showScanAnim = true, explicitSource = null) {
         prediction: tip,
         odds: odds,
         match: match,
+        marketId: item.marketId,
+        marketName: item.marketName,
+        selectionOrigin: item.selectionOrigin || (item.locked ? 'MANUAL' : 'AUTOMATIC'),
+        modelProbability: item.modelProbability,
+        expectedValue: item.expectedValue,
         origPrediction: item.originalTip || tip,
         origOdds: item.originalOdds || odds,
         isPrescribed: Boolean(item.isPrescribed)
@@ -8803,27 +8854,62 @@ function dispatchBetslipAction(action) {
         }
       }
 
-      // Step 2: Synchronize each prescription into window.appState.betslip
+      // Step 2: Synchronize each prescription into window.appState.betslip while enforcing canonical market uniqueness
+      const batchUsedMarketIds = new Set();
+      window.appState.betslip.forEach(s => {
+        if (s && s.marketId) batchUsedMarketIds.add(String(s.marketId));
+      });
+
       prescriptions.forEach(p => {
         const targetMatchId = p.matchId ? String(p.matchId) : null;
         const targetFixture = p.fixtureId || (p.homeTeam && p.awayTeam ? `${String(p.homeTeam).toLowerCase().trim()}-${String(p.awayTeam).toLowerCase().trim()}` : null);
 
         const existingIdx = findBetslipIndex({ matchId: targetMatchId, fixtureId: targetFixture, homeTeam: p.homeTeam, awayTeam: p.awayTeam }, window.appState.betslip);
-        const prescribedTip = p.prescribedSelectionId || p.alternativeTip || p.prescribedTip || p.tip;
-        const prescribedOdds = Number(p.prescribedOdds || p.alternativeOdds);
+        let prescribedTip = p.prescribedSelectionId || p.alternativeTip || p.prescribedTip || p.tip;
+        let prescribedOdds = Number(p.prescribedOdds || p.alternativeOdds);
+        let prescribedMarketName = p.prescribedMarket;
 
         if (existingIdx !== -1) {
           // REPLACEMENT / MODIFICATION: Selection count remains identical
           const item = window.appState.betslip[existingIdx];
+          // Section 8: Preserve manual-selection protection unless explicitly authorized by user (p.forceOverrideManual)
+          const isManualProtected = (String(item.selectionOrigin || '').toUpperCase() === 'MANUAL' || item.locked === true);
+          if (isManualProtected && !p.forceOverrideManual) {
+            return;
+          }
+          if (item.marketId) {
+            batchUsedMarketIds.delete(String(item.marketId));
+          }
           if (!item.isPrescribed) {
             item.originalTip = item.tip;
             item.originalOdds = (typeof item.odds === 'number' && !isNaN(item.odds)) ? item.odds : (Number(item.odds) || p.originalOdds);
             item.originalSelectionId = item.tip;
+            item.originalMarketId = item.marketId;
+            item.originalMarketName = item.marketName;
           }
+          let canonMeta = (typeof window !== 'undefined' && window.IntelligentMarketRotationEngine && typeof window.IntelligentMarketRotationEngine.resolveCanonicalMarketMeta === 'function')
+            ? window.IntelligentMarketRotationEngine.resolveCanonicalMarketMeta(p.marketId ? { canonicalMarketId: p.marketId, marketName: p.prescribedMarket, tip: prescribedTip } : prescribedTip)
+            : { canonicalMarketId: p.marketId || 'MKT_PRESCRIBED', marketName: p.prescribedMarket || prescribedTip };
+
+          // If this prescribed canonicalMarketId is already used by another leg in the batch, pick the next unique safer market
+          if (batchUsedMarketIds.has(canonMeta.canonicalMarketId) && typeof window !== 'undefined' && window.IntelligentMarketRotationEngine && typeof window.IntelligentMarketRotationEngine.findUniqueDoctorPrescriptionMarket === 'function') {
+            const altUnique = window.IntelligentMarketRotationEngine.findUniqueDoctorPrescriptionMarket(item, window.appState.betslip, batchUsedMarketIds);
+            if (altUnique) {
+              canonMeta = { canonicalMarketId: altUnique.canonicalMarketId, marketName: altUnique.marketName };
+              prescribedTip = altUnique.prescribedSelectionId;
+              prescribedOdds = altUnique.prescribedOdds;
+              prescribedMarketName = altUnique.prescribedMarket;
+            }
+          }
+
+          batchUsedMarketIds.add(canonMeta.canonicalMarketId);
+          item.marketId = canonMeta.canonicalMarketId;
+          item.marketName = prescribedMarketName || canonMeta.marketName;
+          item.selectedOutcome = prescribedTip;
           item.tip = prescribedTip;
           item.odds = prescribedOdds;
           item.isPrescribed = true;
-          item.prescription = p;
+          item.prescription = { ...p, marketId: canonMeta.canonicalMarketId, prescribedSelectionId: prescribedTip, prescribedOdds };
         } else if (p.prescriptionType === 'add') {
           // EXPLICIT ADDITION
           window.appState.betslip.push({
@@ -8852,9 +8938,12 @@ function dispatchBetslipAction(action) {
       // Step 3: Recalculate Total Odds from updated active selections
       const oddsCalc = calculateBetslipTotalOdds(window.appState.betslip);
 
-      // Step 4: Synchronously update Active Betslip Builder UI drawer
+      // Step 4: Synchronously update Active Betslip Builder UI drawer & Bet Generator Ticket Preview
       if (typeof renderBetslip === 'function') {
         renderBetslip();
+      }
+      if (typeof window !== 'undefined' && window.IntelligentMarketRotationEngine && typeof window.IntelligentMarketRotationEngine.renderGeneratorTicketPreview === 'function') {
+        window.IntelligentMarketRotationEngine.renderGeneratorTicketPreview(window.appState.betslip, oddsCalc, { skipDoctorRefresh: true });
       }
 
       // Step 5: Persist to localStorage
@@ -9836,6 +9925,24 @@ function generateMachineTicket(isUserAction = true) {
       }
     }
     
+    // 0.5 Delegate to AI-Powered Intelligent Market Rotation Engine when available
+    if (typeof window !== 'undefined' && window.IntelligentMarketRotationEngine && typeof window.IntelligentMarketRotationEngine.rotateMarkets === 'function') {
+      const rotRes = window.IntelligentMarketRotationEngine.rotateMarkets({
+        preserveFixtures: false,
+        isUserAction
+      });
+      if (!rotRes || rotRes.validationError) return rotRes;
+
+      const drawer = document.getElementById("floating-betslip-drawer");
+      if (drawer) drawer.classList.add("open");
+
+      if (isUserAction && typeof window !== 'undefined' && window.Entitlements) {
+        window.Entitlements.recordFeatureUsage('generator');
+        window.Entitlements.renderUsageBadge('generator', 'machine-usage-badge');
+      }
+      return rotRes;
+    }
+
     // 1. Resolve dataset robustly: strictly future upcoming matches only
     const futurePool = (typeof getStrictlyFutureMatchesPool === 'function')
       ? getStrictlyFutureMatchesPool()
